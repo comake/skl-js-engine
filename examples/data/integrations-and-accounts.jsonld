@@ -1,0 +1,57 @@
+{
+  "@context": {
+    "shacl": "http://www.w3.org/ns/shacl#",
+    "fnml": "http://semweb.mmlab.be/ns/fnml#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "label": "rdfs:label",
+    "rdfs:subClassOf": { "@id": "rdfs:subClassOf", "@type": "@id" },
+    "rdfs:range": { "@id": "rdfs:range", "@type": "@id" },
+    "rdfs:domain": { "@id": "rdfs:domain", "@type": "@id" },
+    "boolean": "http://www.w3.org/2001/XMLSchema#boolean",
+    "integer": "http://www.w3.org/2001/XMLSchema#integer",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "rr": "http://www.w3.org/ns/r2rml#",
+    "rml": "http://semweb.mmlab.be/ns/rml#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "https://skl.standard.storage/properties/integration": { "@type": "@id" },
+    "https://skl.standard.storage/properties/account": { "@type": "@id" }
+  },
+  "@graph": [
+    {
+      "@id": "https://skl.standard.storage/data/1",
+      "@type": "https://skl.standard.storage/nouns/WebApplication",
+      "https://skl.standard.storage/properties/command": "db",
+      "https://skl.standard.storage/properties/defaultUrl": "https://www.dropbox.com/",
+      "https://skl.standard.storage/properties/integration": "https://skl.standard.storage/integrations/Dropbox",
+      "https://skl.standard.storage/properties/name": "Dropbox Web Application",
+      "https://skl.standard.storage/properties/searchUrl": "https://www.dropbox.com/search/personal?path=%2F&query={query}",
+      "https://skl.standard.storage/properties/urlDomainMatchers": "^https?:\\/\\/www\\.dropbox\\.com",
+      "https://skl.standard.storage/properties/urlDomains": "dropbox.com"
+    },
+    {
+      "@id": "https://skl.standard.storage/data/DropboxAccount1",
+      "@type": "https://skl.standard.storage/nouns/Account",
+      "https://skl.standard.storage/properties/integration": "https://skl.standard.storage/integrations/Dropbox"
+    },
+    {
+      "@id": "https://skl.standard.storage/data/DropboxAccount1OauthTokens",
+      "@type": "https://skl.standard.storage/nouns/OauthToken",
+      "https://skl.standard.storage/properties/accessToken": "sl.BJrp8xh9gyFLeFDeD5-7h__iuPTXQ6cxBN9Zts7KIN4UFKQ3A3WEHAXPm5405q2TRylhaml1868dtrylINZQrDJa-2t606pNG7R_gWjUQoDP79gan8Eoj-YPCyBu151PQECFX3DjKCmx",
+      "https://skl.standard.storage/properties/account": "https://skl.standard.storage/data/DropboxAccount1"
+    },
+    {
+      "@id": "https://skl.standard.storage/data/DropboxOpenApiDescription",
+      "@type": "https://skl.standard.storage/nouns/OpenApiDescription",
+      "https://skl.standard.storage/properties/descriptionFile": "dropbox-openapi.yaml",
+      "https://skl.standard.storage/properties/integration": "https://skl.standard.storage/integrations/Dropbox"
+    },
+    {
+      "@id": "https://skl.standard.storage/integrations/Dropbox",
+      "@type": "https://skl.standard.storage/nouns/Integration",
+      "https://skl.standard.storage/properties/description": "Dropbox is a modern workspace designed to reduce busywork-so you can focus on the things that matter. Sign in and put your creative energy to work.",
+      "https://skl.standard.storage/properties/name": "Dropbox"
+    }
+  ]
+}

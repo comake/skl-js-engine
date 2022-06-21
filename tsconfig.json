@@ -1,0 +1,19 @@
+{
+  "extends": "@tsconfig/node14/tsconfig.json",
+  "exclude": [
+    "node_modules"
+  ],
+  "compilerOptions": {
+    "typeRoots": ["./types", "node_modules/@types"],
+    "outDir": "./dist"
+  },
+  "include": [
+   "./src",
+   "./types",
+   "./examples",
+ ],
+ "ts-node": {
+    "transpileOnly": true,
+    "files": true,
+  }
+}
