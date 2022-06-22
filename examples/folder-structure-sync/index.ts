@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as fs from 'fs';
-import * as jsonld from 'jsonld';
 import { SKQL, SKL } from '@comake/skql-js-engine';
+import * as jsonld from 'jsonld';
 
 const account = 'https://skl.standard.storage/data/DropboxAccount1';
 const rootFolder = {
@@ -56,11 +56,11 @@ async function getFilesRecursive(folder: any, depth = 0): Promise<any[]> {
 }
 
 async function run(): Promise<void> {
-  const sklSchemas = await fs.promises.readFile('./data/schema.jsonld', { encoding: 'utf-8' });
-  const verbs = await fs.promises.readFile('./data/verbs.jsonld', { encoding: 'utf-8' });
-  const dropboxMappings = await fs.promises.readFile('./data/dropbox.jsonld', { encoding: 'utf-8' });
+  const sklSchemas = await fs.promises.readFile('./schemas/schema.jsonld', { encoding: 'utf-8' });
+  const verbs = await fs.promises.readFile('./schemas/verbs.jsonld', { encoding: 'utf-8' });
+  const dropboxMappings = await fs.promises.readFile('./schemas/dropbox.jsonld', { encoding: 'utf-8' });
   const integrationsAndAccountsSchema = await fs.promises.readFile(
-    './data/integrations-and-accounts.jsonld',
+    './schemas/integrations-and-accounts.jsonld',
     { encoding: 'utf-8' },
   );
 

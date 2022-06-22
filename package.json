@@ -1,6 +1,6 @@
 {
 	"name": "@comake/skql-js-engine",
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"description": "Standard Knowledge Query Language Javascript Engine",
   "keywords": [
     "skl",
@@ -26,6 +26,10 @@
 	},
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "lib"
+  ],
 	"dependencies": {
 		"@rmlio/rmlmapper-java-wrapper": "^2.0.3",
 		"axios": "^0.27.2",

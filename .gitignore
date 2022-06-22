@@ -1,9 +1,9 @@
-/.npmrc
-/.eslintcache
+.npmrc
+.eslintcache
 /dist
 .DS_Store
 node_modules/
-/coverage
+coverage/
 yarn-error.log*
 rmlmapper-5.0.0-r362-all.jar
 tmp

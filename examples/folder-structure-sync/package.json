@@ -7,8 +7,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
 	"dependencies": {
-		"@comake/skql-js-example": "^0.0.0",
-		"jsonld": "^5.2.0",
+		"@comake/skql-js-engine": "^0.0.1",
+		"jsonld": "^5.2.0"
 	},
 	"devDependencies": {
 		"@tsconfig/node14": "^1.0.3",
