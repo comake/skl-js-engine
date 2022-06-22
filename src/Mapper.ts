@@ -1,7 +1,7 @@
 import RMLMapperWrapper from '@rmlio/rmlmapper-java-wrapper';
 import * as jsonld from 'jsonld';
 import { isNumeric, stringToBoolean, stringToInteger } from './util/Util';
-import { SKL, RDF, XSD } from './util/Vocabulary';
+import { SKL, RDF, XSD } from './util/Vocabularies';
 
 const rmlmapperPath = './lib/rmlmapper-5.0.0-r362-all.jar';
 const tempFolderPath = './tmp';

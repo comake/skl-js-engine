@@ -1,9 +1,7 @@
-// To run: ts-node ./src/dropbox.ts
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as fs from 'fs';
 import * as jsonld from 'jsonld';
-import SKQL from '../src/index';
-import { SKL } from '../src/util/Vocabulary';
+import { SKQL, SKL } from '@comake/skql-js-engine';
 
 const account = 'https://skl.standard.storage/data/DropboxAccount1';
 const rootFolder = {

@@ -2,6 +2,11 @@
 	"name": "@comake/skql-js-engine",
 	"version": "0.0.0",
 	"description": "Standard Knowledge Query Language Javascript Engine",
+  "keywords": [
+    "skl",
+    "linked-data",
+    "rdf"
+  ]
   "repository": {
     "type": "git",
     "url": "https://github.com/comake/skql-engine-js.git"
@@ -13,6 +18,7 @@
   "license" : "BSD-4-Clause",
 	"scripts": {
     "build": "tsc",
+    "build-examples": "",
     "jest": "jest --coverage",
     "lint": "eslint . --cache --ignore-path .gitignore --max-warnings 0",
     "test": "npm run test:ts && npm run jest",
