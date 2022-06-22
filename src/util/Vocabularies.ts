@@ -18,7 +18,7 @@ export const SKL = {
   parameterMappingsProperty: 'https://skl.standard.storage/properties/parameterMappings',
   returnValueMappingsProperty: 'https://skl.standard.storage/properties/returnValueMappings',
   operationMappingsProperty: 'https://skl.standard.storage/properties/operationMappings',
-  descriptionFileProperty: 'https://skl.standard.storage/properties/descriptionFile',
+  openApiDescriptionProperty: 'https://skl.standard.storage/properties/openApiDescription',
   accessTokenProperty: 'https://skl.standard.storage/properties/accessToken',
   sourceIdProperty: 'https://skl.standard.storage/properties/sourceId',
   returnValueProperty: 'https://skl.standard.storage/properties/returnValue',

@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { promises as fsPromises } from 'fs';
 import SHACLValidator from 'rdf-validate-shacl';
 import { Mapper } from './Mapper';
+import type { OpenApi } from './util/openapi/OpenapiSchemaConfiguration';
 import { executeOpenApiOperation } from './util/openapi/OpenapiUtil';
 import { constructUri, convertJsonLdToQuads, toJSON } from './util/Util';
 import { SKL } from './util/Vocabularies';
@@ -74,7 +76,6 @@ export class SKQLBase {
       const account = this.getSchemaById(args.account);
       // Find mapping for verb and integration
       const mapping = this.getSchemaByFields({
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         '@type': SKL.verbToIntegrationMappingNoun,
         [SKL.verbsProperty]: verb['@id'],
         [SKL.integrationProperty]: account[SKL.integrationProperty]['@id'],
@@ -87,20 +88,18 @@ export class SKQLBase {
       const { operationId } = toJSON(operationInfoJsonLd);
 
       const openApiDescriptionSchema = this.getSchemaByFields({
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         '@type': SKL.openApiDescriptionNoun,
         [SKL.integrationProperty]: account[SKL.integrationProperty]['@id'],
       });
 
       const oauthTokenSchema = this.getSchemaByFields({
-        // eslint-disable-next-line @typescript-eslint/naming-convention
         '@type': SKL.oauthTokenNoun,
         [SKL.accountProperty]: args.account,
       });
 
       const rawReturnValue = await executeOpenApiOperation(
         operationId as string,
-        openApiDescriptionSchema[SKL.descriptionFileProperty],
+        openApiDescriptionSchema[SKL.openApiDescriptionProperty]['@value'] as OpenApi,
         { accessToken: oauthTokenSchema[SKL.accessTokenProperty] },
         operationArgs,
       );
@@ -146,7 +145,6 @@ export type VerbInterface = Record<string, VerbHandler>;
 
 export type SKQLProxy = VerbInterface & SKQLBase;
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 function SKQLProxyBuilder(target: SKQLBase): SKQLProxy {
   const skqlProxyHandler = {
     get(getTarget: SKQLBase, property: string): any {

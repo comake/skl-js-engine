@@ -1,12 +1,7 @@
 {
   "extends": "@tsconfig/node14/tsconfig.json",
   "compilerOptions": {
-    "outDir": ".",
-    "target": "es2020",
-    "module": "es2020",
-    "strict": false,
-    "esModuleInterop": true,
-    "moduleResolution": "node"
+    "outDir": "."
   },
   "include": ["index.ts"],
   "exclude": ["node_modules"]

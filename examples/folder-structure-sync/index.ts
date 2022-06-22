@@ -9,7 +9,7 @@ const rootFolder = {
   name: 'Dropbox',
   sourceId: '',
 };
-const maxDepth = 0;
+const maxDepth = 1;
 
 export async function executePromisesSequentially(
   arrayOfFnWrappedPromises: (() => Promise<any>)[],

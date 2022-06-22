@@ -1,10 +1,9 @@
-import * as path from 'path';
 import type { AxiosRequestConfig, AxiosPromise } from 'axios';
 import { OpenApiAxiosOperationFactory } from './OpenapiClientAxiosApi';
 import { OpenApiClientConfiguration } from './OpenapiClientConfiguration';
 import type { ConfigurationParameters } from './OpenapiClientConfiguration';
 import { OpenApiSchemaConfiguration } from './OpenapiSchemaConfiguration';
-import type { PathItem, Operation, Paths } from './OpenapiSchemaConfiguration';
+import type { PathItem, Operation, Paths, OpenApi } from './OpenapiSchemaConfiguration';
 
 function constructBasePath(openApiConfig: OpenApiSchemaConfiguration): string {
   if (openApiConfig.servers && openApiConfig.servers.length > 0) {
@@ -31,10 +30,11 @@ function getOperationAndPathInfoMatchingOperationId(
       const pathItem: PathItem = (paths as any)[pathName];
       for (const pathReqMethod in pathItem) {
         /* eslint-disable-next-line unicorn/prefer-object-has-own */
-        if (Object.prototype.hasOwnProperty.call(pathItem, pathReqMethod) &&
-          (path as any)[pathReqMethod].operationId === operationId
-        ) {
-          return { operation: (path as any)[pathReqMethod], pathName, pathReqMethod };
+        if (Object.prototype.hasOwnProperty.call(pathItem, pathReqMethod)) {
+          const operation = (pathItem as any)[pathReqMethod];
+          if (operation?.operationId === operationId) {
+            return { operation: (pathItem as any)[pathReqMethod], pathName, pathReqMethod };
+          }
         }
       }
     }
@@ -66,18 +66,17 @@ async function buildOperationFunction(
 // TODO: cache openapi config
 export async function executeOpenApiOperation(
   operationId: string,
-  openApiFileName: string,
+  openApiDescription: OpenApi,
   configurationParams: ConfigurationParameters,
   args?: any,
   options?: AxiosRequestConfig,
 ): Promise<AxiosPromise> {
-  const openApiFilePath = path.resolve(__dirname, `../../../data/${openApiFileName}`);
   const configuration = new OpenApiClientConfiguration(configurationParams);
-  const openApiConfig = new OpenApiSchemaConfiguration(openApiFilePath);
+  const openApiConfig = new OpenApiSchemaConfiguration(openApiDescription);
   const operationFunction = await buildOperationFunction(operationId, configuration, openApiConfig);
   if (operationFunction) {
     return operationFunction(args, options);
   }
 
-  throw new Error(`No OpenApi operation called ${operationId} was found in ${openApiFileName}.`);
+  throw new Error(`No OpenApi operation called ${operationId} was found in Openapi description.`);
 }

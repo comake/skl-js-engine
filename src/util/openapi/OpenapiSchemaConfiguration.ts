@@ -1,6 +1,3 @@
-import * as fs from 'fs';
-import * as yaml from 'js-yaml';
-
 export type Parameter = ExampleXORExamples & SchemaXORContent & ParameterLocation;
 // Schema and content are mutually exclusive, at least one is required
 export type SchemaXORContent =
@@ -453,10 +450,10 @@ export class OpenApiSchemaConfiguration implements OpenApi {
   // eslint-disable-next-line no-undef
   [k: string]: unknown;
 
-  public constructor(openApiFilePath: string) {
-    /* eslint-disable-next-line  no-sync */
-    const openApiFile: string = fs.readFileSync(openApiFilePath, 'utf8');
-    const openApiConfig: OpenApi = yaml.load(openApiFile) as OpenApi;
+  public constructor(openApiConfig: OpenApi) {
+    /* // eslint-disable-next-line  no-sync */
+    // const openApiFile: string = fs.readFileSync(openApiFilePath, 'utf8');
+    // const openApiConfig: OpenApi = yaml.load(openApiFile) as OpenApi;
     this.openapi = openApiConfig.openapi;
     this.info = openApiConfig.info;
     this.externalDocs = openApiConfig.externalDocs;
