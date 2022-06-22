@@ -1,16 +1,15 @@
-import { OpenApiClientConfiguration } from './OpenapiClientConfiguration';
-import { Operation } from './OpenapiSchemaConfiguration'
-import globalAxios, { AxiosPromise, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-// Some imports not used depending on template conditions
-// @ts-ignore
-import { DUMMY_BASE_URL, setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction } from './OpenapiClientUtils';
-// @ts-ignore
+import globalAxios from 'axios';
+import type { AxiosPromise, AxiosInstance, AxiosRequestConfig } from 'axios';
+import type { OpenApiClientConfiguration } from './OpenapiClientConfiguration';
+import { DUMMY_BASE_URL, setOAuthToObject, setSearchParams, serializeDataIfNeeded,
+  toPathString, createRequestFunction } from './OpenapiClientUtils';
+import type { Operation } from './OpenapiSchemaConfiguration';
 
 export const COLLECTION_FORMATS = {
-  csv: ",",
-  ssv: " ",
-  tsv: "\t",
-  pipes: "|",
+  csv: ',',
+  ssv: ' ',
+  tsv: '\t',
+  pipes: '|',
 };
 
 export interface RequestArgs {
@@ -18,68 +17,85 @@ export interface RequestArgs {
   options: AxiosRequestConfig;
 }
 
-export interface OpenApiClientOperations {
-  [k: string]: (args?: any, options?: any) => AxiosPromise
-}
+export type OpenApiClientOperations = Record<string, (args?: any, options?: any) => AxiosPromise>;
 
 export class RequiredError extends Error {
-    name: "RequiredError" = "RequiredError";
-    constructor(public field: string, msg?: string) {
-        super(msg);
-    }
+  public readonly name: 'RequiredError' = 'RequiredError';
+
+  public constructor(public field: string, msg?: string) {
+    super(msg);
+  }
 }
 
-export const OpenApiAxiosOperationFactory = function(pathName: string, pathReqMethod: string, operation: Operation, configuration: OpenApiClientConfiguration, basePath: string, axios?: AxiosInstance) {
-  const requestFactory = OpenApiAxiosRequestFactory(pathName, pathReqMethod, operation, configuration)
-
-  return async function(args?: any, options?: any): Promise<AxiosPromise> {
-    const request = await requestFactory(args, options)
-    return request(axios, basePath);
-  }
-};
-
-const OpenApiAxiosRequestFactory = function(pathName: string, pathReqMethod: string, operation: Operation, configuration?: OpenApiClientConfiguration) {
-  const paramFactory = OpenApiAxiosParamFactory(pathName, pathReqMethod, operation, configuration)
-
-  return async function(args?: any, options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise> {
-    const axiosArgs = await paramFactory(args, options);
-    return createRequestFunction(axiosArgs, globalAxios, "", configuration);
-  }
-};
-
-const OpenApiAxiosParamFactory = function (pathName: string, pathReqMethod: string, operation: Operation, configuration?: OpenApiClientConfiguration) {
+/* eslint-disable-next-line @typescript-eslint/naming-convention */
+function OpenApiAxiosParamFactory(
+  pathName: string,
+  pathReqMethod: string,
+  operation: Operation,
+  configuration?: OpenApiClientConfiguration,
+): (args?: any, options?: AxiosRequestConfig) => Promise<RequestArgs> {
   return async function(args?: any, options: AxiosRequestConfig = {}): Promise<RequestArgs> {
-    // use dummy base URL string because the URL constructor only accepts absolute URLs.
+    // Use dummy base URL string because the URL constructor only accepts absolute URLs.
     const urlObj = new URL(pathName, DUMMY_BASE_URL);
-    let baseOptions: any;
-    if (configuration) {
-        baseOptions = configuration.baseOptions;
-    }
-
-    const requestOptions = { method: pathReqMethod, ...baseOptions, ...options};
+    const { baseOptions } = configuration ?? {};
+    const requestOptions = { method: pathReqMethod, ...baseOptions, ...options };
     const headerParameter = {} as any;
     const queryParameter = {} as any;
 
-    // authentication oAuth required
+    // Authentication oAuth required
     // oauth required
     if (operation.security && operation.security.length > 0) {
-      const oAuthSecurityType = operation.security[0]['oAuth']
+      const oAuthSecurityType = operation.security[0].oAuth;
       if (oAuthSecurityType) {
-        await setOAuthToObject(headerParameter, 'oAuth', oAuthSecurityType, configuration)
+        await setOAuthToObject(headerParameter, 'oAuth', oAuthSecurityType, configuration);
       }
     }
 
-    // TODO may vary?
     headerParameter['Content-Type'] = 'application/json';
 
     setSearchParams(urlObj, queryParameter);
-    let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-    requestOptions.headers = {...headerParameter, ...headersFromBaseOptions, ...options.headers};
-    requestOptions.data = serializeDataIfNeeded(args, requestOptions, configuration)
+    const headersFromBaseOptions = baseOptions?.headers ?? {};
+    requestOptions.headers = { ...headerParameter, ...headersFromBaseOptions, ...options.headers };
+    requestOptions.data = serializeDataIfNeeded(args, requestOptions, configuration);
 
     return {
       url: toPathString(urlObj),
       options: requestOptions,
     };
-  }
-};
+  };
+}
+
+/* eslint-disable-next-line @typescript-eslint/naming-convention */
+function OpenApiAxiosRequestFactory(
+  pathName: string,
+  pathReqMethod: string,
+  operation: Operation,
+  configuration?: OpenApiClientConfiguration,
+): (args?: any, options?: AxiosRequestConfig) => Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise> {
+  const paramFactory = OpenApiAxiosParamFactory(pathName, pathReqMethod, operation, configuration);
+
+  return async function(
+    args?: any,
+    options?: AxiosRequestConfig,
+  ): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise> {
+    const axiosArgs = await paramFactory(args, options);
+    return createRequestFunction(axiosArgs, globalAxios, '', configuration);
+  };
+}
+
+/* eslint-disable-next-line @typescript-eslint/naming-convention */
+export function OpenApiAxiosOperationFactory(
+  pathName: string,
+  pathReqMethod: string,
+  operation: Operation,
+  configuration: OpenApiClientConfiguration,
+  basePath: string,
+  axios?: AxiosInstance,
+): (args?: any, options?: any) => Promise<AxiosPromise> {
+  const requestFactory = OpenApiAxiosRequestFactory(pathName, pathReqMethod, operation, configuration);
+
+  return async function(args?: any, options?: any): Promise<AxiosPromise> {
+    const request = await requestFactory(args, options);
+    return request(axios, basePath);
+  };
+}

@@ -6,13 +6,12 @@
 		"test": "jest"
 	},
 	"dependencies": {
-		"@inrupt/solid-client-authn-node": "^1.11.5",
 		"@rmlio/rmlmapper-java-wrapper": "^2.0.3",
 		"axios": "^0.27.2",
+		"js-yaml": "^4.1.0",
 		"jsonld": "^5.2.0",
 		"n3": "^1.16.2",
-		"rdf-validate-shacl": "^0.4.4",
-		"rdflib": "^2.2.19"
+		"rdf-validate-shacl": "^0.4.4"
 	},
 	"devDependencies": {
 		"@tsconfig/node14": "^1.0.3",

@@ -125,6 +125,8 @@ module.exports = {
     // Doesn't work with type imports
     'no-duplicate-imports': 'off',
     'unused-imports/no-unused-imports-ts': 'error',
+    // Comake code style preferences
+    'operator-linebreak': ["error", "after", { "overrides": { "?": "after", ":": "after" } }],
   },
   overrides: [
     {
