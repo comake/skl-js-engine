@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/badge/License-BSD_4--Clause-blue.svg)](https://spdx.org/licenses/BSD-4-Clause.html)
+[![npm version](https://badge.fury.io/js/@comake%2Fskql-js-engine.svg)](https://badge.fury.io/js/@comake%2Fskql-js-engine) [![License](https://img.shields.io/badge/License-BSD_4--Clause-blue.svg)](https://spdx.org/licenses/BSD-4-Clause.html)
 
 # SKQL Javascript Engine
 
@@ -12,6 +12,8 @@ This is a Javascript implementation of a Standard Knowledge Query Language Engin
 - Clone repo
 - Download RMLMapper into the lib folder
 
+TODO: cache openapi files
+TODO: unhardcode rml stuff
 -->
 
 # License & Copyright
