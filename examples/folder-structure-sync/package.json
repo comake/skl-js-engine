@@ -3,8 +3,8 @@
 	"version": "0.0.0",
 	"scripts": {
 		"build": "tsc",
-		"sync": "node ./index.js",
-		"sync-ts": "ts-node ./index.ts"
+		"sync": "node ./dist/index.js",
+		"sync-ts": "ts-node ./src/index.ts"
 	},
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
