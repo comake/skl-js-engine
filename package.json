@@ -18,7 +18,6 @@
   "license" : "BSD-4-Clause",
 	"scripts": {
     "build": "tsc",
-    "build-examples": "",
     "jest": "jest --coverage",
     "lint": "eslint . --cache --ignore-path .gitignore --max-warnings 0",
     "test": "npm run test:ts && npm run jest",
