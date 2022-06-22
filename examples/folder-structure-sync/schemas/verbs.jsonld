@@ -1,1 +1,60 @@
-{"@context":{"shacl":"http://www.w3.org/ns/shacl#","fnml":"http://semweb.mmlab.be/ns/fnml#","rdf":"http://www.w3.org/1999/02/22-rdf-syntax-ns#","rdfs":"http://www.w3.org/2000/01/rdf-schema#","label":"rdfs:label","rdfs:subClassOf":{"@id":"rdfs:subClassOf","@type":"@id"},"rdfs:range":{"@id":"rdfs:range","@type":"@id"},"rdfs:domain":{"@id":"rdfs:domain","@type":"@id"},"boolean":"http://www.w3.org/2001/XMLSchema#boolean","integer":"http://www.w3.org/2001/XMLSchema#integer","xsd":"http://www.w3.org/2001/XMLSchema#","rr":"http://www.w3.org/ns/r2rml#","rml":"http://semweb.mmlab.be/ns/rml#","owl":"http://www.w3.org/2002/07/owl#","skos":"http://www.w3.org/2004/02/skos/core#","shacl:path":{"@id":"shacl:path","@type":"@id"},"shacl:class":{"@id":"shacl:class","@type":"@id"},"shacl:datatype":{"@id":"shacl:datatype","@type":"@id"}},"@id":"https://skl.standard.storage/verbs/getFilesInFolder","@type":"https://skl.standard.storage/nouns/Verb","https://skl.standard.storage/properties/name":"getFilesInFolder","https://skl.standard.storage/properties/parameters":{"@type":"shacl:NodeShape","shacl:closed":true,"shacl:property":[{"shacl:datatype":"xsd:integer","shacl:maxCount":1,"shacl:name":"limit","shacl:path":"https://skl.standard.storage/properties/limit"},{"shacl:datatype":"xsd:string","shacl:maxCount":1,"shacl:name":"token","shacl:path":"https://skl.standard.storage/properties/token"},{"shacl:class":"https://skl.standard.storage/nouns/Folder","shacl:maxCount":1,"shacl:minCount":1,"shacl:name":"folder","shacl:path":"https://skl.standard.storage/properties/folder"},{"shacl:class":"https://skl.standard.storage/nouns/Account","shacl:maxCount":1,"shacl:minCount":1,"shacl:name":"account","shacl:path":"https://skl.standard.storage/properties/account"}]},"https://skl.standard.storage/properties/returnValue":{"@id":"https://skl.standard.storage/nouns/TokenPaginatedCollection"}}
+{
+  "@context": {
+    "shacl": "http://www.w3.org/ns/shacl#",
+    "fnml": "http://semweb.mmlab.be/ns/fnml#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "label": "rdfs:label",
+    "rdfs:subClassOf": { "@id": "rdfs:subClassOf", "@type": "@id" },
+    "rdfs:range": { "@id": "rdfs:range", "@type": "@id" },
+    "rdfs:domain": { "@id": "rdfs:domain", "@type": "@id" },
+    "boolean": "http://www.w3.org/2001/XMLSchema#boolean",
+    "integer": "http://www.w3.org/2001/XMLSchema#integer",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "rr": "http://www.w3.org/ns/r2rml#",
+    "rml": "http://semweb.mmlab.be/ns/rml#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "shacl:path": { "@id": "shacl:path", "@type": "@id" },
+    "shacl:class": { "@id": "shacl:class", "@type": "@id" },
+    "shacl:datatype": { "@id": "shacl:datatype", "@type": "@id" }
+  },
+  "@id": "https://skl.standard.storage/verbs/getFilesInFolder",
+  "@type": "https://skl.standard.storage/nouns/Verb",
+  "https://skl.standard.storage/properties/name": "getFilesInFolder",
+  "https://skl.standard.storage/properties/parameters": {
+    "@type": "shacl:NodeShape",
+    "shacl:closed": true,
+    "shacl:property": [
+      {
+        "shacl:datatype": "xsd:integer",
+        "shacl:maxCount": 1,
+        "shacl:name": "limit",
+        "shacl:path": "https://skl.standard.storage/properties/limit"
+      },
+      {
+        "shacl:datatype": "xsd:string",
+        "shacl:maxCount": 1,
+        "shacl:name": "token",
+        "shacl:path": "https://skl.standard.storage/properties/token"
+      },
+      {
+        "shacl:class": "https://skl.standard.storage/nouns/Folder",
+        "shacl:maxCount": 1,
+        "shacl:minCount": 1,
+        "shacl:name": "folder",
+        "shacl:path": "https://skl.standard.storage/properties/folder"
+      },
+      {
+        "shacl:class": "https://skl.standard.storage/nouns/Account",
+        "shacl:maxCount": 1,
+        "shacl:minCount": 1,
+        "shacl:name": "account",
+        "shacl:path": "https://skl.standard.storage/properties/account"
+      }
+    ]
+  },
+  "https://skl.standard.storage/properties/returnValue": {
+    "@id": "https://skl.standard.storage/nouns/TokenPaginatedCollection"
+  }
+}
