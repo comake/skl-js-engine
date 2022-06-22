@@ -1,4 +1,4 @@
-import type { AxiosInstance, AxiosResponse } from 'axios';
+import type { AxiosInstance, AxiosResponse, AxiosPromise } from 'axios';
 import { RequiredError } from './OpenapiClientAxiosApi';
 import type { RequestArgs } from './OpenapiClientAxiosApi';
 import type { OpenApiClientConfiguration } from './OpenapiClientConfiguration';
@@ -96,7 +96,7 @@ export function createRequestFunction(
   globalAxios: AxiosInstance,
   basePath: string,
   configuration?: OpenApiClientConfiguration,
-): (axios: AxiosInstance, basePath: string) => Promise<any> {
+): (axios?: AxiosInstance, basePath?: string) => AxiosPromise {
   return <T = unknown, TR = AxiosResponse<T>>(
     axios: AxiosInstance = globalAxios,
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
