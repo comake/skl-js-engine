@@ -1,3 +1,5 @@
+[![License](https://img.shields.io/badge/License-BSD_4--Clause-blue.svg)](https://spdx.org/licenses/BSD-4-Clause.html)
+
 # SKQL Javascript Engine
 
 This is a Javascript implementation of a Standard Knowledge Query Language Engine for [Standard Knowledge Language (SKL)](https://www.comake.io/skl). It is written in Typescript and follows the [SKL Engine specification](https://docs.standardknowledge.com/get-started/engine).
@@ -11,3 +13,9 @@ This is a Javascript implementation of a Standard Knowledge Query Language Engin
 - Download RMLMapper into the lib folder
 
 -->
+
+# License & Copyright
+
+SKQL Javascript Engine is available under the BSD 4 license. See the [LICENSE](LICENSE) file for more info.
+
+Copyright (c) 2022, Comake, Inc.
