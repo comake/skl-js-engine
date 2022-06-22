@@ -1,6 +1,6 @@
 import { promises as fsPromises } from 'fs';
 import SHACLValidator from 'rdf-validate-shacl';
-import { Mapper } from './util/Mapper';
+import { Mapper } from './Mapper';
 import { executeOpenApiOperation } from './util/openapi/OpenapiUtil';
 import { constructUri, convertJsonLdToQuads, toJSON } from './util/Util';
 import { SKL } from './util/Vocabulary';
@@ -119,7 +119,7 @@ export class SKQLBase {
     const validator = new SHACLValidator(shape);
     const report = validator.validate(returnValueAsQuads);
     if (!report.conforms) {
-      throw new Error(`${verbName} arguments do not conform to schema`);
+      throw new Error(`${verbName} parameters do not conform to schema`);
     }
   }
 
