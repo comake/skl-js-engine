@@ -10,6 +10,7 @@
     "url": "https://github.com/comake/skql-engine-js/issues"
   },
   "homepage": "https://github.com/comake/skql-engine-js#readme",
+  "license" : "BSD-4-Clause",
 	"scripts": {
     "build": "tsc",
     "jest": "jest --coverage",
