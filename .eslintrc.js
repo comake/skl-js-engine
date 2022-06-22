@@ -126,7 +126,19 @@ module.exports = {
     'no-duplicate-imports': 'off',
     'unused-imports/no-unused-imports-ts': 'error',
     // Comake code style preferences
-    'operator-linebreak': ["error", "after", { "overrides": { "?": "after", ":": "after" } }],
+    'operator-linebreak': ["error", "after", { "overrides": { "?": "before", ":": "before" } }],
+    "unicorn/filename-case": [
+      "error",
+      {
+        "cases": {
+          "camelCase": true,
+          "pascalCase": true
+        },
+        "ignore": [
+          "^rmlio__rmlmapper-java-wrapper.d.ts$",
+        ]
+      }
+    ]
   },
   overrides: [
     {

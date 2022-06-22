@@ -44,9 +44,9 @@ export class SKQLBase {
     const schema = this.schema.find((schemaInstance: any): boolean => {
       const schemaFields = Object.entries(fields);
       return schemaFields.every(([ fieldName, fieldValue ]): boolean => fieldName in schemaInstance &&
-        (typeof schemaInstance[fieldName] === 'object' ?
-          schemaInstance[fieldName]['@id'] === fieldValue :
-          schemaInstance[fieldName] === fieldValue
+        (typeof schemaInstance[fieldName] === 'object'
+          ? schemaInstance[fieldName]['@id'] === fieldValue
+          : schemaInstance[fieldName] === fieldValue
         ));
     });
 
