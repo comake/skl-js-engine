@@ -93,3 +93,33 @@ export function setSearchParams(url: URL, ...objects: any[]): void {
 export function toPathString(url: URL): string {
   return `${url.pathname}${url.search}${url.hash}`;
 }
+
+/**
+ * Check if the given MIME is a JSON MIME.
+ * JSON MIME examples:
+ *   application/json
+ *   application/json; charset=UTF8
+ *   APPLICATION/JSON
+ *   application/vnd.company+json
+ * @param mime - MIME (Multipurpose Internet Mail Extensions)
+ * @returns True if the given MIME is JSON, false otherwise.
+ */
+export function isJsonMime(mime: string): boolean {
+  const jsonMime = /^(application\/json|[^;/ \t]+\/[^;/ \t]+[+]json)[ \t]*(;.*)?$/iu;
+  return mime !== null && (jsonMime.test(mime) || mime.toLowerCase() === 'application/json-patch+json');
+}
+
+/**
+ * Helper that serializes data into a string if necessary.
+ *
+ * @param value - The value to be serialized
+ * @param mimeType - The target mime type used to determine if the value should be serialized
+ * @returns value or a serialized representation of value
+ */
+export function serializeDataIfNeeded(value: any, mimeType: string): string {
+  const isString = typeof value === 'string';
+  const needsSerialization = !isString && isJsonMime(mimeType);
+  return needsSerialization
+    ? JSON.stringify(value !== undefined ? value : {})
+    : value || '';
+}

@@ -1,6 +1,6 @@
 import type { AxiosRequestConfig } from 'axios';
 import type { OpenApiClientConfiguration } from './OpenApiClientConfiguration';
-import { DUMMY_BASE_URL, toPathString, setSearchParams } from './OpenApiClientUtils';
+import { DUMMY_BASE_URL, toPathString, setSearchParams, serializeDataIfNeeded } from './OpenApiClientUtils';
 import type { OperationWithPathInfo } from './OpenApiOperationExecutor';
 import type { SecurityRequirement } from './OpenApiSchemaConfiguration';
 
@@ -31,30 +31,30 @@ export class OpenApiAxiosParamFactory {
   public async createParams(args?: any, options: AxiosRequestConfig = {}): Promise<RequestArgs> {
     // Use dummy base URL string because the URL constructor only accepts absolute URLs.
     const urlObj = new URL(this.pathName, DUMMY_BASE_URL);
-    const { baseOptions } = this.configuration ?? {};
-    const requestOptions = { method: this.pathReqMethod, ...baseOptions, ...options };
-    const headerParameter = {} as any;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const headerParameter = { 'Content-Type': 'application/json' };
     const queryParameter = {} as any;
 
     // Authentication oAuth required
+    await this.setSecurityIfNeeded(headerParameter);
+    setSearchParams(urlObj, queryParameter);
+
+    return {
+      url: toPathString(urlObj),
+      options: this.constructRequestOptions(options, headerParameter, args),
+    };
+  }
+
+  /**
+   * Sets the oAuth settings on the headerParameters object if oAuth security is set.
+   */
+  private async setSecurityIfNeeded(headerParameter: any): Promise<void> {
     if (this.security && this.security.length > 0) {
       const oAuthSecurityType = this.security[0].oAuth;
       if (oAuthSecurityType) {
         await this.setOAuthToObject(headerParameter, 'oAuth', oAuthSecurityType);
       }
     }
-
-    headerParameter['Content-Type'] = 'application/json';
-
-    setSearchParams(urlObj, queryParameter);
-    const headersFromBaseOptions = baseOptions?.headers ?? {};
-    requestOptions.headers = { ...headerParameter, ...headersFromBaseOptions, ...options.headers };
-    requestOptions.data = this.serializeDataIfNeeded(args, requestOptions);
-
-    return {
-      url: toPathString(urlObj),
-      options: requestOptions,
-    };
   }
 
   /**
@@ -79,22 +79,30 @@ export class OpenApiAxiosParamFactory {
   }
 
   /**
-   * Helper that serializes data into a string if necessary.
+   * Helper that constructs the request options.
    *
-   * @param value - The value to be serialized
-   * @param requestOptions - The request options from which to determine if the value should be serialized
-   * @returns value or a serialized representation of value
+   * @param options - The AxiosRequestConfig options object
+   * @param headerParameter - The header parameter object
+   * @param args - The operation arguments
+   * @returns The request options object
    */
-  private serializeDataIfNeeded(
-    value: any,
-    requestOptions: any,
-  ): string {
-    const nonString = typeof value !== 'string';
-    const needsSerialization = nonString && this.configuration && this.configuration.isJsonMime
-      ? this.configuration.isJsonMime(requestOptions.headers['Content-Type'])
-      : nonString;
-    return needsSerialization
-      ? JSON.stringify(value !== undefined ? value : {})
-      : value || '';
+  private constructRequestOptions(
+    options: AxiosRequestConfig,
+    headerParameter: any,
+    args?: any,
+  ): any {
+    const { baseOptions } = this.configuration ?? {};
+    const requestOptions = {
+      method: this.pathReqMethod,
+      ...baseOptions,
+      ...options,
+      headers: {
+        ...headerParameter,
+        ...baseOptions?.headers,
+        ...options.headers,
+      },
+    };
+    requestOptions.data = serializeDataIfNeeded(args, requestOptions.headers['Content-Type']);
+    return requestOptions;
   }
 }
