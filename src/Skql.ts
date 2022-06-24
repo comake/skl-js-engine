@@ -2,8 +2,8 @@
 import { promises as fsPromises } from 'fs';
 import SHACLValidator from 'rdf-validate-shacl';
 import { Mapper } from './Mapper';
-import type { OpenApi } from './util/openapi/OpenapiSchemaConfiguration';
-import { executeOpenApiOperation } from './util/openapi/OpenapiUtil';
+import { OpenApiOperationExecutor } from './util/openapi/OpenApiOperationExecutor';
+import type { OpenApi } from './util/openapi/OpenApiSchemaConfiguration';
 import { constructUri, convertJsonLdToQuads, toJSON } from './util/Util';
 import { SKL } from './util/Vocabularies';
 
@@ -97,9 +97,10 @@ export class SKQLBase {
         [SKL.accountProperty]: args.account,
       });
 
-      const rawReturnValue = await executeOpenApiOperation(
+      const openApiDescription = openApiDescriptionSchema[SKL.openApiDescriptionProperty]['@value'] as OpenApi;
+      const openApiExecutor = new OpenApiOperationExecutor(openApiDescription);
+      const rawReturnValue = await openApiExecutor.executeOperation(
         operationId as string,
-        openApiDescriptionSchema[SKL.openApiDescriptionProperty]['@value'] as OpenApi,
         { accessToken: oauthTokenSchema[SKL.accessTokenProperty] },
         operationArgs,
       );

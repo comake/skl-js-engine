@@ -1,10 +1,25 @@
-import type { AxiosInstance, AxiosResponse, AxiosPromise } from 'axios';
-import { RequiredError } from './OpenapiClientAxiosApi';
-import type { RequestArgs } from './OpenapiClientAxiosApi';
-import type { OpenApiClientConfiguration } from './OpenapiClientConfiguration';
+import type { OpenApiClientConfiguration } from './OpenApiClientConfiguration';
 
 export const DUMMY_BASE_URL = 'https://example.com';
 
+/**
+ * Defines a new error type signifying that a field is required.
+ */
+export class RequiredError extends Error {
+  public readonly name: 'RequiredError' = 'RequiredError';
+
+  public constructor(public field: string, msg?: string) {
+    super(msg);
+  }
+}
+
+/**
+ * Throws a RequiredError if paramName or paramValue are not set.
+ *
+ * @param functionName - The name of the function who's parameters are being validated
+ * @param paramName - The name of the parameter
+ * @param paramValue - The value of the parameter
+ */
 export function assertParamExists(functionName: string, paramName: string, paramValue: unknown): void {
   if (paramValue === null || paramValue === undefined) {
     throw new RequiredError(
@@ -14,6 +29,13 @@ export function assertParamExists(functionName: string, paramName: string, param
   }
 }
 
+/**
+ * Sets an api key field of an object to the apiKey value in the {@link OpenApiClientConfiguration}.
+ *
+ * @param object - The object
+ * @param keyParamName - The name of the key parameter to set
+ * @param configuration - The OpenApiClientConfiguration
+ */
 export async function setApiKeyToObject(
   object: any,
   keyParamName: string,
@@ -27,35 +49,24 @@ export async function setApiKeyToObject(
   }
 }
 
+/**
+ * Sets the auth field of an object to the auth information of an {@link OpenApiClientConfiguration}.
+ *
+ * @param object - The object
+ * @param configuration - The OpenApiClientConfiguration
+ */
 export function setBasicAuthToObject(object: any, configuration?: OpenApiClientConfiguration): void {
   if (configuration && (configuration.username ?? configuration.password)) {
     object.auth = { username: configuration.username, password: configuration.password };
   }
 }
 
-export async function setBearerAuthToObject(object: any, configuration?: OpenApiClientConfiguration): Promise<void> {
-  if (configuration?.accessToken) {
-    const accessToken = typeof configuration.accessToken === 'function'
-      ? await configuration.accessToken()
-      : await configuration.accessToken;
-    object.Authorization = `Bearer ${accessToken}`;
-  }
-}
-
-export async function setOAuthToObject(
-  object: any,
-  name: string,
-  scopes: string[],
-  configuration?: OpenApiClientConfiguration,
-): Promise<void> {
-  if (configuration?.accessToken) {
-    const localVarAccessTokenValue = typeof configuration.accessToken === 'function'
-      ? await configuration.accessToken(name, scopes)
-      : await configuration.accessToken;
-    object.Authorization = `Bearer ${localVarAccessTokenValue}`;
-  }
-}
-
+/**
+ * Sets the search field of a URL object to supplied object(s).
+ *
+ * @param url - The URL object
+ * @param objects - An array of objects
+ */
 export function setSearchParams(url: URL, ...objects: any[]): void {
   const searchParams = new URLSearchParams(url.search);
   for (const object of objects) {
@@ -73,36 +84,12 @@ export function setSearchParams(url: URL, ...objects: any[]): void {
   url.search = searchParams.toString();
 }
 
-export function serializeDataIfNeeded(
-  value: any,
-  requestOptions: any,
-  configuration?: OpenApiClientConfiguration,
-): string {
-  const nonString = typeof value !== 'string';
-  const needsSerialization = nonString && configuration && configuration.isJsonMime
-    ? configuration.isJsonMime(requestOptions.headers['Content-Type'])
-    : nonString;
-  return needsSerialization
-    ? JSON.stringify(value !== undefined ? value : {})
-    : value || '';
-}
-
+/**
+ * Transforms a URL object into a string containing it's path, search, and hash.
+ *
+ * @param url - The URL object
+ * @returns A string with the URL object's pathName, search, and hash concatenated
+ */
 export function toPathString(url: URL): string {
   return `${url.pathname}${url.search}${url.hash}`;
-}
-
-export function createRequestFunction(
-  axiosArgs: RequestArgs,
-  globalAxios: AxiosInstance,
-  basePath: string,
-  configuration?: OpenApiClientConfiguration,
-): (axios?: AxiosInstance, basePath?: string) => AxiosPromise {
-  return <T = unknown, TR = AxiosResponse<T>>(
-    axios: AxiosInstance = globalAxios,
-    /* eslint-disable-next-line @typescript-eslint/naming-convention */
-    BASE_PATH: string = basePath,
-  ): Promise<TR> => {
-    const axiosRequestArgs = { ...axiosArgs.options, url: (configuration?.basePath ?? BASE_PATH) + axiosArgs.url };
-    return axios.request<T, TR>(axiosRequestArgs);
-  };
 }

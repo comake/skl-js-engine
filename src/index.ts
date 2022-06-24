@@ -1,8 +1,8 @@
-export * from './util/openapi/OpenapiClientAxiosApi';
-export * from './util/openapi/OpenapiClientConfiguration';
-export * from './util/openapi/OpenapiClientUtils';
-export * from './util/openapi/OpenapiSchemaConfiguration';
-export * from './util/openapi/OpenapiUtil';
+export * from './util/openapi/OpenApiClientAxiosApi';
+export * from './util/openapi/OpenApiClientConfiguration';
+export * from './util/openapi/OpenApiClientUtils';
+export * from './util/openapi/OpenApiOperationExecutor';
+export * from './util/openapi/OpenApiSchemaConfiguration';
 export * from './util/Util';
 export * from './util/Vocabularies';
 

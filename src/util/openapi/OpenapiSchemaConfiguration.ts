@@ -437,30 +437,3 @@ export interface OpenIdConnectSecurityScheme {
    */
   [k: string]: unknown;
 }
-
-export class OpenApiSchemaConfiguration implements OpenApi {
-  public readonly openapi: string;
-  public readonly info: Info;
-  public readonly externalDocs?: ExternalDocumentation;
-  public readonly servers?: Server[];
-  public readonly security?: SecurityRequirement[];
-  public readonly tags?: Tag[];
-  public readonly paths: Paths;
-  public readonly components?: Components;
-  // eslint-disable-next-line no-undef
-  [k: string]: unknown;
-
-  public constructor(openApiConfig: OpenApi) {
-    /* // eslint-disable-next-line  no-sync */
-    // const openApiFile: string = fs.readFileSync(openApiFilePath, 'utf8');
-    // const openApiConfig: OpenApi = yaml.load(openApiFile) as OpenApi;
-    this.openapi = openApiConfig.openapi;
-    this.info = openApiConfig.info;
-    this.externalDocs = openApiConfig.externalDocs;
-    this.servers = openApiConfig.servers;
-    this.security = openApiConfig.security;
-    this.tags = openApiConfig.tags;
-    this.paths = openApiConfig.paths;
-    this.components = openApiConfig.components;
-  }
-}
