@@ -1,16 +1,16 @@
 import type { AxiosRequestConfig } from 'axios';
 import type { OpenApiClientConfiguration } from './OpenApiClientConfiguration';
-import { DUMMY_BASE_URL, toPathString, setSearchParams, serializeDataIfNeeded } from './OpenApiClientUtils';
+import { DUMMY_BASE_URL, toPathString, serializeDataIfNeeded } from './OpenApiClientUtils';
 import type { OperationWithPathInfo } from './OpenApiOperationExecutor';
 import type { SecurityRequirement } from './OpenApiSchemaConfiguration';
 
-export interface RequestArgs {
+export interface AxiosRequestParams {
   url: string;
   options: AxiosRequestConfig;
 }
 
 /**
- * Factory that generates a RequestArgs object for an {@link OpenApiAxiosRequestFactory}
+ * Factory that generates a RequestParams object for an {@link OpenApiAxiosRequestFactory}
  */
 export class OpenApiAxiosParamFactory {
   private readonly pathName: string;
@@ -28,15 +28,12 @@ export class OpenApiAxiosParamFactory {
     this.configuration = configuration;
   }
 
-  public async createParams(args?: any, options: AxiosRequestConfig = {}): Promise<RequestArgs> {
+  public async createParams(args?: any, options: AxiosRequestConfig = {}): Promise<AxiosRequestParams> {
     // Use dummy base URL string because the URL constructor only accepts absolute URLs.
     const urlObj = new URL(this.pathName, DUMMY_BASE_URL);
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const headerParameter = { 'Content-Type': 'application/json' };
-    const queryParameter = {} as any;
-
     await this.setOAuthSecurityIfNeeded(headerParameter);
-    setSearchParams(urlObj, queryParameter);
 
     return {
       url: toPathString(urlObj),
@@ -89,7 +86,7 @@ export class OpenApiAxiosParamFactory {
     options: AxiosRequestConfig,
     headerParameter: any,
     args?: any,
-  ): any {
+  ): AxiosRequestConfig {
     const { baseOptions } = this.configuration ?? {};
     const requestOptions = {
       method: this.pathReqMethod,

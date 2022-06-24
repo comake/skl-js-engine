@@ -2,8 +2,7 @@ import type { AxiosRequestConfig, AxiosPromise } from 'axios';
 import { OpenApiAxiosParamFactory } from './OpenApiAxiosParamFactory';
 import { OpenApiAxiosRequestFactory } from './OpenApiAxiosRequestFactory';
 import { OpenApiClientAxiosApi } from './OpenApiClientAxiosApi';
-import { OpenApiClientConfiguration } from './OpenApiClientConfiguration';
-import type { ConfigurationParameters } from './OpenApiClientConfiguration';
+import type { OpenApiClientConfiguration } from './OpenApiClientConfiguration';
 import type { PathItem, Operation, OpenApi } from './OpenApiSchemaConfiguration';
 
 export interface PathInfo {
@@ -22,15 +21,14 @@ export class OpenApiOperationExecutor {
 
   public async executeOperation(
     operationId: string,
-    configurationParams: ConfigurationParameters,
+    configuration: OpenApiClientConfiguration,
     args?: any,
     options?: AxiosRequestConfig,
   ): Promise<AxiosPromise> {
-    const configuration = new OpenApiClientConfiguration(configurationParams);
     const basePath = this.constructBasePath();
     const operationAndPathInfo = this.getOperationWithPathInfoMatchingOperationId(operationId);
     const paramFactory = new OpenApiAxiosParamFactory(operationAndPathInfo, configuration);
-    const requestFactory = new OpenApiAxiosRequestFactory(paramFactory, configuration);
+    const requestFactory = new OpenApiAxiosRequestFactory(paramFactory, configuration.basePath);
     const openApiClientApi = new OpenApiClientAxiosApi(requestFactory, basePath);
     return openApiClientApi.sendRequest(args, options);
   }

@@ -1,20 +1,19 @@
 import globalAxios from 'axios';
 import type { AxiosPromise, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import type { OpenApiAxiosParamFactory, RequestArgs } from './OpenApiAxiosParamFactory';
-import type { OpenApiClientConfiguration } from './OpenApiClientConfiguration';
+import type { OpenApiAxiosParamFactory, AxiosRequestParams } from './OpenApiAxiosParamFactory';
 
 /**
  * Factory that generates an Axios request for an OpenApi operation
  */
 export class OpenApiAxiosRequestFactory {
   private readonly paramFactory: OpenApiAxiosParamFactory;
-  private readonly configuration?: OpenApiClientConfiguration;
+  private readonly basePath?: string;
 
   public constructor(
     paramFactory: OpenApiAxiosParamFactory,
-    configuration?: OpenApiClientConfiguration,
+    basePath?: string,
   ) {
-    this.configuration = configuration;
+    this.basePath = basePath;
     this.paramFactory = paramFactory;
   }
 
@@ -22,12 +21,12 @@ export class OpenApiAxiosRequestFactory {
     args?: any,
     options?: AxiosRequestConfig,
   ): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise> {
-    const axiosArgs = await this.paramFactory.createParams(args, options);
-    return this.createRequestFunction(axiosArgs, '');
+    const axiosRequestParams = await this.paramFactory.createParams(args, options);
+    return this.createRequestFunction(axiosRequestParams, '');
   }
 
   private createRequestFunction(
-    axiosArgs: RequestArgs,
+    axiosRequestParams: AxiosRequestParams,
     basePath: string,
   ): (axios?: AxiosInstance, basePath?: string) => AxiosPromise {
     return <T = unknown, TR = AxiosResponse<T>>(
@@ -35,11 +34,11 @@ export class OpenApiAxiosRequestFactory {
       /* eslint-disable-next-line @typescript-eslint/naming-convention */
       BASE_PATH: string = basePath,
     ): Promise<TR> => {
-      const axiosRequestArgs = {
-        ...axiosArgs.options,
-        url: (this.configuration?.basePath ?? BASE_PATH) + axiosArgs.url,
+      const axiosRequestParamsWithBasePath = {
+        ...axiosRequestParams.options,
+        url: (this.basePath ?? BASE_PATH) + axiosRequestParams.url,
       };
-      return axios.request<T, TR>(axiosRequestArgs);
+      return axios.request<T, TR>(axiosRequestParamsWithBasePath);
     };
   }
 }
