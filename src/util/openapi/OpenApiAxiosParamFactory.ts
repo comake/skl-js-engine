@@ -35,8 +35,7 @@ export class OpenApiAxiosParamFactory {
     const headerParameter = { 'Content-Type': 'application/json' };
     const queryParameter = {} as any;
 
-    // Authentication oAuth required
-    await this.setSecurityIfNeeded(headerParameter);
+    await this.setOAuthSecurityIfNeeded(headerParameter);
     setSearchParams(urlObj, queryParameter);
 
     return {
@@ -48,7 +47,7 @@ export class OpenApiAxiosParamFactory {
   /**
    * Sets the oAuth settings on the headerParameters object if oAuth security is set.
    */
-  private async setSecurityIfNeeded(headerParameter: any): Promise<void> {
+  private async setOAuthSecurityIfNeeded(headerParameter: any): Promise<void> {
     if (this.security && this.security.length > 0) {
       const oAuthSecurityType = this.security[0].oAuth;
       if (oAuthSecurityType) {
