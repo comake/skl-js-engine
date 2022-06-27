@@ -1,9 +1,46 @@
 import type { AxiosRequestConfig, AxiosPromise } from 'axios';
 import { OpenApiAxiosParamFactory } from './OpenApiAxiosParamFactory';
-import { OpenApiAxiosRequestFactory } from './OpenApiAxiosRequestFactory';
 import { OpenApiClientAxiosApi } from './OpenApiClientAxiosApi';
-import type { OpenApiClientConfiguration } from './OpenApiClientConfiguration';
 import type { PathItem, Operation, OpenApi } from './OpenApiSchemaConfiguration';
+
+export interface OpenApiClientConfiguration {
+  /**
+  * Parameter for apiKey security
+  * @param name - security name
+  */
+  apiKey?: string | Promise<string> | ((name: string) => string) | ((name: string) => Promise<string>);
+  /**
+  * Parameter for basic security
+  */
+  username?: string;
+  /**
+  * Parameter for basic security
+  */
+  password?: string;
+  /**
+  * Parameter for oauth2 security
+  * @param name - security name
+  * @param scopes - oauth2 scope
+  */
+  accessToken?: string | Promise<string>
+  | ((name?: string, scopes?: string[]) => string)
+  | ((name?: string, scopes?: string[]) => Promise<string>);
+
+  /**
+  * Override base path
+  */
+  basePath?: string;
+  /**
+  * Base options for axios calls
+  */
+  baseOptions?: any;
+  /**
+  * The FormData constructor that will be used to create multipart form data
+  * requests. You can inject this here so that execution environments that
+  * do not support the FormData class can still run the generated client.
+  */
+  formDataCtor?: new () => any;
+}
 
 export interface PathInfo {
   pathName: string;
@@ -28,8 +65,7 @@ export class OpenApiOperationExecutor {
     const basePath = this.constructBasePath();
     const operationAndPathInfo = this.getOperationWithPathInfoMatchingOperationId(operationId);
     const paramFactory = new OpenApiAxiosParamFactory(operationAndPathInfo, configuration);
-    const requestFactory = new OpenApiAxiosRequestFactory(paramFactory, configuration.basePath);
-    const openApiClientApi = new OpenApiClientAxiosApi(requestFactory, basePath);
+    const openApiClientApi = new OpenApiClientAxiosApi(paramFactory, configuration.basePath ?? basePath);
     return openApiClientApi.sendRequest(args, options);
   }
 

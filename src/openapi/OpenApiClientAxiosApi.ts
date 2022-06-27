@@ -1,26 +1,31 @@
+import globalAxios from 'axios';
 import type { AxiosPromise, AxiosInstance } from 'axios';
-import type { OpenApiAxiosRequestFactory } from './OpenApiAxiosRequestFactory';
+import type { OpenApiAxiosParamFactory } from './OpenApiAxiosParamFactory';
 
 /**
  * Sends Axios requests for OpenApi operations.
  */
 export class OpenApiClientAxiosApi {
-  private readonly requestFactory: OpenApiAxiosRequestFactory;
-  private readonly axios?: AxiosInstance;
+  private readonly paramFactory: OpenApiAxiosParamFactory;
+  private readonly axios: AxiosInstance;
   private readonly basePath: string;
 
   public constructor(
-    requestFactory: OpenApiAxiosRequestFactory,
+    paramFactory: OpenApiAxiosParamFactory,
     basePath: string,
     axios?: AxiosInstance,
   ) {
-    this.requestFactory = requestFactory;
-    this.axios = axios;
+    this.paramFactory = paramFactory;
     this.basePath = basePath;
+    this.axios = axios ?? globalAxios;
   }
 
   public async sendRequest(args?: any, options?: any): Promise<AxiosPromise> {
-    const request = await this.requestFactory.createRequest(args, options);
-    return request(this.axios, this.basePath);
+    const axiosRequestParams = await this.paramFactory.createParams(args, options);
+    const axiosRequestParamsWithBasePath = {
+      ...axiosRequestParams.options,
+      url: `${this.basePath}${axiosRequestParams.url}`,
+    };
+    return this.axios.request(axiosRequestParamsWithBasePath);
   }
 }

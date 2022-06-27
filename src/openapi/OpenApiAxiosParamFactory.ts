@@ -1,7 +1,6 @@
 import type { AxiosRequestConfig } from 'axios';
-import type { OpenApiClientConfiguration } from './OpenApiClientConfiguration';
 import { DUMMY_BASE_URL, toPathString, serializeDataIfNeeded } from './OpenApiClientUtils';
-import type { OperationWithPathInfo } from './OpenApiOperationExecutor';
+import type { OperationWithPathInfo, OpenApiClientConfiguration } from './OpenApiOperationExecutor';
 import type { SecurityRequirement } from './OpenApiSchemaConfiguration';
 
 export interface AxiosRequestParams {
@@ -16,11 +15,11 @@ export class OpenApiAxiosParamFactory {
   private readonly pathName: string;
   private readonly pathReqMethod: string;
   private readonly security?: SecurityRequirement[];
-  private readonly configuration?: OpenApiClientConfiguration;
+  private readonly configuration: OpenApiClientConfiguration;
 
   public constructor(
     operationWithPathInfo: OperationWithPathInfo,
-    configuration?: OpenApiClientConfiguration,
+    configuration: OpenApiClientConfiguration,
   ) {
     this.pathName = operationWithPathInfo.pathName;
     this.pathReqMethod = operationWithPathInfo.pathReqMethod;
@@ -66,7 +65,7 @@ export class OpenApiAxiosParamFactory {
     name: string,
     scopes: string[],
   ): Promise<void> {
-    if (this.configuration?.accessToken) {
+    if (this.configuration.accessToken) {
       const localVarAccessTokenValue = typeof this.configuration.accessToken === 'function'
         ? await this.configuration.accessToken(name, scopes)
         : await this.configuration.accessToken;
@@ -87,7 +86,7 @@ export class OpenApiAxiosParamFactory {
     headerParameter: any,
     args?: any,
   ): AxiosRequestConfig {
-    const { baseOptions } = this.configuration ?? {};
+    const { baseOptions } = this.configuration;
     const requestOptions = {
       method: this.pathReqMethod,
       ...baseOptions,

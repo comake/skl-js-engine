@@ -1,4 +1,4 @@
-import type { OpenApiClientConfiguration } from './OpenApiClientConfiguration';
+import type { OpenApiClientConfiguration } from './OpenApiOperationExecutor';
 
 export const DUMMY_BASE_URL = 'https://example.com';
 
@@ -59,29 +59,6 @@ export function setBasicAuthToObject(object: any, configuration?: OpenApiClientC
   if (configuration && (configuration.username ?? configuration.password)) {
     object.auth = { username: configuration.username, password: configuration.password };
   }
-}
-
-/**
- * Sets the search field of a URL object to supplied object(s).
- *
- * @param url - The URL object
- * @param objects - An array of objects
- */
-export function setSearchParams(url: URL, ...objects: any[]): void {
-  const searchParams = new URLSearchParams(url.search);
-  for (const object of objects) {
-    for (const key in object) {
-      if (Array.isArray(object[key])) {
-        searchParams.delete(key);
-        for (const item of object[key]) {
-          searchParams.append(key, item);
-        }
-      } else {
-        searchParams.set(key, object[key]);
-      }
-    }
-  }
-  url.search = searchParams.toString();
 }
 
 /**
