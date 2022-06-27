@@ -12,10 +12,6 @@ export function constructUri(base: string, local: string): string {
   return `${base}${local}`;
 }
 
-export function isNumeric(value: any): boolean {
-  return !Number.isNaN(Number.parseFloat(value)) && Number.isFinite(value);
-}
-
 export function stringToBoolean(value: string): boolean | string {
   if (value === 'true') {
     return true;

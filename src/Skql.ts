@@ -2,8 +2,8 @@
 import { promises as fsPromises } from 'fs';
 import SHACLValidator from 'rdf-validate-shacl';
 import { Mapper } from './Mapper';
-import { OpenApiOperationExecutor } from './util/openapi/OpenApiOperationExecutor';
-import type { OpenApi } from './util/openapi/OpenApiSchemaConfiguration';
+import { OpenApiOperationExecutor } from './openapi/OpenApiOperationExecutor';
+import type { OpenApi } from './openapi/OpenApiSchemaConfiguration';
 import { constructUri, convertJsonLdToQuads, toJSON } from './util/Util';
 import { SKL } from './util/Vocabularies';
 
