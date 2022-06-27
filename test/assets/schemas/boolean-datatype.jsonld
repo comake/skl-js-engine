@@ -19,7 +19,6 @@
       "@id": "rml:referenceFormulation",
       "@type": "@id"
     },
-    "rr:parentTriplesMap": { "@id": "rr:parentTriplesMap", "@type": "@id" },
     "rr:predicate": { "@id": "rr:predicate", "@type": "@id" },
     "rr:object": { "@id": "rr:object", "@type": "@id" }
   },
