@@ -4,7 +4,7 @@ export const SKL = {
   nouns: 'https://skl.standard.storage/nouns/',
   verbs: 'https://skl.standard.storage/verbs/',
   mappingNoun: 'https://skl.standard.storage/nouns/Mapping',
-  verbToIntegrationMappingNoun: 'https://skl.standard.storage/nouns/VerbToIntegrationMapping',
+  verbIntegrationMappingNoun: 'https://skl.standard.storage/nouns/VerbIntegrationMapping',
   openApiDescriptionNoun: 'https://skl.standard.storage/nouns/OpenApiDescription',
   accountNoun: 'https://skl.standard.storage/nouns/Account',
   oauthTokenNoun: 'https://skl.standard.storage/nouns/OauthToken',
@@ -24,6 +24,7 @@ export const SKL = {
   returnValueProperty: 'https://skl.standard.storage/properties/returnValue',
   requiredProperty: 'https://skl.standard.storage/properties/required',
   nullableProperty: 'https://skl.standard.storage/properties/nullable',
+  parametersContext: 'https://skl.standard.storage/properties/parametersContext',
 };
 
 export const XSD = {
@@ -53,4 +54,8 @@ export const OWL = {
   class: 'http://www.w3.org/2002/07/owl#Class',
   intersectionOf: 'http://www.w3.org/2002/07/owl#intersectionOf',
   someValuesFrom: 'http://www.w3.org/2002/07/owl#someValuesFrom',
+};
+
+export const SHACL = {
+  targetClass: 'http://www.w3.org/ns/shacl#targetClass',
 };

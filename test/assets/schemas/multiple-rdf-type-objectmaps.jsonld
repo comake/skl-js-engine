@@ -35,10 +35,7 @@
       "rr:predicateObjectMap": [
         {
           "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rr:constant": "https://skl.standard.storage/mappings/frameObject"
-          },
+          "rr:object": "https://skl.standard.storage/mappings/frameObject",
           "rr:predicate": "rdf:type"
         },
         {
@@ -46,6 +43,14 @@
           "rr:objectMap": {
             "@type": "rr:ObjectMap",
             "rr:constant": "https://example.com/person"
+          },
+          "rr:predicate": "rdf:type"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "rr:constant": "https://example.com/thing"
           },
           "rr:predicate": "rdf:type"
         },

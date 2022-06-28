@@ -37,7 +37,7 @@ describe('A Mapper', (): void => {
     });
   });
 
-  it('converts a single rdf:type key into @type and unnests values to top level in returned json.',
+  it('adds a single rdf:type key into @type and unnests values to top level in returned json.',
     async(): Promise<void> => {
       data = { field: 'abc123' };
       mapping = await filePathToExpandedJson('../assets/schemas/single-rdf-type-objectmap.jsonld');
@@ -52,7 +52,7 @@ describe('A Mapper', (): void => {
       });
     });
 
-  it('converts multiple rdf:type keys into @type and unnests values to top level in returned json.',
+  it('adds multiple rdf:type keys into @type and unnests values to top level in returned json.',
     async(): Promise<void> => {
       data = { field: 'abc123' };
       mapping = await filePathToExpandedJson('../assets/schemas/multiple-rdf-type-objectmaps.jsonld');
@@ -63,8 +63,9 @@ describe('A Mapper', (): void => {
         },
         '@id': 'https://example.com/mapping/subject',
         '@type': [
-          'https://example.com/person',
           'https://skl.standard.storage/mappings/frameObject',
+          'https://example.com/person',
+          'https://example.com/thing',
         ],
         field: 'abc123',
       });

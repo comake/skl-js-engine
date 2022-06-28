@@ -216,6 +216,7 @@
           "shacl:path": "https://skl.standard.storage/properties/nextPageToken"
         },
         {
+          "shacl:class": "https://skl.standard.storage/nouns/Noun",
           "shacl:nodeKind": { "@id": "shacl:IRI" },
           "shacl:path": "https://skl.standard.storage/properties/records"
         }
@@ -231,6 +232,10 @@
           "shacl:class": "shacl:NodeShape",
           "shacl:maxCount": 1,
           "shacl:path": "https://skl.standard.storage/properties/returnValue"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/parametersContext"
         },
         {
           "shacl:class": "shacl:NodeShape",
@@ -503,6 +508,13 @@
       "rdfs:domain": "https://skl.standard.storage/nouns/Verb",
       "label": "parameters",
       "rdfs:range": "shacl:NodeShape"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/parametersContext",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": "https://skl.standard.storage/nouns/Verb",
+      "label": "parametersContext",
+      "rdfs:range": "rdf:JSON"
     },
     {
       "@id": "https://skl.standard.storage/properties/parentSourceId",

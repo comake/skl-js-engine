@@ -42,7 +42,7 @@
   "@graph": [
     {
       "@id": "https://skl.standard.storage/data/4",
-      "@type": "https://skl.standard.storage/nouns/VerbToIntegrationMapping",
+      "@type": "https://skl.standard.storage/nouns/VerbIntegrationMapping",
       "integration": "https://skl.standard.storage/integrations/Dropbox",
       "name": "getFilesInFolderToDropbox",
       "operationMappings": "https://skl.standard.storage/data/4/operationMappings/1",

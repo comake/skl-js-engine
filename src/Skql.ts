@@ -5,7 +5,7 @@ import { Mapper } from './Mapper';
 import { OpenApiOperationExecutor } from './openapi/OpenApiOperationExecutor';
 import type { OpenApi } from './openapi/OpenApiSchemaConfiguration';
 import { constructUri, convertJsonLdToQuads, toJSON } from './util/Util';
-import { SKL } from './util/Vocabularies';
+import { SKL, SHACL } from './util/Vocabularies';
 
 export type VerbHandler = (args: any) => any;
 
@@ -26,14 +26,85 @@ export class SKQLBase {
     if (args.schema) {
       this.schema = args.schema;
     } else if (args.file) {
-      const schema = await fsPromises.readFile(args.file, 'utf8');
-      this.schema = JSON.parse(schema);
+      await this.setSchemaFromFile(args.file);
     } else {
       throw new Error('No schema source found in setSchema args.');
     }
   }
 
-  public getSchemaById(id: string): any {
+  private async setSchemaFromFile(file: string): Promise<void> {
+    try {
+      const schema = await fsPromises.readFile(file, 'utf8');
+      this.schema = JSON.parse(schema);
+    } catch {
+      throw new Error(`Failed to parse schemas from the supplied file.`);
+    }
+  }
+
+  public constructVerbHandlerFromSchema(verbName: string): VerbHandler {
+    const verbSchemaId = constructUri(SKL.verbs, verbName);
+    try {
+      const verb = this.getSchemaById(verbSchemaId);
+      return this.constructVerbHandler(verb);
+    } catch {
+      return async(): Promise<void> => {
+        throw new Error(`Failed to find the verb ${verbName} in the schema.`);
+      };
+    }
+  }
+
+  private constructVerbHandler(verb: any): VerbHandler {
+    return async(args: any): Promise<any> => {
+      // Assert params match
+      const argsAsJsonLd = {
+        '@context': verb[SKL.parametersContext]['@value'],
+        '@type': 'https://skl.standard.storage/nouns/VerbArguments',
+        ...args,
+      };
+      await this.assertVerbParamsMatchParameterSchemas(
+        argsAsJsonLd,
+        verb[SKL.parametersProperty],
+        verb[SKL.nameProperty],
+      );
+
+      const account = this.getSchemaById(args.account);
+      // Find mapping for verb and integration
+      const mapping = this.getSchemaByFields({
+        '@type': SKL.verbIntegrationMappingNoun,
+        [SKL.verbsProperty]: verb['@id'],
+        [SKL.integrationProperty]: account[SKL.integrationProperty]['@id'],
+      });
+      // Perform mapping of args
+      const operationArgsJsonLd = await this.mapper.apply(args, mapping[SKL.parameterMappingsProperty]);
+      const operationArgs = toJSON(operationArgsJsonLd);
+
+      const operationInfoJsonLd = await this.mapper.apply(args, mapping[SKL.operationMappingsProperty]);
+      const { operationId } = toJSON(operationInfoJsonLd);
+      const openApiDescriptionSchema = this.getSchemaByFields({
+        '@type': SKL.openApiDescriptionNoun,
+        [SKL.integrationProperty]: account[SKL.integrationProperty]['@id'],
+      });
+
+      const oauthTokenSchema = this.getSchemaByFields({
+        '@type': SKL.oauthTokenNoun,
+        [SKL.accountProperty]: args.account,
+      });
+      const openApiDescription = openApiDescriptionSchema[SKL.openApiDescriptionProperty]['@value'] as OpenApi;
+      const openApiExecutor = new OpenApiOperationExecutor(openApiDescription);
+      const rawReturnValue = await openApiExecutor.executeOperation(
+        operationId as string,
+        { accessToken: oauthTokenSchema[SKL.accessTokenProperty] },
+        operationArgs,
+      );
+
+      // Perform mapping of return value
+      const mappedReturnValue = await this.mapper.apply(rawReturnValue.data, mapping[SKL.returnValueMappingsProperty]);
+      await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, verb[SKL.returnValueProperty]);
+      return mappedReturnValue;
+    };
+  }
+
+  private getSchemaById(id: string): any {
     const schema = this.schema.find((schemaInstance: any): boolean => schemaInstance['@id'] === id);
     if (schema) {
       return schema;
@@ -42,7 +113,7 @@ export class SKQLBase {
     throw new Error(`No schema found with id ${id}`);
   }
 
-  public getSchemaByFields(fields: any): any {
+  private getSchemaByFields(fields: any): any {
     const schema = this.schema.find((schemaInstance: any): boolean => {
       const schemaFields = Object.entries(fields);
       return schemaFields.every(([ fieldName, fieldValue ]): boolean => fieldName in schemaInstance &&
@@ -59,67 +130,14 @@ export class SKQLBase {
     throw new Error(`No schema found with fields matching ${JSON.stringify(fields)}`);
   }
 
-  public constructVerbHandlerFromSchema(verbName: string): VerbHandler {
-    const verbSchemaId = constructUri(SKL.verbs, verbName);
-    try {
-      const verb = this.getSchemaById(verbSchemaId);
-      return this.constructVerbHandler(verb);
-    } catch {
-      throw new Error(`User does not have the verb ${verbName} installed.`);
-    }
-  }
-
-  private constructVerbHandler(verb: any): VerbHandler {
-    return async(args: any): Promise<any> => {
-      // Assert params match
-      await this.assertVerbArgsMatchParameterSchemas(args, verb[SKL.parametersProperty], verb[SKL.nameProperty]);
-      const account = this.getSchemaById(args.account);
-      // Find mapping for verb and integration
-      const mapping = this.getSchemaByFields({
-        '@type': SKL.verbToIntegrationMappingNoun,
-        [SKL.verbsProperty]: verb['@id'],
-        [SKL.integrationProperty]: account[SKL.integrationProperty]['@id'],
-      });
-      // Perform mapping of args
-      const operationArgsJsonLd = await this.mapper.apply(args, mapping[SKL.parameterMappingsProperty]);
-      const operationArgs = toJSON(operationArgsJsonLd);
-
-      const operationInfoJsonLd = await this.mapper.apply(args, mapping[SKL.operationMappingsProperty]);
-      const { operationId } = toJSON(operationInfoJsonLd);
-
-      const openApiDescriptionSchema = this.getSchemaByFields({
-        '@type': SKL.openApiDescriptionNoun,
-        [SKL.integrationProperty]: account[SKL.integrationProperty]['@id'],
-      });
-
-      const oauthTokenSchema = this.getSchemaByFields({
-        '@type': SKL.oauthTokenNoun,
-        [SKL.accountProperty]: args.account,
-      });
-
-      const openApiDescription = openApiDescriptionSchema[SKL.openApiDescriptionProperty]['@value'] as OpenApi;
-      const openApiExecutor = new OpenApiOperationExecutor(openApiDescription);
-      const rawReturnValue = await openApiExecutor.executeOperation(
-        operationId as string,
-        { accessToken: oauthTokenSchema[SKL.accessTokenProperty] },
-        operationArgs,
-      );
-
-      // Perform mapping of return value
-      const mappedReturnValue = await this.mapper.apply(rawReturnValue.data, mapping[SKL.returnValueMappingsProperty]);
-      await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, verb[SKL.returnValueProperty]);
-      return mappedReturnValue;
-    };
-  }
-
-  private async assertVerbArgsMatchParameterSchemas(verbParams: any,
+  private async assertVerbParamsMatchParameterSchemas(verbParams: any,
     parameterSchemas: any, verbName: string): Promise<void> {
     const returnValueAsQuads = await convertJsonLdToQuads([ verbParams ]);
     const shape = await convertJsonLdToQuads(parameterSchemas);
     const validator = new SHACLValidator(shape);
     const report = validator.validate(returnValueAsQuads);
     if (!report.conforms) {
-      throw new Error(`${verbName} parameters do not conform to schema`);
+      throw new Error(`${verbName} parameters do not conform to the schema`);
     }
   }
 
@@ -133,11 +151,12 @@ export class SKQLBase {
       returnTypeSchemaObject = this.getSchemaById(returnTypeSchema['@id']);
     }
 
+    returnTypeSchemaObject[SHACL.targetClass] = { '@id': 'https://skl.standard.storage/mappings/frameObject' };
     const shape = await convertJsonLdToQuads(returnTypeSchemaObject);
     const validator = new SHACLValidator(shape);
     const report = validator.validate(returnValueAsQuads);
     if (!report.conforms) {
-      throw new Error(`Return value ${returnValue['@id']} does not conform to schema`);
+      throw new Error(`Return value ${returnValue['@id']} does not conform to the schema`);
     }
   }
 }

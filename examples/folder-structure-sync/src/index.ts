@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention, no-console, @typescript-eslint/no-floating-promises */
-import { SKQL, SKL } from '@comake/skql-js-engine';
-import { executeSequentially, frameAndCombineSchemas } from './Util';
+import { SKQL, SKL, frameAndCombineSchemas } from '@comake/skql-js-engine';
+import { executeSequentially } from './Util';
 
 const account = 'https://skl.standard.storage/data/DropboxAccount1';
 const rootFolder = {

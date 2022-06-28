@@ -1,0 +1,1165 @@
+{
+  "@context": {
+    "shacl": "http://www.w3.org/ns/shacl#",
+    "fnml": "http://semweb.mmlab.be/ns/fnml#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "label": "rdfs:label",
+    "rdfs:subClassOf": { "@type": "@id" },
+    "rdfs:range": { "@type": "@id" },
+    "rdfs:domain": { "@type": "@id" },
+    "boolean": "http://www.w3.org/2001/XMLSchema#boolean",
+    "integer": "http://www.w3.org/2001/XMLSchema#integer",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "rr": "http://www.w3.org/ns/r2rml#",
+    "rml": "http://semweb.mmlab.be/ns/rml#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "shacl:class": { "@type": "@id" },
+    "shacl:datatype": { "@type": "@id" },
+    "shacl:maxCount": { "@type": "xsd:integer" },
+    "shacl:minCount": { "@type": "xsd:integer" },
+    "shacl:targetClass": { "@type": "@id" },
+    "shacl:path": { "@type": "@id" },
+    "sklproperties": "https://skl.standard.storage/properties/",
+    "sklproperties:integration": { "@type": "@id" },
+    "sklproperties:account": { "@type": "@id" },
+    "sklproperties:openApiDescription": { "@type": "@json" },
+    "sklproperties:parametersContext": { "@type": "@json" },
+    "name": "sklproperties:name",
+    "parameterMappings": {
+      "@id": "sklproperties:parameterMappings",
+      "@type": "@id"
+    },
+    "returnValueMappings": {
+      "@id": "sklproperties:returnValueMappings",
+      "@type": "@id"
+    },
+    "operationMappings": {
+      "@id": "sklproperties:operationMappings",
+      "@type": "@id"
+    },
+    "integration": { "@id": "sklproperties:integration", "@type": "@id" },
+    "verb": { "@id": "sklproperties:verb", "@type": "@id" },
+    "rml:referenceFormulation": {
+      "@id": "rml:referenceFormulation",
+      "@type": "@id"
+    },
+    "rr:parentTriplesMap": { "@id": "rr:parentTriplesMap", "@type": "@id" },
+    "rr:predicate": { "@id": "rr:predicate", "@type": "@id" },
+    "rr:object": { "@id": "rr:object", "@type": "@id" }
+  },
+  "@graph": [
+    {
+      "@id": "https://skl.standard.storage/verbs/getFile",
+      "@type": "https://skl.standard.storage/nouns/Verb",
+      "https://skl.standard.storage/properties/name": "getFile",
+      "sklproperties:parametersContext": {
+        "id": {
+          "@id": "https://skl.standard.storage/properties/id",
+          "@type": "http://www.w3.org/2001/XMLSchema#integer"
+        },
+        "account": {
+          "@id": "https://skl.standard.storage/properties/account",
+          "@type": "@id"
+        }
+      },
+      "sklproperties:parameters": {
+        "@type": "shacl:NodeShape",
+        "shacl:targetClass": "https://skl.standard.storage/nouns/VerbArguments",
+        "shacl:property": [
+          {
+            "shacl:datatype": "xsd:integer",
+            "shacl:maxCount": 1,
+            "shacl:path": "https://skl.standard.storage/properties/id"
+          },
+          {
+            "shacl:maxCount": 1,
+            "shacl:minCount": 1,
+            "shacl:path": "https://skl.standard.storage/properties/account",
+            "shacl:nodeKind": { "@id": "shacl:IRI" }
+          }
+        ]
+      },
+      "sklproperties:returnValue": {
+        "@id": "https://skl.standard.storage/nouns/File"
+      }
+    },
+    {
+      "@id": "https://skl.standard.storage/data/4",
+      "@type": "https://skl.standard.storage/nouns/VerbIntegrationMapping",
+      "integration": "https://skl.standard.storage/integrations/Dropbox",
+      "name": "getFileToDropbox",
+      "operationMappings": "https://skl.standard.storage/data/4/operationMappings/1",
+      "parameterMappings": "https://skl.standard.storage/data/4/parameterMappings/1",
+      "returnValueMappings": "https://skl.standard.storage/data/4/returnValueMappings/1",
+      "verb": "https://skl.standard.storage/verbs/getFile"
+    },
+    {
+      "@id": "https://skl.standard.storage/data/4/operationMappings/1",
+      "@type": "rr:TriplesMap",
+      "rml:logicalSource": {
+        "@type": "rml:LogicalSource",
+        "rml:iterator": "$",
+        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+        "rml:source": "input.json"
+      },
+      "rr:predicateObjectMap": [
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:object": "https://skl.standard.storage/mappings/frameObject",
+          "rr:predicate": "rdf:type"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "rr:constant": "FilesGetMetadata"
+          },
+          "rr:predicate": "sklproperties:operationId"
+        }
+      ],
+      "rr:subjectMap": {
+        "@type": "rr:SubjectMap",
+        "rr:constant": "https://skl.standard.storage/data/4/operationMappings/1/subject"
+      }
+    },
+    {
+      "@id": "https://skl.standard.storage/data/4/parameterMappings/1",
+      "@type": "rr:TriplesMap",
+      "rml:logicalSource": {
+        "@type": "rml:LogicalSource",
+        "rml:iterator": "$",
+        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+        "rml:source": "input.json"
+      },
+      "rr:predicateObjectMap": [
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:object": "https://skl.standard.storage/mappings/frameObject",
+          "rr:predicate": "rdf:type"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:predicate": "sklproperties:path",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "fnml:functionValue": {
+              "@type": "fnml:FunctionValue",
+              "rr:predicateObjectMap": [
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#array_join",
+                  "rr:predicate": "https://w3id.org/function/ontology#executes"
+                },
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:objectMap": {
+                    "@type": "rr:ObjectMap",
+                    "rr:constant": "id:"
+                  },
+                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_array_a"
+                },
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:objectMap": {
+                    "@type": "rr:ObjectMap",
+                    "rr:reference": "id"
+                  },
+                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_array_a"
+                },
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:objectMap": {
+                    "@type": "rr:ObjectMap",
+                    "rr:constant": ""
+                  },
+                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_string_sep"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "rr:subjectMap": {
+        "@type": "rr:SubjectMap",
+        "rr:constant": "https://skl.standard.storage/data/4/parameterMappings/1/subject"
+      }
+    },
+    {
+      "@id": "https://skl.standard.storage/data/4/returnValueMappings/1",
+      "@type": "rr:TriplesMap",
+      "rml:logicalSource": {
+        "@type": "rml:LogicalSource",
+        "rml:iterator": "$",
+        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+        "rml:source": "input.json"
+      },
+      "rr:predicateObjectMap": [
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:object": "https://skl.standard.storage/mappings/frameObject",
+          "rr:predicate": "rdf:type"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "fnml:functionValue": {
+              "@type": "fnml:FunctionValue",
+              "rr:predicateObjectMap": [
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
+                  "rr:predicate": "https://w3id.org/function/ontology#executes"
+                },
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:objectMap": {
+                    "@type": "rr:ObjectMap",
+                    "fnml:functionValue": {
+                      "@type": "fnml:FunctionValue",
+                      "rr:predicateObjectMap": [
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:object": "http://example.com/idlab/function/notEqual",
+                          "rr:predicate": "https://w3id.org/function/ontology#executes"
+                        },
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:objectMap": {
+                            "@type": "rr:ObjectMap",
+                            "rr:constant": "folder"
+                          },
+                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
+                        },
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:objectMap": {
+                            "@type": "rr:ObjectMap",
+                            "rml:reference": "['.tag']"
+                          },
+                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
+                        }
+                      ]
+                    }
+                  },
+                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b"
+                },
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:objectMap": {
+                    "@type": "rr:ObjectMap",
+                    "rml:reference": "size"
+                  },
+                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true"
+                }
+              ]
+            }
+          },
+          "rr:predicate": "sklproperties:size"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "fnml:functionValue": {
+              "@type": "fnml:FunctionValue",
+              "rr:predicateObjectMap": [
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:object": "http://example.com/idlab/function/equal",
+                  "rr:predicate": "https://w3id.org/function/ontology#executes"
+                },
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:objectMap": {
+                    "@type": "rr:ObjectMap",
+                    "rml:reference": "['.tag']"
+                  },
+                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
+                },
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:objectMap": {
+                    "@type": "rr:ObjectMap",
+                    "rr:constant": "deleted"
+                  },
+                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
+                }
+              ]
+            },
+            "rr:datatype": "http://www.w3.org/2001/XMLSchema#boolean"
+          },
+          "rr:predicate": "sklproperties:deleted"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:object": "https://skl.standard.storage/integrations/Dropbox",
+          "rr:predicate": "sklproperties:integration"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "fnml:functionValue": {
+              "@type": "fnml:FunctionValue",
+              "rr:predicateObjectMap": [
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
+                  "rr:predicate": "https://w3id.org/function/ontology#executes"
+                },
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:objectMap": {
+                    "@type": "rr:ObjectMap",
+                    "fnml:functionValue": {
+                      "@type": "fnml:FunctionValue",
+                      "rr:predicateObjectMap": [
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:objectMap": {
+                            "@type": "rr:ObjectMap",
+                            "rml:reference": "['.tag']"
+                          },
+                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
+                        },
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:object": "http://example.com/idlab/function/notEqual",
+                          "rr:predicate": "https://w3id.org/function/ontology#executes"
+                        },
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:objectMap": {
+                            "@type": "rr:ObjectMap",
+                            "rr:constant": "folder"
+                          },
+                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
+                        }
+                      ]
+                    }
+                  },
+                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b"
+                },
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:objectMap": {
+                    "@type": "rr:ObjectMap",
+                    "fnml:functionValue": {
+                      "@type": "fnml:FunctionValue",
+                      "rr:predicateObjectMap": [
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#string_endsWith",
+                          "rr:predicate": "https://w3id.org/function/ontology#executes"
+                        },
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:objectMap": {
+                            "@type": "rr:ObjectMap",
+                            "rml:reference": "path_display"
+                          },
+                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
+                        },
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:objectMap": {
+                            "@type": "rr:ObjectMap",
+                            "rr:constant": ".url"
+                          },
+                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#string_sub"
+                        }
+                      ]
+                    }
+                  },
+                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true"
+                }
+              ]
+            },
+            "rr:datatype": "http://www.w3.org/2001/XMLSchema#boolean"
+          },
+          "rr:predicate": "sklproperties:isWeblink"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": { "@type": "rr:ObjectMap", "rml:reference": "name" },
+          "rr:predicate": "sklproperties:name"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "fnml:functionValue": {
+              "@type": "fnml:FunctionValue",
+              "rr:predicateObjectMap": [
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:object": "https://skl.standard.storage/nouns/File",
+                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_false"
+                },
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:objectMap": {
+                    "@type": "rr:ObjectMap",
+                    "fnml:functionValue": {
+                      "@type": "fnml:FunctionValue",
+                      "rr:predicateObjectMap": [
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:objectMap": {
+                            "@type": "rr:ObjectMap",
+                            "rml:reference": "['.tag']"
+                          },
+                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
+                        },
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:objectMap": {
+                            "@type": "rr:ObjectMap",
+                            "rr:constant": "folder"
+                          },
+                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
+                        },
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:object": "http://example.com/idlab/function/equal",
+                          "rr:predicate": "https://w3id.org/function/ontology#executes"
+                        }
+                      ]
+                    }
+                  },
+                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b"
+                },
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
+                  "rr:predicate": "https://w3id.org/function/ontology#executes"
+                },
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:object": "https://skl.standard.storage/nouns/Folder",
+                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true"
+                }
+              ]
+            }
+          },
+          "rr:predicate": "rdf:type"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "fnml:functionValue": {
+              "@type": "fnml:FunctionValue",
+              "rr:predicateObjectMap": [
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:objectMap": {
+                    "@type": "rr:ObjectMap",
+                    "fnml:functionValue": {
+                      "@type": "fnml:FunctionValue",
+                      "rr:predicateObjectMap": [
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:object": "http://example.com/idlab/function/getMIMEType",
+                          "rr:predicate": "https://w3id.org/function/ontology#executes"
+                        },
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:objectMap": {
+                            "@type": "rr:ObjectMap",
+                            "rml:reference": "name"
+                          },
+                          "rr:predicate": "http://example.com/idlab/function/str"
+                        }
+                      ]
+                    }
+                  },
+                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true"
+                },
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
+                  "rr:predicate": "https://w3id.org/function/ontology#executes"
+                },
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:objectMap": {
+                    "@type": "rr:ObjectMap",
+                    "fnml:functionValue": {
+                      "@type": "fnml:FunctionValue",
+                      "rr:predicateObjectMap": [
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:objectMap": {
+                            "@type": "rr:ObjectMap",
+                            "rr:constant": "folder"
+                          },
+                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
+                        },
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:objectMap": {
+                            "@type": "rr:ObjectMap",
+                            "rml:reference": "['.tag']"
+                          },
+                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
+                        },
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:object": "http://example.com/idlab/function/notEqual",
+                          "rr:predicate": "https://w3id.org/function/ontology#executes"
+                        }
+                      ]
+                    }
+                  },
+                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b"
+                }
+              ]
+            }
+          },
+          "rr:predicate": "sklproperties:mimeType"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": { "@type": "rr:ObjectMap", "rml:reference": "id" },
+          "rr:predicate": "sklproperties:sourceId"
+        }
+      ],
+      "rr:subjectMap": {
+        "@type": "rr:SubjectMap",
+        "rr:constant": "https://skl.standard.storage/data/abc123"
+      }
+    },
+    {
+      "@id": "https://skl.standard.storage/data/DropboxAccount1",
+      "@type": "https://skl.standard.storage/nouns/Account",
+      "sklproperties:integration": "https://skl.standard.storage/integrations/Dropbox"
+    },
+    {
+      "@id": "https://skl.standard.storage/data/DropboxAccount1OauthTokens",
+      "@type": "https://skl.standard.storage/nouns/OauthToken",
+      "https://skl.standard.storage/properties/accessToken": "SPOOFED_TOKEN",
+      "sklproperties:account": "https://skl.standard.storage/data/DropboxAccount1"
+    },
+    {
+      "@id": "https://skl.standard.storage/integrations/Dropbox",
+      "@type": "https://skl.standard.storage/nouns/Integration",
+      "https://skl.standard.storage/properties/description": "Dropbox is a modern workspace designed to reduce busywork-so you can focus on the things that matter. Sign in and put your creative energy to work.",
+      "https://skl.standard.storage/properties/name": "Dropbox"
+    },
+    {
+      "@id": "https://skl.standard.storage/data/DropboxOpenApiDescription",
+      "@type": "https://skl.standard.storage/nouns/OpenApiDescription",
+      "sklproperties:integration": "https://skl.standard.storage/integrations/Dropbox",
+      "sklproperties:openApiDescription": {
+        "openapi": "3.0.3",
+        "info": {
+          "title": "Dropbox v2 REST API",
+          "description": "Dropbox's v2 REST API.",
+          "termsOfService": "https://www.dropbox.com/developers/reference/tos",
+          "version": "1.0.0",
+          "contact": {
+            "name": "Support",
+            "url": "https://www.dropbox.com/developers/contact"
+          }
+        },
+        "externalDocs": {
+          "description": "Dropbox Developer Docs",
+          "url": "https://www.dropbox.com/developers/documentation"
+        },
+        "servers": [
+          {
+            "url": "https://api.dropboxapi.com/2"
+          }
+        ],
+        "paths": {
+          "/files/get_metadata": {
+            "post": {
+              "summary": "Files - Get Metadata",
+              "description": "Returns the metadata for a file or folder.\nNote: Metadata for the root folder is unsupported.",
+              "operationId": "FilesGetMetadata",
+              "security": [
+                {
+                  "oAuth": [
+                    "files.metadata.read"
+                  ]
+                }
+              ],
+              "requestBody": {
+                "$ref": "#/components/requestBodies/GetMetadataRequestBody"
+              },
+              "responses": {
+                "200": {
+                  "$ref": "#/components/responses/GetMetadataResultResponse"
+                },
+                "default": {
+                  "$ref": "#/components/responses/GetMetadataErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "components": {
+          "schemas": {
+            "Metadata": {
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    ".tag": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/FileMetadata"
+                    },
+                    {
+                      "$ref": "#/components/schemas/FolderMetadata"
+                    },
+                    {
+                      "$ref": "#/components/schemas/DeletedMetadata"
+                    }
+                  ]
+                }
+              ]
+            },
+            "FileMetadata": {
+              "type": "object",
+              "description": "Metadata for a file.",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The last component of the path (including extension). This never contains a slash."
+                },
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "A unique identifier for the file."
+                },
+                "client_modified": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "For files, this is the modification time set by the desktop client when the file was added to Dropbox. Since this time is not verified (the Dropbox server stores whatever the desktop client sends up), this should only be used for display purposes (such as sorting) and not, for example, to determine if a file has changed or not."
+                },
+                "server_modified": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "The last time the file was modified on Dropbox."
+                },
+                "rev": {
+                  "type": "string",
+                  "minLength": 9,
+                  "pattern": "^[0-9a-f]+$",
+                  "description": "A unique identifier for the current revision of a file. This field is the same rev as elsewhere in the API and can be used to detect changes and avoid conflicts."
+                },
+                "size": {
+                  "type": "integer",
+                  "description": "The file size in bytes."
+                },
+                "path_lower": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "The lowercased full path in the user's Dropbox. This always starts with a slash. This field will be null if the file or folder is not mounted. This field is optional."
+                },
+                "path_display": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "The cased path to be used for display purposes only. In rare instances the casing will not correctly match the user's filesystem, but this behavior will match the path provided in the Core API v1, and at least the last path component will have the correct casing. Changes to only the casing of paths won't be returned by list_folder/continue. This field will be null if the file or folder is not mounted. This field is optional."
+                },
+                "parent_shared_folder_id": {
+                  "type": "string",
+                  "pattern": "^[-_0-9a-zA-Z:]+$",
+                  "description": "Please use :field:`FileSharingInfo.parent_shared_folder_id` or :field:`FolderSharingInfo.parent_shared_folder_id` instead."
+                },
+                "media_info": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/MediaInfo"
+                    }
+                  ],
+                  "description": "Additional information if the file is a photo or video. This field will not be set on entries returned by list_folder, list_folder/continue, or get_thumbnail_batch, starting December 2, 2019. This field is optional."
+                },
+                "symlink_info": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SymlinkInfo"
+                    }
+                  ],
+                  "description": "Set if this file is a symlink. This field is optional."
+                },
+                "sharing_info": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/FileSharingInfo"
+                    }
+                  ],
+                  "description": "Set if this file is contained in a shared folder. This field is optional."
+                },
+                "is_downloadable": {
+                  "type": "boolean",
+                  "description": "If true, file can be downloaded directly; else the file must be exported. The default for this field is True."
+                },
+                "export_info": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ExportInfo"
+                    }
+                  ],
+                  "description": "Information about format this file can be exported to. This filed must be set if is_downloadable is set to false. This field is optional."
+                },
+                "property_groups": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PropertyGroup"
+                  },
+                  "description": "Additional information if the file has custom properties with the property template specified. This field is optional."
+                },
+                "has_explicit_shared_members": {
+                  "type": "boolean",
+                  "description": "This flag will only be present if include_has_explicit_shared_members is true in list_folder or get_metadata. If this flag is present, it will be true if this file has any explicit shared members. This is different from sharing_info in that this could be true in the case where a file has explicit members but is not contained within a shared folder. This field is optional."
+                },
+                "content_hash": {
+                  "type": "string",
+                  "minLength": 64,
+                  "maxLength": 64,
+                  "description": "A hash of the file content. This field can be used to verify data integrity. For more information see our Content hash page. This field is optional."
+                },
+                "file_lock_info": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/FileLockMetadata"
+                    }
+                  ],
+                  "description": "If present, the metadata associated with the file's current lock. This field is optional."
+                }
+              }
+            },
+            "FolderMetadata": {
+              "type": "object",
+              "description": "Metadata for a folder.",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The last component of the path (including extension). This never contains a slash."
+                },
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "A unique identifier for the file."
+                },
+                "path_lower": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "The lowercased full path in the user's Dropbox. This always starts with a slash. This field will be null if the file or folder is not mounted."
+                },
+                "path_display": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "The cased path to be used for display purposes only. In rare instances the casing will not correctly match the user's filesystem, but this behavior will match the path provided in the Core API v1, and at least the last path component will have the correct casing. Changes to only the casing of paths won't be returned by :route:`list_folder/continue`. This field will be null if the file or folder is not mounted."
+                },
+                "parent_shared_folder_id": {
+                  "type": "string",
+                  "description": "Please use :field:`FileSharingInfo.parent_shared_folder_id` or :field:`FolderSharingInfo.parent_shared_folder_id` instead."
+                },
+                "shared_folder_id": {
+                  "type": "string",
+                  "pattern": "^[-_0-9a-zA-Z:]+$",
+                  "description": "Field is deprecated. Please use sharing_info instead. This field is optional."
+                },
+                "sharing_info": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/FolderSharingInfo"
+                    }
+                  ],
+                  "description": "Set if the folder is contained in a shared folder or is a shared folder mount point. This field is optional."
+                },
+                "property_groups": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PropertyGroup"
+                  },
+                  "description": "Additional information if the file has custom properties with the property template specified. This field is optional."
+                }
+              }
+            },
+            "DeletedMetadata": {
+              "type": "object",
+              "description": "Metadata for a deleted file or folder.",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The last component of the path (including extension). This never contains a slash."
+                },
+                "path_lower": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "The lowercased full path in the user's Dropbox. This always starts with a slash. This field will be null if the file or folder is not mounted."
+                },
+                "path_display": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "The cased path to be used for display purposes only. In rare instances the casing will not correctly match the user's filesystem, but this behavior will match the path provided in the Core API v1, and at least the last path component will have the correct casing. Changes to only the casing of paths won't be returned by :route:`list_folder/continue`. This field will be null if the file or folder is not mounted."
+                },
+                "parent_shared_folder_id": {
+                  "type": "string",
+                  "pattern": "^[-_0-9a-zA-Z:]+$",
+                  "description": "Please use :field:`FileSharingInfo.parent_shared_folder_id` or :field:`FolderSharingInfo.parent_shared_folder_id` instead."
+                }
+              }
+            },
+            "MediaInfo": {
+              "type": "object",
+              "properties": {
+                ".tag": {
+                  "type": "string",
+                  "title": "Choice of MediaInfo",
+                  "enum": [
+                    "pending",
+                    "metadata"
+                  ]
+                },
+                "metadata": {
+                  "$ref": "#/components/schemas/MediaMetadata"
+                }
+              },
+              "description": "pending: Indicate the photo/video is still under processing and metadata is not available yet.\nmetadata: The metadata for the photo/video.\n"
+            },
+            "MediaMetadata": {
+              "type": "object",
+              "properties": {
+                "dimensions": {
+                  "$ref": "#/components/schemas/Dimensions"
+                },
+                "location": {
+                  "$ref": "#/components/schemas/GpsCoordinates"
+                },
+                "time_taken": {
+                  "type": "string",
+                  "description": "The timestamp when the photo/video is taken."
+                }
+              },
+              "description": "Metadata for a photo or video.\ndimensions: Dimension of the photo/video.\nlocation: The GPS coordinate of the photo/video.\ntime_taken: The timestamp when the photo/video is taken.\n"
+            },
+            "Dimensions": {
+              "type": "object",
+              "properties": {
+                "width": {
+                  "type": "number",
+                  "description": "Width of the photo/video."
+                },
+                "height": {
+                  "type": "number",
+                  "description": "Height of the photo/video."
+                }
+              },
+              "description": "Dimensions for a photo or video.\nheight: Height of the photo/video.\nwidth: Width of the photo/video.\n"
+            },
+            "GpsCoordinates": {
+              "type": "object",
+              "properties": {
+                "latitude": {
+                  "type": "number",
+                  "description": "Latitude of the GPS coordinates."
+                },
+                "longitude": {
+                  "type": "number",
+                  "description": "Longitude of the GPS coordinates."
+                }
+              },
+              "description": "GPS coordinates for a photo or video.\nlatitude: Latitude of the GPS coordinates.\nlongitude: Longitude of the GPS coordinates.\n"
+            },
+            "SymlinkInfo": {
+              "type": "object",
+              "properties": {
+                "target": {
+                  "type": "string",
+                  "description": "The target this symlink points to."
+                }
+              },
+              "description": "target: The target this symlink points to.\n"
+            },
+            "FileSharingInfo": {
+              "type": "object",
+              "properties": {
+                "read_only": {
+                  "type": "boolean",
+                  "description": "True if the file or folder is inside a read-only shared folder."
+                },
+                "parent_shared_folder_id": {
+                  "type": "string",
+                  "pattern": "^[-_0-9a-zA-Z:]+$",
+                  "description": "ID of shared folder that holds this file."
+                },
+                "modified_by": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "The last user who modified the file. This field will be null if the user's account has been deleted."
+                }
+              },
+              "description": "Sharing info for a file which is contained by a shared folder."
+            },
+            "FolderSharingInfo": {
+              "type": "object",
+              "properties": {
+                "read_only": {
+                  "type": "boolean",
+                  "description": "True if the file or folder is inside a read-only shared folder."
+                },
+                "parent_shared_folder_id": {
+                  "type": "string",
+                  "pattern": "^[-_0-9a-zA-Z:]+$",
+                  "description": "Set if the folder is contained by a shared folder."
+                },
+                "shared_folder_id": {
+                  "type": "string",
+                  "pattern": "^[-_0-9a-zA-Z:]+$",
+                  "description": "If this folder is a shared folder mount point, the ID of the shared folder mounted at this location."
+                },
+                "traverse_only": {
+                  "type": "boolean",
+                  "description": "Specifies that the folder can only be traversed and the user can only see a limited subset of the contents of this folder because they don't have read access to this folder. They do, however, have access to some sub folder."
+                },
+                "no_access": {
+                  "type": "boolean",
+                  "description": "Specifies that the folder cannot be accessed by the user."
+                }
+              },
+              "description": "Sharing info for a folder which is contained in a shared folder or is a shared folder mount point."
+            },
+            "ExportInfo": {
+              "type": "object",
+              "properties": {
+                "export_as": {
+                  "type": "string",
+                  "description": "Format to which the file can be exported to. This field is optional."
+                },
+                "export_options": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Additional formats to which the file can be exported. These values can be specified as the export_format in /files/export. This field is optional."
+                }
+              },
+              "description": "Export information for a file."
+            },
+            "PropertyGroup": {
+              "type": "object",
+              "properties": {
+                "template_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^(/|ptid:).*$",
+                  "description": "A unique identifier for the associated template."
+                },
+                "fields": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PropertyField"
+                  }
+                }
+              },
+              "description": "A subset of the property fields described by the corresponding :type:`PropertyGroupTemplate`. Properties are always added to a Dropbox file as a :type:`PropertyGroup`. The possible key names and value types in this group are defined by the corresponding :type:`PropertyGroupTemplate`.\ntemplate_id: A unique identifier for the associated template.\nfields: The actual properties associated with the template. There can be up to 32 property types per template.\n"
+            },
+            "PropertyField": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Key of the property field associated with a file and template. Keys can be up to 256 bytes."
+                },
+                "value": {
+                  "type": "string",
+                  "description": "Value of the property field associated with a file and template. Values can be up to 1024 bytes."
+                }
+              },
+              "description": "Raw key/value data to be associated with a Dropbox file. Property fields are added to Dropbox files as a :type:`PropertyGroup`.\nname: Key of the property field associated with a file and template. Keys can be up to 256 bytes.\nvalue: Value of the property field associated with a file and template. Values can be up to 1024 bytes.\n"
+            },
+            "FileLockMetadata": {
+              "type": "object",
+              "properties": {
+                "is_lockholder": {
+                  "type": "boolean",
+                  "description": "True if caller holds the file lock. This field is optional."
+                },
+                "lockholder_name": {
+                  "type": "string",
+                  "description": "The display name of the lock holder. This field is optional."
+                },
+                "lockholder_account_id": {
+                  "type": "string",
+                  "minLength": 40,
+                  "maxLength": 40,
+                  "description": "The account ID of the lock holder if known. This field is optional."
+                },
+                "created": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "The timestamp of the lock was created. This field is optional."
+                }
+              }
+            },
+            "FileStatus": {
+              "type": "string",
+              "enum": [
+                "active",
+                "deleted"
+              ],
+              "description": "The value will be one of the following datatypes. New values may be introduced as our API evolves."
+            },
+            "FileCategory": {
+              "type": "string",
+              "enum": [
+                "image",
+                "document",
+                "pdf",
+                "spreadsheet",
+                "presentation",
+                "audio",
+                "video",
+                "folder",
+                "paper",
+                "others"
+              ],
+              "description": "The value will be one of the following datatypes. New values may be introduced as our API evolves."
+            },
+            "MetadataV2": {
+              "$ref": "#/components/schemas/Metadata"
+            },
+            "SearchMatchTypeV2": {
+              "type": "string",
+              "enum": [
+                "filename",
+                "file_content",
+                "filename_and_content",
+                "image_content"
+              ]
+            },
+            "TemplateFilterBase": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^(/|ptid:).*$"
+                  },
+                  "description": "Only templates with an ID in the supplied list will be returned (a subset of templates will be returned)."
+                }
+              ]
+            },
+            "GetMetadataResult": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/FileMetadata"
+                },
+                {
+                  "$ref": "#/components/schemas/FolderMetadata"
+                },
+                {
+                  "$ref": "#/components/schemas/DeletedMetadata"
+                }
+              ]
+            },
+            "GetMetadataError": {
+              "type": "object"
+            },
+            "GetMetadataArg": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "pattern": "^(/(.|[\r\n])*|id:.*)|(rev:[0-9a-f]{9,})|(ns:[0-9]+(/.*)?)$",
+                  "description": "The path of a file or folder on Dropbox."
+                },
+                "include_media_info": {
+                  "type": "boolean",
+                  "description": "If true, FileMetadata.media_info is set for photo and video. The default for this field is False."
+                },
+                "include_deleted": {
+                  "type": "boolean",
+                  "description": "If true, DeletedMetadata will be returned for deleted file or folder, otherwise LookupError.not_found will be returned. The default for this field is False."
+                },
+                "include_has_explicit_shared_members": {
+                  "type": "boolean",
+                  "description": "If true, the results will include a flag for each file indicating whether or not that file has any explicit members. The default for this field is False."
+                },
+                "include_property_groups": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/TemplateFilterBase"
+                    }
+                  ],
+                  "description": "If set to a valid list of template IDs, FileMetadata.property_groups is set if there exists property data associated with the file and each of the listed templates. This field is optional."
+                }
+              }
+            }
+          },
+          "requestBodies": {
+            "GetMetadataRequestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/GetMetadataArg"
+                  }
+                }
+              }
+            }
+          },
+          "responses": {
+            "GetMetadataResultResponse": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/GetMetadataResult"
+                  }
+                }
+              }
+            },
+            "GetMetadataErrorResponse": {
+              "description": "Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/GetMetadataError"
+                  }
+                }
+              }
+            }
+          },
+          "securitySchemes": {
+            "oAuth": {
+              "type": "oauth2",
+              "description": "This API uses OAuth 2 with the implicit grant flow. [More info](https://www.dropbox.com/developers/documentation/http/documentation#authorization)",
+              "flows": {
+                "implicit": {
+                  "authorizationUrl": "https://www.dropbox.com/oauth2/authorize",
+                  "scopes": {
+                    "files.metadata.read": "Read files"
+                  }
+                },
+                "authorizationCode": {
+                  "authorizationUrl": "https://www.dropbox.com/oauth2/authorize",
+                  "tokenUrl": "https://api.dropboxapi.com/oauth2/token",
+                  "scopes": {
+                    "files.metadata.read": "Read files"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

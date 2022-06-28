@@ -15,16 +15,38 @@
     "rml": "http://semweb.mmlab.be/ns/rml#",
     "owl": "http://www.w3.org/2002/07/owl#",
     "skos": "http://www.w3.org/2004/02/skos/core#",
-    "shacl:path": { "@id": "shacl:path", "@type": "@id" },
-    "shacl:class": { "@id": "shacl:class", "@type": "@id" },
-    "shacl:datatype": { "@id": "shacl:datatype", "@type": "@id" }
+    "shacl:path": { "@type": "@id" },
+    "shacl:class": { "@type": "@id" },
+    "shacl:datatype": { "@type": "@id" },
+    "shacl:maxCount": { "@type": "xsd:integer" },
+    "shacl:minCount": { "@type": "xsd:integer" },
+    "shacl:targetClass": { "@type": "@id" },
+    "https://skl.standard.storage/properties/parametersContext": { "@type": "@json" }
   },
   "@id": "https://skl.standard.storage/verbs/getFilesInFolder",
   "@type": "https://skl.standard.storage/nouns/Verb",
   "https://skl.standard.storage/properties/name": "getFilesInFolder",
+  "https://skl.standard.storage/properties/parametersContext": {
+    "limit": {
+      "@id": "https://skl.standard.storage/properties/limit",
+      "@type": "http://www.w3.org/2001/XMLSchema#integer"
+    },
+    "token": {
+      "@id": "https://skl.standard.storage/properties/token",
+      "@type": "http://www.w3.org/2001/XMLSchema#string"
+    },
+    "folder": {
+      "@id": "https://skl.standard.storage/properties/folder",
+      "@type": "@id"
+    },
+    "account": {
+      "@id": "https://skl.standard.storage/properties/account",
+      "@type": "@id"
+    }
+  },
   "https://skl.standard.storage/properties/parameters": {
     "@type": "shacl:NodeShape",
-    "shacl:closed": true,
+    "shacl:targetClass": "https://skl.standard.storage/nouns/VerbArguments",
     "shacl:property": [
       {
         "shacl:datatype": "xsd:integer",
@@ -46,7 +68,6 @@
         "shacl:path": "https://skl.standard.storage/properties/folder"
       },
       {
-        "shacl:class": "https://skl.standard.storage/nouns/Account",
         "shacl:maxCount": 1,
         "shacl:minCount": 1,
         "shacl:name": "account",

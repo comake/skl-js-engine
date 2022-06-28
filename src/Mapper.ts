@@ -35,9 +35,15 @@ export class Mapper {
   private convertRdfTypeToJsonLdType(jsonldDoc: jsonld.NodeObject[]): void {
     for (const subDoc of jsonldDoc) {
       if (RDF.type in subDoc && (subDoc[RDF.type] as any[]).length > 1) {
-        subDoc['@type'] = (subDoc[RDF.type] as any[]).map((type: any): any => type['@value']);
+        subDoc['@type'] = [
+          ...subDoc['@type'] as string[] || [],
+          ...(subDoc[RDF.type] as any[]).map((type: any): any => type['@value']),
+        ];
       } else if (RDF.type in subDoc) {
-        subDoc['@type'] = (subDoc[RDF.type] as any[])[0]['@value'];
+        subDoc['@type'] = [
+          ...subDoc['@type'] as string[] || [],
+          (subDoc[RDF.type] as any[])[0]['@value'],
+        ];
       }
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete subDoc[RDF.type];
@@ -63,10 +69,20 @@ export class Mapper {
 
             subDoc[key] = subDoc[key].map((valueItem: any): void =>
               this.convertToNativeValue(valueItem));
+          } else if (Array.isArray(value) && typeof value[0] === 'object' && '@id' in value[0]) {
+            frame['@context'][argName] = { '@id': key, '@type': '@id' };
+            if (value.length > 1) {
+              frame['@context'][argName]['@container'] = '@set';
+            }
           } else if (typeof value === 'object' && '@type' in value) {
             // I don't think it's possible for this block to run.
             // frame['@context'][argName] = { '@id': key, '@type': value['@type'] };
             // subDoc[key] = this.convertToNativeValue(subDoc[key]);
+          } else if (typeof value === 'object' && '@id' in value) {
+            frame['@context'][argName] = {
+              '@id': key,
+              '@type': '@id',
+            };
           } else {
             frame['@context'][argName] = key;
           }
