@@ -1,0 +1,634 @@
+{
+  "@context": {
+    "shacl": "http://www.w3.org/ns/shacl#",
+    "fnml": "http://semweb.mmlab.be/ns/fnml#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "label": "rdfs:label",
+    "rdfs:subClassOf": { "@type": "@id" },
+    "rdfs:range": { "@type": "@id" },
+    "rdfs:domain": { "@type": "@id" },
+    "boolean": "http://www.w3.org/2001/XMLSchema#boolean",
+    "integer": "http://www.w3.org/2001/XMLSchema#integer",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "rr": "http://www.w3.org/ns/r2rml#",
+    "rml": "http://semweb.mmlab.be/ns/rml#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "shacl:path": { "@type": "@id" },
+    "shacl:class": { "@type": "@id" },
+    "shacl:datatype": { "@type": "@id" },
+    "shacl:maxCount": { "@type": "xsd:integer" },
+    "shacl:minCount": { "@type": "xsd:integer" }
+  },
+  "@graph": [
+    {
+      "@id": "https://skl.standard.storage/nouns/Account",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "label": "Account",
+      "rdfs:subClassOf": "https://skl.standard.storage/nouns/Noun",
+      "shacl:closed": false,
+      "shacl:property": [
+        {
+          "shacl:class": "https://skl.standard.storage/nouns/Integration",
+          "shacl:maxCount": 1,
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:path": "https://skl.standard.storage/properties/integration"
+        },
+        { "shacl:maxCount": 1, "shacl:path": "http://schema.org/email" }
+      ]
+    },
+    {
+      "@id": "https://skl.standard.storage/nouns/Application",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "label": "Application",
+      "rdfs:subClassOf": "https://skl.standard.storage/nouns/Noun",
+      "shacl:closed": false,
+      "shacl:property": [
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/description"
+        },
+        {
+          "shacl:class": "https://skl.standard.storage/nouns/File",
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:path": "https://skl.standard.storage/properties/icons"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:minCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/name"
+        }
+      ]
+    },
+    {
+      "@id": "https://skl.standard.storage/nouns/File",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "label": "File",
+      "rdfs:subClassOf": "https://skl.standard.storage/nouns/Noun",
+      "skos:definition": "An electronic document.",
+      "shacl:closed": false,
+      "shacl:property": [
+        {
+          "shacl:maxCount": 1,
+          "shacl:minCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/name"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:minCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/sourceId"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:minCount": 1,
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:path": "https://skl.standard.storage/properties/integration"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/size"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/url"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/md5Checksum"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/mimeType"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/isWeblink"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/deleted"
+        }
+      ]
+    },
+    {
+      "@id": "https://skl.standard.storage/nouns/Folder",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "label": "Folder",
+      "rdfs:subClassOf": "https://skl.standard.storage/nouns/File",
+      "skos:definition": "An electronic folder that stores electronic documents.",
+      "shacl:closed": false
+    },
+    {
+      "@id": "https://skl.standard.storage/nouns/Integration",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "label": "Integration",
+      "rdfs:subClassOf": "https://skl.standard.storage/nouns/Noun",
+      "shacl:closed": false,
+      "shacl:property": [
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/name"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/description"
+        },
+        {
+          "shacl:class": "https://skl.standard.storage/nouns/File",
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:path": "https://skl.standard.storage/properties/icons"
+        }
+      ]
+    },
+    {
+      "@id": "https://skl.standard.storage/nouns/Mapping",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "label": "Mapping",
+      "rdfs:subClassOf": "https://skl.standard.storage/nouns/Noun",
+      "shacl:closed": false,
+      "shacl:property": {
+        "shacl:maxCount": 1,
+        "shacl:path": "https://skl.standard.storage/properties/name"
+      }
+    },
+    {
+      "@id": "https://skl.standard.storage/nouns/Noun",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "label": "Noun",
+      "shacl:closed": false,
+      "shacl:property": {
+        "shacl:maxCount": 1,
+        "shacl:path": "https://skl.standard.storage/properties/id"
+      }
+    },
+    {
+      "@id": "https://skl.standard.storage/nouns/OauthToken",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "label": "Oauth Token",
+      "rdfs:subClassOf": "https://skl.standard.storage/nouns/Noun",
+      "shacl:closed": false,
+      "shacl:property": [
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/refreshToken"
+        },
+        {
+          "shacl:class": "https://skl.standard.storage/nouns/Account",
+          "shacl:maxCount": 1,
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:path": "https://skl.standard.storage/properties/account"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/accessToken"
+        }
+      ]
+    },
+    {
+      "@id": "https://skl.standard.storage/nouns/OpenApiDescription",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "label": "OpenApiDescription",
+      "rdfs:subClassOf": "https://skl.standard.storage/nouns/Noun",
+      "shacl:closed": false,
+      "shacl:property": [
+        {
+          "shacl:class": "https://skl.standard.storage/nouns/Integration",
+          "shacl:maxCount": 1,
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:path": "https://skl.standard.storage/properties/integration"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/openApiDescription"
+        }
+      ]
+    },
+    {
+      "@id": "https://skl.standard.storage/nouns/TokenPaginatedCollection",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "label": "Token Paginated Collection",
+      "rdfs:subClassOf": "https://skl.standard.storage/nouns/Noun",
+      "shacl:closed": false,
+      "shacl:property": [
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/nextPageToken"
+        },
+        {
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:path": "https://skl.standard.storage/properties/records"
+        }
+      ]
+    },
+    {
+      "@id": "https://skl.standard.storage/nouns/Verb",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "label": "Verb",
+      "shacl:closed": false,
+      "shacl:property": [
+        {
+          "shacl:class": "shacl:NodeShape",
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/returnValue"
+        },
+        {
+          "shacl:class": "shacl:NodeShape",
+          "shacl:maxCount": 1,
+          "shacl:nodeKind": { "@id": "shacl:BlankNode" },
+          "shacl:path": "https://skl.standard.storage/properties/parameters"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/name"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/id"
+        }
+      ]
+    },
+    {
+      "@id": "https://skl.standard.storage/nouns/VerbIntegrationMapping",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "label": "Verb to Integration Mapping",
+      "rdfs:subClassOf": "https://skl.standard.storage/nouns/Mapping",
+      "shacl:closed": false,
+      "shacl:property": [
+        {
+          "shacl:class": "rr:TriplesMap",
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:path": "https://skl.standard.storage/properties/parameterMappings"
+        },
+        {
+          "shacl:class": "https://skl.standard.storage/nouns/Verb",
+          "shacl:maxCount": 1,
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:path": "https://skl.standard.storage/properties/verb"
+        },
+        {
+          "shacl:class": "rr:TriplesMap",
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:path": "https://skl.standard.storage/properties/operationMappings"
+        },
+        {
+          "shacl:class": "rr:TriplesMap",
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:path": "https://skl.standard.storage/properties/returnValueMappings"
+        },
+        {
+          "shacl:class": "https://skl.standard.storage/nouns/Integration",
+          "shacl:maxCount": 1,
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:path": "https://skl.standard.storage/properties/integration"
+        }
+      ]
+    },
+    {
+      "@id": "https://skl.standard.storage/nouns/WebApplication",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "label": "Web Application",
+      "rdfs:subClassOf": "https://skl.standard.storage/nouns/Noun",
+      "shacl:closed": false,
+      "shacl:property": [
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/command"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/name"
+        },
+        {
+          "shacl:class": "https://skl.standard.storage/nouns/File",
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:path": "https://skl.standard.storage/properties/icons"
+        },
+        {
+          "shacl:class": "https://skl.standard.storage/nouns/Integration",
+          "shacl:maxCount": 1,
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:path": "https://skl.standard.storage/properties/integration"
+        },
+        {
+          "shacl:description": "The URL a user should be taken to by default when launching a Web Application. Can include terms surrounded by curly brackets which will be replaced by user specific values. Eg. {email} will be replaced with the user's email address.",
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/defaultUrl"
+        },
+        {
+          "shacl:description": "A regex which the defaultUrl of a Web Application should match. This will be used to automatically update users' Web Applications with a more specific URL once they login.",
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/defaultUrlMatcher"
+        },
+        {
+          "shacl:description": "URL domains that are associated with a Web Application. Can include a path. All URLs that match an entry must be associated with the Web Application.",
+          "shacl:path": "https://skl.standard.storage/properties/urlDomains"
+        },
+        {
+          "shacl:description": "Regexes to match URL domains that are associated with a Web Application. Can include a path. All URLs that match an entry must be associated with the Web Application.",
+          "shacl:path": "https://skl.standard.storage/properties/urlDomainMatchers"
+        },
+        {
+          "shacl:description": "The URL a user should be taken to when searching a Web Application. Can include terms surrounded by curly brackets which will be replaced by user specific values. Eg. {query} will be replaced with the user's query input.",
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/searchUrl"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/description"
+        }
+      ]
+    },
+    {
+      "@id": "https://skl.standard.storage/nouns/webApplications",
+      "@type": "owl:ObjectProperty",
+      "label": "webApplications",
+      "rdfs:range": "https://skl.standard.storage/nouns/WebApplication"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/accessToken",
+      "@type": "owl:ObjectProperty",
+      "label": "accessToken",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/account",
+      "@type": "owl:ObjectProperty",
+      "label": "account",
+      "rdfs:range": "https://skl.standard.storage/nouns/Account"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/accounts",
+      "@type": "owl:ObjectProperty",
+      "label": "accounts",
+      "rdfs:range": "https://skl.standard.storage/nouns/Account"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/command",
+      "@type": "owl:ObjectProperty",
+      "label": "command",
+      "rdfs:range": "https://skl.standard.storage/types/Command"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/cronSchedule",
+      "@type": "owl:ObjectProperty",
+      "label": "cronSchedule",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/defaultUrl",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": "https://skl.standard.storage/nouns/WebApplication",
+      "label": "defaultUrl",
+      "rdfs:range": "https://skl.standard.storage/types/UrlTemplate",
+      "skos:definition": "The URL a user should be taken to by default when launching a Web Application. Can include terms surrounded by curly brackets which will be replaced by user specific values. Eg. {email} will be replaced with the user's email address."
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/defaultUrlMatcher",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": "https://skl.standard.storage/nouns/WebApplication",
+      "label": "defaultUrlMatcher",
+      "rdfs:range": "xsd:string",
+      "skos:definition": "A regex which the defaultUrl of a Web Application should match. This will be used to automatically update users' Web Applications with a more specific URL once they login."
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/deleted",
+      "@type": "owl:ObjectProperty",
+      "label": "deleted",
+      "rdfs:range": "xsd:boolean"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/description",
+      "@type": "owl:ObjectProperty",
+      "label": "description",
+      "rdfs:range": "xsd:string",
+      "skos:exactMatch": { "@id": "http://schema.org/description" }
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/env",
+      "@type": "owl:ObjectProperty",
+      "label": "env",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/icons",
+      "@type": "owl:ObjectProperty",
+      "label": "icons",
+      "rdfs:range": "https://skl.standard.storage/nouns/File"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/integrations",
+      "@type": "owl:ObjectProperty",
+      "label": "integrations",
+      "rdfs:range": "https://skl.standard.storage/nouns/Integration"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/isWeblink",
+      "@type": "owl:ObjectProperty",
+      "label": "isWeblink",
+      "rdfs:range": "xsd:boolean"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/logicalSources",
+      "@type": "owl:ObjectProperty",
+      "label": "logicalSources",
+      "rdfs:range": "https://skl.standard.storage/nouns/LogicalSource"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/md5Checksum",
+      "@type": "owl:ObjectProperty",
+      "label": "md5Checksum",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/mimeType",
+      "@type": "owl:ObjectProperty",
+      "label": "mimeType",
+      "rdfs:range": "xsd:string",
+      "skos:exactMatch": { "@id": "http://schema.org/fileFormat" }
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/nextPageToken",
+      "@type": "owl:ObjectProperty",
+      "label": "nextPageToken",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/nullable",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": "https://skl.standard.storage/nouns/VerbParameter",
+      "label": "nullable",
+      "rdfs:range": "xsd:boolean"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/oauthTokens",
+      "@type": "owl:ObjectProperty",
+      "label": "oauthTokens",
+      "rdfs:range": "https://skl.standard.storage/nouns/OauthToken"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/onEvent",
+      "@type": "owl:ObjectProperty",
+      "label": "onEvent",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/openApiDescription",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": "https://skl.standard.storage/nouns/OpenApiDescription",
+      "label": "openApiDescription",
+      "rdfs:range": "rdf:JSON"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/openApiDescriptions",
+      "@type": "owl:ObjectProperty",
+      "label": "openApiDescriptions",
+      "rdfs:range": "https://skl.standard.storage/nouns/OpenApiDescription"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/operationMappings",
+      "@type": "owl:ObjectProperty",
+      "label": "operationMappings",
+      "rdfs:range": "rr:TriplesMap"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/parameterMappings",
+      "@type": "owl:ObjectProperty",
+      "label": "parameterMappings",
+      "rdfs:range": "rr:TriplesMap"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/parameters",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": "https://skl.standard.storage/nouns/Verb",
+      "label": "parameters",
+      "rdfs:range": "shacl:NodeShape"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/parentSourceId",
+      "@type": "owl:ObjectProperty",
+      "label": "parentSourceId",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/records",
+      "@type": "owl:ObjectProperty",
+      "label": "records",
+      "rdfs:range": "https://skl.standard.storage/nouns/Noun"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/refreshToken",
+      "@type": "owl:ObjectProperty",
+      "label": "refreshToken",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/required",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": "https://skl.standard.storage/nouns/VerbParameter",
+      "label": "required",
+      "rdfs:range": "xsd:boolean"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/returnType",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": "https://skl.standard.storage/nouns/Verb",
+      "label": "returnType",
+      "rdfs:range": "xsd:anyUri"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/returnValue",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": "https://skl.standard.storage/nouns/Verb",
+      "label": "returnValue",
+      "rdfs:range": "shacl:NodeShape"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/returnValueMappings",
+      "@type": "owl:ObjectProperty",
+      "label": "returnValueMappings",
+      "rdfs:range": "rr:TriplesMap"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/searchUrl",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": "https://skl.standard.storage/nouns/WebApplication",
+      "label": "searchUrl",
+      "rdfs:range": "https://skl.standard.storage/types/UrlTemplate",
+      "skos:definition": "The URL a user should be taken to when searching a Web Application. Can include terms surrounded by curly brackets which will be replaced by user specific values. Eg. {query} will be replaced with the user's query input."
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/size",
+      "@type": "owl:ObjectProperty",
+      "label": "size",
+      "rdfs:range": "xsd:integer"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/sourceId",
+      "@type": "owl:ObjectProperty",
+      "label": "sourceId",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/status",
+      "@type": "owl:ObjectProperty",
+      "label": "status",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/title",
+      "@type": "owl:ObjectProperty",
+      "label": "title",
+      "rdfs:range": "xsd:string"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/url",
+      "@type": "owl:ObjectProperty",
+      "label": "url",
+      "rdfs:range": "xsd:string",
+      "skos:exactMatch": { "@id": "http://schema.org/url" }
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/urlDomainMatchers",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": "https://skl.standard.storage/nouns/WebApplication",
+      "label": "urlDomainMatchers",
+      "rdfs:range": "xsd:string",
+      "skos:definition": "Regexes to match URL domains that are associated with a Web Application. Can include a path. All URLs that match an entry must be associated with the Web Application."
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/urlDomains",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": "https://skl.standard.storage/nouns/WebApplication",
+      "label": "urlDomains",
+      "rdfs:range": "xsd:string",
+      "skos:definition": "URL domains that are associated with a Web Application. Can include a path. All URLs that match an entry must be associated with the Web Application."
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/verb",
+      "@type": "owl:ObjectProperty",
+      "label": "verb",
+      "rdfs:range": "https://skl.standard.storage/nouns/Verb"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/verbIntegrationMappings",
+      "@type": "owl:ObjectProperty",
+      "label": "verbIntegrationMappings",
+      "rdfs:range": "https://skl.standard.storage/nouns/VerbIntegrationMapping"
+    },
+    {
+      "@id": "https://skl.standard.storage/types/Command",
+      "@type": "owl:Class",
+      "rdfs:commment": "A string used as a quick shortcut to filter options in Comake Navigator. Eg. 'gm' for Gmail. Adheres to the /^[a-zA-Z0-9-]{2,}$/ format.",
+      "label": "Command",
+      "rdfs:subClassOf": "xsd:string"
+    },
+    {
+      "@id": "https://skl.standard.storage/types/UrlTemplate",
+      "@type": "owl:Class",
+      "label": "UrlTemplate",
+      "rdfs:subClassOf": "xsd:string",
+      "skos:definition": "A URL which can include terms surrounded by curly brackets intended to be replaced by user specific values. Eg. {EMAIL} will be replaced with the user's email address."
+    }
+  ]
+}

@@ -5,9 +5,9 @@
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "label": "rdfs:label",
-    "rdfs:subClassOf": { "@type": "@id" },
-    "rdfs:range": { "@type": "@id" },
-    "rdfs:domain": { "@type": "@id" },
+    "rdfs:subClassOf": { "@id": "rdfs:subClassOf", "@type": "@id" },
+    "rdfs:range": { "@id": "rdfs:range", "@type": "@id" },
+    "rdfs:domain": { "@id": "rdfs:domain", "@type": "@id" },
     "boolean": "http://www.w3.org/2001/XMLSchema#boolean",
     "integer": "http://www.w3.org/2001/XMLSchema#integer",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
@@ -31,11 +31,13 @@
     },
     "integration": { "@id": "sklproperties:integration", "@type": "@id" },
     "verb": { "@id": "sklproperties:verb", "@type": "@id" },
-    "rml:referenceFormulation": { "@type": "@id" },
-    "rr:parentTriplesMap": { "@type": "@id" },
-    "rr:predicate": { "@type": "@id" },
-    "rr:object": { "@type": "@id" },
-    "rr:subject": { "@type": "@id" }
+    "rml:referenceFormulation": {
+      "@id": "rml:referenceFormulation",
+      "@type": "@id"
+    },
+    "rr:parentTriplesMap": { "@id": "rr:parentTriplesMap", "@type": "@id" },
+    "rr:predicate": { "@id": "rr:predicate", "@type": "@id" },
+    "rr:object": { "@id": "rr:object", "@type": "@id" }
   },
   "@graph": [
     {
@@ -125,7 +127,10 @@
           "rr:predicate": "sklproperties:operationId"
         }
       ],
-      "rr:subject": "https://skl.standard.storage/data/4/operationMappings/1/subject"
+      "rr:subjectMap": {
+        "@type": "rr:SubjectMap",
+        "rr:constant": "https://skl.standard.storage/data/4/operationMappings/1/subject"
+      }
     },
     {
       "@id": "https://skl.standard.storage/data/4/parameterMappings/1",
@@ -155,49 +160,7 @@
           "@type": "rr:PredicateObjectMap",
           "rr:objectMap": {
             "@type": "rr:ObjectMap",
-            "fnml:functionValue": {
-              "@type": "fnml:FunctionValue",
-              "rr:predicateObjectMap": [
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "fnml:functionValue": {
-                      "@type": "fnml:FunctionValue",
-                      "rr:predicateObjectMap": [
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:objectMap": {
-                            "@type": "rr:ObjectMap",
-                            "rml:reference": "token"
-                          },
-                          "rr:predicate": "http://example.com/idlab/function/str"
-                        },
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:object": "http://example.com/idlab/function/isNull",
-                          "rr:predicate": "https://w3id.org/function/ontology#executes"
-                        }
-                      ]
-                    }
-                  },
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rml:reference": "folder.sourceId"
-                  },
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
-                  "rr:predicate": "https://w3id.org/function/ontology#executes"
-                }
-              ]
-            }
+            "rml:reference": "folder.sourceId"
           },
           "rr:predicate": "sklproperties:path"
         },
@@ -276,7 +239,7 @@
       ],
       "rr:subjectMap": {
         "@type": "rr:SubjectMap",
-        "rr:template": "https://skl.standard.storage/data/4/returnValueMappings/1/subject"
+        "rr:constant": "https://skl.standard.storage/data/4/returnValueMappings/1/subject"
       }
     },
     {
@@ -284,7 +247,7 @@
       "@type": "rr:TriplesMap",
       "rml:logicalSource": {
         "@type": "rml:LogicalSource",
-        "rml:iterator": "$.entries.*",
+        "rml:iterator": "$.entries.[*]",
         "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
         "rml:source": "input.json"
       },
@@ -658,7 +621,8 @@
               "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
             }
           ]
-        }
+        },
+        "rr:template": "https://skl.standard.storage/data/"
       }
     }
   ]

@@ -46,8 +46,10 @@ SKQL Javascript Engine is available under the BSD 4 license. See the [LICENSE](L
 
 Copyright (c) 2022, Comake, Inc.
 
-<!--
-TODO: add husky
-TODO: cache openapi files
-TODO: unhardcode rml stuff
--->
+# TODO
+
+- [ ] add husky
+- [ ] unhardcode rml config
+- [ ] add README to example
+- [ ] add CONTRIBUTING.md, CODE_OF_CONDUCT.md, etc
+- [ ] add skds schema source

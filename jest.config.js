@@ -11,6 +11,7 @@ module.exports = {
   moduleFileExtensions: [
     'ts',
     'js',
+    'json'
   ],
   testEnvironment: 'node',
   collectCoverage: true,

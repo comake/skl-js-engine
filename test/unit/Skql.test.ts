@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { OpenApiOperationExecutor } from '../../src/openapi/OpenApiOperationExecutor';
 import { SKQL } from '../../src/Skql';
-import { frameAndCombineSchemas } from '../../src/util/Util';
+import { frameAndCombineSchemas } from './util/Util';
 
 jest.mock('../../src/openapi/OpenApiOperationExecutor');
 
@@ -25,24 +25,24 @@ const incorrectReturnValueMapping = {
   'http://semweb.mmlab.be/ns/rml#logicalSource': {
     '@type': 'http://semweb.mmlab.be/ns/rml#LogicalSource',
     'http://semweb.mmlab.be/ns/rml#iterator': '$',
-    'http://semweb.mmlab.be/ns/rml#referenceFormulation': 'http://semweb.mmlab.be/ns/ql#JSONPath',
+    'http://semweb.mmlab.be/ns/rml#referenceFormulation': { '@id': 'http://semweb.mmlab.be/ns/ql#JSONPath' },
     'http://semweb.mmlab.be/ns/rml#source': 'input.json',
   },
   'http://www.w3.org/ns/r2rml#predicateObjectMap': [
     {
       '@type': 'http://www.w3.org/ns/r2rml#PredicateObjectMap',
-      'http://www.w3.org/ns/r2rml#object': 'https://skl.standard.storage/mappings/frameObject',
-      'http://www.w3.org/ns/r2rml#predicate': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
+      'http://www.w3.org/ns/r2rml#object': { '@id': 'https://skl.standard.storage/mappings/frameObject' },
+      'http://www.w3.org/ns/r2rml#predicate': { '@id': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type' },
     },
     {
       '@type': 'http://www.w3.org/ns/r2rml#PredicateObjectMap',
-      'http://www.w3.org/ns/r2rml#object': 'https://skl.standard.storage/integrations/Dropbox',
-      'http://www.w3.org/ns/r2rml#predicate': 'https://skl.standard.storage/properties/integration',
+      'http://www.w3.org/ns/r2rml#object': { '@id': 'https://skl.standard.storage/integrations/Dropbox' },
+      'http://www.w3.org/ns/r2rml#predicate': { '@id': 'https://skl.standard.storage/properties/integration' },
     },
   ],
   'http://www.w3.org/ns/r2rml#subjectMap': {
     '@type': 'http://www.w3.org/ns/r2rml#SubjectMap',
-    'http://www.w3.org/ns/r2rml#constant': 'https://skl.standard.storage/data/abc123',
+    'http://www.w3.org/ns/r2rml#template': 'https://skl.standard.storage/data/abc123',
   },
 };
 
@@ -50,22 +50,7 @@ describe('SKQL', (): void => {
   describe('setting schema', (): void => {
     it('can set the schema from a variable.', async(): Promise<void> => {
       const schema = [{}];
-      await expect(SKQL.setSchema({ schema })).resolves.toBeUndefined();
-    });
-    it('can set the schema from a file.', async(): Promise<void> => {
-      const file = './test/assets/schemas/simple-mapping.jsonld';
-      await expect(SKQL.setSchema({ file })).resolves.toBeUndefined();
-    });
-    it('errors if it cannot read schemas from the supplied file.', async(): Promise<void> => {
-      const file = './test/assets/schemas/mapping-file-that-does-not-exist.jsonld';
-      await expect(SKQL.setSchema({ file })).rejects.toThrow(Error);
-      await expect(SKQL.setSchema({ file })).rejects.toThrow(
-        'Failed to parse schemas from the supplied file.',
-      );
-    });
-    it('errors if schemas are not specified via a file or variable.', async(): Promise<void> => {
-      await expect(SKQL.setSchema({})).rejects.toThrow(Error);
-      await expect(SKQL.setSchema({})).rejects.toThrow('No schema source found in setSchema args.');
+      await expect(SKQL.setSchema(schema)).resolves.toBeUndefined();
     });
   });
 
@@ -84,7 +69,7 @@ describe('SKQL', (): void => {
     });
 
     it('can execute a verb.', async(): Promise<void> => {
-      await SKQL.setSchema({ schema });
+      await SKQL.setSchema(schema);
       const response = await SKQL.getFile({ account, id: '12345' });
       expect(response).toEqual({
         '@context': {
@@ -100,6 +85,7 @@ describe('SKQL', (): void => {
             '@id': 'https://skl.standard.storage/properties/isWeblink',
             '@type': 'http://www.w3.org/2001/XMLSchema#boolean',
           },
+          mimeType: 'https://skl.standard.storage/properties/mimeType',
           name: 'https://skl.standard.storage/properties/name',
           size: 'https://skl.standard.storage/properties/size',
           sourceId: 'https://skl.standard.storage/properties/sourceId',
@@ -112,6 +98,7 @@ describe('SKQL', (): void => {
         deleted: false,
         integration: 'https://skl.standard.storage/integrations/Dropbox',
         isWeblink: false,
+        mimeType: 'text/plain',
         name: 'Prime_Numbers.txt',
         size: '7212',
         sourceId: 'id:12345',
@@ -119,14 +106,14 @@ describe('SKQL', (): void => {
     });
     it('errors if the executed verb is not defined.', async(): Promise<void> => {
       schema = schema.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://skl.standard.storage/verbs/getFile');
-      await SKQL.setSchema({ schema });
+      await SKQL.setSchema(schema);
       await expect(SKQL.getFile({ account, id: '12345' })).rejects.toThrow(Error);
       await expect(SKQL.getFile({ account, id: '12345' })).rejects.toThrow(
         'Failed to find the verb getFile in the schema',
       );
     });
     it('errors if the parameters do not conform to the verb parameter schema.', async(): Promise<void> => {
-      await SKQL.setSchema({ schema });
+      await SKQL.setSchema(schema);
       await expect(SKQL.getFile({ id: '12345' })).rejects.toThrow(Error);
       await expect(SKQL.getFile({ id: '12345' })).rejects.toThrow(
         'getFile parameters do not conform to the schema',
@@ -138,7 +125,7 @@ describe('SKQL', (): void => {
           schemaItem['https://skl.standard.storage/properties/returnValueMappings'] = incorrectReturnValueMapping;
         }
       });
-      await SKQL.setSchema({ schema });
+      await SKQL.setSchema(schema);
       await expect(SKQL.getFile({ account, id: '12345' })).rejects.toThrow(Error);
       await expect(SKQL.getFile({ account, id: '12345' })).rejects.toThrow(
         'Return value https://skl.standard.storage/data/abc123 does not conform to the schema',
@@ -146,7 +133,7 @@ describe('SKQL', (): void => {
     });
     it('errors if no mapping for the verb and the integration is in the schema.', async(): Promise<void> => {
       schema = schema.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://skl.standard.storage/data/4');
-      await SKQL.setSchema({ schema });
+      await SKQL.setSchema(schema);
       await expect(SKQL.getFile({ account, id: '12345' })).rejects.toThrow(Error);
       await expect(SKQL.getFile({ account, id: '12345' })).rejects.toThrow([
         'No schema found with fields matching',
@@ -155,7 +142,7 @@ describe('SKQL', (): void => {
     });
     it('errors if no open api description for the integration is in the schema.', async(): Promise<void> => {
       schema = schema.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://skl.standard.storage/data/DropboxOpenApiDescription');
-      await SKQL.setSchema({ schema });
+      await SKQL.setSchema(schema);
       await expect(SKQL.getFile({ account, id: '12345' })).rejects.toThrow(Error);
       await expect(SKQL.getFile({ account, id: '12345' })).rejects.toThrow([
         'No schema found with fields matching',
@@ -164,7 +151,7 @@ describe('SKQL', (): void => {
     });
     it('errors if no oauth token for the account is in the schema.', async(): Promise<void> => {
       schema = schema.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://skl.standard.storage/data/DropboxAccount1OauthTokens');
-      await SKQL.setSchema({ schema });
+      await SKQL.setSchema(schema);
       await expect(SKQL.getFile({ account, id: '12345' })).rejects.toThrow(Error);
       await expect(SKQL.getFile({ account, id: '12345' })).rejects.toThrow([
         'No schema found with fields matching',

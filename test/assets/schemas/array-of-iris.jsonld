@@ -17,7 +17,9 @@
     "skos": "http://www.w3.org/2004/02/skos/core#",
     "rml:referenceFormulation": { "@type": "@id" },
     "rr:predicate": { "@type": "@id" },
-    "rr:object": { "@type": "@id" }
+    "rr:object": { "@type": "@id" },
+    "rr:termType": { "@type": "@id" },
+    "sklproperties": "https://skl.standard.storage/properties/"
   },
   "@graph": [
     {
@@ -39,10 +41,19 @@
           "@type": "rr:PredicateObjectMap",
           "rr:objectMap": {
             "@type": "rr:ObjectMap",
-            "rml:reference": "field",
-            "rr:datatype": "http://www.w3.org/2001/XMLSchema#integer"
+            "rr:termType": "rr:IRI",
+            "rr:constant": "https://skl.standard.storage/integrations/Dropbox"
           },
-          "rr:predicate": "https://skl.standard.storage/properties/field"
+          "rr:predicate": "sklproperties:integration"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "rr:termType": "rr:IRI",
+            "rr:constant": "https://skl.standard.storage/integrations/AirTable"
+          },
+          "rr:predicate": "sklproperties:integration"
         }
       ],
       "rr:subjectMap": {

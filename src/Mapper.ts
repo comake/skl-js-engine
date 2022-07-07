@@ -1,48 +1,28 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import * as path from 'path';
-import RMLMapperWrapper from '@rmlio/rmlmapper-java-wrapper';
 import * as jsonld from 'jsonld';
+import RocketRmlParser from 'rocketrml';
+import { functions } from './MapperFunctions';
 import { stringToBoolean, stringToInteger } from './util/Util';
 import { SKL, RDF, XSD } from './util/Vocabularies';
 
-const rmlmapperPath = path.join(__dirname, '/../lib/rmlmapper-5.0.0-r362-all.jar');
-const tempFolderPath = './tmp';
-
 export class Mapper {
-  private readonly rmlMapper: typeof RMLMapperWrapper;
-
-  public constructor() {
-    this.rmlMapper = new RMLMapperWrapper(rmlmapperPath, tempFolderPath, true);
-  }
-
-  public async apply(data: JSON, mapping: jsonld.JsonLdDocument): Promise<jsonld.NodeObject> {
+  public async apply(data: jsonld.NodeObject, mapping: jsonld.NodeObject): Promise<jsonld.NodeObject> {
+    const mappingAsQuads = await this.jsonLdToQuads(mapping);
     const sources = { 'input.json': JSON.stringify(data) };
-    const mappingQuads = await jsonld.toRDF(mapping, { format: 'application/n-quads' });
-    const result = await this.rmlMapper.execute(
-      mappingQuads,
-      {
-        sources,
-        generateMetadata: false,
-        serialization: 'jsonld',
-      },
-    );
-
-    const jsonldDoc = JSON.parse(result.output);
-    this.convertRdfTypeToJsonLdType(jsonldDoc);
-    return await this.frameJsonLdAndConvertToNativeTypes(jsonldDoc);
+    const result = await RocketRmlParser.parseFileLive(mappingAsQuads, sources, { functions });
+    this.convertRdfTypeToJsonLdType(result);
+    return await this.frameJsonLdAndConvertToNativeTypes(result);
   }
 
   private convertRdfTypeToJsonLdType(jsonldDoc: jsonld.NodeObject[]): void {
     for (const subDoc of jsonldDoc) {
-      if (RDF.type in subDoc && (subDoc[RDF.type] as any[]).length > 1) {
+      if (RDF.type in subDoc) {
+        const rdfTypes = Array.isArray(subDoc[RDF.type])
+          ? (subDoc[RDF.type] as any[]).map((type: any): any => type['@id'])
+          : [ (subDoc[RDF.type] as any)['@id'] ];
         subDoc['@type'] = [
           ...subDoc['@type'] as string[] || [],
-          ...(subDoc[RDF.type] as any[]).map((type: any): any => type['@value']),
-        ];
-      } else if (RDF.type in subDoc) {
-        subDoc['@type'] = [
-          ...subDoc['@type'] as string[] || [],
-          (subDoc[RDF.type] as any[])[0]['@value'],
+          ...rdfTypes,
         ];
       }
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -75,9 +55,8 @@ export class Mapper {
               frame['@context'][argName]['@container'] = '@set';
             }
           } else if (typeof value === 'object' && '@type' in value) {
-            // I don't think it's possible for this block to run.
-            // frame['@context'][argName] = { '@id': key, '@type': value['@type'] };
-            // subDoc[key] = this.convertToNativeValue(subDoc[key]);
+            frame['@context'][argName] = { '@id': key, '@type': value['@type'] };
+            subDoc[key] = this.convertToNativeValue(subDoc[key]);
           } else if (typeof value === 'object' && '@id' in value) {
             frame['@context'][argName] = {
               '@id': key,
@@ -102,5 +81,9 @@ export class Mapper {
       jsonLdTerm['@value'] = Number.parseFloat(jsonLdTerm['@value']);
     }
     return jsonLdTerm;
+  }
+
+  private async jsonLdToQuads(jsonldDoc: jsonld.NodeObject): Promise<string> {
+    return (await jsonld.toRDF(jsonldDoc, { format: 'application/n-quads' })) as unknown as string;
   }
 }

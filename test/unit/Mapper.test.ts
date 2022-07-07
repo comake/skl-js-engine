@@ -122,4 +122,25 @@ describe('A Mapper', (): void => {
       field: 3.14159,
     });
   });
+
+  it('frames converts an array of IRIs.', async(): Promise<void> => {
+    data = {};
+    mapping = await filePathToExpandedJson('../assets/schemas/array-of-iris.jsonld');
+    const response = await mapper.apply(data, mapping);
+    expect(response).toEqual({
+      '@context': {
+        integration: {
+          '@container': '@set',
+          '@id': 'https://skl.standard.storage/properties/integration',
+          '@type': '@id',
+        },
+      },
+      '@id': 'https://example.com/mapping/subject',
+      '@type': 'https://skl.standard.storage/mappings/frameObject',
+      integration: [
+        'https://skl.standard.storage/integrations/Dropbox',
+        'https://skl.standard.storage/integrations/AirTable',
+      ],
+    });
+  });
 });

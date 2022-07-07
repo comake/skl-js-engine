@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/naming-convention, no-console, @typescript-eslint/no-floating-promises */
-import { SKQL, SKL, frameAndCombineSchemas } from '@comake/skql-js-engine';
-import { executeSequentially } from './Util';
+import { SKQL, SKL } from '@comake/skql-js-engine';
+import SegfaultHandler from 'segfault-handler';
+import { executeSequentially, frameAndCombineSchemas } from './Util';
 
+const maxDepth = 1;
 const account = 'https://skl.standard.storage/data/DropboxAccount1';
 const rootFolder = {
   '@type': 'https://skl.standard.storage/nouns/Folder',
   name: 'Dropbox',
   sourceId: '',
 };
-const maxDepth = 1;
 
 async function getAllFolderChildren(folder: any): Promise<any[]> {
   let nextPageToken;
@@ -46,9 +47,10 @@ async function run(): Promise<void> {
     './schemas/dropbox.jsonld',
     './schemas/integrations-and-accounts.jsonld',
   ]);
-  await SKQL.setSchema({ schema });
+  await SKQL.setSchema(schema);
   const heirarchy = await syncFolder(rootFolder);
   console.log(heirarchy);
 }
 
+SegfaultHandler.registerHandler('crash.log');
 run();

@@ -1,4 +1,3 @@
-import { promises as fs } from 'fs';
 import * as jsonld from 'jsonld';
 import { Parser, Store } from 'n3';
 
@@ -47,15 +46,4 @@ export function toJSON(jsonLd: jsonld.NodeObject): Record<string, JSONValue> {
     delete jsonLd[key];
   });
   return jsonLd as Record<string, JSONValue>;
-}
-
-export async function frameAndCombineSchemas(filePaths: string[]): Promise<jsonld.NodeObject[]> {
-  const schemas = await Promise.all(
-    filePaths.map(async(filePath: string): Promise<jsonld.NodeObject[]> => {
-      const schema = await fs.readFile(filePath, { encoding: 'utf-8' });
-      const expandedSchema = await jsonld.expand(JSON.parse(schema));
-      return (await jsonld.frame(expandedSchema, {}))['@graph'] as jsonld.NodeObject[];
-    }),
-  );
-  return schemas.flat();
 }

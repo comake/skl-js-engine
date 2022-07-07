@@ -1,61 +1,92 @@
-export const SKL = {
-  data: 'https://skl.standard.storage/data/',
-  integrations: 'https://skl.standard.storage/integrations/',
-  nouns: 'https://skl.standard.storage/nouns/',
-  verbs: 'https://skl.standard.storage/verbs/',
-  mappingNoun: 'https://skl.standard.storage/nouns/Mapping',
-  verbIntegrationMappingNoun: 'https://skl.standard.storage/nouns/VerbIntegrationMapping',
-  openApiDescriptionNoun: 'https://skl.standard.storage/nouns/OpenApiDescription',
-  accountNoun: 'https://skl.standard.storage/nouns/Account',
-  oauthTokenNoun: 'https://skl.standard.storage/nouns/OauthToken',
-  folderNoun: 'https://skl.standard.storage/nouns/Folder',
-  properties: 'https://skl.standard.storage/properties/',
-  verbsProperty: 'https://skl.standard.storage/properties/verb',
-  accountProperty: 'https://skl.standard.storage/properties/account',
-  integrationProperty: 'https://skl.standard.storage/properties/integration',
-  parametersProperty: 'https://skl.standard.storage/properties/parameters',
-  nameProperty: 'https://skl.standard.storage/properties/name',
-  parameterMappingsProperty: 'https://skl.standard.storage/properties/parameterMappings',
-  returnValueMappingsProperty: 'https://skl.standard.storage/properties/returnValueMappings',
-  operationMappingsProperty: 'https://skl.standard.storage/properties/operationMappings',
-  openApiDescriptionProperty: 'https://skl.standard.storage/properties/openApiDescription',
-  accessTokenProperty: 'https://skl.standard.storage/properties/accessToken',
-  sourceIdProperty: 'https://skl.standard.storage/properties/sourceId',
-  returnValueProperty: 'https://skl.standard.storage/properties/returnValue',
-  requiredProperty: 'https://skl.standard.storage/properties/required',
-  nullableProperty: 'https://skl.standard.storage/properties/nullable',
-  parametersContext: 'https://skl.standard.storage/properties/parametersContext',
-};
+function createNamespace(baseUri: string, localNames: Record<string, string>): Record<string, string> {
+  const namespace: Record<string, string> = {};
+  for (const [ key, value ] of Object.entries(localNames)) {
+    namespace[key] = `${baseUri}${value}`;
+  }
+  return namespace;
+}
 
-export const XSD = {
-  boolean: 'http://www.w3.org/2001/XMLSchema#boolean',
-  integer: 'http://www.w3.org/2001/XMLSchema#integer',
-  double: 'http://www.w3.org/2001/XMLSchema#double',
-  string: 'http://www.w3.org/2001/XMLSchema#string',
-};
+export const SKL = createNamespace('https://skl.standard.storage/', {
+  data: 'data/',
+  integrations: 'integrations/',
+  nouns: 'nouns/',
+  verbs: 'verbs/',
+  mappingNoun: 'nouns/Mapping',
+  verbIntegrationMappingNoun: 'nouns/VerbIntegrationMapping',
+  openApiDescriptionNoun: 'nouns/OpenApiDescription',
+  accountNoun: 'nouns/Account',
+  oauthTokenNoun: 'nouns/OauthToken',
+  folderNoun: 'nouns/Folder',
+  properties: 'properties/',
+  verbsProperty: 'properties/verb',
+  accountProperty: 'properties/account',
+  integrationProperty: 'properties/integration',
+  parametersProperty: 'properties/parameters',
+  nameProperty: 'properties/name',
+  parameterMappingsProperty: 'properties/parameterMappings',
+  returnValueMappingsProperty: 'properties/returnValueMappings',
+  operationMappingsProperty: 'properties/operationMappings',
+  openApiDescriptionProperty: 'properties/openApiDescription',
+  accessTokenProperty: 'properties/accessToken',
+  sourceIdProperty: 'properties/sourceId',
+  returnValueProperty: 'properties/returnValue',
+  requiredProperty: 'properties/required',
+  nullableProperty: 'properties/nullable',
+  parametersContext: 'properties/parametersContext',
+});
 
-export const RDF = {
-  type: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
-  first: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#first',
-  rest: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest',
-  datatype: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#datatype',
-};
+export const XSD = createNamespace('http://www.w3.org/2001/XMLSchema#', {
+  boolean: 'boolean',
+  integer: 'integer',
+  double: 'double',
+  string: 'string',
+});
 
-export const RDFS = {
-  subClassOf: 'http://www.w3.org/2000/01/rdf-schema#subClassOf',
-  label: 'http://www.w3.org/2000/01/rdf-schema#label',
-  range: 'http://www.w3.org/2000/01/rdf-schema#range',
-};
+export const RDF = createNamespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#', {
+  type: 'type',
+  first: 'first',
+  rest: 'rest',
+  datatype: 'datatype',
+});
 
-export const OWL = {
-  restriction: 'http://www.w3.org/2002/07/owl#Restriction',
-  onProperty: 'http://www.w3.org/2002/07/owl#onProperty',
-  allValuesFrom: 'http://www.w3.org/2002/07/owl#allValuesFrom',
-  class: 'http://www.w3.org/2002/07/owl#Class',
-  intersectionOf: 'http://www.w3.org/2002/07/owl#intersectionOf',
-  someValuesFrom: 'http://www.w3.org/2002/07/owl#someValuesFrom',
-};
+export const RDFS = createNamespace('http://www.w3.org/2000/01/rdf-schema#', {
+  subClassOf: 'subClassOf',
+  label: 'label',
+  range: 'range',
+});
 
-export const SHACL = {
-  targetClass: 'http://www.w3.org/ns/shacl#targetClass',
-};
+export const OWL = createNamespace('http://www.w3.org/2002/07/owl#', {
+  restriction: 'Restriction',
+  onProperty: 'onProperty',
+  allValuesFrom: 'allValuesFrom',
+  class: 'Class',
+  intersectionOf: 'intersectionOf',
+  someValuesFrom: 'someValuesFrom',
+});
+
+export const SHACL = createNamespace('http://www.w3.org/ns/shacl#', {
+  targetClass: 'targetClass',
+});
+
+export const GREL = createNamespace('http://users.ugent.be/~bjdmeest/function/grel.ttl#', {
+  arrayJoin: 'array_join',
+  controlsIf: 'controls_if',
+  boolB: 'bool_b',
+  anyTrue: 'any_true',
+  anyFalse: 'any_false',
+  stringEndsWith: 'string_endsWith',
+  valueParameter: 'valueParameter',
+  stringSub: 'string_sub',
+  stringReplace: 'string_replace',
+  pStringFind: 'p_string_find',
+  pStringReplace: 'p_string_replace',
+});
+
+export const IDLAB = createNamespace('http://example.com/idlab/function/', {
+  equal: 'equal',
+  notEqual: 'notEqual',
+  getMimeType: 'getMIMEType',
+  str: 'str',
+  isNull: 'isNull',
+  random: 'random',
+});
