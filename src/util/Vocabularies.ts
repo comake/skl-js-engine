@@ -23,15 +23,13 @@ export const SKL = createNamespace('https://skl.standard.storage/', {
   integrationProperty: 'properties/integration',
   parametersProperty: 'properties/parameters',
   nameProperty: 'properties/name',
-  parameterMappingsProperty: 'properties/parameterMappings',
-  returnValueMappingsProperty: 'properties/returnValueMappings',
-  operationMappingsProperty: 'properties/operationMappings',
+  parameterMappingProperty: 'properties/parameterMapping',
+  returnValueMappingProperty: 'properties/returnValueMapping',
+  operationMappingProperty: 'properties/operationMapping',
   openApiDescriptionProperty: 'properties/openApiDescription',
   accessTokenProperty: 'properties/accessToken',
   sourceIdProperty: 'properties/sourceId',
   returnValueProperty: 'properties/returnValue',
-  requiredProperty: 'properties/required',
-  nullableProperty: 'properties/nullable',
   parametersContext: 'properties/parametersContext',
 });
 

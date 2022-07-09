@@ -122,7 +122,7 @@ describe('SKQL', (): void => {
     it('errors if the return value does not conform to the verb return value schema.', async(): Promise<void> => {
       schema.forEach((schemaItem: any): void => {
         if (schemaItem['@id'] === 'https://skl.standard.storage/data/4') {
-          schemaItem['https://skl.standard.storage/properties/returnValueMappings'] = incorrectReturnValueMapping;
+          schemaItem['https://skl.standard.storage/properties/returnValueMapping'] = incorrectReturnValueMapping;
         }
       });
       await SKQL.setSchema(schema);

@@ -240,6 +240,10 @@
         },
         {
           "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/parametersContext"
+        },
+        {
+          "shacl:maxCount": 1,
           "shacl:path": "https://skl.standard.storage/properties/name"
         },
         {
@@ -258,27 +262,29 @@
         {
           "shacl:class": "rr:TriplesMap",
           "shacl:nodeKind": { "@id": "shacl:IRI" },
-          "shacl:path": "https://skl.standard.storage/properties/parameterMappings"
+          "shacl:path": "https://skl.standard.storage/properties/parameterMapping"
         },
         {
           "shacl:class": "https://skl.standard.storage/nouns/Verb",
           "shacl:maxCount": 1,
+          "shacl:minCount": 1,
           "shacl:nodeKind": { "@id": "shacl:IRI" },
           "shacl:path": "https://skl.standard.storage/properties/verb"
         },
         {
           "shacl:class": "rr:TriplesMap",
           "shacl:nodeKind": { "@id": "shacl:IRI" },
-          "shacl:path": "https://skl.standard.storage/properties/operationMappings"
+          "shacl:path": "https://skl.standard.storage/properties/operationMapping"
         },
         {
           "shacl:class": "rr:TriplesMap",
           "shacl:nodeKind": { "@id": "shacl:IRI" },
-          "shacl:path": "https://skl.standard.storage/properties/returnValueMappings"
+          "shacl:path": "https://skl.standard.storage/properties/returnValueMapping"
         },
         {
           "shacl:class": "https://skl.standard.storage/nouns/Integration",
           "shacl:maxCount": 1,
+          "shacl:minCount": 1,
           "shacl:nodeKind": { "@id": "shacl:IRI" },
           "shacl:path": "https://skl.standard.storage/properties/integration"
         }
@@ -486,15 +492,15 @@
       "rdfs:range": "https://skl.standard.storage/nouns/OpenApiDescription"
     },
     {
-      "@id": "https://skl.standard.storage/properties/operationMappings",
+      "@id": "https://skl.standard.storage/properties/operationMapping",
       "@type": "owl:ObjectProperty",
-      "label": "operationMappings",
+      "label": "operationMapping",
       "rdfs:range": "rr:TriplesMap"
     },
     {
-      "@id": "https://skl.standard.storage/properties/parameterMappings",
+      "@id": "https://skl.standard.storage/properties/parameterMapping",
       "@type": "owl:ObjectProperty",
-      "label": "parameterMappings",
+      "label": "parameterMapping",
       "rdfs:range": "rr:TriplesMap"
     },
     {
@@ -503,6 +509,13 @@
       "rdfs:domain": "https://skl.standard.storage/nouns/Verb",
       "label": "parameters",
       "rdfs:range": "shacl:NodeShape"
+    },
+    {
+      "@id": "https://skl.standard.storage/properties/parametersContext",
+      "@type": "owl:ObjectProperty",
+      "rdfs:domain": "https://skl.standard.storage/nouns/Verb",
+      "label": "parametersContext",
+      "rdfs:range": "rdf:JSON"
     },
     {
       "@id": "https://skl.standard.storage/properties/parentSourceId",
@@ -544,9 +557,9 @@
       "rdfs:range": "shacl:NodeShape"
     },
     {
-      "@id": "https://skl.standard.storage/properties/returnValueMappings",
+      "@id": "https://skl.standard.storage/properties/returnValueMapping",
       "@type": "owl:ObjectProperty",
-      "label": "returnValueMappings",
+      "label": "returnValueMapping",
       "rdfs:range": "rr:TriplesMap"
     },
     {

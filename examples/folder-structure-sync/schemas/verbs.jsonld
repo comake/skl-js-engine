@@ -5,9 +5,9 @@
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "label": "rdfs:label",
-    "rdfs:subClassOf": { "@id": "rdfs:subClassOf", "@type": "@id" },
-    "rdfs:range": { "@id": "rdfs:range", "@type": "@id" },
-    "rdfs:domain": { "@id": "rdfs:domain", "@type": "@id" },
+    "rdfs:subClassOf": { "@type": "@id" },
+    "rdfs:range": { "@type": "@id" },
+    "rdfs:domain": { "@type": "@id" },
     "boolean": "http://www.w3.org/2001/XMLSchema#boolean",
     "integer": "http://www.w3.org/2001/XMLSchema#integer",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
@@ -46,7 +46,7 @@
   },
   "https://skl.standard.storage/properties/parameters": {
     "@type": "shacl:NodeShape",
-    "shacl:targetClass": "https://skl.standard.storage/nouns/VerbArguments",
+    "shacl:targetClass": "https://skl.standard.storage/nouns/Parameters",
     "shacl:property": [
       {
         "shacl:datatype": "xsd:integer",

@@ -17,16 +17,16 @@
     "skos": "http://www.w3.org/2004/02/skos/core#",
     "sklproperties": "https://skl.standard.storage/properties/",
     "name": "sklproperties:name",
-    "parameterMappings": {
-      "@id": "sklproperties:parameterMappings",
+    "parameterMapping": {
+      "@id": "sklproperties:parameterMapping",
       "@type": "@id"
     },
-    "returnValueMappings": {
-      "@id": "sklproperties:returnValueMappings",
+    "returnValueMapping": {
+      "@id": "sklproperties:returnValueMapping",
       "@type": "@id"
     },
-    "operationMappings": {
-      "@id": "sklproperties:operationMappings",
+    "operationMapping": {
+      "@id": "sklproperties:operationMapping",
       "@type": "@id"
     },
     "integration": { "@id": "sklproperties:integration", "@type": "@id" },
@@ -43,16 +43,16 @@
       "@type": "https://skl.standard.storage/nouns/VerbIntegrationMapping",
       "integration": "https://skl.standard.storage/integrations/Dropbox",
       "name": "getFilesInFolderToDropbox",
-      "operationMappings": "https://skl.standard.storage/data/4/operationMappings/1",
-      "parameterMappings": "https://skl.standard.storage/data/4/parameterMappings/1",
-      "returnValueMappings": [
-        "https://skl.standard.storage/data/4/returnValueMappings/1",
-        "https://skl.standard.storage/data/4/returnValueMappings/2"
+      "operationMapping": "https://skl.standard.storage/data/4/operationMapping/1",
+      "parameterMapping": "https://skl.standard.storage/data/4/parameterMapping/1",
+      "returnValueMapping": [
+        "https://skl.standard.storage/data/4/returnValueMapping/1",
+        "https://skl.standard.storage/data/4/returnValueMapping/2"
       ],
       "verb": "https://skl.standard.storage/verbs/getFilesInFolder"
     },
     {
-      "@id": "https://skl.standard.storage/data/4/operationMappings/1",
+      "@id": "https://skl.standard.storage/data/4/operationMapping/1",
       "@type": "rr:TriplesMap",
       "rml:logicalSource": {
         "@type": "rml:LogicalSource",
@@ -125,10 +125,10 @@
           "rr:predicate": "sklproperties:operationId"
         }
       ],
-      "rr:subject": "https://skl.standard.storage/data/4/operationMappings/1/subject"
+      "rr:subject": "https://skl.standard.storage/data/4/operationMapping/1/subject"
     },
     {
-      "@id": "https://skl.standard.storage/data/4/parameterMappings/1",
+      "@id": "https://skl.standard.storage/data/4/parameterMapping/1",
       "@type": "rr:TriplesMap",
       "rml:logicalSource": {
         "@type": "rml:LogicalSource",
@@ -209,11 +209,11 @@
       ],
       "rr:subjectMap": {
         "@type": "rr:SubjectMap",
-        "rr:constant": "https://skl.standard.storage/data/4/parameterMappings/1/subject"
+        "rr:constant": "https://skl.standard.storage/data/4/parameterMapping/1/subject"
       }
     },
     {
-      "@id": "https://skl.standard.storage/data/4/returnValueMappings/1",
+      "@id": "https://skl.standard.storage/data/4/returnValueMapping/1",
       "@type": "rr:TriplesMap",
       "rml:logicalSource": {
         "@type": "rml:LogicalSource",
@@ -226,7 +226,7 @@
           "@type": "rr:PredicateObjectMap",
           "rr:objectMap": {
             "@type": "rr:ObjectMap",
-            "rr:parentTriplesMap": "https://skl.standard.storage/data/4/returnValueMappings/2"
+            "rr:parentTriplesMap": "https://skl.standard.storage/data/4/returnValueMapping/2"
           },
           "rr:predicate": "sklproperties:records"
         },
@@ -276,11 +276,11 @@
       ],
       "rr:subjectMap": {
         "@type": "rr:SubjectMap",
-        "rr:template": "https://skl.standard.storage/data/4/returnValueMappings/1/subject"
+        "rr:template": "https://skl.standard.storage/data/4/returnValueMapping/1/subject"
       }
     },
     {
-      "@id": "https://skl.standard.storage/data/4/returnValueMappings/2",
+      "@id": "https://skl.standard.storage/data/4/returnValueMapping/2",
       "@type": "rr:TriplesMap",
       "rml:logicalSource": {
         "@type": "rml:LogicalSource",

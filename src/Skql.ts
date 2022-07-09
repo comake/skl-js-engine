@@ -38,7 +38,7 @@ export class SKQLBase {
       // Assert params match
       const argsAsJsonLd = {
         '@context': verb[SKL.parametersContext]['@value'],
-        '@type': 'https://skl.standard.storage/nouns/VerbArguments',
+        '@type': 'https://skl.standard.storage/nouns/Parameters',
         ...args,
       };
       await this.assertVerbParamsMatchParameterSchemas(
@@ -55,10 +55,10 @@ export class SKQLBase {
         [SKL.integrationProperty]: account[SKL.integrationProperty]['@id'],
       });
       // Perform mapping of args
-      const operationArgsJsonLd = await this.mapper.apply(args, mapping[SKL.parameterMappingsProperty]);
+      const operationArgsJsonLd = await this.mapper.apply(args, mapping[SKL.parameterMappingProperty]);
       const operationArgs = toJSON(operationArgsJsonLd);
 
-      const operationInfoJsonLd = await this.mapper.apply(args, mapping[SKL.operationMappingsProperty]);
+      const operationInfoJsonLd = await this.mapper.apply(args, mapping[SKL.operationMappingProperty]);
       const { operationId } = toJSON(operationInfoJsonLd);
       const openApiDescriptionSchema = this.getSchemaByFields({
         '@type': SKL.openApiDescriptionNoun,
@@ -78,7 +78,7 @@ export class SKQLBase {
       );
 
       // Perform mapping of return value
-      const mappedReturnValue = await this.mapper.apply(rawReturnValue.data, mapping[SKL.returnValueMappingsProperty]);
+      const mappedReturnValue = await this.mapper.apply(rawReturnValue.data, mapping[SKL.returnValueMappingProperty]);
       await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, verb[SKL.returnValueProperty]);
       return mappedReturnValue;
     };
@@ -112,10 +112,10 @@ export class SKQLBase {
 
   private async assertVerbParamsMatchParameterSchemas(verbParams: any,
     parameterSchemas: any, verbName: string): Promise<void> {
-    const returnValueAsQuads = await convertJsonLdToQuads([ verbParams ]);
+    const paramsAsQuads = await convertJsonLdToQuads([ verbParams ]);
     const shape = await convertJsonLdToQuads(parameterSchemas);
     const validator = new SHACLValidator(shape);
-    const report = validator.validate(returnValueAsQuads);
+    const report = validator.validate(paramsAsQuads);
     if (!report.conforms) {
       throw new Error(`${verbName} parameters do not conform to the schema`);
     }
