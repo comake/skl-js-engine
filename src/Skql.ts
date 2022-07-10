@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
+import type { OpenApi } from '@comake/openapi-operation-executor';
 import type { NodeObject } from 'jsonld';
 import SHACLValidator from 'rdf-validate-shacl';
 import { Mapper } from './Mapper';
-import { OpenApiOperationExecutor } from './openapi/OpenApiOperationExecutor';
-import type { OpenApi } from './openapi/OpenApiSchemaConfiguration';
 import { constructUri, convertJsonLdToQuads, toJSON } from './util/Util';
 import { SKL, SHACL } from './util/Vocabularies';
 

@@ -30,6 +30,7 @@
 		"lib"
 	],
 	"dependencies": {
+		"@comake/openapi-operation-executor": "^0.0.1",
 		"@rmlio/rmlmapper-java-wrapper": "^2.0.3",
 		"axios": "^0.27.2",
 		"js-yaml": "^4.1.0",

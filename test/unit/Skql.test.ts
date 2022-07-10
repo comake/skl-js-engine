@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { OpenApiOperationExecutor } from '../../src/openapi/OpenApiOperationExecutor';
+import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
 import { SKQL } from '../../src/Skql';
 import { frameAndCombineSchemas } from './util/Util';
 
-jest.mock('../../src/openapi/OpenApiOperationExecutor');
+jest.mock('@comake/openapi-operation-executor');
 
 const mockDropboxFile = {
   '.tag': 'file',
