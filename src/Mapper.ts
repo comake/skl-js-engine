@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/naming-convention, unicorn/expiring-todo-comments */
 import * as RmlParser from '@comake/rmlmapper-js';
 import * as jsonld from 'jsonld';
 import { functions } from './MapperFunctions';
@@ -9,6 +9,7 @@ export class Mapper {
   public async apply(data: jsonld.NodeObject, mapping: jsonld.NodeObject): Promise<jsonld.NodeObject> {
     const mappingAsQuads = await this.jsonLdToQuads(mapping);
     const sources = { 'input.json': JSON.stringify(data) };
+    // TODO always return arrays...
     const result = await RmlParser.parse(mappingAsQuads, sources, { functions }) as jsonld.NodeObject[];
     this.convertRdfTypeToJsonLdType(result);
     return await this.frameJsonLdAndConvertToNativeTypes(result);

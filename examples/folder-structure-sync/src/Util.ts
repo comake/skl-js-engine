@@ -27,3 +27,10 @@ export async function frameAndCombineSchemas(filePaths: string[]): Promise<jsonl
   );
   return schemas.flat();
 }
+
+export function ensureArray(arrayable: any): any[] {
+  if (arrayable) {
+    return Array.isArray(arrayable) ? arrayable : [ arrayable ];
+  }
+  return [];
+}
