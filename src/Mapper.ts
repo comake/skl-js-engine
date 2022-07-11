@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import * as RmlParser from '@comake/rmlmapper-js';
 import * as jsonld from 'jsonld';
-import RocketRmlParser from 'rocketrml';
 import { functions } from './MapperFunctions';
 import { stringToBoolean, stringToInteger } from './util/Util';
 import { SKL, RDF, XSD } from './util/Vocabularies';
@@ -9,7 +9,7 @@ export class Mapper {
   public async apply(data: jsonld.NodeObject, mapping: jsonld.NodeObject): Promise<jsonld.NodeObject> {
     const mappingAsQuads = await this.jsonLdToQuads(mapping);
     const sources = { 'input.json': JSON.stringify(data) };
-    const result = await RocketRmlParser.parseFileLive(mappingAsQuads, sources, { functions });
+    const result = await RmlParser.parse(mappingAsQuads, sources, { functions }) as jsonld.NodeObject[];
     this.convertRdfTypeToJsonLdType(result);
     return await this.frameJsonLdAndConvertToNativeTypes(result);
   }

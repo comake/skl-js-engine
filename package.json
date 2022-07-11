@@ -1,6 +1,6 @@
 {
 	"name": "@comake/skql-js-engine",
-	"version": "0.2.1",
+	"version": "0.3.0",
 	"description": "Standard Knowledge Query Language Javascript Engine",
 	"keywords": [
 		"skl",
@@ -16,10 +16,10 @@
 	},
 	"homepage": "https://github.com/comake/skql-engine-js#readme",
 	"license": "BSD-4-Clause",
-  "author": {
-    "name" : "Adler Faulkner",
-    "email" : "adler@comake.io"
-  },
+	"author": {
+		"name": "Adler Faulkner",
+		"email": "adler@comake.io"
+	},
 	"scripts": {
 		"build": "tsc",
 		"jest": "jest --coverage",
@@ -35,6 +35,7 @@
 	],
 	"dependencies": {
 		"@comake/openapi-operation-executor": "^0.0.1",
+		"@comake/rmlmapper-js": "^0.0.2",
 		"@rmlio/rmlmapper-java-wrapper": "^2.0.3",
 		"axios": "^0.27.2",
 		"js-yaml": "^4.1.0",
@@ -42,7 +43,6 @@
 		"mime-types": "^2.1.35",
 		"n3": "^1.16.2",
 		"rdf-validate-shacl": "^0.4.4",
-		"rocketrml": "^1.13.0",
 		"uuid": "^8.3.2"
 	},
 	"devDependencies": {
