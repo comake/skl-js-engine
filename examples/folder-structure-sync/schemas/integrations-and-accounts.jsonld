@@ -37,9 +37,9 @@
       "https://skl.standard.storage/properties/integration": "https://skl.standard.storage/integrations/Dropbox"
     },
     {
-      "@id": "https://skl.standard.storage/data/DropboxAccount1OauthTokens",
-      "@type": "https://skl.standard.storage/nouns/OauthToken",
-      "https://skl.standard.storage/properties/accessToken": "sl.BLIuiudjbM8-NA4bTQzinJvzWVam9OlRNGLOuJ6aX0Zn9q6ZVMiFbCHvRFQTOgSzP4I8juzt1JFKhjD8b59zw30UXSQ00xU_cIjogVMQDc0vLYLMRPCzPzEY6bIAYyYdmqYXnSPsyEHK",
+      "@id": "https://skl.standard.storage/data/DropboxAccount1SecurityCredentials",
+      "@type": "https://skl.standard.storage/nouns/SecurityCredentials",
+      "https://skl.standard.storage/properties/accessToken": "sl.BMEGsWWiS1bBAoI7wsLmcdf8fiUfdislqlJcuWB5BuSsHfQlgdbHDyjgatYgYjtK48y92142vXEmiooLABe_oQIB2RLYFIgF3oxHSB_BXbIvUWuwWGUB5-xKvqlPXZ8MnglvQhKWNZFn",
       "https://skl.standard.storage/properties/account": "https://skl.standard.storage/data/DropboxAccount1"
     },
     {

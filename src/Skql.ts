@@ -21,10 +21,10 @@ export class SKQLBase {
     this.schema = schema;
   }
 
-  public constructVerbHandlerFromSchema(verbName: string): VerbHandler {
+  public async constructVerbHandlerFromSchema(verbName: string): Promise<VerbHandler> {
     const verbSchemaId = constructUri(SKL.verbs, verbName);
     try {
-      const verb = this.getSchemaById(verbSchemaId);
+      const verb = await this.getSchema({ '@id': verbSchemaId });
       return this.constructVerbHandler(verb);
     } catch {
       return async(): Promise<NodeObject> => {
@@ -33,67 +33,7 @@ export class SKQLBase {
     }
   }
 
-  private constructVerbHandler(verb: any): VerbHandler {
-    return async(args: any): Promise<NodeObject> => {
-      // Assert params match
-      const argsAsJsonLd = {
-        '@context': verb[SKL.parametersContext]['@value'],
-        '@type': 'https://skl.standard.storage/nouns/Parameters',
-        ...args,
-      };
-      await this.assertVerbParamsMatchParameterSchemas(
-        argsAsJsonLd,
-        verb[SKL.parametersProperty],
-        verb[SKL.nameProperty],
-      );
-
-      const account = this.getSchemaById(args.account);
-      // Find mapping for verb and integration
-      const mapping = this.getSchemaByFields({
-        '@type': SKL.verbIntegrationMappingNoun,
-        [SKL.verbsProperty]: verb['@id'],
-        [SKL.integrationProperty]: account[SKL.integrationProperty]['@id'],
-      });
-      // Perform mapping of args
-      const operationArgsJsonLd = await this.mapper.apply(args, mapping[SKL.parameterMappingProperty]);
-      const operationArgs = toJSON(operationArgsJsonLd);
-
-      const operationInfoJsonLd = await this.mapper.apply(args, mapping[SKL.operationMappingProperty]);
-      const { operationId } = toJSON(operationInfoJsonLd);
-      const openApiDescriptionSchema = this.getSchemaByFields({
-        '@type': SKL.openApiDescriptionNoun,
-        [SKL.integrationProperty]: account[SKL.integrationProperty]['@id'],
-      });
-
-      const oauthTokenSchema = this.getSchemaByFields({
-        '@type': SKL.oauthTokenNoun,
-        [SKL.accountProperty]: args.account,
-      });
-      const openApiDescription = openApiDescriptionSchema[SKL.openApiDescriptionProperty]['@value'] as OpenApi;
-      const openApiExecutor = new OpenApiOperationExecutor(openApiDescription);
-      const rawReturnValue = await openApiExecutor.executeOperation(
-        operationId as string,
-        { accessToken: oauthTokenSchema[SKL.accessTokenProperty] },
-        operationArgs,
-      );
-
-      // Perform mapping of return value
-      const mappedReturnValue = await this.mapper.apply(rawReturnValue.data, mapping[SKL.returnValueMappingProperty]);
-      await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, verb[SKL.returnValueProperty]);
-      return mappedReturnValue;
-    };
-  }
-
-  private getSchemaById(id: string): any {
-    const schema = this.schema.find((schemaInstance: any): boolean => schemaInstance['@id'] === id);
-    if (schema) {
-      return schema;
-    }
-
-    throw new Error(`No schema found with id ${id}`);
-  }
-
-  private getSchemaByFields(fields: any): any {
+  public async getSchema(fields: Record<string, any>): Promise<NodeObject> {
     const schema = this.schema.find((schemaInstance: any): boolean => {
       const schemaFields = Object.entries(fields);
       return schemaFields.every(([ fieldName, fieldValue ]): boolean => fieldName in schemaInstance &&
@@ -110,6 +50,66 @@ export class SKQLBase {
     throw new Error(`No schema found with fields matching ${JSON.stringify(fields)}`);
   }
 
+  private constructVerbHandler(verb: any): VerbHandler {
+    return async(args: any): Promise<NodeObject> => {
+      // Assert params match
+      const argsAsJsonLd = {
+        '@context': verb[SKL.parametersContext]['@value'],
+        '@type': 'https://skl.standard.storage/nouns/Parameters',
+        ...args,
+      };
+      await this.assertVerbParamsMatchParameterSchemas(
+        argsAsJsonLd,
+        verb[SKL.parametersProperty],
+        verb[SKL.nameProperty],
+      );
+
+      const account = await this.getSchema({ '@id': args.account });
+      // Find mapping for verb and integration
+      const mapping = await this.getSchema({
+        '@type': SKL.verbIntegrationMappingNoun,
+        [SKL.verbsProperty]: verb['@id'],
+        [SKL.integrationProperty]: (account[SKL.integrationProperty] as NodeObject)['@id'],
+      });
+      // Perform mapping of args
+      const operationArgsJsonLd = await this.mapper.apply(args, mapping[SKL.parameterMappingProperty] as NodeObject);
+      const operationArgs = toJSON(operationArgsJsonLd);
+
+      const operationInfoJsonLd = await this.mapper.apply(args, mapping[SKL.operationMappingProperty] as NodeObject);
+      const { operationId } = toJSON(operationInfoJsonLd);
+      const openApiDescriptionSchema = await this.getSchema({
+        '@type': SKL.openApiDescriptionNoun,
+        [SKL.integrationProperty]: (account[SKL.integrationProperty] as NodeObject)['@id'],
+      });
+
+      const securityCredentialsSchema = await this.getSchema({
+        '@type': SKL.securityCredentialsNoun,
+        [SKL.accountProperty]: args.account,
+      });
+      const openApiDescription = (
+        openApiDescriptionSchema[SKL.openApiDescriptionProperty] as NodeObject
+      )['@value'] as OpenApi;
+      const openApiExecutor = new OpenApiOperationExecutor();
+      await openApiExecutor.setOpenapiSpec(openApiDescription);
+      const rawReturnValue = await openApiExecutor.executeOperation(
+        operationId as string,
+        {
+          accessToken: securityCredentialsSchema[SKL.accessTokenProperty] as string,
+          apiKey: securityCredentialsSchema[SKL.apiKeyProperty] as string,
+        },
+        operationArgs,
+      );
+
+      // Perform mapping of return value
+      const mappedReturnValue = await this.mapper.apply(
+        rawReturnValue.data,
+        mapping[SKL.returnValueMappingProperty] as NodeObject,
+      );
+      await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, verb[SKL.returnValueProperty]);
+      return mappedReturnValue;
+    };
+  }
+
   private async assertVerbParamsMatchParameterSchemas(verbParams: any,
     parameterSchemas: any, verbName: string): Promise<void> {
     const paramsAsQuads = await convertJsonLdToQuads([ verbParams ]);
@@ -121,22 +121,26 @@ export class SKQLBase {
     }
   }
 
-  private async assertVerbReturnValueMatchesReturnTypeSchema(returnValue: any, returnTypeSchema: any): Promise<void> {
+  private async assertVerbReturnValueMatchesReturnTypeSchema(
+    returnValue: NodeObject,
+    returnTypeSchema: NodeObject,
+  ): Promise<void> {
     const returnValueAsQuads = await convertJsonLdToQuads([ returnValue ]);
-
-    let returnTypeSchemaObject;
+    let returnTypeSchemaObject: any;
     if (typeof returnTypeSchema === 'object' && returnTypeSchema['@type']) {
       returnTypeSchemaObject = returnTypeSchema;
     } else if (typeof returnTypeSchema === 'object' && returnTypeSchema['@id']) {
-      returnTypeSchemaObject = this.getSchemaById(returnTypeSchema['@id']);
+      returnTypeSchemaObject = await this.getSchema({ '@id': returnTypeSchema['@id'] });
     }
 
-    returnTypeSchemaObject[SHACL.targetClass] = { '@id': 'https://skl.standard.storage/mappings/frameObject' };
-    const shape = await convertJsonLdToQuads(returnTypeSchemaObject);
-    const validator = new SHACLValidator(shape);
-    const report = validator.validate(returnValueAsQuads);
-    if (!report.conforms) {
-      throw new Error(`Return value ${returnValue['@id']} does not conform to the schema`);
+    if (returnTypeSchemaObject) {
+      returnTypeSchemaObject[SHACL.targetClass] = { '@id': 'https://skl.standard.storage/mappings/frameObject' };
+      const shape = await convertJsonLdToQuads(returnTypeSchemaObject);
+      const validator = new SHACLValidator(shape);
+      const report = validator.validate(returnValueAsQuads);
+      if (!report.conforms) {
+        throw new Error(`Return value ${returnValue['@id']} does not conform to the schema`);
+      }
     }
   }
 }
@@ -151,7 +155,10 @@ function SKQLProxyBuilder(target: SKQLBase): SKQLProxy {
       if (property in getTarget) {
         return (getTarget as any)[property];
       }
-      return getTarget.constructVerbHandlerFromSchema(property);
+      return async(args: any): Promise<NodeObject> => {
+        const verbHandler = await getTarget.constructVerbHandlerFromSchema(property);
+        return verbHandler(args);
+      };
     },
   };
   return new Proxy(target, skqlProxyHandler) as SKQLProxy;
