@@ -547,8 +547,8 @@
       "sklproperties:integration": "https://skl.standard.storage/integrations/Dropbox"
     },
     {
-      "@id": "https://skl.standard.storage/data/DropboxAccount1OauthTokens",
-      "@type": "https://skl.standard.storage/nouns/OauthToken",
+      "@id": "https://skl.standard.storage/data/DropboxAccount1SecurityCredentials",
+      "@type": "https://skl.standard.storage/nouns/SecurityCredentials",
       "https://skl.standard.storage/properties/accessToken": "SPOOFED_TOKEN",
       "sklproperties:account": "https://skl.standard.storage/data/DropboxAccount1"
     },
