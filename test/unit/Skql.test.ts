@@ -58,6 +58,7 @@ describe('SKQL', (): void => {
     const account = 'https://skl.standard.storage/data/DropboxAccount1';
     let schema: any;
     let executeOperation: any;
+    let setOpenapiSpec: any;
 
     beforeEach(async(): Promise<void> => {
       schema = await frameAndCombineSchemas([
@@ -65,7 +66,8 @@ describe('SKQL', (): void => {
         './test/assets/schemas/get-dropbox-file.jsonld',
       ]);
       executeOperation = jest.fn().mockResolvedValue({ data: mockDropboxFile });
-      (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeOperation });
+      setOpenapiSpec = jest.fn();
+      (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeOperation, setOpenapiSpec });
     });
 
     it('can execute a verb.', async(): Promise<void> => {
@@ -149,13 +151,13 @@ describe('SKQL', (): void => {
         '{"@type":"https://skl.standard.storage/nouns/OpenApiDescription","https://skl.standard.storage/properties/integration":"https://skl.standard.storage/integrations/Dropbox"}',
       ].join(' '));
     });
-    it('errors if no oauth token for the account is in the schema.', async(): Promise<void> => {
-      schema = schema.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://skl.standard.storage/data/DropboxAccount1OauthTokens');
+    it('errors if no security credentials for the account is in the schema.', async(): Promise<void> => {
+      schema = schema.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://skl.standard.storage/data/DropboxAccount1SecurityCredentials');
       await SKQL.setSchema(schema);
       await expect(SKQL.getFile({ account, id: '12345' })).rejects.toThrow(Error);
       await expect(SKQL.getFile({ account, id: '12345' })).rejects.toThrow([
         'No schema found with fields matching',
-        '{"@type":"https://skl.standard.storage/nouns/OauthToken","https://skl.standard.storage/properties/account":"https://skl.standard.storage/data/DropboxAccount1"}',
+        '{"@type":"https://skl.standard.storage/nouns/SecurityCredentials","https://skl.standard.storage/properties/account":"https://skl.standard.storage/data/DropboxAccount1"}',
       ].join(' '));
     });
   });

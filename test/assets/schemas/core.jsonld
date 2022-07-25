@@ -163,9 +163,9 @@
       }
     },
     {
-      "@id": "https://skl.standard.storage/nouns/OauthToken",
+      "@id": "https://skl.standard.storage/nouns/SecurityCredentials",
       "@type": ["owl:Class", "shacl:NodeShape"],
-      "label": "Oauth Token",
+      "label": "Security Credentials",
       "rdfs:subClassOf": "https://skl.standard.storage/nouns/Noun",
       "shacl:closed": false,
       "shacl:property": [
@@ -182,6 +182,10 @@
         {
           "shacl:maxCount": 1,
           "shacl:path": "https://skl.standard.storage/properties/accessToken"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://skl.standard.storage/properties/apiKey"
         }
       ]
     },
