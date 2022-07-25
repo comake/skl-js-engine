@@ -48,8 +48,6 @@ Copyright (c) 2022, Comake, Inc.
 
 # TODO
 
-- [ ] add husky
-- [ ] unhardcode rml config
 - [ ] add README to example
 - [ ] add CONTRIBUTING.md, CODE_OF_CONDUCT.md, etc
-- [ ] add skds schema source
+- [ ] add SKDS schema source
