@@ -1,6 +1,6 @@
 import * as mime from 'mime-types';
 import { v4 as uuid } from 'uuid';
-import { GREL, IDLAB } from './util/Vocabularies';
+import { GREL, IDLAB } from '../util/Vocabularies';
 
 export const functions = {
   [GREL.arrayJoin]([ separator, ...parts ]: string[]): string {
@@ -25,6 +25,9 @@ export const functions = {
     const replace = data[GREL.pStringFind];
     const value = data[GREL.pStringReplace];
     return string.replace(replace, value);
+  },
+  [GREL.dateNow](): string {
+    return new Date().toISOString();
   },
   [IDLAB.equal]([ argA, argB ]: string[]): boolean {
     return argA === argB;

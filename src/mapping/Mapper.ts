@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention, unicorn/expiring-todo-comments */
 import * as RmlParser from '@comake/rmlmapper-js';
 import * as jsonld from 'jsonld';
+import { stringToBoolean, stringToInteger } from '../util/Util';
+import { SKL, XSD } from '../util/Vocabularies';
 import { functions } from './MapperFunctions';
-import { stringToBoolean, stringToInteger } from './util/Util';
-import { SKL, RDF, XSD } from './util/Vocabularies';
 
 export class Mapper {
   public async apply(data: jsonld.NodeObject, mapping: jsonld.NodeObject): Promise<jsonld.NodeObject> {
@@ -11,30 +11,14 @@ export class Mapper {
     const sources = { 'input.json': JSON.stringify(data) };
     // TODO always return arrays...
     const result = await RmlParser.parse(mappingAsQuads, sources, { functions }) as jsonld.NodeObject[];
-    this.convertRdfTypeToJsonLdType(result);
     return await this.frameJsonLdAndConvertToNativeTypes(result);
-  }
-
-  private convertRdfTypeToJsonLdType(jsonldDoc: jsonld.NodeObject[]): void {
-    for (const subDoc of jsonldDoc) {
-      if (RDF.type in subDoc) {
-        const rdfTypes = Array.isArray(subDoc[RDF.type])
-          ? (subDoc[RDF.type] as any[]).map((type: any): any => type['@id'])
-          : [ (subDoc[RDF.type] as any)['@id'] ];
-        subDoc['@type'] = [
-          ...subDoc['@type'] as string[] || [],
-          ...rdfTypes,
-        ];
-      }
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-      delete subDoc[RDF.type];
-    }
   }
 
   private async frameJsonLdAndConvertToNativeTypes(jsonldDoc: any[]): Promise<jsonld.NodeObject> {
     const frame: any = {
       '@context': {},
       '@type': 'https://skl.standard.storage/mappings/frameObject',
+      '@embed': '@always',
     };
 
     jsonldDoc.forEach(async(subDoc: any): Promise<void> => {

@@ -26,19 +26,13 @@
     "sklproperties:account": { "@type": "@id" },
     "sklproperties:openApiDescription": { "@type": "@json" },
     "sklproperties:parametersContext": { "@type": "@json" },
+    "sklproperties:noun": { "@type": "@id" },
+    "sklproperties:verb": { "@type": "@id" },
     "name": "sklproperties:name",
-    "parameterMapping": {
-      "@id": "sklproperties:parameterMapping",
-      "@type": "@id"
-    },
-    "returnValueMapping": {
-      "@id": "sklproperties:returnValueMapping",
-      "@type": "@id"
-    },
-    "operationMapping": {
-      "@id": "sklproperties:operationMapping",
-      "@type": "@id"
-    },
+    "sklproperties:parameterMapping": { "@type": "@id" },
+    "sklproperties:returnValueMapping": { "@type": "@id" },
+    "sklproperties:operationMapping": { "@type": "@id" },
+    "sklproperties:verbMapping": { "@type": "@id" },
     "integration": { "@id": "sklproperties:integration", "@type": "@id" },
     "verb": { "@id": "sklproperties:verb", "@type": "@id" },
     "rml:referenceFormulation": { "@type": "@id" },
@@ -50,7 +44,7 @@
   "@graph": [
     {
       "@id": "https://skl.standard.storage/verbs/getFile",
-      "@type": "https://skl.standard.storage/nouns/Verb",
+      "@type": "https://skl.standard.storage/nouns/OpenApiOperationVerb",
       "https://skl.standard.storage/properties/name": "getFile",
       "sklproperties:parametersContext": {
         "id": {
@@ -88,9 +82,9 @@
       "@type": "https://skl.standard.storage/nouns/VerbIntegrationMapping",
       "integration": "https://skl.standard.storage/integrations/Dropbox",
       "name": "getFileToDropbox",
-      "operationMapping": "https://skl.standard.storage/data/4/operationMapping/1",
-      "parameterMapping": "https://skl.standard.storage/data/4/parameterMapping/1",
-      "returnValueMapping": "https://skl.standard.storage/data/4/returnValueMapping/1",
+      "sklproperties:operationMapping": "https://skl.standard.storage/data/4/operationMapping/1",
+      "sklproperties:parameterMapping": "https://skl.standard.storage/data/4/parameterMapping/1",
+      "sklproperties:returnValueMapping": "https://skl.standard.storage/data/4/returnValueMapping/1",
       "verb": "https://skl.standard.storage/verbs/getFile"
     },
     {
@@ -170,7 +164,7 @@
                   "@type": "rr:PredicateObjectMap",
                   "rr:objectMap": {
                     "@type": "rr:ObjectMap",
-                    "rr:constant": ","
+                    "rr:constant": ""
                   },
                   "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_string_sep"
                 }
@@ -540,6 +534,110 @@
         "@type": "rr:SubjectMap",
         "rr:template": "https://skl.standard.storage/data/abc123"
       }
+    },
+    {
+      "@id": "https://skl.standard.storage/verbs/sync",
+      "@type": "https://skl.standard.storage/nouns/NounMappedVerb",
+      "sklproperties:name": "sync",
+      "sklproperties:parametersContext": {
+        "noun": {
+          "@id": "https://skl.standard.storage/properties/noun",
+          "@type": "@id"
+        },
+        "account": {
+          "@id": "https://skl.standard.storage/properties/account",
+          "@type": "@id"
+        }
+      },
+      "sklproperties:parameters": {
+        "@type": "shacl:NodeShape",
+        "shacl:targetClass": "https://skl.standard.storage/nouns/Parameters",
+        "shacl:property": [
+          {
+            "shacl:maxCount": 1,
+            "shacl:minCount": 1,
+            "shacl:name": "noun",
+            "shacl:path": "https://skl.standard.storage/properties/noun"
+          },
+          {
+            "shacl:maxCount": 1,
+            "shacl:minCount": 1,
+            "shacl:name": "account",
+            "shacl:path": "https://skl.standard.storage/properties/account"
+          }
+        ]
+      },
+      "sklproperties:returnValue": {
+        "@id": "https://skl.standard.storage/nouns/Verb"
+      }
+    },
+    {
+      "@id": "https://skl.standard.storage/data/34",
+      "@type": "https://skl.standard.storage/nouns/VerbNounMapping",
+      "sklproperties:verb": "https://skl.standard.storage/verbs/sync",
+      "sklproperties:noun": "https://skl.standard.storage/nouns/File",
+      "sklproperties:name": "syncFileToGetFile",
+      "sklproperties:verbMapping": "https://skl.standard.storage/data/34/verbMapping/1",
+      "sklproperties:parameterMapping": "https://skl.standard.storage/data/34/parameterMapping/1"
+    },
+    {
+      "@id": "https://skl.standard.storage/data/34/verbMapping/1",
+      "@type": "rr:TriplesMap",
+      "rml:logicalSource": {
+        "@type": "rml:LogicalSource",
+        "rml:iterator": "$",
+        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+        "rml:source": "input.json"
+      },
+      "rr:predicateObjectMap": [
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:object": "https://skl.standard.storage/mappings/frameObject",
+          "rr:predicate": "rdf:type"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:object": "https://skl.standard.storage/verbs/getFile",
+          "rr:predicate": "sklproperties:verb"
+        }
+      ],
+      "rr:subject": "https://skl.standard.storage/data/34/operationMapping/1/subject"
+    },
+    {
+      "@id": "https://skl.standard.storage/data/34/parameterMapping/1",
+      "@type": "rr:TriplesMap",
+      "rml:logicalSource": {
+        "@type": "rml:LogicalSource",
+        "rml:iterator": "$",
+        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+        "rml:source": "input.json"
+      },
+      "rr:subject": "https://skl.standard.storage/data/34/parameterMapping/1/subject",
+      "rr:predicateObjectMap": [
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:object": "https://skl.standard.storage/mappings/frameObject",
+          "rr:predicate": "rdf:type"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "rml:reference": "account",
+            "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
+          },
+          "rr:predicate": "sklproperties:account"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "rml:reference": "id",
+            "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
+          },
+          "rr:predicate": "sklproperties:id"
+        }
+      ]
     },
     {
       "@id": "https://skl.standard.storage/data/DropboxAccount1",

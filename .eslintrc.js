@@ -6,7 +6,7 @@ module.exports = {
     project: [
       './tsconfig.json',
       './test/tsconfig.json',
-      './examples/folder-structure-sync/tsconfig.json' 
+      './examples/folder-structure-sync/tsconfig.json'
     ],
   },
   // Ignoring js files (such as this one) since they seem to conflict with rules that require typing info
@@ -140,6 +140,7 @@ module.exports = {
         },
         "ignore": [
           "^rmlio__rmlmapper-java-wrapper.d.ts$",
+          "^comake__openapi-operation-executor.d.ts$",
         ]
       }
     ]

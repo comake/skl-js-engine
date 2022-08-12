@@ -1,0 +1,56 @@
+{
+  "@context": {
+    "shacl": "http://www.w3.org/ns/shacl#",
+    "fnml": "http://semweb.mmlab.be/ns/fnml#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "label": "rdfs:label",
+    "rdfs:subClassOf": { "@type": "@id" },
+    "rdfs:range": { "@type": "@id" },
+    "rdfs:domain": { "@type": "@id" },
+    "boolean": "http://www.w3.org/2001/XMLSchema#boolean",
+    "integer": "http://www.w3.org/2001/XMLSchema#integer",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "rr": "http://www.w3.org/ns/r2rml#",
+    "rml": "http://semweb.mmlab.be/ns/rml#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "rml:referenceFormulation": { "@type": "@id" },
+    "rr:predicate": { "@type": "@id" },
+    "rr:object": { "@type": "@id" },
+    "rr:termType": { "@type": "@id" },
+    "sklproperties": "https://skl.standard.storage/properties/"
+  },
+  "@graph": [
+    {
+      "@id": "https://example.com/mapping",
+      "@type": "rr:TriplesMap",
+      "rml:logicalSource": {
+        "@type": "rml:LogicalSource",
+        "rml:iterator": "$",
+        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+        "rml:source": "input.json"
+      },
+      "rr:predicateObjectMap": [
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:object": "https://skl.standard.storage/mappings/frameObject",
+          "rr:predicate": "rdf:type"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "rr:termType": "rr:IRI",
+            "rr:constant": "https://skl.standard.storage/integrations/Dropbox"
+          },
+          "rr:predicate": "sklproperties:integration"
+        }
+      ],
+      "rr:subjectMap": {
+        "@type": "rr:SubjectMap",
+        "rr:template": "https://example.com/mapping/subject"
+      }
+    }
+  ]
+}

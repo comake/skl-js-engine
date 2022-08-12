@@ -5,9 +5,10 @@ export async function frameAndCombineSchemas(filePaths: string[]): Promise<jsonl
   const schemas = await Promise.all(
     filePaths.map(async(filePath: string): Promise<jsonld.NodeObject[]> => {
       const schema = await fs.readFile(filePath, { encoding: 'utf8' });
-      const expandedSchema = await jsonld.expand(JSON.parse(schema));
-      return (await jsonld.frame(expandedSchema, {}))['@graph'] as jsonld.NodeObject[];
+      return await jsonld.expand(JSON.parse(schema));
     }),
   );
-  return schemas.flat();
+  const expandedSchema = schemas.flat();
+  const framedSchema = await jsonld.frame(expandedSchema, {});
+  return framedSchema['@graph'] as jsonld.NodeObject[];
 }

@@ -2,7 +2,7 @@
 import { promises as fsPromises } from 'fs';
 import * as path from 'path';
 import * as jsonld from 'jsonld';
-import { Mapper } from '../../src/Mapper';
+import { Mapper } from '../../../src/mapping/Mapper';
 
 async function filePathToExpandedJson(filePath: string): Promise<jsonld.JsonLdDocument> {
   const framedMapping = await fsPromises.readFile(
@@ -25,7 +25,7 @@ describe('A Mapper', (): void => {
     all keys in context and json native values.`,
   async(): Promise<void> => {
     data = { field: 'abc123' };
-    mapping = await filePathToExpandedJson('../assets/schemas/simple-mapping.jsonld');
+    mapping = await filePathToExpandedJson('../../assets/schemas/simple-mapping.jsonld');
     const response = await mapper.apply(data, mapping);
     expect(response).toEqual({
       '@context': {
@@ -40,7 +40,7 @@ describe('A Mapper', (): void => {
   it('adds a single rdf:type key into @type and unnests values to top level in returned json.',
     async(): Promise<void> => {
       data = { field: 'abc123' };
-      mapping = await filePathToExpandedJson('../assets/schemas/single-rdf-type-objectmap.jsonld');
+      mapping = await filePathToExpandedJson('../../assets/schemas/single-rdf-type-objectmap.jsonld');
       const response = await mapper.apply(data, mapping);
       expect(response).toEqual({
         '@context': {
@@ -55,7 +55,7 @@ describe('A Mapper', (): void => {
   it('adds multiple rdf:type keys into @type and unnests values to top level in returned json.',
     async(): Promise<void> => {
       data = { field: 'abc123' };
-      mapping = await filePathToExpandedJson('../assets/schemas/multiple-rdf-type-objectmaps.jsonld');
+      mapping = await filePathToExpandedJson('../../assets/schemas/multiple-rdf-type-objectmaps.jsonld');
       const response = await mapper.apply(data, mapping);
       expect(response).toEqual({
         '@context': {
@@ -73,7 +73,7 @@ describe('A Mapper', (): void => {
 
   it('frames and converts booleans to native type in the return value.', async(): Promise<void> => {
     data = { field: true };
-    mapping = await filePathToExpandedJson('../assets/schemas/boolean-datatype.jsonld');
+    mapping = await filePathToExpandedJson('../../assets/schemas/boolean-datatype.jsonld');
     const response = await mapper.apply(data, mapping);
     expect(response).toEqual({
       '@context': {
@@ -90,7 +90,7 @@ describe('A Mapper', (): void => {
 
   it('frames and converts integers to native type in the return value.', async(): Promise<void> => {
     data = { field: [ 1, 2, 3 ]};
-    mapping = await filePathToExpandedJson('../assets/schemas/integer-datatype.jsonld');
+    mapping = await filePathToExpandedJson('../../assets/schemas/integer-datatype.jsonld');
     const response = await mapper.apply(data, mapping);
     expect(response).toEqual({
       '@context': {
@@ -108,7 +108,7 @@ describe('A Mapper', (): void => {
 
   it('frames and converts doubles to native type in the return value.', async(): Promise<void> => {
     data = { field: 3.14159 };
-    mapping = await filePathToExpandedJson('../assets/schemas/double-datatype.jsonld');
+    mapping = await filePathToExpandedJson('../../assets/schemas/double-datatype.jsonld');
     const response = await mapper.apply(data, mapping);
     expect(response).toEqual({
       '@context': {
@@ -123,9 +123,26 @@ describe('A Mapper', (): void => {
     });
   });
 
+  it('frames and converts an IRI termType.', async(): Promise<void> => {
+    data = {};
+    mapping = await filePathToExpandedJson('../../assets/schemas/non-array-iri.jsonld');
+    const response = await mapper.apply(data, mapping);
+    expect(response).toEqual({
+      '@context': {
+        integration: {
+          '@id': 'https://skl.standard.storage/properties/integration',
+          '@type': '@id',
+        },
+      },
+      '@id': 'https://example.com/mapping/subject',
+      '@type': 'https://skl.standard.storage/mappings/frameObject',
+      integration: 'https://skl.standard.storage/integrations/Dropbox',
+    });
+  });
+
   it('frames converts an array of IRIs.', async(): Promise<void> => {
     data = {};
-    mapping = await filePathToExpandedJson('../assets/schemas/array-of-iris.jsonld');
+    mapping = await filePathToExpandedJson('../../assets/schemas/array-of-iris.jsonld');
     const response = await mapper.apply(data, mapping);
     expect(response).toEqual({
       '@context': {

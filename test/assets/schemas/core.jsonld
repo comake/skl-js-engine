@@ -258,6 +258,16 @@
       ]
     },
     {
+      "@id": "https://skl.standard.storage/nouns/OpenApiOperationVerb",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "rdfs:subClassOf": "https://skl.standard.storage/nouns/Verb"
+    },
+    {
+      "@id": "https://skl.standard.storage/nouns/NounMappedVerb",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "rdfs:subClassOf": "https://skl.standard.storage/nouns/Verb"
+    },
+    {
       "@id": "https://skl.standard.storage/nouns/VerbIntegrationMapping",
       "@type": ["owl:Class", "shacl:NodeShape"],
       "label": "Verb to Integration Mapping",
@@ -290,6 +300,29 @@
           "shacl:maxCount": 1,
           "shacl:nodeKind": { "@id": "shacl:IRI" },
           "shacl:path": "https://skl.standard.storage/properties/integration"
+        }
+      ]
+    },
+    {
+      "@id": "https://skl.standard.storage/nouns/VerbNounMapping",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "label": "Verb to Noun Mapping",
+      "rdfs:subClassOf": "https://skl.standard.storage/nouns/Mapping",
+      "shacl:closed": false,
+      "shacl:property": [
+        {
+          "shacl:class": "https://skl.standard.storage/nouns/Verb",
+          "shacl:maxCount": 1,
+          "shacl:minCount": 1,
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:path": "https://skl.standard.storage/properties/verb"
+        },
+        {
+          "shacl:class": "https://skl.standard.storage/nouns/Noun",
+          "shacl:maxCount": 1,
+          "shacl:minCount": 1,
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:path": "https://skl.standard.storage/properties/noun"
         }
       ]
     },

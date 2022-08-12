@@ -1,6 +1,8 @@
 import * as jsonld from 'jsonld';
 import { Parser, Store } from 'n3';
 
+export type JSONObject = Record<string, JSONValue>;
+
 export type JSONValue =
   | string
   | number
@@ -40,10 +42,17 @@ export async function convertJsonLdToQuads(jsonldDoc: any): Promise<Store> {
   return store;
 }
 
-export function toJSON(jsonLd: jsonld.NodeObject): Record<string, JSONValue> {
+export function toJSON(jsonLd: jsonld.NodeObject): JSONObject {
   [ '@context', '@id', '@type' ].forEach((key): void => {
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete jsonLd[key];
   });
-  return jsonLd as Record<string, JSONValue>;
+  return jsonLd as JSONObject;
+}
+
+export function ensureArray<T>(arrayable: T | T[]): T[] {
+  if (arrayable !== null && arrayable !== undefined) {
+    return Array.isArray(arrayable) ? arrayable : [ arrayable ];
+  }
+  return [];
 }
