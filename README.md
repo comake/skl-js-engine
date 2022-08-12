@@ -27,18 +27,12 @@ Once you have schemas defined for your domain, all you have to do is write code 
 
 ## How to contribute
 
-#### 1. Clone the repo
-
 To clone the repo, execute the following commands in your terminal:
 ```shell
 git clone https://github.com/comake/skql-js-engine.git
 cd skql-js-engine
 npm ci
 ```
-
-#### 2. Download RMLMapper
-
-Download the latest release of the RMLMapper jar from its [releases page](https://github.com/RMLio/rmlmapper-java/releases/). Put the jar file in a folder called `lib` at the top level of your local clone of this repo.
 
 # License & Copyright
 
