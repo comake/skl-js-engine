@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 function createNamespace(baseUri: string, localNames: Record<string, string>): Record<string, string> {
   const namespace: Record<string, string> = {};
   for (const [ key, value ] of Object.entries(localNames)) {
@@ -107,4 +108,8 @@ export const IDLAB = createNamespace('http://example.com/idlab/function/', {
   str: 'str',
   isNull: 'isNull',
   random: 'random',
+});
+
+export const SCHEMA = createNamespace('https://schema.org/', {
+  Event: 'Event',
 });

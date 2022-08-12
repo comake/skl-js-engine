@@ -48,6 +48,5 @@ Copyright (c) 2022, Comake, Inc.
 
 # TODO
 
-- [ ] add README to example
 - [ ] add CONTRIBUTING.md, CODE_OF_CONDUCT.md, etc
 - [ ] add SKDS schema source

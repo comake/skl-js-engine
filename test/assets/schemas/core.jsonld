@@ -220,7 +220,6 @@
           "shacl:path": "https://skl.standard.storage/properties/nextPageToken"
         },
         {
-          "shacl:class": "https://skl.standard.storage/nouns/Noun",
           "shacl:nodeKind": { "@id": "shacl:IRI" },
           "shacl:path": "https://skl.standard.storage/properties/records"
         }
