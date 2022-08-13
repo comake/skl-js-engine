@@ -16,9 +16,7 @@ yarn add @comake/skql-js-engine
 
 #### 2. Define Schemas
 
-We will be posting more documentation on schemas soon. For now, you can view examples of schemas in use in the [examples folder of skql-js-engine](https://github.com/comake/skql-js-engine/tree/main/examples).
-
- The [folder-structure-sync](https://github.com/comake/skql-js-engine/tree/main/examples/folder-structure-sync) example is a node.js module that can recursively loop through the folder structure of any Integration that works with the `getFilesInFolder` Verb.
+We will be posting more documentation on schemas soon.
 
 #### 3. Write code
 
@@ -44,3 +42,4 @@ Copyright (c) 2022, Comake, Inc.
 
 - [ ] add CONTRIBUTING.md, CODE_OF_CONDUCT.md, etc
 - [ ] add SKDS schema source
+- [ ] Add reference to examples in readme

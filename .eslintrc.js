@@ -6,7 +6,7 @@ module.exports = {
     project: [
       './tsconfig.json',
       './test/tsconfig.json',
-      './examples/folder-structure-sync/tsconfig.json'
+      './test/deploy/tsconfig.json',
     ],
   },
   // Ignoring js files (such as this one) since they seem to conflict with rules that require typing info

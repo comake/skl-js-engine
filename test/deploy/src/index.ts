@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-floating-promises, no-console, @typescript-eslint/naming-convention */
-import type { SchemaNodeObject } from '@comake/skql-js-engine';
 import { Skql } from '@comake/skql-js-engine';
 import { frameAndCombineSchemas } from './Util';
 
@@ -9,7 +8,7 @@ async function run(): Promise<void> {
     './src/assets/get-ticketmaster-events.jsonld',
   ];
   const env = { TICKETMASTER_APIKEY: process.env.TICKETMASTER_APIKEY! };
-  const schema = await frameAndCombineSchemas(schemas, env) as SchemaNodeObject[];
+  const schema = await frameAndCombineSchemas(schemas, env);
   const skql = new Skql({ schema });
   try {
     const eventsCollection = await skql.do.getEvents({
