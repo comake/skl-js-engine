@@ -43,7 +43,7 @@
 	},
 	"dependencies": {
 		"@comake/openapi-operation-executor": "^0.3.0",
-		"@comake/rmlmapper-js": "^0.0.2",
+		"@comake/rmlmapper-js": "^0.0.4",
 		"@rmlio/rmlmapper-java-wrapper": "^2.0.3",
 		"axios": "^0.27.2",
 		"js-yaml": "^4.1.0",
