@@ -100,7 +100,7 @@ describe('mapper functions', (): void => {
   describe('grel:date_now', (): void => {
     beforeAll((): void => {
       jest.useFakeTimers('modern');
-      jest.setSystemTime(new Date(2022, 7, 12));
+      jest.setSystemTime(new Date('2022-08-12T00:00:00.000Z'));
     });
 
     afterAll((): void => {
@@ -108,7 +108,7 @@ describe('mapper functions', (): void => {
     });
 
     it('returns the current time as an ISO datetime string.', (): void => {
-      expect(functions[GREL.dateNow]({})).toBe('2022-08-12T07:00:00.000Z');
+      expect(functions[GREL.dateNow]({})).toBe('2022-08-12T00:00:00.000Z');
     });
   });
 
