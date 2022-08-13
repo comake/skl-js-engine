@@ -5,8 +5,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
     project: [
       './tsconfig.json',
-      './test/tsconfig.json',
-      './test/deploy/tsconfig.json',
+      './test/tsconfig.json'
     ],
   },
   // Ignoring js files (such as this one) since they seem to conflict with rules that require typing info
