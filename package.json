@@ -28,6 +28,7 @@
 		"test:ts": "tsc -p test --noEmit",
     "test:integration": "jest --coverageReporters text-summary -- test/integration",
     "test:unit": "jest --config=./jest.coverage.config.js test/unit",
+    "test:package": "chmod +x ./test/deploy/validate-package.sh && ./test/deploy/validate-package.sh",
 		"prepare": "npm run build"
 	},
 	"main": "./dist/index.js",

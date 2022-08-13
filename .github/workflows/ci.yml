@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '16.x'
-      - run: npm ci --ignore-scripts --no-optional
+      - run: npm ci --ignore-scripts
       - run: npm run lint
 
   test-unit:
@@ -43,7 +43,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Install dependencies and run build scripts
-        run: npm ci --no-optional
+        run: npm ci
       - name: Type-check tests
         run: npm run test:ts
       - name: Run unit tests
@@ -73,7 +73,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Install dependencies and run build scripts
-        run: npm ci --no-optional
+        run: npm ci
       - name: Run integration tests
         run: npm run test:integration
   test-integration-windows:
@@ -94,9 +94,24 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Install dependencies and run build scripts
-        run: npm ci --no-optional
+        run: npm ci
       - name: Run integration tests
         run: npm run test:integration
+  test-package:
+    runs-on: ubuntu-latest
+    env:
+      TICKETMASTER_APIKEY: ${{ secrets.TICKETMASTER_APIKEY }}
+    steps:
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'
+      - name: Check out repository
+        uses: actions/checkout@v3
+      - name: Install dependencies and run build scripts
+        run: npm ci
+      - name: Run deploy tests
+        run: npm run test:package
   coveralls:
     needs: test-unit
     runs-on: ubuntu-latest
