@@ -31,7 +31,6 @@ jobs:
           - '14.x'
           - '16.0'
           - '16.x'
-          - '18.x'
     timeout-minutes: 15
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
@@ -61,7 +60,6 @@ jobs:
         node-version:
           - '14.x'
           - '16.x'
-          - '18.x'
     env:
       TEST_DOCKER: true
       TICKETMASTER_APIKEY: ${{ secrets.TICKETMASTER_APIKEY }}
