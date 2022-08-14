@@ -31,6 +31,7 @@ jobs:
           - '14.x'
           - '16.0'
           - '16.x'
+          - '18.x'
     timeout-minutes: 15
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
@@ -60,6 +61,7 @@ jobs:
         node-version:
           - '14.x'
           - '16.x'
+          - '18.x'
     env:
       TEST_DOCKER: true
       TICKETMASTER_APIKEY: ${{ secrets.TICKETMASTER_APIKEY }}
@@ -103,16 +105,13 @@ jobs:
         operating-system:
           - ubuntu-latest
           - windows-latest
-        node-version:
-          - '16.0'
-          - '16.x'
     env:
       TICKETMASTER_APIKEY: ${{ secrets.TICKETMASTER_APIKEY }}
     steps:
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: '16.x'
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Install dependencies and run build scripts
