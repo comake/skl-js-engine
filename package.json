@@ -30,10 +30,6 @@
 		"test:unit": "jest --config=./jest.coverage.config.js test/unit",
 		"test:package": "chmod +x ./test/deploy/validate-package.sh && ./test/deploy/validate-package.sh"
 	},
-	"exports": {
-		".": "./dist/index.js",
-		"./dist/web.js": "./dist/web.js"
-	},
   "main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"files": [
