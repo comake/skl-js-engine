@@ -104,6 +104,7 @@ jobs:
           - ubuntu-latest
           - windows-latest
           - macos-latest
+          - macos-12
     env:
       TICKETMASTER_APIKEY: ${{ secrets.TICKETMASTER_APIKEY }}
     steps:
