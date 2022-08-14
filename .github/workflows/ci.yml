@@ -19,7 +19,6 @@ jobs:
           node-version: '16.x'
       - run: npm ci --ignore-scripts
       - run: npm run lint
-
   test-unit:
     runs-on: ${{ matrix.operating-system }}
     strategy:
@@ -110,7 +109,22 @@ jobs:
         uses: actions/checkout@v3
       - name: Install dependencies and run build scripts
         run: npm ci
-      - name: Run deploy tests
+      - name: Run packag tests
+        run: npm run test:package
+  test-package-2:
+    runs-on: ubuntu-latest
+    env:
+      TICKETMASTER_APIKEY: ${{ secrets.TICKETMASTER_APIKEY }}
+    steps:
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14.x'
+      - name: Check out repository
+        uses: actions/checkout@v3
+      - name: Install dependencies and run build scripts
+        run: npm ci
+      - name: Run packag tests
         run: npm run test:package
   coveralls:
     needs: test-unit
