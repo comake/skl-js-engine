@@ -10,9 +10,10 @@ cd test/deploy
 
 npm install
 
+rm comake-skql-js-engine-*.tgz
+
 npm run build
 
-rm comake-skql-js-engine-*.tgz
 rm package-lock.json
 
 echo "$TEST_NAME - Running the script"
