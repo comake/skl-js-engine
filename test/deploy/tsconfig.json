@@ -5,10 +5,11 @@
     "sourceMap": true,
     "outDir": "dist",
     "resolveJsonModule": true,
-    "moduleResolution": "node"
   },
   "include": [
-    "src",
-    "comake-skql-js-engine-*.tgz"
+    "src"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }
