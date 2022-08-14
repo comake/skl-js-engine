@@ -1,4 +1,9 @@
-/* eslint-disable @typescript-eslint/no-floating-promises, no-console, @typescript-eslint/naming-convention */
+/* eslint-disable
+import/no-unresolved,
+@typescript-eslint/no-floating-promises,
+no-console,
+@typescript-eslint/naming-convention
+*/
 import { Skql } from '@comake/skql-js-engine';
 import { frameAndCombineSchemas } from './Util';
 
