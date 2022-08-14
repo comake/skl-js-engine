@@ -98,14 +98,25 @@ jobs:
       - name: Run integration tests
         run: npm run test:integration
   test-package:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.operating-system }}
+    strategy:
+      matrix:
+        operating-system:
+          - ubuntu-latest
+          - windows-latest
+        node-version:
+          - '14.2'
+          - '14.x'
+          - '16.0'
+          - '16.x'
     env:
       TICKETMASTER_APIKEY: ${{ secrets.TICKETMASTER_APIKEY }}
+    timeout-minutes: 15
     steps:
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16.x'
+          node-version: ${{ matrix.node-version }}
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Install dependencies and run build scripts
