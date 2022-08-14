@@ -23,7 +23,7 @@
 	"scripts": {
 		"build": "tsc",
 		"jest": "jest --coverageReporters text-summary --",
-		"lint": "eslint . --cache --ignore-path .gitignore --max-warnings 0",
+		"lint": "eslint . --cache --ignore-path .gitignore --ignore-pattern test/deploy --max-warnings 0",
 		"test": "npm run test:ts && npm run jest",
 		"test:ts": "tsc -p test --noEmit",
     "test:integration": "jest --coverageReporters text-summary -- test/integration",
