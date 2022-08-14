@@ -1,10 +1,7 @@
 {
   "extends": "@tsconfig/node14/tsconfig.json",
   "compilerOptions": {
-    "declaration": true,
-    "sourceMap": true,
     "outDir": "dist",
-    "resolveJsonModule": true,
   },
   "include": [
     "src"
