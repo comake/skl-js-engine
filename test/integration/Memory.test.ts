@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { NodeObject } from 'jsonld';
-import { Skql } from '../../src/Skql';
+import { Skql } from '../../src/SkqlNode';
 import { SCHEMA } from '../../src/util/Vocabularies';
 import { describeIf, frameAndCombineSchemas } from '../util/Util';
 
