@@ -4,6 +4,8 @@
 TEST_NAME="Deployment test: packaged module"
 
 echo "$TEST_NAME - Building and installing package"
+pwd
+
 npm pack --loglevel warn --pack-destination ./test/deploy
 
 cd test/deploy
