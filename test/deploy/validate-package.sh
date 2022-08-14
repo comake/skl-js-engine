@@ -13,8 +13,6 @@ npm install
 
 npm run build
 
-rm comake-skql-js-engine-*.tgz
-
 echo "$TEST_NAME - Running the script"
 set -e
 trap 'if [[ $? -eq 139 ]]; then echo "Segmentation fault occurred"; exit 1; fi' EXIT

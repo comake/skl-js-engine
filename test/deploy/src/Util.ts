@@ -1,4 +1,3 @@
-/* eslint-disable import/no-unresolved */
 import { promises as fs } from 'fs';
 import type { SchemaNodeObject } from '@comake/skql-js-engine';
 import * as jsonld from 'jsonld';
