@@ -8,3 +8,4 @@ yarn-error.log*
 rmlmapper-5.0.0-r362-all.jar
 tmp
 comake-skql-js-engine-*.tgz
+test/deploy/package-lock.json
