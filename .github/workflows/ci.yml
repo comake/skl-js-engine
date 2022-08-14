@@ -103,6 +103,7 @@ jobs:
         operating-system:
           - ubuntu-latest
           - windows-latest
+          - macos-latest
     env:
       TICKETMASTER_APIKEY: ${{ secrets.TICKETMASTER_APIKEY }}
     steps:
