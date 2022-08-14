@@ -135,11 +135,7 @@ module.exports = {
         "cases": {
           "camelCase": true,
           "pascalCase": true
-        },
-        "ignore": [
-          "^rmlio__rmlmapper-java-wrapper.d.ts$",
-          "^comake__openapi-operation-executor.d.ts$",
-        ]
+        }
       }
     ]
   },

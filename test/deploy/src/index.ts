@@ -1,5 +1,4 @@
 /* eslint-disable
-import/no-unresolved,
 @typescript-eslint/no-floating-promises,
 no-console,
 @typescript-eslint/naming-convention,
