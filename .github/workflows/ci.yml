@@ -103,28 +103,16 @@ jobs:
         operating-system:
           - ubuntu-latest
           - windows-latest
+        node-version:
+          - '16.0'
+          - '16.x'
     env:
       TICKETMASTER_APIKEY: ${{ secrets.TICKETMASTER_APIKEY }}
     steps:
-      - name: Use Node.js
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
-          node-version: '16.x'
-      - name: Check out repository
-        uses: actions/checkout@v3
-      - name: Install dependencies and run build scripts
-        run: npm ci
-      - name: Run package tests
-        run: npm run test:package
-  test-package-2:
-    runs-on: ubuntu-latest
-    env:
-      TICKETMASTER_APIKEY: ${{ secrets.TICKETMASTER_APIKEY }}
-    steps:
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '14.x'
+          node-version: ${{ matrix.node-version }}
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Install dependencies and run build scripts
