@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { OpenApi } from '@comake/openapi-operation-executor';
-import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor/dist/web.js';
 import type { NodeObject } from 'jsonld';
 import SHACLValidator from 'rdf-validate-shacl';
 import { Mapper } from './mapping/Mapper';
+import { OpenApiOperationExecutor } from './OpenApiOperationExecutor';
 import { MemoryQueryAdapter } from './storage/MemoryQueryAdapter';
 import type { QueryAdapter, FindQuery } from './storage/QueryAdapter';
 import type { SchemaNodeObject } from './util/Types';
@@ -189,7 +189,6 @@ export class Skql {
     const openApiDescription = (
       openApiDescriptionSchema[SKL.openApiDescriptionProperty] as NodeObject
     )['@value'] as OpenApi;
-
     const openApiExecutor = new OpenApiOperationExecutor();
     await openApiExecutor.setOpenapiSpec(openApiDescription);
     const response = await openApiExecutor.executeOperation(

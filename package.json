@@ -26,12 +26,14 @@
 		"lint": "eslint . --cache --ignore-path .gitignore --ignore-pattern test/deploy --max-warnings 0",
 		"test": "npm run test:ts && npm run jest",
 		"test:ts": "tsc -p test --noEmit",
-    "test:integration": "jest --coverageReporters text-summary -- test/integration",
-    "test:unit": "jest --config=./jest.coverage.config.js test/unit",
-    "test:package": "chmod +x ./test/deploy/validate-package.sh && ./test/deploy/validate-package.sh",
-		"prepare": "npm run build"
+		"test:integration": "jest --coverageReporters text-summary -- test/integration",
+		"test:unit": "jest --config=./jest.coverage.config.js test/unit",
+		"test:package": "chmod +x ./test/deploy/validate-package.sh && ./test/deploy/validate-package.sh"
 	},
-	"main": "./dist/index.js",
+	"exports": {
+		".": "./dist/index.js",
+		"./dist/web.js": "./dist/web.js"
+	},
 	"types": "./dist/index.d.ts",
 	"files": [
 		"dist",
@@ -43,8 +45,8 @@
 		]
 	},
 	"dependencies": {
-		"@comake/openapi-operation-executor": "^0.3.0",
-		"@comake/rmlmapper-js": "^0.0.4",
+		"@comake/openapi-operation-executor": "^0.3.4",
+		"@comake/rmlmapper-js": "^0.0.6",
 		"@rmlio/rmlmapper-java-wrapper": "^2.0.3",
 		"axios": "^0.27.2",
 		"js-yaml": "^4.1.0",
@@ -68,6 +70,7 @@
 		"@types/uuid": "^8.3.4",
 		"@typescript-eslint/eslint-plugin": "^5.29.0",
 		"@typescript-eslint/parser": "^5.29.0",
+		"browserify": "^17.0.0",
 		"eslint": "^8.18.0",
 		"eslint-config-es": "^3.26.13",
 		"eslint-plugin-import": "^2.26.0",

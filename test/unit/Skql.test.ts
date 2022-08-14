@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor/dist/web.js';
-import { Skql } from '../../src/Skql';
+/* eslint-disable @typescript-eslint/naming-convention, import/no-unresolved */
+import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
+import { Skql } from '../../src/SkqlNode';
 import { MemoryQueryAdapter } from '../../src/storage/MemoryQueryAdapter';
 import { SKL } from '../../src/util/Vocabularies';
 import { frameAndCombineSchemas } from '../util/Util';
 
-jest.mock('@comake/openapi-operation-executor/dist/web.js');
+jest.mock('@comake/openapi-operation-executor');
 
 const account = 'https://skl.standard.storage/data/DropboxAccount1';
 const mockDropboxFile = {

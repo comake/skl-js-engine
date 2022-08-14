@@ -11,4 +11,4 @@ export * from './util/Types';
 export * from './util/Util';
 export * from './util/Vocabularies';
 
-export * from './SkqlNode';
+export * from './SkqlWeb';
