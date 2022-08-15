@@ -163,6 +163,10 @@ describe('mapper functions', (): void => {
     it('returns the sum of the arguments.', (): void => {
       expect(functions[GREL.arraySum]({ [GREL.pArrayA]: [ 1, 2, 3 ]})).toBe(6);
     });
+
+    it('returns the p_array_a arg if it is not an array.', (): void => {
+      expect(functions[GREL.arraySum]({ [GREL.pArrayA]: 3 })).toBe(3);
+    });
   });
 
   describe('grel:boolean_not', (): void => {
