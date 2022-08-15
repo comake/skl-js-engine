@@ -63,11 +63,11 @@ export class Skql {
     mapping: NodeObject,
     convertToJson: T,
   ): Promise<MappingResponseOption<T>> {
-    const operationArgsJsonLd = await this.mapper.apply(args, mapping);
+    const jsonLd = await this.mapper.apply(args, mapping);
     if (convertToJson) {
-      return toJSON(operationArgsJsonLd) as MappingResponseOption<T>;
+      return toJSON(jsonLd) as MappingResponseOption<T>;
     }
-    return operationArgsJsonLd as MappingResponseOption<T>;
+    return jsonLd as MappingResponseOption<T>;
   }
 
   private async constructVerbHandlerFromSchema(verbName: string): Promise<VerbHandler> {
@@ -122,6 +122,7 @@ export class Skql {
         mapping[SKL.parameterMappingProperty] as NodeObject,
         true,
       );
+
       const operationInfoJsonLd = await this.map(
         args as NodeObject,
         mapping[SKL.operationMappingProperty] as NodeObject,

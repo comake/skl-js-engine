@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-function createNamespace(baseUri: string, localNames: Record<string, string>): Record<string, string> {
-  const namespace: Record<string, string> = {};
+function createNamespace<T extends string>(
+  baseUri: string,
+  localNames: Record<T, string>,
+): Record<keyof typeof localNames, string> {
+  const namespace: Record<T, string> = {} as Record<T, string>;
   for (const [ key, value ] of Object.entries(localNames)) {
-    namespace[key] = `${baseUri}${value}`;
+    namespace[key as T] = `${baseUri}${value}`;
   }
   return namespace;
 }
@@ -92,6 +95,8 @@ export const GREL = createNamespace('http://users.ugent.be/~bjdmeest/function/gr
   boolB: 'bool_b',
   anyTrue: 'any_true',
   anyFalse: 'any_false',
+  arraySum: 'array_sum',
+  pArrayA: 'p_array_a',
   stringEndsWith: 'string_endsWith',
   valueParameter: 'valueParameter',
   stringSub: 'string_sub',
@@ -99,6 +104,16 @@ export const GREL = createNamespace('http://users.ugent.be/~bjdmeest/function/gr
   pStringFind: 'p_string_find',
   pStringReplace: 'p_string_replace',
   dateNow: 'date_now',
+  booleanNot: 'boolean_not',
+  arrayGet: 'array_get',
+  paramIntIFrom: 'param_int_i_from',
+  paramIntIOptTo: 'param_int_i_opt_to',
+  stringSplit: 'string_split',
+  pStringSep: 'p_string_sep',
+  dateInc: 'date_inc',
+  pDateD: 'p_date_d',
+  pDecN: 'p_dec_n',
+  pStringUnit: 'p_string_unit',
 });
 
 export const IDLAB = createNamespace('http://example.com/idlab/function/', {
@@ -106,8 +121,11 @@ export const IDLAB = createNamespace('http://example.com/idlab/function/', {
   notEqual: 'notEqual',
   getMimeType: 'getMIMEType',
   str: 'str',
+  otherStr: 'otherStr',
   isNull: 'isNull',
   random: 'random',
+  concat: 'concat',
+  delimiter: 'delimiter',
 });
 
 export const SCHEMA = createNamespace('https://schema.org/', {

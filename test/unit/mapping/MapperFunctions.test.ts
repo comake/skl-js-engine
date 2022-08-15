@@ -112,6 +112,116 @@ describe('mapper functions', (): void => {
     });
   });
 
+  describe('grel:date_inc', (): void => {
+    it('returns a date with the specified unit added or subtracted.', (): void => {
+      expect(functions[GREL.dateInc]({
+        [GREL.pDateD]: '2022-08-12T00:00:00.000Z',
+        [GREL.pDecN]: 2,
+        [GREL.pStringUnit]: 'year',
+      }))
+        .toBe('2024-08-12T00:00:00.000Z');
+      expect(functions[GREL.dateInc]({
+        [GREL.pDateD]: '2022-08-12T00:00:00.000Z',
+        [GREL.pDecN]: -2,
+        [GREL.pStringUnit]: 'year',
+      }))
+        .toBe('2020-08-12T00:00:00.000Z');
+      expect(functions[GREL.dateInc]({
+        [GREL.pDateD]: '2022-08-12T00:00:00.000Z',
+        [GREL.pDecN]: 1,
+        [GREL.pStringUnit]: 'month',
+      }))
+        .toBe('2022-09-12T00:00:00.000Z');
+      expect(functions[GREL.dateInc]({
+        [GREL.pDateD]: '2022-08-12T00:00:00.000Z',
+        [GREL.pDecN]: -3,
+        [GREL.pStringUnit]: 'day',
+      }))
+        .toBe('2022-08-09T00:00:00.000Z');
+      expect(functions[GREL.dateInc]({
+        [GREL.pDateD]: '2022-08-12T00:00:00.000Z',
+        [GREL.pDecN]: 5,
+        [GREL.pStringUnit]: 'hour',
+      }))
+        .toBe('2022-08-12T05:00:00.000Z');
+      expect(functions[GREL.dateInc]({
+        [GREL.pDateD]: '2022-08-12T00:00:00.000Z',
+        [GREL.pDecN]: 30,
+        [GREL.pStringUnit]: 'minute',
+      }))
+        .toBe('2022-08-12T00:30:00.000Z');
+      expect(functions[GREL.dateInc]({
+        [GREL.pDateD]: '2022-08-12T00:00:00.000Z',
+        [GREL.pDecN]: 59,
+        [GREL.pStringUnit]: 'second',
+      }))
+        .toBe('2022-08-12T00:00:59.000Z');
+    });
+  });
+
+  describe('grel:array_sum', (): void => {
+    it('returns the sum of the arguments.', (): void => {
+      expect(functions[GREL.arraySum]({ [GREL.pArrayA]: [ 1, 2, 3 ]})).toBe(6);
+    });
+  });
+
+  describe('grel:boolean_not', (): void => {
+    it('returns false if the bool_b value is the string "true".', (): void => {
+      expect(functions[GREL.booleanNot]({ [GREL.boolB]: 'true' })).toBe(false);
+    });
+
+    it('returns false if the bool_b value is the boolean true.', (): void => {
+      expect(functions[GREL.booleanNot]({ [GREL.boolB]: true })).toBe(false);
+    });
+
+    it('returns true if the bool_b value is a string not equaling "true".', (): void => {
+      expect(functions[GREL.booleanNot]({ [GREL.boolB]: 'example' })).toBe(true);
+    });
+
+    it('returns true if the bool_b value the boolean false.', (): void => {
+      expect(functions[GREL.booleanNot]({ [GREL.boolB]: false })).toBe(true);
+    });
+
+    it('returns true if the bool_b value is not a string or boolean.', (): void => {
+      expect(functions[GREL.booleanNot]({ [GREL.boolB]: 1 })).toBe(true);
+    });
+  });
+
+  describe('grel:array_get', (): void => {
+    it(`returns the element at index equal to the param_int_i_from arg
+      if param_int_i_opt_to is not defined.`,
+    (): void => {
+      expect(functions[GREL.arrayGet]({
+        [GREL.pArrayA]: [ 1, 2, 3 ],
+        [GREL.paramIntIFrom]: 1,
+      })).toBe(2);
+    });
+
+    it(`returns an array of the elements between indexes equalling the param_int_i_from arg
+      and the param_int_i_opt_to arg.`,
+    (): void => {
+      expect(functions[GREL.arrayGet]({
+        [GREL.pArrayA]: [ 1, 2, 3 ],
+        [GREL.paramIntIFrom]: 1,
+        [GREL.paramIntIOptTo]: 3,
+      })).toEqual([ 2, 3 ]);
+      expect(functions[GREL.arrayGet]({
+        [GREL.pArrayA]: [ 1, 2, 3 ],
+        [GREL.paramIntIFrom]: 0,
+        [GREL.paramIntIOptTo]: 1,
+      })).toEqual([ 1 ]);
+    });
+  });
+
+  describe('grel:string_split', (): void => {
+    it('returns the string split into an array on the separator.', (): void => {
+      expect(functions[GREL.stringSplit]({
+        [GREL.valueParameter]: 'my mother mary',
+        [GREL.pStringSep]: ' ',
+      })).toEqual([ 'my', 'mother', 'mary' ]);
+    });
+  });
+
   describe('idlab:equal', (): void => {
     it('returns true if the two args are equal.', (): void => {
       expect(functions[IDLAB.equal]([ 'abc', 'abc' ])).toBe(true);
@@ -170,6 +280,23 @@ describe('mapper functions', (): void => {
     it('returns a random uuid.', (): void => {
       expect(functions[IDLAB.random]({})).toBe('abc123');
       expect(uuid).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('idlab:concat', (): void => {
+    it('returns the str and otherStr args joined by the delimiter.', (): void => {
+      expect(functions[IDLAB.concat]({
+        [IDLAB.str]: 'hello',
+        [IDLAB.otherStr]: 'world',
+        [IDLAB.delimiter]: ' ',
+      })).toBe('hello world');
+    });
+
+    it('returns the str and otherStr args joined if no delimiter is supplied.', (): void => {
+      expect(functions[IDLAB.concat]({
+        [IDLAB.str]: 'hello',
+        [IDLAB.otherStr]: 'world',
+      })).toBe('helloworld');
     });
   });
 });
