@@ -29,9 +29,9 @@
 		"test:integration": "jest --coverageReporters text-summary -- test/integration",
 		"test:unit": "jest --config=./jest.coverage.config.js test/unit",
 		"test:package": "chmod +x test/deploy/validate-package.sh && test/deploy/validate-package.sh",
-    "prepare": "npm run build"
+		"prepare": "npm run build"
 	},
-  "main": "./dist/index.js",
+	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"files": [
 		"dist",
@@ -45,7 +45,6 @@
 	"dependencies": {
 		"@comake/openapi-operation-executor": "^0.3.4",
 		"@comake/rmlmapper-js": "^0.0.6",
-		"@rmlio/rmlmapper-java-wrapper": "^2.0.3",
 		"axios": "^0.27.2",
 		"js-yaml": "^4.1.0",
 		"jsonld": "^5.2.0",
