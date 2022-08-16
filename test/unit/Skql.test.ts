@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention, import/no-unresolved */
 import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
-import { Skql } from '../../src/SkqlNode';
+import { Skql } from '../../src/Skql';
 import { MemoryQueryAdapter } from '../../src/storage/MemoryQueryAdapter';
 import { SKL } from '../../src/util/Vocabularies';
 import { frameAndCombineSchemas } from '../util/Util';
