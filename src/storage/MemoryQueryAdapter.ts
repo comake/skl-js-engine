@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { NodeObject } from 'jsonld';
-import type { SchemaNodeObject } from '../util/Types';
+import { v4 as uuid } from 'uuid';
+import type { SchemaNodeObject, UnsavedSchemaNodeObject } from '../util/Types';
 import { ensureArray } from '../util/Util';
 import { RDFS } from '../util/Vocabularies';
 import type { QueryAdapter, FindQuery } from './QueryAdapter';
@@ -37,6 +39,13 @@ export class MemoryQueryAdapter implements QueryAdapter {
     );
   }
 
+  public async create(record: UnsavedSchemaNodeObject): Promise<SchemaNodeObject> {
+    const id = `https://skl.standard.storage/data/${uuid()}`;
+    const savedRecord = { ...record, '@id': id } as SchemaNodeObject;
+    this.schemas[id] = savedRecord;
+    return savedRecord;
+  }
+
   private schemaInstanceMatchesQuery(schema: SchemaNodeObject, query: FindQuery): boolean {
     return Object.entries(query)
       .every(([ fieldName, fieldValue ]): boolean =>
@@ -64,12 +73,14 @@ export class MemoryQueryAdapter implements QueryAdapter {
   }
 
   private getSubClassesOf(targetClass: string): string[] {
+    // Cache subclassesOf
     return Object.values(this.schemas).reduce((
       subClasses: string[],
       schema: SchemaNodeObject,
     ): string[] => {
-      const subClassOf = ensureArray(schema[RDFS.subClassOf]);
-      if (subClassOf.includes(targetClass)) {
+      const subClassOf = ensureArray(schema[RDFS.subClassOf] as NodeObject[]);
+      // eslint-disable-next-line @typescript-eslint/no-confusing-non-null-assertion
+      if (subClassOf.some((subClass): boolean => subClass['@id']! === targetClass)) {
         subClasses = [
           ...subClasses,
           schema['@id']!,

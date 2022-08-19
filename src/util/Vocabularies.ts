@@ -15,6 +15,7 @@ export const SKL = createNamespace('https://skl.standard.storage/', {
   integrations: 'integrations/',
   nouns: 'nouns/',
   verbs: 'verbs/',
+  nounNoun: 'nouns/Noun',
   mappingNoun: 'nouns/Mapping',
   verbIntegrationMappingNoun: 'nouns/VerbIntegrationMapping',
   nounInterfaceMappingNoun: 'nouns/NounInterfaceMapping',
@@ -25,7 +26,8 @@ export const SKL = createNamespace('https://skl.standard.storage/', {
   folderNoun: 'nouns/Folder',
   verbNoun: 'nouns/Verb',
   openApiOperationVerbNoun: 'nouns/OpenApiOperationVerb',
-  nounMappingVerbNoun: 'nouns/NounMappedVerb',
+  openApiSecuritySchemeVerbNoun: 'nouns/OpenApiSecuritySchemeVerb',
+  nounMappedVerbNoun: 'nouns/NounMappedVerb',
   verbNounMappingNoun: 'nouns/VerbNounMapping',
   integrationNoun: 'nouns/Integration',
   stylingThemeNoun: 'nouns/StylingTheme',
@@ -54,6 +56,14 @@ export const SKL = createNamespace('https://skl.standard.storage/', {
   designTokensProperty: 'properties/designTokens',
   iterateProperty: 'properties/iterate',
   iterateItemAccessorProperty: 'properties/iterateItemAccessor',
+  clientIdProperty: 'properties/clientId',
+  integrationSyncConfigurationNoun: 'nouns/IntegrationSyncConfiguration',
+  syncStepDefaultArgsProperty: 'properties/syncStepDefaultArgs',
+  syncStepsProperty: 'properties/syncSteps',
+  tokenPaginatedCollectionNoun: 'nouns/TokenPaginatedCollection',
+  paginatedCollectionNoun: 'nouns/PaginatedCollection',
+  fileNoun: 'nouns/File',
+  eventNoun: 'nouns/Event',
 });
 
 export const XSD = createNamespace('http://www.w3.org/2001/XMLSchema#', {
@@ -83,6 +93,7 @@ export const OWL = createNamespace('http://www.w3.org/2002/07/owl#', {
   class: 'Class',
   intersectionOf: 'intersectionOf',
   someValuesFrom: 'someValuesFrom',
+  objectProperty: 'ObjectProperty',
 });
 
 export const SHACL = createNamespace('http://www.w3.org/ns/shacl#', {

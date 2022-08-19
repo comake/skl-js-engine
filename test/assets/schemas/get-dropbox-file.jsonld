@@ -640,6 +640,257 @@
       ]
     },
     {
+      "@id": "https://skl.standard.storage/verbs/authorizeWithPkceOauth",
+      "@type": "https://skl.standard.storage/nouns/OpenApiSecuritySchemeVerb",
+      "https://skl.standard.storage/properties/name": "authorizeWithPkceOauth",
+      "sklproperties:parametersContext": {
+        "integration": {
+          "@id": "https://skl.standard.storage/properties/integration",
+          "@type": "@id"
+        }
+      },
+      "sklproperties:parameters": {
+        "@type": "shacl:NodeShape",
+        "shacl:targetClass": "https://skl.standard.storage/nouns/Parameters",
+        "shacl:property": [
+          {
+            "shacl:maxCount": 1,
+            "shacl:minCount": 1,
+            "shacl:name": "integration",
+            "shacl:path": "https://skl.standard.storage/properties/integration"
+          }
+        ]
+      },
+      "sklproperties:returnValue": {
+        "@type": "@json"
+      }
+    },
+    {
+      "@id": "https://skl.standard.storage/data/44",
+      "@type": "https://skl.standard.storage/nouns/VerbIntegrationMapping",
+      "integration": "https://skl.standard.storage/integrations/Dropbox",
+      "verb": "https://skl.standard.storage/verbs/authorizeWithPkceOauth",
+      "name": "authorizeWithPkceOauthToDropbox",
+      "sklproperties:operationMapping": "https://skl.standard.storage/data/44/operationMapping/1"
+    },
+    {
+      "@id": "https://skl.standard.storage/data/44/operationMapping/1",
+      "@type": "rr:TriplesMap",
+      "rml:logicalSource": {
+        "@type": "rml:LogicalSource",
+        "rml:iterator": "$",
+        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+        "rml:source": "input.json"
+      },
+      "rr:predicateObjectMap": [
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:object": "https://skl.standard.storage/mappings/frameObject",
+          "rr:predicate": "rdf:type"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "rr:constant": "oAuth"
+          },
+          "rr:predicate": "sklproperties:schemeName"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "rr:constant": "authorizationCode"
+          },
+          "rr:predicate": "sklproperties:oauthFlow"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "rr:constant": "authorizationUrl"
+          },
+          "rr:predicate": "sklproperties:stage"
+        }
+      ],
+      "rr:subject": "https://skl.standard.storage/data/44/operationMapping/1/subject"
+    },
+    {
+      "@id": "https://skl.standard.storage/verbs/getTokensWithPkceOauth",
+      "@type": "https://skl.standard.storage/nouns/OpenApiSecuritySchemeVerb",
+      "https://skl.standard.storage/properties/name": "getTokensWithPkceOauth",
+      "sklproperties:parametersContext": {
+        "codeVerifier": {
+          "@id": "https://skl.standard.storage/properties/codeVerifier",
+          "@type": "http://www.w3.org/2001/XMLSchema#string"
+        },
+        "code": {
+          "@id": "https://skl.standard.storage/properties/code",
+          "@type": "http://www.w3.org/2001/XMLSchema#string"
+        },
+        "integration": {
+          "@id": "https://skl.standard.storage/properties/integration",
+          "@type": "@id"
+        }
+      },
+      "sklproperties:parameters": {
+        "@type": "shacl:NodeShape",
+        "shacl:targetClass": "https://skl.standard.storage/nouns/Parameters",
+        "shacl:property": [
+          {
+            "shacl:maxCount": 1,
+            "shacl:minCount": 1,
+            "shacl:name": "codeVerifier",
+            "shacl:path": "https://skl.standard.storage/properties/codeVerifier"
+          },
+          {
+            "shacl:maxCount": 1,
+            "shacl:minCount": 1,
+            "shacl:name": "code",
+            "shacl:path": "https://skl.standard.storage/properties/code"
+          },
+          {
+            "shacl:maxCount": 1,
+            "shacl:minCount": 1,
+            "shacl:name": "integration",
+            "shacl:path": "https://skl.standard.storage/properties/integration"
+          }
+        ]
+      },
+      "sklproperties:returnValue": {
+        "@type": "shacl:NodeShape",
+        "shacl:closed": false,
+        "shacl:property": [
+          {
+            "shacl:maxCount": 1,
+            "shacl:minCount": 1,
+            "shacl:name": "accessToken",
+            "shacl:path": "https://skl.standard.storage/properties/accessToken"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "https://skl.standard.storage/data/45",
+      "@type": "https://skl.standard.storage/nouns/VerbIntegrationMapping",
+      "integration": "https://skl.standard.storage/integrations/Dropbox",
+      "verb": "https://skl.standard.storage/verbs/getTokensWithPkceOauth",
+      "name": "authorizeWithPkceOauthToDropbox",
+      "sklproperties:parameterMapping": "https://skl.standard.storage/data/45/parameterMapping/1",
+      "sklproperties:operationMapping": "https://skl.standard.storage/data/45/operationMapping/1",
+      "sklproperties:returnValueMapping": "https://skl.standard.storage/data/45/returnValueMapping/1"
+    },
+    {
+      "@id": "https://skl.standard.storage/data/45/operationMapping/1",
+      "@type": "rr:TriplesMap",
+      "rml:logicalSource": {
+        "@type": "rml:LogicalSource",
+        "rml:iterator": "$",
+        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+        "rml:source": "input.json"
+      },
+      "rr:predicateObjectMap": [
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:object": "https://skl.standard.storage/mappings/frameObject",
+          "rr:predicate": "rdf:type"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "rr:constant": "oAuth"
+          },
+          "rr:predicate": "sklproperties:schemeName"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "rr:constant": "authorizationCode"
+          },
+          "rr:predicate": "sklproperties:oauthFlow"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "rr:constant": "tokenUrl"
+          },
+          "rr:predicate": "sklproperties:stage"
+        }
+      ],
+      "rr:subject": "https://skl.standard.storage/data/45/operationMapping/1/subject"
+    },
+    {
+      "@id": "https://skl.standard.storage/data/45/parameterMapping/1",
+      "@type": "rr:TriplesMap",
+      "rml:logicalSource": {
+        "@type": "rml:LogicalSource",
+        "rml:iterator": "$",
+        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+        "rml:source": "input.json"
+      },
+      "rr:predicateObjectMap": [
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:object": "https://skl.standard.storage/mappings/frameObject",
+          "rr:predicate": "rdf:type"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "rml:reference": "codeVerifier"
+          },
+          "rr:predicate": "sklproperties:code_verifier"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "rml:reference": "code"
+          },
+          "rr:predicate": "sklproperties:code"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "rr:constant": "authorization_code"
+          },
+          "rr:predicate": "sklproperties:grant_type"
+        }
+      ],
+      "rr:subject": "https://skl.standard.storage/data/45/operationMapping/1/subject"
+    },
+    {
+      "@id": "https://skl.standard.storage/data/45/returnValueMapping/1",
+      "@type": "rr:TriplesMap",
+      "rml:logicalSource": {
+        "@type": "rml:LogicalSource",
+        "rml:iterator": "$",
+        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+        "rml:source": "input.json"
+      },
+      "rr:predicateObjectMap": [
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:object": "https://skl.standard.storage/mappings/frameObject",
+          "rr:predicate": "rdf:type"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "rml:reference": "access_token"
+          },
+          "rr:predicate": "sklproperties:accessToken"
+        }
+      ],
+      "rr:subject": "https://skl.standard.storage/data/45/returnValueMapping/1/subject"
+    },
+    {
       "@id": "https://skl.standard.storage/data/DropboxAccount1",
       "@type": "https://skl.standard.storage/nouns/Account",
       "sklproperties:integration": "https://skl.standard.storage/integrations/Dropbox"

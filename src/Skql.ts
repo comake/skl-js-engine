@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { OpenApi } from '@comake/openapi-operation-executor';
+import type { OpenApi, CodeAuthorizationUrlResponse } from '@comake/openapi-operation-executor';
 import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
 import type { NodeObject } from 'jsonld';
 import SHACLValidator from 'rdf-validate-shacl';
 import { Mapper } from './mapping/Mapper';
 import { MemoryQueryAdapter } from './storage/MemoryQueryAdapter';
 import type { QueryAdapter, FindQuery } from './storage/QueryAdapter';
-import type { SchemaNodeObject } from './util/Types';
+import type { SchemaNodeObject, UnsavedSchemaNodeObject } from './util/Types';
 import { constructUri, convertJsonLdToQuads, toJSON } from './util/Util';
 import type { JSONObject } from './util/Util';
 import { SKL, SHACL } from './util/Vocabularies';
@@ -58,10 +58,14 @@ export class Skql {
     return await this.adapter.findAll(query);
   }
 
+  public async create(record: UnsavedSchemaNodeObject): Promise<SchemaNodeObject> {
+    return await this.adapter.create(record);
+  }
+
   public async map<T extends boolean = true>(
     args: NodeObject,
     mapping: NodeObject,
-    convertToJson: T,
+    convertToJson: T = true as T,
   ): Promise<MappingResponseOption<T>> {
     const jsonLd = await this.mapper.apply(args, mapping);
     if (convertToJson) {
@@ -87,7 +91,10 @@ export class Skql {
     if (verb['@type'] === SKL.openApiOperationVerbNoun) {
       return this.constructOpenApiOperationVerbHandler(verb);
     }
-    if (verb['@type'] === SKL.nounMappingVerbNoun) {
+    if (verb['@type'] === SKL.openApiSecuritySchemeVerbNoun) {
+      return this.constructOpenApiSecuritySchemeVerbHandler(verb);
+    }
+    if (verb['@type'] === SKL.nounMappedVerbNoun) {
       return this.constructNounMappingVerbHandler(verb);
     }
 
@@ -141,6 +148,82 @@ export class Skql {
         mappedReturnValue,
         verb[SKL.returnValueProperty] as NodeObject,
       );
+      return mappedReturnValue;
+    };
+  }
+
+  private constructOpenApiSecuritySchemeVerbHandler(verb: SchemaNodeObject): VerbHandler {
+    return async(args: JSONObject): Promise<NodeObject> => {
+      // Assert params match
+      const argsAsJsonLd = {
+        '@context': (verb[SKL.parametersContext] as NodeObject)['@value'],
+        '@type': 'https://skl.standard.storage/nouns/Parameters',
+        ...args,
+      };
+      await this.assertVerbParamsMatchParameterSchemas(
+        argsAsJsonLd,
+        verb[SKL.parametersProperty],
+        verb[SKL.nameProperty] as string,
+      );
+
+      const integration = await this.find({ id: args.integration as string });
+      // Find mapping for verb and integration
+      const mapping = await this.find({
+        type: SKL.verbIntegrationMappingNoun,
+        [SKL.verbsProperty]: verb['@id'],
+        [SKL.integrationProperty]: integration['@id'],
+      });
+
+      let operationArgs: any = args;
+      if (mapping[SKL.parameterMappingProperty]) {
+        operationArgs = await this.map(
+          args as NodeObject,
+          mapping[SKL.parameterMappingProperty] as NodeObject,
+          true,
+        );
+      }
+      operationArgs.client_id = integration[SKL.clientIdProperty];
+
+      const operationInfoJsonLd = await this.map(
+        args as NodeObject,
+        mapping[SKL.operationMappingProperty] as NodeObject,
+        true,
+      );
+      const { schemeName, oauthFlow, stage } = operationInfoJsonLd as Record<string, string>;
+      const openApiDescriptionSchema = await this.find({
+        type: SKL.openApiDescriptionNoun,
+        [SKL.integrationProperty]: integration['@id'],
+      });
+      const openApiDescription = (
+        openApiDescriptionSchema[SKL.openApiDescriptionProperty] as NodeObject
+      )['@value'] as OpenApi;
+
+      const openApiExecutor = new OpenApiOperationExecutor();
+      await openApiExecutor.setOpenapiSpec(openApiDescription);
+      const rawReturnValue = await openApiExecutor.executeSecuritySchemeStage(
+        schemeName,
+        oauthFlow,
+        stage,
+        operationArgs,
+      );
+
+      if ((rawReturnValue as CodeAuthorizationUrlResponse).authorizationUrl) {
+        return {
+          '@type': '@json',
+          '@value': rawReturnValue as unknown as JSONObject,
+        } as NodeObject;
+      }
+      const mappedReturnValue = await this.map(
+        (rawReturnValue as { data: NodeObject }).data,
+        mapping[SKL.returnValueMappingProperty] as NodeObject,
+        false,
+      );
+
+      await this.assertVerbReturnValueMatchesReturnTypeSchema(
+        mappedReturnValue,
+        verb[SKL.returnValueProperty] as NodeObject,
+      );
+
       return mappedReturnValue;
     };
   }

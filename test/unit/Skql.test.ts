@@ -8,6 +8,7 @@ import { frameAndCombineSchemas } from '../util/Util';
 jest.mock('@comake/openapi-operation-executor');
 
 const account = 'https://skl.standard.storage/data/DropboxAccount1';
+const integration = 'https://skl.standard.storage/integrations/Dropbox';
 const mockDropboxFile = {
   '.tag': 'file',
   client_modified: '2015-05-12T15:50:38Z',
@@ -263,6 +264,67 @@ describe('SKQL', (): void => {
       const skql = new Skql({ schema });
       await expect(skql.do.getFile({ account, id: '12345' }))
         .rejects.toThrow('returnTypeSchema is not properly formatted.');
+    });
+  });
+
+  describe('executing OpenApiSecuritySchemeVerbs', (): void => {
+    let executeSecuritySchemeStage: any;
+    let setOpenapiSpec: any;
+    let response: any;
+
+    beforeEach(async(): Promise<void> => {
+      schema = await frameAndCombineSchemas([
+        './test/assets/schemas/core.jsonld',
+        './test/assets/schemas/get-dropbox-file.jsonld',
+      ]);
+      response = { authorizationUrl: 'https://example.com/auth', codeVerifier: 'something' };
+      executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
+      setOpenapiSpec = jest.fn();
+      (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
+    });
+
+    it('can execute an OpenApiSecuritySchemeVerb that maps to the authorizationUrl stage.', async(): Promise<void> => {
+      const skql = new Skql({ schema });
+      await expect(skql.do.authorizeWithPkceOauth({ integration })).resolves.toEqual({
+        '@type': '@json',
+        '@value': response,
+      });
+      expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
+      expect(executeSecuritySchemeStage).toHaveBeenCalledWith(
+        'oAuth',
+        'authorizationCode',
+        'authorizationUrl',
+        {},
+      );
+    });
+
+    it('errors if the executed verb is not defined.', async(): Promise<void> => {
+      schema = schema.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://skl.standard.storage/verbs/getFile');
+      const skql = new Skql({ schema });
+      await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow(Error);
+      await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow(
+        'Failed to find the verb getFile in the schema',
+      );
+    });
+
+    it('can execute an OpenApiSecuritySchemeVerb that maps to the tokenUrl stage.', async(): Promise<void> => {
+      response = { data: { access_token: 'abc123' }};
+      executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
+      (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
+      const skql = new Skql({ schema });
+      const res = await skql.do.getTokensWithPkceOauth({ integration, codeVerifier: 'something', code: 'dummy_code' });
+      expect(res.accessToken).toBe('abc123');
+      expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
+      expect(executeSecuritySchemeStage).toHaveBeenCalledWith(
+        'oAuth',
+        'authorizationCode',
+        'tokenUrl',
+        {
+          code: 'dummy_code',
+          grant_type: 'authorization_code',
+          code_verifier: 'something',
+        },
+      );
     });
   });
 
