@@ -8,8 +8,8 @@ import { frameAndCombineSchemas } from './Util';
 
 async function run(): Promise<void> {
   const schemas = [
-    './src/assets/core.jsonld',
-    './src/assets/get-ticketmaster-events.jsonld',
+    './src/assets/core.json',
+    './src/assets/get-ticketmaster-events.json',
   ];
   const env = { TICKETMASTER_APIKEY: process.env.TICKETMASTER_APIKEY! };
   const schema = await frameAndCombineSchemas(schemas, env);

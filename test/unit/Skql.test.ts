@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
+import type { NodeObject } from 'jsonld';
 import { Skql } from '../../src/Skql';
 import { MemoryQueryAdapter } from '../../src/storage/MemoryQueryAdapter';
 import { SKL } from '../../src/util/Vocabularies';
-import { frameAndCombineSchemas } from '../util/Util';
+import simpleMapping from '../assets/schemas/simple-mapping.json';
+import { frameAndCombineSchemas, expandJsonLd } from '../util/Util';
 
 jest.mock('@comake/openapi-operation-executor');
 
@@ -105,7 +107,7 @@ describe('SKQL', (): void => {
     });
   });
 
-  describe('finding schemas', (): void => {
+  describe('CRUD on schemas', (): void => {
     let skql: Skql;
 
     beforeEach(async(): Promise<void> => {
@@ -142,6 +144,49 @@ describe('SKQL', (): void => {
       expect(findAllSpy).toHaveBeenCalledTimes(1);
       expect(findAllSpy).toHaveBeenCalledWith({ id: 'https://skl.standard.storage/verbs/Share' });
     });
+
+    it('delegates calls to create to the query adapter.', async(): Promise<void> => {
+      const findAllSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'create');
+      const res = await skql.create({ '@type': 'https://skl.standard.storage/nouns/Verb' });
+      expect(res['@id']).toMatch(/https:\/\/skl.standard.storage\/data\/[\d+-_/A-Za-z%]+/u);
+      expect(res['@type']).toBe('https://skl.standard.storage/nouns/Verb');
+      expect(findAllSpy).toHaveBeenCalledTimes(1);
+      expect(findAllSpy).toHaveBeenCalledWith({ '@type': 'https://skl.standard.storage/nouns/Verb' });
+    });
+  });
+
+  describe('mappind data', (): void => {
+    let skql: Skql;
+
+    beforeEach(async(): Promise<void> => {
+      schema = [{
+        '@id': 'https://skl.standard.storage/verbs/Share',
+        '@type': 'https://skl.standard.storage/verbs/OpenApiOperationVerb',
+      }];
+      skql = new Skql({ schema });
+    });
+
+    it('maps data.', async(): Promise<void> => {
+      const data = { field: 'abc123' };
+      const mapping = await expandJsonLd(simpleMapping);
+      // eslint-disable-next-line unicorn/no-array-method-this-argument
+      const response = await skql.map(data, mapping as NodeObject);
+      expect(response).toEqual({ field: 'abc123' });
+    });
+
+    it('maps data without converting it to json.', async(): Promise<void> => {
+      const data = { field: 'abc123' };
+      const mapping = await expandJsonLd(simpleMapping);
+      const response = await skql.map(data, mapping as NodeObject, false);
+      expect(response).toEqual({
+        '@context': {
+          field: 'https://skl.standard.storage/properties/field',
+        },
+        '@id': 'https://example.com/mapping/subject',
+        '@type': 'https://skl.standard.storage/mappings/frameObject',
+        field: 'abc123',
+      });
+    });
   });
 
   describe('executing OpenApiOperationVerbs', (): void => {
@@ -150,8 +195,8 @@ describe('SKQL', (): void => {
 
     beforeEach(async(): Promise<void> => {
       schema = await frameAndCombineSchemas([
-        './test/assets/schemas/core.jsonld',
-        './test/assets/schemas/get-dropbox-file.jsonld',
+        './test/assets/schemas/core.json',
+        './test/assets/schemas/get-dropbox-file.json',
       ]);
       executeOperation = jest.fn().mockResolvedValue({ data: mockDropboxFile });
       setOpenapiSpec = jest.fn();
@@ -274,8 +319,8 @@ describe('SKQL', (): void => {
 
     beforeEach(async(): Promise<void> => {
       schema = await frameAndCombineSchemas([
-        './test/assets/schemas/core.jsonld',
-        './test/assets/schemas/get-dropbox-file.jsonld',
+        './test/assets/schemas/core.json',
+        './test/assets/schemas/get-dropbox-file.json',
       ]);
       response = { authorizationUrl: 'https://example.com/auth', codeVerifier: 'something' };
       executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
@@ -294,7 +339,10 @@ describe('SKQL', (): void => {
         'oAuth',
         'authorizationCode',
         'authorizationUrl',
-        {},
+        {
+          client_id: 'abc123',
+          integration,
+        },
       );
     });
 
@@ -320,6 +368,7 @@ describe('SKQL', (): void => {
         'authorizationCode',
         'tokenUrl',
         {
+          client_id: 'abc123',
           code: 'dummy_code',
           grant_type: 'authorization_code',
           code_verifier: 'something',
@@ -334,8 +383,8 @@ describe('SKQL', (): void => {
 
     beforeEach(async(): Promise<void> => {
       schema = await frameAndCombineSchemas([
-        './test/assets/schemas/core.jsonld',
-        './test/assets/schemas/get-dropbox-file.jsonld',
+        './test/assets/schemas/core.json',
+        './test/assets/schemas/get-dropbox-file.json',
       ]);
       executeOperation = jest.fn().mockResolvedValue({ data: mockDropboxFile });
       setOpenapiSpec = jest.fn();

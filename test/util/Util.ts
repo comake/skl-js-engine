@@ -39,3 +39,7 @@ export async function frameAndCombineSchemas(
   const framedSchema = await jsonld.frame(expandedSchema, {});
   return framedSchema['@graph'] as SchemaNodeObject[];
 }
+
+export async function expandJsonLd(json: jsonld.JsonLdDocument): Promise<jsonld.JsonLdDocument> {
+  return await jsonld.expand(json);
+}

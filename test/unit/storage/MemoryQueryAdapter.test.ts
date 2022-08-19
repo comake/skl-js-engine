@@ -22,12 +22,16 @@ describe('a MemoryQueryAdapter', (): void => {
     {
       '@id': 'https://skl.standard.storage/nouns/File',
       '@type': OWL.class,
-      [RDFS.subClassOf]: 'https://skl.standard.storage/nouns/Noun',
+      [RDFS.subClassOf]: [
+        { '@id': 'https://skl.standard.storage/nouns/Noun' },
+      ],
     },
     {
       '@id': 'https://skl.standard.storage/nouns/Article',
       '@type': OWL.class,
-      [RDFS.subClassOf]: 'https://skl.standard.storage/nouns/Noun',
+      [RDFS.subClassOf]: [
+        { '@id': 'https://skl.standard.storage/nouns/Noun' },
+      ],
     },
     {
       '@id': 'https://skl.standard.storage/nouns/Noun',
@@ -83,5 +87,12 @@ describe('a MemoryQueryAdapter', (): void => {
         await expect(adapter.findAll({ type: 'https://skl.standard.storage/nouns/Noun' }))
           .resolves.toEqual([ schema[0], schema[1], schema[2] ]);
       });
+  });
+
+  describe('creating a schema', (): void => {
+    it('returns a saved schema.', async(): Promise<void> => {
+      const res = await adapter.create({ '@type': 'https://skl.standard.storage/nouns/Verb' });
+      expect(res['@id']).toMatch(/https:\/\/skl.standard.storage\/data\/[\d+-_/A-Za-z%]+/u);
+    });
   });
 });
