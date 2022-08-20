@@ -194,6 +194,7 @@ export class Skql {
         true,
       );
       const { schemeName, oauthFlow, stage } = operationInfoJsonLd as Record<string, string>;
+
       const openApiDescriptionSchema = await this.find({
         type: SKL.openApiDescriptionNoun,
         [SKL.integrationProperty]: integration['@id'],

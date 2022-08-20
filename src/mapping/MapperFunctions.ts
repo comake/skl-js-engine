@@ -55,6 +55,15 @@ export const functions = {
     }
     return Number.parseFloat(values);
   },
+  // Note: this is not in the GREL spec
+  // it follows the same params syntax as array sum
+  [GREL.arrayProduct](data: any): number {
+    const values = data[GREL.pArrayA];
+    if (Array.isArray(values)) {
+      return values.reduce((sum: number, num: string): number => sum * Number.parseFloat(num), 1);
+    }
+    return Number.parseFloat(values);
+  },
   [GREL.booleanNot](data: any): boolean {
     if (
       (typeof data[GREL.boolB] === 'string' && data[GREL.boolB] === 'true') ||
@@ -74,6 +83,12 @@ export const functions = {
   },
   [GREL.stringSplit](data: any): string[] {
     return data[GREL.valueParameter].split(data[GREL.pStringSep]);
+  },
+  [GREL.max](data: any): number {
+    return Math.max(Number.parseInt(data[GREL.pDecN], 10), Number.parseInt(data[GREL.paramN2], 10));
+  },
+  [GREL.min](data: any): number {
+    return Math.min(Number.parseInt(data[GREL.pDecN], 10), Number.parseInt(data[GREL.paramN2], 10));
   },
   [IDLAB.equal]([ argA, argB ]: string[]): boolean {
     return argA === argB;

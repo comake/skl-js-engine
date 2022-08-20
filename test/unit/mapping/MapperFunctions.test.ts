@@ -169,6 +169,16 @@ describe('mapper functions', (): void => {
     });
   });
 
+  describe('grel:array_product', (): void => {
+    it('returns the product of the arguments.', (): void => {
+      expect(functions[GREL.arrayProduct]({ [GREL.pArrayA]: [ 4, 2, 3 ]})).toBe(24);
+    });
+
+    it('returns the p_array_a arg if it is not an array.', (): void => {
+      expect(functions[GREL.arrayProduct]({ [GREL.pArrayA]: 3 })).toBe(3);
+    });
+  });
+
   describe('grel:boolean_not', (): void => {
     it('returns false if the bool_b value is the string "true".', (): void => {
       expect(functions[GREL.booleanNot]({ [GREL.boolB]: 'true' })).toBe(false);
@@ -223,6 +233,20 @@ describe('mapper functions', (): void => {
         [GREL.valueParameter]: 'my mother mary',
         [GREL.pStringSep]: ' ',
       })).toEqual([ 'my', 'mother', 'mary' ]);
+    });
+  });
+
+  describe('grel:math_max', (): void => {
+    it('returns the maximum of two numbers.', (): void => {
+      expect(functions[GREL.max]({ [GREL.pDecN]: 3, [GREL.paramN2]: 2 })).toBe(3);
+      expect(functions[GREL.max]({ [GREL.pDecN]: 34, [GREL.paramN2]: 43 })).toBe(43);
+    });
+  });
+
+  describe('grel:math_min', (): void => {
+    it('returns the minimum of two numbers.', (): void => {
+      expect(functions[GREL.min]({ [GREL.pDecN]: 3, [GREL.paramN2]: 2 })).toBe(2);
+      expect(functions[GREL.min]({ [GREL.pDecN]: 34, [GREL.paramN2]: 43 })).toBe(34);
     });
   });
 

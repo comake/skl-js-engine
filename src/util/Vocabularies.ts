@@ -107,6 +107,7 @@ export const GREL = createNamespace('http://users.ugent.be/~bjdmeest/function/gr
   anyTrue: 'any_true',
   anyFalse: 'any_false',
   arraySum: 'array_sum',
+  arrayProduct: 'array_product',
   pArrayA: 'p_array_a',
   stringEndsWith: 'string_endsWith',
   valueParameter: 'valueParameter',
@@ -124,7 +125,10 @@ export const GREL = createNamespace('http://users.ugent.be/~bjdmeest/function/gr
   dateInc: 'date_inc',
   pDateD: 'p_date_d',
   pDecN: 'p_dec_n',
+  paramN2: 'param_n2',
   pStringUnit: 'p_string_unit',
+  max: 'math_max',
+  min: 'math_min',
 });
 
 export const IDLAB = createNamespace('http://example.com/idlab/function/', {
