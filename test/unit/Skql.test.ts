@@ -146,12 +146,30 @@ describe('SKQL', (): void => {
     });
 
     it('delegates calls to create to the query adapter.', async(): Promise<void> => {
-      const findAllSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'create');
+      const createSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'create');
       const res = await skql.create({ '@type': 'https://skl.standard.storage/nouns/Verb' });
       expect(res['@id']).toMatch(/https:\/\/skl.standard.storage\/data\/[\d+-_/A-Za-z%]+/u);
       expect(res['@type']).toBe('https://skl.standard.storage/nouns/Verb');
-      expect(findAllSpy).toHaveBeenCalledTimes(1);
-      expect(findAllSpy).toHaveBeenCalledWith({ '@type': 'https://skl.standard.storage/nouns/Verb' });
+      expect(createSpy).toHaveBeenCalledTimes(1);
+      expect(createSpy).toHaveBeenCalledWith({ '@type': 'https://skl.standard.storage/nouns/Verb' });
+    });
+
+    it('delegates calls to update to the query adapter.', async(): Promise<void> => {
+      const updateSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'update');
+      const res = await skql.update({
+        '@id': 'https://skl.standard.storage/verbs/Share',
+        [SKL.nameProperty]: 'Share',
+      });
+      expect(res).toEqual({
+        '@id': 'https://skl.standard.storage/verbs/Share',
+        '@type': 'https://skl.standard.storage/verbs/OpenApiOperationVerb',
+        [SKL.nameProperty]: 'Share',
+      });
+      expect(updateSpy).toHaveBeenCalledTimes(1);
+      expect(updateSpy).toHaveBeenCalledWith({
+        '@id': 'https://skl.standard.storage/verbs/Share',
+        [SKL.nameProperty]: 'Share',
+      });
     });
   });
 

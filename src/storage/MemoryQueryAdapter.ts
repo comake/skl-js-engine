@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { NodeObject } from 'jsonld';
 import { v4 as uuid } from 'uuid';
-import type { SchemaNodeObject, UnsavedSchemaNodeObject } from '../util/Types';
+import type { SchemaNodeObject, UnsavedSchemaNodeObject, NodeObjectWithId } from '../util/Types';
 import { ensureArray } from '../util/Util';
 import { RDFS } from '../util/Vocabularies';
 import type { QueryAdapter, FindQuery } from './QueryAdapter';
@@ -44,6 +44,13 @@ export class MemoryQueryAdapter implements QueryAdapter {
     const savedRecord = { ...record, '@id': id } as SchemaNodeObject;
     this.schemas[id] = savedRecord;
     return savedRecord;
+  }
+
+  public async update(record: NodeObjectWithId): Promise<SchemaNodeObject> {
+    const existingRecord = this.schemas[record['@id']];
+    const newRecord = { ...existingRecord, ...record };
+    this.schemas[record['@id']] = newRecord;
+    return newRecord;
   }
 
   private schemaInstanceMatchesQuery(schema: SchemaNodeObject, query: FindQuery): boolean {

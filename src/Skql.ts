@@ -6,7 +6,7 @@ import SHACLValidator from 'rdf-validate-shacl';
 import { Mapper } from './mapping/Mapper';
 import { MemoryQueryAdapter } from './storage/MemoryQueryAdapter';
 import type { QueryAdapter, FindQuery } from './storage/QueryAdapter';
-import type { SchemaNodeObject, UnsavedSchemaNodeObject } from './util/Types';
+import type { SchemaNodeObject, UnsavedSchemaNodeObject, NodeObjectWithId } from './util/Types';
 import { constructUri, convertJsonLdToQuads, toJSON } from './util/Util';
 import type { JSONObject } from './util/Util';
 import { SKL, SHACL } from './util/Vocabularies';
@@ -60,6 +60,10 @@ export class Skql {
 
   public async create(record: UnsavedSchemaNodeObject): Promise<SchemaNodeObject> {
     return await this.adapter.create(record);
+  }
+
+  public async update(record: NodeObjectWithId): Promise<SchemaNodeObject> {
+    return await this.adapter.update(record);
   }
 
   public async map<T extends boolean = true>(

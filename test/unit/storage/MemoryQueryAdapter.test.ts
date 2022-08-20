@@ -95,4 +95,21 @@ describe('a MemoryQueryAdapter', (): void => {
       expect(res['@id']).toMatch(/https:\/\/skl.standard.storage\/data\/[\d+-_/A-Za-z%]+/u);
     });
   });
+
+  describe('updating a schema', (): void => {
+    it('returns the updated schema.', async(): Promise<void> => {
+      const res = await adapter.update({
+        '@id': 'https://skl.standard.storage/nouns/File',
+        [SKL.nameProperty]: 'File',
+      });
+      expect(res).toEqual({
+        '@id': 'https://skl.standard.storage/nouns/File',
+        '@type': OWL.class,
+        [RDFS.subClassOf]: [
+          { '@id': 'https://skl.standard.storage/nouns/Noun' },
+        ],
+        [SKL.nameProperty]: 'File',
+      });
+    });
+  });
 });

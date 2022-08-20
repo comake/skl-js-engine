@@ -1,5 +1,5 @@
 /* eslint-disable capitalized-comments */
-import type { SchemaNodeObject, UnsavedSchemaNodeObject } from '../util/Types';
+import type { SchemaNodeObject, UnsavedSchemaNodeObject, NodeObjectWithId } from '../util/Types';
 
 export interface FindQuery {
   type?: string;
@@ -17,6 +17,8 @@ export interface QueryAdapter {
   findAll: (query: FindQuery) => Promise<SchemaNodeObject[]>;
 
   create: (record: UnsavedSchemaNodeObject) => Promise<SchemaNodeObject>;
+
+  update: (record: NodeObjectWithId) => Promise<SchemaNodeObject>;
 
   // update: (record: NodeObject) => Promise<void>;
 
