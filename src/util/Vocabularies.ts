@@ -129,6 +129,9 @@ export const GREL = createNamespace('http://users.ugent.be/~bjdmeest/function/gr
   pStringUnit: 'p_string_unit',
   max: 'math_max',
   min: 'math_min',
+  booleanAnd: 'boolean_and',
+  booleanOr: 'boolean_or',
+  paramRepB: 'param_rep_b',
 });
 
 export const IDLAB = createNamespace('http://example.com/idlab/function/', {

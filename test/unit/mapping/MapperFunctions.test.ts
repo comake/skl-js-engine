@@ -201,6 +201,39 @@ describe('mapper functions', (): void => {
     });
   });
 
+  describe('grel:boolean_and', (): void => {
+    it('returns false not all param_rep_b values are true.', (): void => {
+      expect(functions[GREL.booleanAnd]({ [GREL.paramRepB]: [ false ]})).toBe(false);
+      expect(functions[GREL.booleanAnd]({ [GREL.paramRepB]: [ 'false' ]})).toBe(false);
+      expect(functions[GREL.booleanAnd]({ [GREL.paramRepB]: [ 'true', true, false ]})).toBe(false);
+      expect(functions[GREL.booleanAnd]({ [GREL.paramRepB]: [ true, false ]})).toBe(false);
+      expect(functions[GREL.booleanAnd]({ [GREL.paramRepB]: [ 'abc' ]})).toBe(false);
+    });
+
+    it('returns true if all param_rep_b calues are true.', (): void => {
+      expect(functions[GREL.booleanAnd]({ [GREL.paramRepB]: [ true ]})).toBe(true);
+      expect(functions[GREL.booleanAnd]({ [GREL.paramRepB]: [ 'true' ]})).toBe(true);
+      expect(functions[GREL.booleanAnd]({ [GREL.paramRepB]: [ 'true', true ]})).toBe(true);
+    });
+  });
+
+  describe('grel:boolean_or', (): void => {
+    it('returns false none of the param_rep_b values are true.', (): void => {
+      expect(functions[GREL.booleanOr]({ [GREL.paramRepB]: [ false ]})).toBe(false);
+      expect(functions[GREL.booleanOr]({ [GREL.paramRepB]: [ 'false' ]})).toBe(false);
+      expect(functions[GREL.booleanOr]({ [GREL.paramRepB]: [ false, '123' ]})).toBe(false);
+      expect(functions[GREL.booleanOr]({ [GREL.paramRepB]: [ 'has true in it' ]})).toBe(false);
+      expect(functions[GREL.booleanOr]({ [GREL.paramRepB]: [ 1 ]})).toBe(false);
+    });
+
+    it('returns true if any of the param_rep_b calues are true.', (): void => {
+      expect(functions[GREL.booleanOr]({ [GREL.paramRepB]: [ true ]})).toBe(true);
+      expect(functions[GREL.booleanOr]({ [GREL.paramRepB]: [ true, false ]})).toBe(true);
+      expect(functions[GREL.booleanOr]({ [GREL.paramRepB]: [ 'false', 'true' ]})).toBe(true);
+      expect(functions[GREL.booleanOr]({ [GREL.paramRepB]: [ 'abc', 123, 'true' ]})).toBe(true);
+    });
+  });
+
   describe('grel:array_get', (): void => {
     it(`returns the element at index equal to the param_int_i_from arg
       if param_int_i_opt_to is not defined.`,

@@ -2,6 +2,16 @@ import * as mime from 'mime-types';
 import { v4 as uuid } from 'uuid';
 import { GREL, IDLAB } from '../util/Vocabularies';
 
+function toBoolean(val: string | boolean): boolean {
+  if (
+    (typeof val === 'string' && val === 'true') ||
+    (typeof val === 'boolean' && val)
+  ) {
+    return true;
+  }
+  return false;
+}
+
 export const functions = {
   [GREL.arrayJoin]([ separator, ...parts ]: string[]): string {
     return parts.join(separator);
@@ -65,13 +75,15 @@ export const functions = {
     return Number.parseFloat(values);
   },
   [GREL.booleanNot](data: any): boolean {
-    if (
-      (typeof data[GREL.boolB] === 'string' && data[GREL.boolB] === 'true') ||
-      (typeof data[GREL.boolB] === 'boolean' && data[GREL.boolB])
-    ) {
-      return false;
-    }
-    return true;
+    return !toBoolean(data[GREL.boolB]);
+  },
+  [GREL.booleanAnd](data: any): boolean {
+    const values = data[GREL.paramRepB];
+    return values.every((val: string | boolean): boolean => toBoolean(val));
+  },
+  [GREL.booleanOr](data: any): boolean {
+    const values = data[GREL.paramRepB];
+    return values.some((val: string | boolean): boolean => toBoolean(val));
   },
   [GREL.arrayGet](data: any): any | any[] {
     const from = Number.parseInt(data[GREL.paramIntIFrom], 10);
