@@ -203,34 +203,34 @@ describe('mapper functions', (): void => {
 
   describe('grel:boolean_and', (): void => {
     it('returns false not all param_rep_b values are true.', (): void => {
-      expect(functions[GREL.booleanAnd]({ [GREL.paramRepB]: [ false ]})).toBe(false);
-      expect(functions[GREL.booleanAnd]({ [GREL.paramRepB]: [ 'false' ]})).toBe(false);
-      expect(functions[GREL.booleanAnd]({ [GREL.paramRepB]: [ 'true', true, false ]})).toBe(false);
-      expect(functions[GREL.booleanAnd]({ [GREL.paramRepB]: [ true, false ]})).toBe(false);
-      expect(functions[GREL.booleanAnd]({ [GREL.paramRepB]: [ 'abc' ]})).toBe(false);
+      expect(functions[GREL.booleanAnd]([ false ])).toBe(false);
+      expect(functions[GREL.booleanAnd]([ 'false' ])).toBe(false);
+      expect(functions[GREL.booleanAnd]([ 'true', true, false ])).toBe(false);
+      expect(functions[GREL.booleanAnd]([ true, false ])).toBe(false);
+      expect(functions[GREL.booleanAnd]([ 'abc' ])).toBe(false);
     });
 
     it('returns true if all param_rep_b calues are true.', (): void => {
-      expect(functions[GREL.booleanAnd]({ [GREL.paramRepB]: [ true ]})).toBe(true);
-      expect(functions[GREL.booleanAnd]({ [GREL.paramRepB]: [ 'true' ]})).toBe(true);
-      expect(functions[GREL.booleanAnd]({ [GREL.paramRepB]: [ 'true', true ]})).toBe(true);
+      expect(functions[GREL.booleanAnd]([ true ])).toBe(true);
+      expect(functions[GREL.booleanAnd]([ 'true' ])).toBe(true);
+      expect(functions[GREL.booleanAnd]([ 'true', true ])).toBe(true);
     });
   });
 
   describe('grel:boolean_or', (): void => {
     it('returns false none of the param_rep_b values are true.', (): void => {
-      expect(functions[GREL.booleanOr]({ [GREL.paramRepB]: [ false ]})).toBe(false);
-      expect(functions[GREL.booleanOr]({ [GREL.paramRepB]: [ 'false' ]})).toBe(false);
-      expect(functions[GREL.booleanOr]({ [GREL.paramRepB]: [ false, '123' ]})).toBe(false);
-      expect(functions[GREL.booleanOr]({ [GREL.paramRepB]: [ 'has true in it' ]})).toBe(false);
-      expect(functions[GREL.booleanOr]({ [GREL.paramRepB]: [ 1 ]})).toBe(false);
+      expect(functions[GREL.booleanOr]([ false ])).toBe(false);
+      expect(functions[GREL.booleanOr]([ 'false' ])).toBe(false);
+      expect(functions[GREL.booleanOr]([ false, '123' ])).toBe(false);
+      expect(functions[GREL.booleanOr]([ 'has true in it' ])).toBe(false);
+      expect(functions[GREL.booleanOr]([ 1 ])).toBe(false);
     });
 
     it('returns true if any of the param_rep_b calues are true.', (): void => {
-      expect(functions[GREL.booleanOr]({ [GREL.paramRepB]: [ true ]})).toBe(true);
-      expect(functions[GREL.booleanOr]({ [GREL.paramRepB]: [ true, false ]})).toBe(true);
-      expect(functions[GREL.booleanOr]({ [GREL.paramRepB]: [ 'false', 'true' ]})).toBe(true);
-      expect(functions[GREL.booleanOr]({ [GREL.paramRepB]: [ 'abc', 123, 'true' ]})).toBe(true);
+      expect(functions[GREL.booleanOr]([ true ])).toBe(true);
+      expect(functions[GREL.booleanOr]([ true, false ])).toBe(true);
+      expect(functions[GREL.booleanOr]([ 'false', 'true' ])).toBe(true);
+      expect(functions[GREL.booleanOr]([ 'abc', 123, 'true' ])).toBe(true);
     });
   });
 

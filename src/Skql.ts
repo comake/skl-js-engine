@@ -66,16 +66,19 @@ export class Skql {
     return await this.adapter.update(record);
   }
 
-  public async map<T extends boolean = true>(
+  public async performMapping(
     args: NodeObject,
     mapping: NodeObject,
-    convertToJson: T = true as T,
-  ): Promise<MappingResponseOption<T>> {
-    const jsonLd = await this.mapper.apply(args, mapping);
-    if (convertToJson) {
-      return toJSON(jsonLd) as MappingResponseOption<T>;
-    }
-    return jsonLd as MappingResponseOption<T>;
+  ): Promise<NodeObject> {
+    return await this.mapper.apply(args, mapping);
+  }
+
+  public async performMappingAndConvertToJSON(
+    args: NodeObject,
+    mapping: NodeObject,
+  ): Promise<JSONObject> {
+    const jsonLd = await this.mapper.applyAndFrameSklProperties(args, mapping);
+    return toJSON(jsonLd);
   }
 
   private async constructVerbHandlerFromSchema(verbName: string): Promise<VerbHandler> {
@@ -92,13 +95,13 @@ export class Skql {
   }
 
   private constructVerbHandler(verb: SchemaNodeObject): VerbHandler {
-    if (verb['@type'] === SKL.openApiOperationVerbNoun) {
+    if (verb['@type'] === SKL.OpenApiOperationVerb) {
       return this.constructOpenApiOperationVerbHandler(verb);
     }
-    if (verb['@type'] === SKL.openApiSecuritySchemeVerbNoun) {
+    if (verb['@type'] === SKL.OpenApiSecuritySchemeVerb) {
       return this.constructOpenApiSecuritySchemeVerbHandler(verb);
     }
-    if (verb['@type'] === SKL.nounMappedVerbNoun) {
+    if (verb['@type'] === SKL.NounMappedVerb) {
       return this.constructNounMappingVerbHandler(verb);
     }
 
@@ -115,42 +118,40 @@ export class Skql {
       };
       await this.assertVerbParamsMatchParameterSchemas(
         argsAsJsonLd,
-        verb[SKL.parametersProperty],
-        verb[SKL.nameProperty] as string,
+        verb[SKL.parameters],
+        verb[SKL.name] as string,
       );
 
       const account = await this.find({ id: args.account as string });
       // Find mapping for verb and integration
       const mapping = await this.find({
-        type: SKL.verbIntegrationMappingNoun,
-        [SKL.verbsProperty]: verb['@id'],
-        [SKL.integrationProperty]: (account[SKL.integrationProperty] as NodeObject)['@id'],
+        type: SKL.VerbIntegrationMapping,
+        [SKL.verb]: verb['@id'],
+        [SKL.integration]: (account[SKL.integration] as NodeObject)['@id'],
       });
 
       // Perform mapping of args
-      const operationArgs = await this.map(
+      const operationArgs = await this.performMappingAndConvertToJSON(
         args as NodeObject,
-        mapping[SKL.parameterMappingProperty] as NodeObject,
-        true,
+        mapping[SKL.parameterMapping] as NodeObject,
       );
 
-      const operationInfoJsonLd = await this.map(
+      const operationInfoJsonLd = await this.performMapping(
         args as NodeObject,
-        mapping[SKL.operationMappingProperty] as NodeObject,
-        true,
+        mapping[SKL.operationMapping] as NodeObject,
       );
-      const { operationId } = operationInfoJsonLd as Record<string, string>;
+
+      const operationId = operationInfoJsonLd[SKL.operationId] as string;
       // Perform the operation
       const rawReturnValue = await this.performOpenapiOperation(operationId, operationArgs, account);
       // Perform mapping of return value
-      const mappedReturnValue = await this.map(
+      const mappedReturnValue = await this.performMapping(
         rawReturnValue.data as NodeObject,
-        mapping[SKL.returnValueMappingProperty] as NodeObject,
-        false,
+        mapping[SKL.returnValueMapping] as NodeObject,
       );
       await this.assertVerbReturnValueMatchesReturnTypeSchema(
         mappedReturnValue,
-        verb[SKL.returnValueProperty] as NodeObject,
+        verb[SKL.returnValue] as NodeObject,
       );
       return mappedReturnValue;
     };
@@ -166,49 +167,46 @@ export class Skql {
       };
       await this.assertVerbParamsMatchParameterSchemas(
         argsAsJsonLd,
-        verb[SKL.parametersProperty],
-        verb[SKL.nameProperty] as string,
+        verb[SKL.parameters],
+        verb[SKL.name] as string,
       );
 
       const integration = await this.find({ id: args.integration as string });
       // Find mapping for verb and integration
       const mapping = await this.find({
-        type: SKL.verbIntegrationMappingNoun,
-        [SKL.verbsProperty]: verb['@id'],
-        [SKL.integrationProperty]: integration['@id'],
+        type: SKL.VerbIntegrationMapping,
+        [SKL.verb]: verb['@id'],
+        [SKL.integration]: integration['@id'],
       });
 
       let operationArgs: any = args;
-      if (mapping[SKL.parameterMappingProperty]) {
-        operationArgs = await this.map(
+      if (mapping[SKL.parameterMapping]) {
+        operationArgs = await this.performMappingAndConvertToJSON(
           args as NodeObject,
-          mapping[SKL.parameterMappingProperty] as NodeObject,
-          true,
+          mapping[SKL.parameterMapping] as NodeObject,
         );
       }
-      operationArgs.client_id = integration[SKL.clientIdProperty];
+      operationArgs.client_id = integration[SKL.clientId];
 
-      const operationInfoJsonLd = await this.map(
+      const operationInfoJsonLd = await this.performMapping(
         args as NodeObject,
-        mapping[SKL.operationMappingProperty] as NodeObject,
-        true,
+        mapping[SKL.operationMapping] as NodeObject,
       );
-      const { schemeName, oauthFlow, stage } = operationInfoJsonLd as Record<string, string>;
 
       const openApiDescriptionSchema = await this.find({
-        type: SKL.openApiDescriptionNoun,
-        [SKL.integrationProperty]: integration['@id'],
+        type: SKL.OpenApiDescription,
+        [SKL.integration]: integration['@id'],
       });
       const openApiDescription = (
-        openApiDescriptionSchema[SKL.openApiDescriptionProperty] as NodeObject
+        openApiDescriptionSchema[SKL.openApiDescription] as NodeObject
       )['@value'] as OpenApi;
 
       const openApiExecutor = new OpenApiOperationExecutor();
       await openApiExecutor.setOpenapiSpec(openApiDescription);
       const rawReturnValue = await openApiExecutor.executeSecuritySchemeStage(
-        schemeName,
-        oauthFlow,
-        stage,
+        operationInfoJsonLd[SKL.schemeName] as string,
+        operationInfoJsonLd[SKL.oauthFlow] as string,
+        operationInfoJsonLd[SKL.stage] as string,
         operationArgs,
       );
 
@@ -218,15 +216,14 @@ export class Skql {
           '@value': rawReturnValue as unknown as JSONObject,
         } as NodeObject;
       }
-      const mappedReturnValue = await this.map(
+      const mappedReturnValue = await this.performMapping(
         (rawReturnValue as { data: NodeObject }).data,
-        mapping[SKL.returnValueMappingProperty] as NodeObject,
-        false,
+        mapping[SKL.returnValueMapping] as NodeObject,
       );
 
       await this.assertVerbReturnValueMatchesReturnTypeSchema(
         mappedReturnValue,
-        verb[SKL.returnValueProperty] as NodeObject,
+        verb[SKL.returnValue] as NodeObject,
       );
 
       return mappedReturnValue;
@@ -237,14 +234,20 @@ export class Skql {
     return async(args: JSONObject): Promise<NodeObject> => {
       // Find mapping for verb and Noun
       const mapping = await this.find({
-        type: SKL.verbNounMappingNoun,
-        [SKL.verbsProperty]: verb['@id'],
-        [SKL.nounProperty]: args.noun as string,
+        type: SKL.VerbNounMapping,
+        [SKL.verb]: verb['@id'],
+        [SKL.noun]: args.noun as string,
       });
 
-      const verbArgs = await this.map(args as NodeObject, mapping[SKL.parameterMappingProperty] as NodeObject, true);
-      const verbInfoJsonLd = await this.map(args as NodeObject, mapping[SKL.verbMappingProperty] as NodeObject, true);
-      const mappedVerb = await this.find({ id: verbInfoJsonLd.verb as string });
+      const verbArgs = await this.performMappingAndConvertToJSON(
+        args as NodeObject,
+        mapping[SKL.parameterMapping] as NodeObject,
+      );
+      const verbInfoJsonLd = await this.performMapping(
+        args as NodeObject,
+        mapping[SKL.verbMapping] as NodeObject,
+      );
+      const mappedVerb = await this.find({ id: verbInfoJsonLd[SKL.verb] as string });
       return this.constructVerbHandler(mappedVerb)(verbArgs);
     };
   }
@@ -266,25 +269,25 @@ export class Skql {
     account: SchemaNodeObject,
   ): Promise<any> {
     const openApiDescriptionSchema = await this.find({
-      type: SKL.openApiDescriptionNoun,
-      [SKL.integrationProperty]: (account[SKL.integrationProperty] as SchemaNodeObject)['@id'],
+      type: SKL.OpenApiDescription,
+      [SKL.integration]: (account[SKL.integration] as SchemaNodeObject)['@id'],
     });
 
     const securityCredentialsSchema = await this.find({
-      type: SKL.securityCredentialsNoun,
-      [SKL.accountProperty]: account['@id'],
+      type: SKL.SecurityCredentials,
+      [SKL.account]: account['@id'],
     });
 
     const openApiDescription = (
-      openApiDescriptionSchema[SKL.openApiDescriptionProperty] as NodeObject
+      openApiDescriptionSchema[SKL.openApiDescription] as NodeObject
     )['@value'] as OpenApi;
     const openApiExecutor = new OpenApiOperationExecutor();
     await openApiExecutor.setOpenapiSpec(openApiDescription);
     const response = await openApiExecutor.executeOperation(
       operationId,
       {
-        accessToken: securityCredentialsSchema[SKL.accessTokenProperty] as string,
-        apiKey: securityCredentialsSchema[SKL.apiKeyProperty] as string,
+        accessToken: securityCredentialsSchema[SKL.accessToken] as string,
+        apiKey: securityCredentialsSchema[SKL.apiKey] as string,
       },
       operationArgs,
     );
@@ -308,6 +311,7 @@ export class Skql {
 
     if (returnTypeSchemaObject) {
       returnTypeSchemaObject[SHACL.targetClass] = { '@id': 'https://skl.standard.storage/mappings/frameObject' };
+      // TODO: code duplicated above
       const shape = await convertJsonLdToQuads(returnTypeSchemaObject);
       const validator = new SHACLValidator(shape);
       const report = validator.validate(returnValueAsQuads);

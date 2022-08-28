@@ -19,21 +19,17 @@ describe('A Mapper', (): void => {
     mapper = new Mapper();
   });
 
-  it(`applies an RML mapping to data and returns the frameObjects with
-    all keys in context and json native values.`,
-  async(): Promise<void> => {
-    data = { field: 'abc123' };
-    mapping = await expandJsonLd(simpleMapping);
-    const response = await mapper.apply(data, mapping);
-    expect(response).toEqual({
-      '@context': {
-        field: 'https://skl.standard.storage/properties/field',
-      },
-      '@id': 'https://example.com/mapping/subject',
-      '@type': 'https://skl.standard.storage/mappings/frameObject',
-      field: 'abc123',
+  it('applies an RML mapping to data and returns the frameObjects with json native values.',
+    async(): Promise<void> => {
+      data = { field: 'abc123' };
+      mapping = await expandJsonLd(simpleMapping);
+      const response = await mapper.apply(data, mapping);
+      expect(response).toEqual({
+        '@id': 'https://example.com/mapping/subject',
+        '@type': 'https://skl.standard.storage/mappings/frameObject',
+        'https://skl.standard.storage/properties/field': 'abc123',
+      });
     });
-  });
 
   it('adds a single rdf:type key into @type and unnests values to top level in returned json.',
     async(): Promise<void> => {
@@ -41,12 +37,9 @@ describe('A Mapper', (): void => {
       mapping = await expandJsonLd(singleRdfTypeObject);
       const response = await mapper.apply(data, mapping);
       expect(response).toEqual({
-        '@context': {
-          field: 'https://skl.standard.storage/properties/field',
-        },
         '@id': 'https://example.com/mapping/subject',
         '@type': 'https://skl.standard.storage/mappings/frameObject',
-        field: 'abc123',
+        'https://skl.standard.storage/properties/field': 'abc123',
       });
     });
 
@@ -56,16 +49,13 @@ describe('A Mapper', (): void => {
       mapping = await expandJsonLd(multipleRdfTypeObjectMaps);
       const response = await mapper.apply(data, mapping);
       expect(response).toEqual({
-        '@context': {
-          field: 'https://skl.standard.storage/properties/field',
-        },
         '@id': 'https://example.com/mapping/subject',
         '@type': [
           'https://skl.standard.storage/mappings/frameObject',
           'https://example.com/person',
           'https://example.com/thing',
         ],
-        field: 'abc123',
+        'https://skl.standard.storage/properties/field': 'abc123',
       });
     });
 
@@ -75,87 +65,157 @@ describe('A Mapper', (): void => {
     const response = await mapper.apply(data, mapping);
     expect(response).toEqual({
       '@context': {
-        field: {
-          '@id': 'https://skl.standard.storage/properties/field',
+        'https://skl.standard.storage/properties/field': {
           '@type': 'http://www.w3.org/2001/XMLSchema#boolean',
         },
       },
       '@id': 'https://example.com/mapping/subject',
       '@type': 'https://skl.standard.storage/mappings/frameObject',
-      field: true,
+      'https://skl.standard.storage/properties/field': true,
     });
   });
 
-  it('frames and converts integers to native type in the return value.', async(): Promise<void> => {
-    data = { field: [ 1, 2, 3 ]};
-    mapping = await expandJsonLd(integerDatatype);
-    const response = await mapper.apply(data, mapping);
-    expect(response).toEqual({
-      '@context': {
-        field: {
-          '@id': 'https://skl.standard.storage/properties/field',
-          '@type': 'http://www.w3.org/2001/XMLSchema#integer',
-          '@container': '@set',
+  describe('without framing SKL properties', (): void => {
+    it('frames and converts integers to native type in the return value.', async(): Promise<void> => {
+      data = { field: [ 1, 2, 3 ]};
+      mapping = await expandJsonLd(integerDatatype);
+      const response = await mapper.apply(data, mapping);
+      expect(response).toEqual({
+        '@context': {
+          'https://skl.standard.storage/properties/field': {
+            '@type': 'http://www.w3.org/2001/XMLSchema#integer',
+            '@container': '@set',
+          },
         },
-      },
-      '@id': 'https://example.com/mapping/subject',
-      '@type': 'https://skl.standard.storage/mappings/frameObject',
-      field: [ 1, 2, 3 ],
+        '@id': 'https://example.com/mapping/subject',
+        '@type': 'https://skl.standard.storage/mappings/frameObject',
+        'https://skl.standard.storage/properties/field': [ 1, 2, 3 ],
+      });
+    });
+
+    it('frames and converts doubles to native type in the return value.', async(): Promise<void> => {
+      data = { field: 3.14159 };
+      mapping = await expandJsonLd(doubleDataType);
+      const response = await mapper.apply(data, mapping);
+      expect(response).toEqual({
+        '@context': {
+          'https://skl.standard.storage/properties/field': {
+            '@type': 'http://www.w3.org/2001/XMLSchema#double',
+          },
+        },
+        '@id': 'https://example.com/mapping/subject',
+        '@type': 'https://skl.standard.storage/mappings/frameObject',
+        'https://skl.standard.storage/properties/field': 3.14159,
+      });
+    });
+
+    it('frames and converts an IRI termType.', async(): Promise<void> => {
+      data = {};
+      mapping = await expandJsonLd(nonArrayIri);
+      const response = await mapper.apply(data, mapping);
+      expect(response).toEqual({
+        '@context': {
+          'https://skl.standard.storage/properties/integration': { '@type': '@id' },
+        },
+        '@id': 'https://example.com/mapping/subject',
+        '@type': 'https://skl.standard.storage/mappings/frameObject',
+        'https://skl.standard.storage/properties/integration': 'https://skl.standard.storage/integrations/Dropbox',
+      });
+    });
+
+    it('frames converts an array of IRIs.', async(): Promise<void> => {
+      data = {};
+      mapping = await expandJsonLd(arrayOfIris);
+      const response = await mapper.apply(data, mapping);
+      expect(response).toEqual({
+        '@context': {
+          'https://skl.standard.storage/properties/integration': {
+            '@container': '@set',
+            '@type': '@id',
+          },
+        },
+        '@id': 'https://example.com/mapping/subject',
+        '@type': 'https://skl.standard.storage/mappings/frameObject',
+        'https://skl.standard.storage/properties/integration': [
+          'https://skl.standard.storage/integrations/Dropbox',
+          'https://skl.standard.storage/integrations/AirTable',
+        ],
+      });
     });
   });
 
-  it('frames and converts doubles to native type in the return value.', async(): Promise<void> => {
-    data = { field: 3.14159 };
-    mapping = await expandJsonLd(doubleDataType);
-    const response = await mapper.apply(data, mapping);
-    expect(response).toEqual({
-      '@context': {
-        field: {
-          '@id': 'https://skl.standard.storage/properties/field',
-          '@type': 'http://www.w3.org/2001/XMLSchema#double',
+  describe('framing SKL properties', (): void => {
+    it('frames and converts integers to native type in the return value.', async(): Promise<void> => {
+      data = { field: [ 1, 2, 3 ]};
+      mapping = await expandJsonLd(integerDatatype);
+      const response = await mapper.applyAndFrameSklProperties(data, mapping);
+      expect(response).toEqual({
+        '@context': {
+          field: {
+            '@id': 'https://skl.standard.storage/properties/field',
+            '@type': 'http://www.w3.org/2001/XMLSchema#integer',
+            '@container': '@set',
+          },
         },
-      },
-      '@id': 'https://example.com/mapping/subject',
-      '@type': 'https://skl.standard.storage/mappings/frameObject',
-      field: 3.14159,
+        '@id': 'https://example.com/mapping/subject',
+        '@type': 'https://skl.standard.storage/mappings/frameObject',
+        field: [ 1, 2, 3 ],
+      });
     });
-  });
 
-  it('frames and converts an IRI termType.', async(): Promise<void> => {
-    data = {};
-    mapping = await expandJsonLd(nonArrayIri);
-    const response = await mapper.apply(data, mapping);
-    expect(response).toEqual({
-      '@context': {
-        integration: {
-          '@id': 'https://skl.standard.storage/properties/integration',
-          '@type': '@id',
+    it('frames and converts doubles to native type in the return value.', async(): Promise<void> => {
+      data = { field: 3.14159 };
+      mapping = await expandJsonLd(doubleDataType);
+      const response = await mapper.applyAndFrameSklProperties(data, mapping);
+      expect(response).toEqual({
+        '@context': {
+          field: {
+            '@id': 'https://skl.standard.storage/properties/field',
+            '@type': 'http://www.w3.org/2001/XMLSchema#double',
+          },
         },
-      },
-      '@id': 'https://example.com/mapping/subject',
-      '@type': 'https://skl.standard.storage/mappings/frameObject',
-      integration: 'https://skl.standard.storage/integrations/Dropbox',
+        '@id': 'https://example.com/mapping/subject',
+        '@type': 'https://skl.standard.storage/mappings/frameObject',
+        field: 3.14159,
+      });
     });
-  });
 
-  it('frames converts an array of IRIs.', async(): Promise<void> => {
-    data = {};
-    mapping = await expandJsonLd(arrayOfIris);
-    const response = await mapper.apply(data, mapping);
-    expect(response).toEqual({
-      '@context': {
-        integration: {
-          '@container': '@set',
-          '@id': 'https://skl.standard.storage/properties/integration',
-          '@type': '@id',
+    it('frames and converts an IRI termType.', async(): Promise<void> => {
+      data = {};
+      mapping = await expandJsonLd(nonArrayIri);
+      const response = await mapper.applyAndFrameSklProperties(data, mapping);
+      expect(response).toEqual({
+        '@context': {
+          integration: {
+            '@id': 'https://skl.standard.storage/properties/integration',
+            '@type': '@id',
+          },
         },
-      },
-      '@id': 'https://example.com/mapping/subject',
-      '@type': 'https://skl.standard.storage/mappings/frameObject',
-      integration: [
-        'https://skl.standard.storage/integrations/Dropbox',
-        'https://skl.standard.storage/integrations/AirTable',
-      ],
+        '@id': 'https://example.com/mapping/subject',
+        '@type': 'https://skl.standard.storage/mappings/frameObject',
+        integration: 'https://skl.standard.storage/integrations/Dropbox',
+      });
+    });
+
+    it('frames converts an array of IRIs.', async(): Promise<void> => {
+      data = {};
+      mapping = await expandJsonLd(arrayOfIris);
+      const response = await mapper.applyAndFrameSklProperties(data, mapping);
+      expect(response).toEqual({
+        '@context': {
+          integration: {
+            '@id': 'https://skl.standard.storage/properties/integration',
+            '@container': '@set',
+            '@type': '@id',
+          },
+        },
+        '@id': 'https://example.com/mapping/subject',
+        '@type': 'https://skl.standard.storage/mappings/frameObject',
+        integration: [
+          'https://skl.standard.storage/integrations/Dropbox',
+          'https://skl.standard.storage/integrations/AirTable',
+        ],
+      });
     });
   });
 });

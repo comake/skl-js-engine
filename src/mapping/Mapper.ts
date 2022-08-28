@@ -6,15 +6,65 @@ import { SKL, XSD } from '../util/Vocabularies';
 import { functions } from './MapperFunctions';
 
 export class Mapper {
-  public async apply(data: jsonld.NodeObject, mapping: jsonld.NodeObject): Promise<jsonld.NodeObject> {
+  public async apply(
+    data: jsonld.NodeObject,
+    mapping: jsonld.NodeObject,
+  ): Promise<jsonld.NodeObject> {
+    const result = await this.doMapping(data, mapping);
+    return await this.frameAndConvertToNativeTypes(result);
+  }
+
+  public async applyAndFrameSklProperties(
+    data: jsonld.NodeObject,
+    mapping: jsonld.NodeObject,
+  ): Promise<jsonld.NodeObject> {
+    const result = await this.doMapping(data, mapping);
+    return await this.frameSklProertiesAndConvertToNativeTypes(result);
+  }
+
+  private async doMapping(data: jsonld.NodeObject, mapping: jsonld.NodeObject): Promise<jsonld.NodeObject[]> {
     const mappingAsQuads = await this.jsonLdToQuads(mapping);
     const sources = { 'input.json': JSON.stringify(data) };
     // TODO always return arrays...
-    const result = await RmlParser.parse(mappingAsQuads, sources, { functions }) as jsonld.NodeObject[];
-    return await this.frameJsonLdAndConvertToNativeTypes(result);
+    return await RmlParser.parse(mappingAsQuads, sources, { functions }) as jsonld.NodeObject[];
   }
 
-  private async frameJsonLdAndConvertToNativeTypes(jsonldDoc: any[]): Promise<jsonld.NodeObject> {
+  private async frameAndConvertToNativeTypes(jsonldDoc: any[]): Promise<jsonld.NodeObject> {
+    const frame: any = {
+      '@context': {},
+      '@type': 'https://skl.standard.storage/mappings/frameObject',
+      '@embed': '@always',
+    };
+
+    jsonldDoc.forEach(async(subDoc: any): Promise<void> => {
+      Object.keys(subDoc).forEach((key: string): void => {
+        const value = subDoc[key];
+        if (Array.isArray(value) && typeof value[0] === 'object' && '@type' in value[0]) {
+          frame['@context'][key] = { '@type': value[0]['@type'] };
+          if (value.length > 1) {
+            frame['@context'][key]['@container'] = '@set';
+          }
+
+          subDoc[key] = subDoc[key].map((valueItem: any): void =>
+            this.convertToNativeValue(valueItem));
+        } else if (Array.isArray(value) && typeof value[0] === 'object' && '@id' in value[0]) {
+          frame['@context'][key] = { '@type': '@id' };
+          if (value.length > 1) {
+            frame['@context'][key]['@container'] = '@set';
+          }
+        } else if (typeof value === 'object' && '@type' in value) {
+          frame['@context'][key] = { '@type': value['@type'] };
+          subDoc[key] = this.convertToNativeValue(subDoc[key]);
+        } else if (typeof value === 'object' && '@id' in value) {
+          frame['@context'][key] = { '@type': '@id' };
+        }
+      });
+    });
+
+    return await jsonld.frame(jsonldDoc, frame);
+  }
+
+  private async frameSklProertiesAndConvertToNativeTypes(jsonldDoc: any[]): Promise<jsonld.NodeObject> {
     const frame: any = {
       '@context': {},
       '@type': 'https://skl.standard.storage/mappings/frameObject',

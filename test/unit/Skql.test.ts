@@ -27,35 +27,28 @@ const mockDropboxFile = {
 
 const expectedGetFileResponse = {
   '@context': {
-    deleted: {
-      '@id': 'https://skl.standard.storage/properties/deleted',
+    'https://skl.standard.storage/properties/deleted': {
       '@type': 'http://www.w3.org/2001/XMLSchema#boolean',
     },
-    integration: {
-      '@id': 'https://skl.standard.storage/properties/integration',
+    'https://skl.standard.storage/properties/integration': {
       '@type': '@id',
     },
-    isWeblink: {
-      '@id': 'https://skl.standard.storage/properties/isWeblink',
+    'https://skl.standard.storage/properties/isWeblink': {
       '@type': 'http://www.w3.org/2001/XMLSchema#boolean',
     },
-    mimeType: 'https://skl.standard.storage/properties/mimeType',
-    name: 'https://skl.standard.storage/properties/name',
-    size: 'https://skl.standard.storage/properties/size',
-    sourceId: 'https://skl.standard.storage/properties/sourceId',
   },
   '@id': 'https://skl.standard.storage/data/abc123',
   '@type': [
     'https://skl.standard.storage/mappings/frameObject',
     'https://skl.standard.storage/nouns/File',
   ],
-  deleted: false,
-  integration: 'https://skl.standard.storage/integrations/Dropbox',
-  isWeblink: false,
-  mimeType: 'text/plain',
-  name: 'Prime_Numbers.txt',
-  size: '7212',
-  sourceId: 'id:12345',
+  'https://skl.standard.storage/properties/deleted': false,
+  'https://skl.standard.storage/properties/integration': 'https://skl.standard.storage/integrations/Dropbox',
+  'https://skl.standard.storage/properties/isWeblink': false,
+  'https://skl.standard.storage/properties/mimeType': 'text/plain',
+  'https://skl.standard.storage/properties/name': 'Prime_Numbers.txt',
+  'https://skl.standard.storage/properties/size': '7212',
+  'https://skl.standard.storage/properties/sourceId': 'id:12345',
 };
 
 const unsupportedVerb = {
@@ -158,17 +151,17 @@ describe('SKQL', (): void => {
       const updateSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'update');
       const res = await skql.update({
         '@id': 'https://skl.standard.storage/verbs/Share',
-        [SKL.nameProperty]: 'Share',
+        [SKL.name]: 'Share',
       });
       expect(res).toEqual({
         '@id': 'https://skl.standard.storage/verbs/Share',
         '@type': 'https://skl.standard.storage/verbs/OpenApiOperationVerb',
-        [SKL.nameProperty]: 'Share',
+        [SKL.name]: 'Share',
       });
       expect(updateSpy).toHaveBeenCalledTimes(1);
       expect(updateSpy).toHaveBeenCalledWith({
         '@id': 'https://skl.standard.storage/verbs/Share',
-        [SKL.nameProperty]: 'Share',
+        [SKL.name]: 'Share',
       });
     });
   });
@@ -187,22 +180,20 @@ describe('SKQL', (): void => {
     it('maps data.', async(): Promise<void> => {
       const data = { field: 'abc123' };
       const mapping = await expandJsonLd(simpleMapping);
-      // eslint-disable-next-line unicorn/no-array-method-this-argument
-      const response = await skql.map(data, mapping as NodeObject);
-      expect(response).toEqual({ field: 'abc123' });
+      const response = await skql.performMappingAndConvertToJSON(data, mapping as NodeObject);
+      expect(response).toEqual({
+        field: 'abc123',
+      });
     });
 
     it('maps data without converting it to json.', async(): Promise<void> => {
       const data = { field: 'abc123' };
       const mapping = await expandJsonLd(simpleMapping);
-      const response = await skql.map(data, mapping as NodeObject, false);
+      const response = await skql.performMapping(data, mapping as NodeObject);
       expect(response).toEqual({
-        '@context': {
-          field: 'https://skl.standard.storage/properties/field',
-        },
         '@id': 'https://example.com/mapping/subject',
         '@type': 'https://skl.standard.storage/mappings/frameObject',
-        field: 'abc123',
+        'https://skl.standard.storage/properties/field': 'abc123',
       });
     });
   });
@@ -290,7 +281,7 @@ describe('SKQL', (): void => {
     it('validates the verbs return value against a nested returnType schema.', async(): Promise<void> => {
       schema = schema.map((schemaItem: any): any => {
         if (schemaItem['@id'] === 'https://skl.standard.storage/verbs/getFile') {
-          schemaItem[SKL.returnValueProperty] = {
+          schemaItem[SKL.returnValue] = {
             '@type': 'shacl:NodeShape',
             'http://www.w3.org/ns/shacl#closed': false,
             'http://www.w3.org/ns/shacl#property': [
@@ -319,7 +310,7 @@ describe('SKQL', (): void => {
     it('errors if the returnType schema is not properly formatted.', async(): Promise<void> => {
       schema = schema.map((schemaItem: any): any => {
         if (schemaItem['@id'] === 'https://skl.standard.storage/verbs/getFile') {
-          schemaItem[SKL.returnValueProperty] = {};
+          schemaItem[SKL.returnValue] = {};
         }
         return schemaItem;
       });
@@ -379,7 +370,7 @@ describe('SKQL', (): void => {
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
       const skql = new Skql({ schema });
       const res = await skql.do.getTokensWithPkceOauth({ integration, codeVerifier: 'something', code: 'dummy_code' });
-      expect(res.accessToken).toBe('abc123');
+      expect(res[SKL.accessToken]).toBe('abc123');
       expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
       expect(executeSecuritySchemeStage).toHaveBeenCalledWith(
         'oAuth',

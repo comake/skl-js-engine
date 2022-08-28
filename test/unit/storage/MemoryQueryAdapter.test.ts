@@ -11,13 +11,13 @@ describe('a MemoryQueryAdapter', (): void => {
     {
       '@id': 'https://skl.standard.storage/data/124',
       '@type': 'https://skl.standard.storage/nouns/File',
-      [SKL.nameProperty]: 'image.jpeg',
-      [SKL.integrationProperty]: { '@id': 'https://skl.standard.storage/data/BoxIntegration' },
+      [SKL.name]: 'image.jpeg',
+      [SKL.integration]: { '@id': 'https://skl.standard.storage/data/BoxIntegration' },
     },
     {
       '@id': 'https://skl.standard.storage/data/125',
       '@type': 'https://skl.standard.storage/nouns/Article',
-      [SKL.nameProperty]: 'Delicious recipe',
+      [SKL.name]: 'Delicious recipe',
     },
     {
       '@id': 'https://skl.standard.storage/nouns/File',
@@ -51,17 +51,17 @@ describe('a MemoryQueryAdapter', (): void => {
     });
 
     it('returns undefined if not all query fields match.', async(): Promise<void> => {
-      await expect(adapter.find({ id: 'https://skl.standard.storage/data/123', [SKL.nameProperty]: 'image.jpeg' }))
+      await expect(adapter.find({ id: 'https://skl.standard.storage/data/123', [SKL.name]: 'image.jpeg' }))
         .resolves.toBeUndefined();
     });
 
     it('returns a schema matching all the query fields.', async(): Promise<void> => {
-      await expect(adapter.find({ [SKL.nameProperty]: 'image.jpeg' }))
+      await expect(adapter.find({ [SKL.name]: 'image.jpeg' }))
         .resolves.toEqual(schema[1]);
     });
 
     it('returns a schema matching an IRI query field.', async(): Promise<void> => {
-      await expect(adapter.find({ [SKL.integrationProperty]: 'https://skl.standard.storage/data/BoxIntegration' }))
+      await expect(adapter.find({ [SKL.integration]: 'https://skl.standard.storage/data/BoxIntegration' }))
         .resolves.toEqual(schema[1]);
     });
   });
@@ -100,7 +100,7 @@ describe('a MemoryQueryAdapter', (): void => {
     it('returns the updated schema.', async(): Promise<void> => {
       const res = await adapter.update({
         '@id': 'https://skl.standard.storage/nouns/File',
-        [SKL.nameProperty]: 'File',
+        [SKL.name]: 'File',
       });
       expect(res).toEqual({
         '@id': 'https://skl.standard.storage/nouns/File',
@@ -108,7 +108,7 @@ describe('a MemoryQueryAdapter', (): void => {
         [RDFS.subClassOf]: [
           { '@id': 'https://skl.standard.storage/nouns/Noun' },
         ],
-        [SKL.nameProperty]: 'File',
+        [SKL.name]: 'File',
       });
     });
   });
