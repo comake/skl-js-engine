@@ -1,5 +1,6 @@
 import * as mime from 'mime-types';
 import { v4 as uuid } from 'uuid';
+import { ensureArray } from '../util/Util';
 import { GREL, IDLAB } from '../util/Vocabularies';
 
 function toBoolean(val: string | boolean): boolean {
@@ -77,12 +78,10 @@ export const functions = {
   [GREL.booleanNot](data: any): boolean {
     return !toBoolean(data[GREL.boolB]);
   },
-  [GREL.booleanAnd](data: any): boolean {
-    const values = data[GREL.paramRepB];
+  [GREL.booleanAnd](values: (string | boolean)[]): boolean {
     return values.every((val: string | boolean): boolean => toBoolean(val));
   },
-  [GREL.booleanOr](data: any): boolean {
-    const values = data[GREL.paramRepB];
+  [GREL.booleanOr](values: (string | boolean)[]): boolean {
     return values.some((val: string | boolean): boolean => toBoolean(val));
   },
   [GREL.arrayGet](data: any): any | any[] {
