@@ -37,7 +37,7 @@ npm ci
 
 # License & Copyright
 
-SKQL Javascript Engine is available under the BSD 4 license. See the [LICENSE](LICENSE) file for more info.
+SKQL Javascript Engine is open-source with certain limitations. See the [LICENSE](LICENSE) file for more info.
 
 Copyright (c) 2022, Comake, Inc.
 
