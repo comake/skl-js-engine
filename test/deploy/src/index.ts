@@ -3,7 +3,7 @@
 no-console,
 @typescript-eslint/naming-convention,
 no-process-env */
-import { Skql } from '@comake/skql-js-engine';
+import { Skql, SKL } from '@comake/skql-js-engine';
 import { frameAndCombineSchemas } from './Util';
 
 async function run(): Promise<void> {
@@ -19,7 +19,7 @@ async function run(): Promise<void> {
     city: 'Atlanta',
     pageSize: 20,
   });
-  console.log(eventsCollection.records);
+  console.log(eventsCollection[SKL.records]);
 }
 
 run();
