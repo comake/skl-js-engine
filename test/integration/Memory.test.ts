@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { NodeObject } from 'jsonld';
 import { Skql } from '../../src/Skql';
-import { SCHEMA } from '../../src/util/Vocabularies';
+import { SCHEMA, SKL } from '../../src/util/Vocabularies';
 import { describeIf, frameAndCombineSchemas } from '../util/Util';
 
 describeIf('docker', 'An Skql engine backed by a memory query adapter', (): void => {
@@ -18,7 +18,7 @@ describeIf('docker', 'An Skql engine backed by a memory query adapter', (): void
       city: 'Atlanta',
       pageSize: 20,
     });
-    expect(eventsCollection.records).toBeInstanceOf(Array);
-    expect((eventsCollection.records as NodeObject[])[0]['@type']).toBe(SCHEMA.Event);
+    expect(eventsCollection[SKL.records]).toBeInstanceOf(Array);
+    expect((eventsCollection[SKL.records] as NodeObject[])[0]['@type']).toBe(SCHEMA.Event);
   });
 });

@@ -303,8 +303,11 @@ export class Skql {
 
   private async isInvalidTokenError(error: AxiosError, integrationId: string): Promise<boolean> {
     const integration = await this.find({ id: integrationId });
-    const errorMatcher = getValueOfFieldInNodeObject<ErrorMatcher>(integration, SKL.invalidTokenErrorMatcher);
-    if (error.response?.status === errorMatcher.status) {
+    const errorMatcher = getValueOfFieldInNodeObject<ErrorMatcher | undefined>(
+      integration,
+      SKL.invalidTokenErrorMatcher,
+    );
+    if (errorMatcher && (error.response?.status === errorMatcher.status)) {
       if (!errorMatcher.messageRegex) {
         return true;
       }
