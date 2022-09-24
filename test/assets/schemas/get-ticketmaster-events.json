@@ -259,6 +259,7 @@
       ],
       "rr:subjectMap": {
         "@type": "rr:SubjectMap",
+        "rr:template": "https://skl.standard.storage/mappingSubject",
         "rr:class": "https://skl.standard.storage/nouns/TokenPaginatedCollection"
       }
     },
