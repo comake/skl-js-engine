@@ -40,6 +40,7 @@ export const SKL = createNamespace('https://skl.standard.storage/', {
   verbMapping: 'properties/verbMapping',
   openApiDescription: 'properties/openApiDescription',
   accessToken: 'properties/accessToken',
+  refreshToken: 'properties/refreshToken',
   apiKey: 'properties/apiKey',
   sourceId: 'properties/sourceId',
   returnValue: 'properties/returnValue',
@@ -65,6 +66,10 @@ export const SKL = createNamespace('https://skl.standard.storage/', {
   oauthFlow: 'properties/oauthFlow',
   stage: 'properties/stage',
   operationId: 'properties/operationId',
+  returnValueFrame: 'properties/returnValueFrame',
+  clientSecret: 'properties/clientSecret',
+  invalidTokenErrorMatcher: 'properties/invalidTokenErrorMatcher',
+  getOauthTokens: 'verbs/getOauthTokens',
 });
 
 export const XSD = createNamespace('http://www.w3.org/2001/XMLSchema#', {
@@ -99,6 +104,7 @@ export const OWL = createNamespace('http://www.w3.org/2002/07/owl#', {
 
 export const SHACL = createNamespace('http://www.w3.org/ns/shacl#', {
   targetClass: 'targetClass',
+  targetNode: 'targetNode',
 });
 
 export const GREL = createNamespace('http://users.ugent.be/~bjdmeest/function/grel.ttl#', {

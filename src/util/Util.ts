@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as jsonld from 'jsonld';
+import type { NodeObject } from 'jsonld';
 import { Parser, Store } from 'n3';
+import type { SchemaNodeObject } from './Types';
 
 export type JSONObject = Record<string, JSONValue>;
 
@@ -50,9 +53,20 @@ export function toJSON(jsonLd: jsonld.NodeObject): JSONObject {
   return jsonLd as JSONObject;
 }
 
+export function getValueOfFieldInNodeObject<T>(object: SchemaNodeObject, field: string): T {
+  return (object[field] as NodeObject)?.['@value'] as unknown as T;
+}
+
 export function ensureArray<T>(arrayable: T | T[]): T[] {
   if (arrayable !== null && arrayable !== undefined) {
     return Array.isArray(arrayable) ? arrayable : [ arrayable ];
   }
   return [];
+}
+
+export function asJsonLdJsonValue(value: JSONObject): NodeObject {
+  return {
+    '@type': '@json',
+    '@value': value,
+  } as NodeObject;
 }

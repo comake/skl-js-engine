@@ -167,11 +167,6 @@
       "rr:predicateObjectMap": [
         {
           "@type": "rr:PredicateObjectMap",
-          "rr:object": "https://skl.standard.storage/mappings/frameObject",
-          "rr:predicate": "rdf:type"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
           "rr:objectMap": {
             "@type": "rr:ObjectMap",
             "rr:constant": "SearchEvents"
@@ -191,11 +186,6 @@
         "rml:source": "input.json"
       },
       "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:object": "https://skl.standard.storage/mappings/frameObject",
-          "rr:predicate": "rdf:type"
-        },
         {
           "@type": "rr:PredicateObjectMap",
           "rr:objectMap": {
@@ -260,11 +250,6 @@
             "rr:parentTriplesMap": "https://skl.standard.storage/data/5/returnValueMapping/2"
           },
           "rr:predicate": "sklproperties:records"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:object": "https://skl.standard.storage/mappings/frameObject",
-          "rr:predicate": "rdf:type"
         }
       ],
       "rr:subjectMap": {

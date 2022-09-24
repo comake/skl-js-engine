@@ -26,6 +26,7 @@
     "sklproperties:account": { "@type": "@id" },
     "sklproperties:openApiDescription": { "@type": "@json" },
     "sklproperties:parametersContext": { "@type": "@json" },
+    "sklproperties:returnValueFrame": { "@type": "@json" },
     "sklproperties:noun": { "@type": "@id" },
     "sklproperties:verb": { "@type": "@id" },
     "name": "sklproperties:name",
@@ -39,7 +40,9 @@
     "rr:parentTriplesMap": { "@type": "@id" },
     "rr:predicate": { "@type": "@id" },
     "rr:object": { "@type": "@id" },
-    "rr:termType": { "@type": "@id" }
+    "rr:termType": { "@type": "@id" },
+    "rr:subject": { "@type": "@id" },
+    "sklproperties:invalidTokenErrorMatcher": { "@type": "@json" }
   },
   "@graph": [
     {
@@ -75,6 +78,9 @@
       },
       "sklproperties:returnValue": {
         "@id": "https://skl.standard.storage/nouns/File"
+      },
+      "sklproperties:returnValueFrame": {
+        "@type": ["https://skl.standard.storage/nouns/File", "https://skl.standard.storage/nouns/Folder"]
       }
     },
     {
@@ -99,11 +105,6 @@
       "rr:predicateObjectMap": [
         {
           "@type": "rr:PredicateObjectMap",
-          "rr:object": "https://skl.standard.storage/mappings/frameObject",
-          "rr:predicate": "rdf:type"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
           "rr:objectMap": {
             "@type": "rr:ObjectMap",
             "rr:constant": "FilesGetMetadata"
@@ -111,10 +112,7 @@
           "rr:predicate": "sklproperties:operationId"
         }
       ],
-      "rr:subjectMap": {
-        "@type": "rr:SubjectMap",
-        "rr:template": "https://skl.standard.storage/data/4/operationMapping/1/subject"
-      }
+      "rr:subject":  "https://skl.standard.storage/mappingSubject"
     },
     {
       "@id": "https://skl.standard.storage/data/4/parameterMapping/1",
@@ -126,11 +124,6 @@
         "rml:source": "input.json"
       },
       "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:object": "https://skl.standard.storage/mappings/frameObject",
-          "rr:predicate": "rdf:type"
-        },
         {
           "@type": "rr:PredicateObjectMap",
           "rr:predicate": "sklproperties:path",
@@ -173,10 +166,7 @@
           }
         }
       ],
-      "rr:subjectMap": {
-        "@type": "rr:SubjectMap",
-        "rr:template": "https://skl.standard.storage/data/4/parameterMapping/1/subject"
-      }
+      "rr:subject": "https://skl.standard.storage/mappingSubject"
     },
     {
       "@id": "https://skl.standard.storage/data/4/returnValueMapping/1",
@@ -188,11 +178,6 @@
         "rml:source": "input.json"
       },
       "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:object": "https://skl.standard.storage/mappings/frameObject",
-          "rr:predicate": "rdf:type"
-        },
         {
           "@type": "rr:PredicateObjectMap",
           "rr:objectMap": {
@@ -530,10 +515,7 @@
           "rr:predicate": "sklproperties:sourceId"
         }
       ],
-      "rr:subjectMap": {
-        "@type": "rr:SubjectMap",
-        "rr:template": "https://skl.standard.storage/data/abc123"
-      }
+      "rr:subject": "https://skl.standard.storage/data/abc123"
     },
     {
       "@id": "https://skl.standard.storage/verbs/sync",
@@ -592,16 +574,11 @@
       "rr:predicateObjectMap": [
         {
           "@type": "rr:PredicateObjectMap",
-          "rr:object": "https://skl.standard.storage/mappings/frameObject",
-          "rr:predicate": "rdf:type"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
           "rr:object": "https://skl.standard.storage/verbs/getFile",
           "rr:predicate": "sklproperties:verb"
         }
       ],
-      "rr:subject": "https://skl.standard.storage/data/34/operationMapping/1/subject"
+      "rr:subject": "https://skl.standard.storage/mappingSubject"
     },
     {
       "@id": "https://skl.standard.storage/data/34/parameterMapping/1",
@@ -612,13 +589,8 @@
         "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
         "rml:source": "input.json"
       },
-      "rr:subject": "https://skl.standard.storage/data/34/parameterMapping/1/subject",
+      "rr:subject": "https://skl.standard.storage/mappingSubject",
       "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:object": "https://skl.standard.storage/mappings/frameObject",
-          "rr:predicate": "rdf:type"
-        },
         {
           "@type": "rr:PredicateObjectMap",
           "rr:objectMap": {
@@ -644,8 +616,8 @@
       "@type": "https://skl.standard.storage/nouns/OpenApiSecuritySchemeVerb",
       "https://skl.standard.storage/properties/name": "authorizeWithPkceOauth",
       "sklproperties:parametersContext": {
-        "integration": {
-          "@id": "https://skl.standard.storage/properties/integration",
+        "account": {
+          "@id": "https://skl.standard.storage/properties/account",
           "@type": "@id"
         }
       },
@@ -656,8 +628,8 @@
           {
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
-            "shacl:name": "integration",
-            "shacl:path": "https://skl.standard.storage/properties/integration"
+            "shacl:name": "account",
+            "shacl:path": "https://skl.standard.storage/properties/account"
           }
         ]
       },
@@ -685,11 +657,6 @@
       "rr:predicateObjectMap": [
         {
           "@type": "rr:PredicateObjectMap",
-          "rr:object": "https://skl.standard.storage/mappings/frameObject",
-          "rr:predicate": "rdf:type"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
           "rr:objectMap": {
             "@type": "rr:ObjectMap",
             "rr:constant": "oAuth"
@@ -713,12 +680,12 @@
           "rr:predicate": "sklproperties:stage"
         }
       ],
-      "rr:subject": "https://skl.standard.storage/data/44/operationMapping/1/subject"
+      "rr:subject": "https://skl.standard.storage/mappingSubject"
     },
     {
-      "@id": "https://skl.standard.storage/verbs/getTokensWithPkceOauth",
+      "@id": "https://skl.standard.storage/verbs/getOauthTokens",
       "@type": "https://skl.standard.storage/nouns/OpenApiSecuritySchemeVerb",
-      "https://skl.standard.storage/properties/name": "getTokensWithPkceOauth",
+      "https://skl.standard.storage/properties/name": "getOauthTokens",
       "sklproperties:parametersContext": {
         "codeVerifier": {
           "@id": "https://skl.standard.storage/properties/codeVerifier",
@@ -728,8 +695,8 @@
           "@id": "https://skl.standard.storage/properties/code",
           "@type": "http://www.w3.org/2001/XMLSchema#string"
         },
-        "integration": {
-          "@id": "https://skl.standard.storage/properties/integration",
+        "account": {
+          "@id": "https://skl.standard.storage/properties/account",
           "@type": "@id"
         }
       },
@@ -739,21 +706,24 @@
         "shacl:property": [
           {
             "shacl:maxCount": 1,
-            "shacl:minCount": 1,
             "shacl:name": "codeVerifier",
             "shacl:path": "https://skl.standard.storage/properties/codeVerifier"
           },
           {
             "shacl:maxCount": 1,
-            "shacl:minCount": 1,
             "shacl:name": "code",
             "shacl:path": "https://skl.standard.storage/properties/code"
           },
           {
             "shacl:maxCount": 1,
+            "shacl:name": "refreshToken",
+            "shacl:path": "https://skl.standard.storage/properties/refreshToken"
+          },
+          {
+            "shacl:maxCount": 1,
             "shacl:minCount": 1,
-            "shacl:name": "integration",
-            "shacl:path": "https://skl.standard.storage/properties/integration"
+            "shacl:name": "account",
+            "shacl:path": "https://skl.standard.storage/properties/account"
           }
         ]
       },
@@ -768,14 +738,17 @@
             "shacl:path": "https://skl.standard.storage/properties/accessToken"
           }
         ]
+      },
+      "sklproperties:returnValueFrame": {
+        "@id": "https://skl.standard.storage/getOauthTokensReturnValueSubject"
       }
     },
     {
       "@id": "https://skl.standard.storage/data/45",
       "@type": "https://skl.standard.storage/nouns/VerbIntegrationMapping",
       "integration": "https://skl.standard.storage/integrations/Dropbox",
-      "verb": "https://skl.standard.storage/verbs/getTokensWithPkceOauth",
-      "name": "authorizeWithPkceOauthToDropbox",
+      "verb": "https://skl.standard.storage/verbs/getOauthTokens",
+      "name": "getOauthTokensToDropbox",
       "sklproperties:parameterMapping": "https://skl.standard.storage/data/45/parameterMapping/1",
       "sklproperties:operationMapping": "https://skl.standard.storage/data/45/operationMapping/1",
       "sklproperties:returnValueMapping": "https://skl.standard.storage/data/45/returnValueMapping/1"
@@ -790,11 +763,6 @@
         "rml:source": "input.json"
       },
       "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:object": "https://skl.standard.storage/mappings/frameObject",
-          "rr:predicate": "rdf:type"
-        },
         {
           "@type": "rr:PredicateObjectMap",
           "rr:objectMap": {
@@ -820,7 +788,7 @@
           "rr:predicate": "sklproperties:stage"
         }
       ],
-      "rr:subject": "https://skl.standard.storage/data/45/operationMapping/1/subject"
+      "rr:subject": "https://skl.standard.storage/mappingSubject"
     },
     {
       "@id": "https://skl.standard.storage/data/45/parameterMapping/1",
@@ -832,11 +800,6 @@
         "rml:source": "input.json"
       },
       "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:object": "https://skl.standard.storage/mappings/frameObject",
-          "rr:predicate": "rdf:type"
-        },
         {
           "@type": "rr:PredicateObjectMap",
           "rr:objectMap": {
@@ -857,12 +820,70 @@
           "@type": "rr:PredicateObjectMap",
           "rr:objectMap": {
             "@type": "rr:ObjectMap",
-            "rr:constant": "authorization_code"
+            "rml:reference": "refreshToken"
+          },
+          "rr:predicate": "sklproperties:refresh_token"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "fnml:functionValue": {
+              "@type": "fnml:FunctionValue",
+              "rr:predicateObjectMap": [
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
+                  "rr:predicate": "https://w3id.org/function/ontology#executes"
+                },
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b",
+                  "rr:objectMap": {
+                    "@type": "rr:ObjectMap",
+                    "fnml:functionValue": {
+                      "@type": "fnml:FunctionValue",
+                      "rr:predicateObjectMap": [
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:object": "http://example.com/idlab/function/isNull",
+                          "rr:predicate": "https://w3id.org/function/ontology#executes"
+                        }, 
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:predicate": "http://example.com/idlab/function/str",
+                          "rr:objectMap": {
+                            "@type": "rr:ObjectMap",
+                            "rml:reference": "refreshToken"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true",
+                  "rr:objectMap": {
+                    "@type": "rr:ObjectMap",
+                    "rr:constant": "authorization_code"
+                  }
+                },
+                {
+                  "@type": "rr:PredicateObjectMap",
+                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_false",
+                  "rr:objectMap": {
+                    "@type": "rr:ObjectMap",
+                     "rr:constant": "refresh_token"
+                  }
+                }
+              ]
+            }
           },
           "rr:predicate": "sklproperties:grant_type"
         }
       ],
-      "rr:subject": "https://skl.standard.storage/data/45/operationMapping/1/subject"
+      "rr:subject": "https://skl.standard.storage/mappingSubject"
     },
     {
       "@id": "https://skl.standard.storage/data/45/returnValueMapping/1",
@@ -876,19 +897,22 @@
       "rr:predicateObjectMap": [
         {
           "@type": "rr:PredicateObjectMap",
-          "rr:object": "https://skl.standard.storage/mappings/frameObject",
-          "rr:predicate": "rdf:type"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
           "rr:objectMap": {
             "@type": "rr:ObjectMap",
             "rml:reference": "access_token"
           },
           "rr:predicate": "sklproperties:accessToken"
+        },
+        {
+          "@type": "rr:PredicateObjectMap",
+          "rr:objectMap": {
+            "@type": "rr:ObjectMap",
+            "rml:reference": "refresh_token"
+          },
+          "rr:predicate": "sklproperties:refreshToken"
         }
       ],
-      "rr:subject": "https://skl.standard.storage/data/45/returnValueMapping/1/subject"
+      "rr:subject": "https://skl.standard.storage/getOauthTokensReturnValueSubject"
     },
     {
       "@id": "https://skl.standard.storage/data/DropboxAccount1",
@@ -898,7 +922,10 @@
     {
       "@id": "https://skl.standard.storage/data/DropboxAccount1SecurityCredentials",
       "@type": "https://skl.standard.storage/nouns/SecurityCredentials",
+      "sklproperties:clientId": "adlerfaulkner",
+      "sklproperties:clientSecret": "abc123",
       "https://skl.standard.storage/properties/accessToken": "SPOOFED_TOKEN",
+      "https://skl.standard.storage/properties/refreshToken": "SPOOFED_REFRESH_TOKEN",
       "sklproperties:account": "https://skl.standard.storage/data/DropboxAccount1"
     },
     {
@@ -906,7 +933,10 @@
       "@type": "https://skl.standard.storage/nouns/Integration",
       "https://skl.standard.storage/properties/description": "Dropbox is a modern workspace designed to reduce busywork-so you can focus on the things that matter. Sign in and put your creative energy to work.",
       "https://skl.standard.storage/properties/name": "Dropbox",
-      "sklproperties:clientId": "abc123"
+      "sklproperties:invalidTokenErrorMatcher": {
+        "status": 401,
+        "messageRegex": "^Unauthorized$"
+      }
     },
     {
       "@id": "https://skl.standard.storage/data/DropboxOpenApiDescription",

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
+import { AxiosError } from 'axios';
 import type { NodeObject } from 'jsonld';
 import { Skql } from '../../src/Skql';
 import { MemoryQueryAdapter } from '../../src/storage/MemoryQueryAdapter';
@@ -10,7 +11,6 @@ import { frameAndCombineSchemas, expandJsonLd } from '../util/Util';
 jest.mock('@comake/openapi-operation-executor');
 
 const account = 'https://skl.standard.storage/data/DropboxAccount1';
-const integration = 'https://skl.standard.storage/integrations/Dropbox';
 const mockDropboxFile = {
   '.tag': 'file',
   client_modified: '2015-05-12T15:50:38Z',
@@ -38,10 +38,7 @@ const expectedGetFileResponse = {
     },
   },
   '@id': 'https://skl.standard.storage/data/abc123',
-  '@type': [
-    'https://skl.standard.storage/mappings/frameObject',
-    'https://skl.standard.storage/nouns/File',
-  ],
+  '@type': 'https://skl.standard.storage/nouns/File',
   'https://skl.standard.storage/properties/deleted': false,
   'https://skl.standard.storage/properties/integration': 'https://skl.standard.storage/integrations/Dropbox',
   'https://skl.standard.storage/properties/isWeblink': false,
@@ -68,11 +65,6 @@ const incorrectReturnValueMapping = {
   'http://www.w3.org/ns/r2rml#predicateObjectMap': [
     {
       '@type': 'http://www.w3.org/ns/r2rml#PredicateObjectMap',
-      'http://www.w3.org/ns/r2rml#object': { '@id': 'https://skl.standard.storage/mappings/frameObject' },
-      'http://www.w3.org/ns/r2rml#predicate': { '@id': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type' },
-    },
-    {
-      '@type': 'http://www.w3.org/ns/r2rml#PredicateObjectMap',
       'http://www.w3.org/ns/r2rml#object': { '@id': 'https://skl.standard.storage/integrations/Dropbox' },
       'http://www.w3.org/ns/r2rml#predicate': { '@id': 'https://skl.standard.storage/properties/integration' },
     },
@@ -80,6 +72,7 @@ const incorrectReturnValueMapping = {
   'http://www.w3.org/ns/r2rml#subjectMap': {
     '@type': 'http://www.w3.org/ns/r2rml#SubjectMap',
     'http://www.w3.org/ns/r2rml#template': 'https://skl.standard.storage/data/abc123',
+    'http://www.w3.org/ns/r2rml#class': { '@id': 'https://skl.standard.storage/nouns/File' },
   },
 };
 
@@ -166,7 +159,7 @@ describe('SKQL', (): void => {
     });
   });
 
-  describe('mappind data', (): void => {
+  describe('mapping data', (): void => {
     let skql: Skql;
 
     beforeEach(async(): Promise<void> => {
@@ -180,7 +173,7 @@ describe('SKQL', (): void => {
     it('maps data.', async(): Promise<void> => {
       const data = { field: 'abc123' };
       const mapping = await expandJsonLd(simpleMapping);
-      const response = await skql.performMappingAndConvertToJSON(data, mapping as NodeObject);
+      const response = await skql.performMappingAndConvertToJSON(data, mapping as NodeObject, { '@id': 'https://example.com/mapping/subject' });
       expect(response).toEqual({
         field: 'abc123',
       });
@@ -189,10 +182,9 @@ describe('SKQL', (): void => {
     it('maps data without converting it to json.', async(): Promise<void> => {
       const data = { field: 'abc123' };
       const mapping = await expandJsonLd(simpleMapping);
-      const response = await skql.performMapping(data, mapping as NodeObject);
+      const response = await skql.performMapping(data, mapping as NodeObject, { '@id': 'https://example.com/mapping/subject' });
       expect(response).toEqual({
         '@id': 'https://example.com/mapping/subject',
-        '@type': 'https://skl.standard.storage/mappings/frameObject',
         'https://skl.standard.storage/properties/field': 'abc123',
       });
     });
@@ -201,6 +193,7 @@ describe('SKQL', (): void => {
   describe('executing OpenApiOperationVerbs', (): void => {
     let executeOperation: any;
     let setOpenapiSpec: any;
+    let executeSecuritySchemeStage: any;
 
     beforeEach(async(): Promise<void> => {
       schema = await frameAndCombineSchemas([
@@ -208,8 +201,13 @@ describe('SKQL', (): void => {
         './test/assets/schemas/get-dropbox-file.json',
       ]);
       executeOperation = jest.fn().mockResolvedValue({ data: mockDropboxFile });
+      executeSecuritySchemeStage = jest.fn().mockResolvedValue({ data: { access_token: 'newToken' }});
       setOpenapiSpec = jest.fn();
-      (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeOperation, setOpenapiSpec });
+      (OpenApiOperationExecutor as jest.Mock).mockReturnValue({
+        executeOperation,
+        setOpenapiSpec,
+        executeSecuritySchemeStage,
+      });
     });
 
     it('can execute an OpenApiOperationVerb.', async(): Promise<void> => {
@@ -319,6 +317,102 @@ describe('SKQL', (): void => {
       await expect(skql.do.getFile({ account, id: '12345' }))
         .rejects.toThrow('returnTypeSchema is not properly formatted.');
     });
+
+    it(`refreshes the access token and retries the operation if it fails 
+    with an invalid token error matching the integration configuration.`,
+    async(): Promise<void> => {
+      executeOperation.mockRejectedValueOnce({
+        isAxiosError: true,
+        response: {
+          status: 401,
+          statusText: 'Unauthorized',
+        },
+      });
+      const skql = new Skql({ schema });
+      const response = await skql.do.getFile({ account, id: '12345' });
+      expect(response).toEqual(expectedGetFileResponse);
+      expect(executeOperation).toHaveBeenCalledTimes(2);
+      expect(executeOperation).toHaveBeenNthCalledWith(
+        1,
+        'FilesGetMetadata',
+        { accessToken: 'SPOOFED_TOKEN', apiKey: undefined },
+        { path: 'id:12345' },
+      );
+      expect(executeOperation).toHaveBeenNthCalledWith(
+        2,
+        'FilesGetMetadata',
+        { accessToken: 'newToken', apiKey: undefined },
+        { path: 'id:12345' },
+      );
+      expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
+      expect(executeSecuritySchemeStage).toHaveBeenCalledWith(
+        'oAuth',
+        'authorizationCode',
+        'tokenUrl',
+        { username: 'adlerfaulkner', password: 'abc123', accessToken: 'SPOOFED_TOKEN' },
+        { grant_type: 'refresh_token', refresh_token: 'SPOOFED_REFRESH_TOKEN' },
+      );
+    });
+
+    it(`refreshes the access token and retries the operation if it fails 
+    with an invalid token error matching the integration configuration with no messageRegex.`,
+    async(): Promise<void> => {
+      schema = schema.map((schemaItem: any): any => {
+        if (schemaItem['@id'] === 'https://skl.standard.storage/integrations/Dropbox') {
+          schemaItem[SKL.invalidTokenErrorMatcher] = {
+            '@type': '@json',
+            '@value': { status: 400 },
+          };
+        }
+        return schemaItem;
+      });
+      executeOperation.mockRejectedValueOnce({
+        isAxiosError: true,
+        response: {
+          status: 400,
+          statusText: 'Some other error',
+        },
+      });
+      const skql = new Skql({ schema });
+      const response = await skql.do.getFile({ account, id: '12345' });
+      expect(response).toEqual(expectedGetFileResponse);
+      expect(executeOperation).toHaveBeenCalledTimes(2);
+      expect(executeOperation).toHaveBeenNthCalledWith(
+        1,
+        'FilesGetMetadata',
+        { accessToken: 'SPOOFED_TOKEN', apiKey: undefined },
+        { path: 'id:12345' },
+      );
+      expect(executeOperation).toHaveBeenNthCalledWith(
+        2,
+        'FilesGetMetadata',
+        { accessToken: 'newToken', apiKey: undefined },
+        { path: 'id:12345' },
+      );
+      expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
+      expect(executeSecuritySchemeStage).toHaveBeenCalledWith(
+        'oAuth',
+        'authorizationCode',
+        'tokenUrl',
+        { username: 'adlerfaulkner', password: 'abc123', accessToken: 'SPOOFED_TOKEN' },
+        { grant_type: 'refresh_token', refresh_token: 'SPOOFED_REFRESH_TOKEN' },
+      );
+    });
+
+    it('throws an error if the operation fails with an error other than invalid token.', async(): Promise<void> => {
+      executeOperation.mockRejectedValueOnce(
+        new AxiosError('Internal Server Error', undefined, undefined, { status: 500 }),
+      );
+      const skql = new Skql({ schema });
+      await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow('Internal Server Error');
+      expect(executeOperation).toHaveBeenCalledTimes(1);
+      expect(executeOperation).toHaveBeenNthCalledWith(
+        1,
+        'FilesGetMetadata',
+        { accessToken: 'SPOOFED_TOKEN', apiKey: undefined },
+        { path: 'id:12345' },
+      );
+    });
   });
 
   describe('executing OpenApiSecuritySchemeVerbs', (): void => {
@@ -339,7 +433,7 @@ describe('SKQL', (): void => {
 
     it('can execute an OpenApiSecuritySchemeVerb that maps to the authorizationUrl stage.', async(): Promise<void> => {
       const skql = new Skql({ schema });
-      await expect(skql.do.authorizeWithPkceOauth({ integration })).resolves.toEqual({
+      await expect(skql.do.authorizeWithPkceOauth({ account })).resolves.toEqual({
         '@type': '@json',
         '@value': response,
       });
@@ -348,10 +442,8 @@ describe('SKQL', (): void => {
         'oAuth',
         'authorizationCode',
         'authorizationUrl',
-        {
-          client_id: 'abc123',
-          integration,
-        },
+        { username: 'adlerfaulkner', password: 'abc123', accessToken: 'SPOOFED_TOKEN' },
+        { client_id: 'adlerfaulkner', account },
       );
     });
 
@@ -369,21 +461,44 @@ describe('SKQL', (): void => {
       executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
       const skql = new Skql({ schema });
-      const res = await skql.do.getTokensWithPkceOauth({ integration, codeVerifier: 'something', code: 'dummy_code' });
+      const res = await skql.do.getOauthTokens({ account, codeVerifier: 'something', code: 'dummy_code' });
       expect(res[SKL.accessToken]).toBe('abc123');
       expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
       expect(executeSecuritySchemeStage).toHaveBeenCalledWith(
         'oAuth',
         'authorizationCode',
         'tokenUrl',
+        { username: 'adlerfaulkner', password: 'abc123', accessToken: 'SPOOFED_TOKEN' },
         {
-          client_id: 'abc123',
+          client_id: 'adlerfaulkner',
           code: 'dummy_code',
           grant_type: 'authorization_code',
           code_verifier: 'something',
         },
       );
     });
+
+    it('can execute an OpenApiSecuritySchemeVerb that maps to the tokenUrl stage with credentials.',
+      async(): Promise<void> => {
+        schema = await frameAndCombineSchemas([
+          './test/assets/schemas/core.json',
+          './test/assets/schemas/get-stubhub-events.json',
+        ]);
+        response = { data: { access_token: 'abc123' }};
+        executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
+        (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
+        const skql = new Skql({ schema });
+        const res = await skql.do.getOauthTokens({ account: 'https://skl.standard.storage/data/StubhubAccount1' });
+        expect(res[SKL.accessToken]).toBe('abc123');
+        expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
+        expect(executeSecuritySchemeStage).toHaveBeenCalledWith(
+          'OAuth2',
+          'clientCredentials',
+          'tokenUrl',
+          { username: 'adlerfaulkner', password: 'abc123' },
+          { grant_type: 'client_credentials', scope: 'read:events', client_id: 'adlerfaulkner' },
+        );
+      });
   });
 
   describe('executing NounMappingVerbs', (): void => {

@@ -34,7 +34,7 @@
           "@type": "rr:PredicateObjectMap",
           "rr:objectMap": {
             "@type": "rr:ObjectMap",
-            "rr:constant": "https://skl.standard.storage/mappings/frameObject"
+            "rr:constant": "https://skl.standard.storage/MappingSubject"
           },
           "rr:predicate": "rdf:type"
         },

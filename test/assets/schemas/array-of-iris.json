@@ -34,11 +34,6 @@
       "rr:predicateObjectMap": [
         {
           "@type": "rr:PredicateObjectMap",
-          "rr:object": "https://skl.standard.storage/mappings/frameObject",
-          "rr:predicate": "rdf:type"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
           "rr:objectMap": {
             "@type": "rr:ObjectMap",
             "rr:termType": "rr:IRI",
