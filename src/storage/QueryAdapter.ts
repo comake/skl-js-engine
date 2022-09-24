@@ -20,8 +20,6 @@ export interface QueryAdapter {
 
   update: (record: NodeObjectWithId) => Promise<SchemaNodeObject>;
 
-  // update: (record: NodeObject) => Promise<void>;
-
   // updateAll: (records: NodeObject[]) => Promise<void>;
 
   // delete: () => Promise<void>;

@@ -1,6 +1,5 @@
 // Mapping
 export * from './mapping/Mapper';
-export * from './mapping/MapperFunctions';
 
 // Storage
 export * from './storage/MemoryQueryAdapter';

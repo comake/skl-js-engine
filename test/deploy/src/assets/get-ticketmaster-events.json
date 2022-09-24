@@ -21,6 +21,7 @@
     "https://skl.standard.storage/properties/openApiDescription": { "@type": "@json" },
     "sklproperties": "https://skl.standard.storage/properties/",
     "https://skl.standard.storage/properties/parametersContext": { "@type": "@json" },
+    "https://skl.standard.storage/properties/returnValueFrame": { "@type": "@json" },
     "name": "sklproperties:name",
     "parameterMapping": {
       "@id": "sklproperties:parameterMapping",
@@ -40,7 +41,8 @@
     "rr:parentTriplesMap": { "@type": "@id" },
     "rr:predicate": { "@type": "@id" },
     "rr:object": { "@type": "@id" },
-    "rr:subject": { "@type": "@id" }
+    "rr:subject": { "@type": "@id" },
+    "rr:class": { "@type": "@id" }
   },
   "@graph": [
     {
@@ -139,6 +141,9 @@
       },
       "https://skl.standard.storage/properties/returnValue": {
         "@id": "https://skl.standard.storage/nouns/TokenPaginatedCollection"
+      },
+      "https://skl.standard.storage/properties/returnValueFrame": {
+        "@type": "https://skl.standard.storage/nouns/TokenPaginatedCollection"
       }
     },
     {
@@ -167,11 +172,6 @@
       "rr:predicateObjectMap": [
         {
           "@type": "rr:PredicateObjectMap",
-          "rr:object": "https://skl.standard.storage/mappings/frameObject",
-          "rr:predicate": "rdf:type"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
           "rr:objectMap": {
             "@type": "rr:ObjectMap",
             "rr:constant": "SearchEvents"
@@ -179,7 +179,7 @@
           "rr:predicate": "sklproperties:operationId"
         }
       ],
-      "rr:subject": "https://skl.standard.storage/data/5/operationMapping/1/subject"
+      "rr:subject": "https://skl.standard.storage/mappingSubject"
     },
     {
       "@id": "https://skl.standard.storage/data/5/parameterMapping/1",
@@ -191,11 +191,6 @@
         "rml:source": "input.json"
       },
       "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:object": "https://skl.standard.storage/mappings/frameObject",
-          "rr:predicate": "rdf:type"
-        },
         {
           "@type": "rr:PredicateObjectMap",
           "rr:objectMap": {
@@ -241,7 +236,7 @@
           "rr:predicate": "sklproperties:endDateTime"
         }
       ],
-      "rr:subject": "https://skl.standard.storage/data/5/parameterMapping/1/subject"
+      "rr:subject": "https://skl.standard.storage/mappingSubject"
     },
     {
       "@id": "https://skl.standard.storage/data/5/returnValueMapping/1",
@@ -260,16 +255,12 @@
             "rr:parentTriplesMap": "https://skl.standard.storage/data/5/returnValueMapping/2"
           },
           "rr:predicate": "sklproperties:records"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:object": "https://skl.standard.storage/mappings/frameObject",
-          "rr:predicate": "rdf:type"
         }
       ],
       "rr:subjectMap": {
         "@type": "rr:SubjectMap",
-        "rr:template": "https://skl.standard.storage/data/5/returnValueMapping/1/subject"
+        "rr:template": "https://skl.standard.storage/mappingSubject",
+        "rr:class": "https://skl.standard.storage/nouns/TokenPaginatedCollection"
       }
     },
     {

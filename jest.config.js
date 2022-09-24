@@ -13,7 +13,7 @@ module.exports = {
     'js',
     'json'
   ],
-  testEnvironment: 'jsdom',
+  testEnvironment: 'node',
   collectCoverage: true,
   coverageReporters: [ 'text', 'lcov' ],
   coveragePathIgnorePatterns: [
@@ -22,4 +22,5 @@ module.exports = {
     '/test/',
   ],
   testTimeout: 60000,
+  testURL: "http://example.com/"
 };

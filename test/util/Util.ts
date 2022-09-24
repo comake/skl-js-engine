@@ -2,19 +2,6 @@ import { promises as fs } from 'fs';
 import jsonld from 'jsonld';
 import type { SchemaNodeObject } from '../../src/util/Types';
 
-const portNames = [
-  'Memory',
-] as const;
-
-export function getPort(name: typeof portNames[number]): number {
-  const idx = portNames.indexOf(name);
-  // Just in case something doesn't listen to the typings
-  if (idx < 0) {
-    throw new Error(`Unknown port name ${name}`);
-  }
-  return 6000 + idx;
-}
-
 export function describeIf(envFlag: string, name: string, fn: () => void): void {
   const flag = `TEST_${envFlag.toUpperCase()}`;
   const enabled = !/^(|0|false)$/iu.test(process.env[flag] ?? '');

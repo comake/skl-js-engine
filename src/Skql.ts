@@ -1,13 +1,26 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { OpenApi, CodeAuthorizationUrlResponse } from '@comake/openapi-operation-executor';
+import type {
+  OpenApi,
+  CodeAuthorizationUrlResponse,
+  OpenApiClientConfiguration,
+} from '@comake/openapi-operation-executor';
 import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
-import type { NodeObject } from 'jsonld';
+import axios from 'axios';
+import type { AxiosError } from 'axios';
+import type { ContextDefinition, NodeObject } from 'jsonld';
 import SHACLValidator from 'rdf-validate-shacl';
+import type ValidationReport from 'rdf-validate-shacl/src/validation-report';
 import { Mapper } from './mapping/Mapper';
 import { MemoryQueryAdapter } from './storage/MemoryQueryAdapter';
 import type { QueryAdapter, FindQuery } from './storage/QueryAdapter';
 import type { SchemaNodeObject, UnsavedSchemaNodeObject, NodeObjectWithId } from './util/Types';
-import { constructUri, convertJsonLdToQuads, toJSON } from './util/Util';
+import {
+  constructUri,
+  convertJsonLdToQuads,
+  getValueOfFieldInNodeObject,
+  toJSON,
+  asJsonLdJsonValue,
+} from './util/Util';
 import type { JSONObject } from './util/Util';
 import { SKL, SHACL } from './util/Vocabularies';
 
@@ -20,6 +33,13 @@ export interface SetSchemaArgs {
   schema?: SchemaNodeObject[];
   skdsUrl?: string;
 }
+
+export interface ErrorMatcher {
+  status: number;
+  messageRegex: string;
+}
+
+const DEFAULT_MAPPING_FRAME = { '@id': 'https://skl.standard.storage/mappingSubject' };
 
 export class Skql {
   private readonly mapper: Mapper;
@@ -69,15 +89,17 @@ export class Skql {
   public async performMapping(
     args: NodeObject,
     mapping: NodeObject,
+    frame?: Record<string, any>,
   ): Promise<NodeObject> {
-    return await this.mapper.apply(args, mapping);
+    return await this.mapper.apply(args, mapping, frame ?? DEFAULT_MAPPING_FRAME);
   }
 
   public async performMappingAndConvertToJSON(
     args: NodeObject,
     mapping: NodeObject,
+    frame?: Record<string, any>,
   ): Promise<JSONObject> {
-    const jsonLd = await this.mapper.applyAndFrameSklProperties(args, mapping);
+    const jsonLd = await this.mapper.applyAndFrameSklProperties(args, mapping, frame ?? DEFAULT_MAPPING_FRAME);
     return toJSON(jsonLd);
   }
 
@@ -110,214 +132,271 @@ export class Skql {
 
   private constructOpenApiOperationVerbHandler(verb: SchemaNodeObject): VerbHandler {
     return async(args: JSONObject): Promise<NodeObject> => {
-      // Assert params match
-      const argsAsJsonLd = {
-        '@context': (verb[SKL.parametersContext] as NodeObject)['@value'],
-        '@type': 'https://skl.standard.storage/nouns/Parameters',
-        ...args,
-      };
-      await this.assertVerbParamsMatchParameterSchemas(
-        argsAsJsonLd,
-        verb[SKL.parameters],
-        verb[SKL.name] as string,
-      );
-
+      await this.assertVerbParamsMatchParameterSchemas(args, verb);
       const account = await this.find({ id: args.account as string });
-      // Find mapping for verb and integration
-      const mapping = await this.find({
-        type: SKL.VerbIntegrationMapping,
-        [SKL.verb]: verb['@id'],
-        [SKL.integration]: (account[SKL.integration] as NodeObject)['@id'],
-      });
-
-      // Perform mapping of args
-      const operationArgs = await this.performMappingAndConvertToJSON(
-        args as NodeObject,
-        mapping[SKL.parameterMapping] as NodeObject,
-      );
-
-      const operationInfoJsonLd = await this.performMapping(
-        args as NodeObject,
-        mapping[SKL.operationMapping] as NodeObject,
-      );
-
+      const integrationId = (account[SKL.integration] as SchemaNodeObject)['@id'];
+      const mapping = await this.findVerbIntegrationMapping(verb['@id'], integrationId);
+      const operationArgs = await this.performParameterMappingOnArgsIfDefined(args as NodeObject, mapping);
+      const operationInfoJsonLd = await this.performOperationMappingWithArgs(args as NodeObject, mapping);
       const operationId = operationInfoJsonLd[SKL.operationId] as string;
-      // Perform the operation
-      const rawReturnValue = await this.performOpenapiOperation(operationId, operationArgs, account);
-      // Perform mapping of return value
-      const mappedReturnValue = await this.performMapping(
-        rawReturnValue.data as NodeObject,
-        mapping[SKL.returnValueMapping] as NodeObject,
-      );
-      await this.assertVerbReturnValueMatchesReturnTypeSchema(
-        mappedReturnValue,
-        verb[SKL.returnValue] as NodeObject,
-      );
+      const rawReturnValue = await this.performOpenapiOperationWithCredentials(operationId, operationArgs, account);
+      const mappedReturnValue = await this.performReturnValueMappingWithFrame(rawReturnValue.data, mapping, verb);
+      await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, verb);
       return mappedReturnValue;
     };
+  }
+
+  private async findVerbIntegrationMapping(verbId: string, integrationId: string): Promise<SchemaNodeObject> {
+    return await this.find({
+      type: SKL.VerbIntegrationMapping,
+      [SKL.verb]: verbId,
+      [SKL.integration]: integrationId,
+    });
+  }
+
+  private async performOperationMappingWithArgs(args: NodeObject, mapping: SchemaNodeObject): Promise<NodeObject> {
+    return await this.performMapping(args, mapping[SKL.operationMapping] as NodeObject);
+  }
+
+  private async performReturnValueMappingWithFrame(
+    data: NodeObject,
+    mapping: SchemaNodeObject,
+    verb: SchemaNodeObject,
+  ): Promise<NodeObject> {
+    return await this.performMapping(
+      data,
+      mapping[SKL.returnValueMapping] as NodeObject,
+      {
+        ...getValueOfFieldInNodeObject<Record<string, any>>(verb, SKL.returnValueFrame),
+        ...getValueOfFieldInNodeObject<Record<string, any> | undefined>(mapping, SKL.returnValueFrame),
+      },
+    );
   }
 
   private constructOpenApiSecuritySchemeVerbHandler(verb: SchemaNodeObject): VerbHandler {
     return async(args: JSONObject): Promise<NodeObject> => {
-      // Assert params match
-      const argsAsJsonLd = {
-        '@context': (verb[SKL.parametersContext] as NodeObject)['@value'],
-        '@type': 'https://skl.standard.storage/nouns/Parameters',
-        ...args,
-      };
-      await this.assertVerbParamsMatchParameterSchemas(
-        argsAsJsonLd,
-        verb[SKL.parameters],
-        verb[SKL.name] as string,
-      );
-
-      const integration = await this.find({ id: args.integration as string });
-      // Find mapping for verb and integration
-      const mapping = await this.find({
-        type: SKL.VerbIntegrationMapping,
-        [SKL.verb]: verb['@id'],
-        [SKL.integration]: integration['@id'],
-      });
-
-      let operationArgs: any = args;
-      if (mapping[SKL.parameterMapping]) {
-        operationArgs = await this.performMappingAndConvertToJSON(
-          args as NodeObject,
-          mapping[SKL.parameterMapping] as NodeObject,
-        );
-      }
-      operationArgs.client_id = integration[SKL.clientId];
-
-      const operationInfoJsonLd = await this.performMapping(
-        args as NodeObject,
-        mapping[SKL.operationMapping] as NodeObject,
-      );
-
-      const openApiDescriptionSchema = await this.find({
-        type: SKL.OpenApiDescription,
-        [SKL.integration]: integration['@id'],
-      });
-      const openApiDescription = (
-        openApiDescriptionSchema[SKL.openApiDescription] as NodeObject
-      )['@value'] as OpenApi;
-
-      const openApiExecutor = new OpenApiOperationExecutor();
-      await openApiExecutor.setOpenapiSpec(openApiDescription);
+      await this.assertVerbParamsMatchParameterSchemas(args, verb);
+      const account = await this.find({ id: args.account as string });
+      const integrationId = (account[SKL.integration] as SchemaNodeObject)['@id'];
+      const mapping = await this.findVerbIntegrationMapping(verb['@id'], integrationId);
+      const operationArgs = await this.performParameterMappingOnArgsIfDefined(args as NodeObject, mapping);
+      const operationInfoJsonLd = await this.performOperationMappingWithArgs(args as NodeObject, mapping);
+      const openApiDescription = await this.getOpenApiDescriptionForIntegration(integrationId);
+      const securityCredentialsSchema = await this.findSecurityCredentialsForAccount(account['@id']);
+      const configuration = this.getConfigurationFromSecurityCredentials(securityCredentialsSchema);
+      operationArgs.client_id = securityCredentialsSchema[SKL.clientId];
+      const openApiExecutor = await this.createOpenApiOperationExecutorWithSpec(openApiDescription);
       const rawReturnValue = await openApiExecutor.executeSecuritySchemeStage(
         operationInfoJsonLd[SKL.schemeName] as string,
         operationInfoJsonLd[SKL.oauthFlow] as string,
         operationInfoJsonLd[SKL.stage] as string,
+        configuration,
         operationArgs,
       );
 
       if ((rawReturnValue as CodeAuthorizationUrlResponse).authorizationUrl) {
-        return {
-          '@type': '@json',
-          '@value': rawReturnValue as unknown as JSONObject,
-        } as NodeObject;
+        return asJsonLdJsonValue(rawReturnValue as unknown as JSONObject);
       }
-      const mappedReturnValue = await this.performMapping(
-        (rawReturnValue as { data: NodeObject }).data,
-        mapping[SKL.returnValueMapping] as NodeObject,
+      const mappedReturnValue = await this.performReturnValueMappingWithFrame(
+        (rawReturnValue as { data: NodeObject }).data, mapping, verb,
       );
-
-      await this.assertVerbReturnValueMatchesReturnTypeSchema(
-        mappedReturnValue,
-        verb[SKL.returnValue] as NodeObject,
-      );
-
+      await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, verb);
       return mappedReturnValue;
     };
   }
 
+  private async performParameterMappingOnArgsIfDefined(
+    args: NodeObject,
+    mapping: SchemaNodeObject,
+  ): Promise<Record<string, any>> {
+    if (mapping[SKL.parameterMapping]) {
+      return await this.performMappingAndConvertToJSON(args, mapping[SKL.parameterMapping] as NodeObject);
+    }
+    return args;
+  }
+
+  private async getOpenApiDescriptionForIntegration(integrationId: string): Promise<OpenApi> {
+    const openApiDescriptionSchema = await this.find({
+      type: SKL.OpenApiDescription,
+      [SKL.integration]: integrationId,
+    });
+    return getValueOfFieldInNodeObject<OpenApi>(openApiDescriptionSchema, SKL.openApiDescription);
+  }
+
+  private async findSecurityCredentialsForAccount(accountId: string): Promise<SchemaNodeObject> {
+    return await this.find({
+      type: SKL.SecurityCredentials,
+      [SKL.account]: accountId,
+    });
+  }
+
+  private async createOpenApiOperationExecutorWithSpec(openApiDescription: OpenApi): Promise<OpenApiOperationExecutor> {
+    const executor = new OpenApiOperationExecutor();
+    await executor.setOpenapiSpec(openApiDescription);
+    return executor;
+  }
+
   private constructNounMappingVerbHandler(verb: SchemaNodeObject): VerbHandler {
     return async(args: JSONObject): Promise<NodeObject> => {
-      // Find mapping for verb and Noun
-      const mapping = await this.find({
-        type: SKL.VerbNounMapping,
-        [SKL.verb]: verb['@id'],
-        [SKL.noun]: args.noun as string,
-      });
-
-      const verbArgs = await this.performMappingAndConvertToJSON(
-        args as NodeObject,
-        mapping[SKL.parameterMapping] as NodeObject,
-      );
-      const verbInfoJsonLd = await this.performMapping(
-        args as NodeObject,
-        mapping[SKL.verbMapping] as NodeObject,
-      );
+      const mapping = await this.findVerbNounMapping(verb['@id'], args.noun as string);
+      const verbArgs = await this.performParameterMappingOnArgsIfDefined(args as NodeObject, mapping);
+      const verbInfoJsonLd = await this.performVerbMappingWithArgs(args as NodeObject, mapping);
       const mappedVerb = await this.find({ id: verbInfoJsonLd[SKL.verb] as string });
       return this.constructVerbHandler(mappedVerb)(verbArgs);
     };
   }
 
-  private async assertVerbParamsMatchParameterSchemas(verbParams: any,
-    parameterSchemas: any, verbName: string): Promise<void> {
-    const paramsAsQuads = await convertJsonLdToQuads([ verbParams ]);
-    const shape = await convertJsonLdToQuads(parameterSchemas);
-    const validator = new SHACLValidator(shape);
-    const report = validator.validate(paramsAsQuads);
+  private async findVerbNounMapping(verbId: string, noun: string): Promise<SchemaNodeObject> {
+    return await this.find({
+      type: SKL.VerbNounMapping,
+      [SKL.verb]: verbId,
+      [SKL.noun]: noun,
+    });
+  }
+
+  private async performVerbMappingWithArgs(args: NodeObject, mapping: SchemaNodeObject): Promise<NodeObject> {
+    return await this.performMapping(
+      args,
+      mapping[SKL.verbMapping] as NodeObject,
+    );
+  }
+
+  private async assertVerbParamsMatchParameterSchemas(verbParams: any, verb: SchemaNodeObject): Promise<void> {
+    const verbParamsAsJsonLd = {
+      '@context': getValueOfFieldInNodeObject<ContextDefinition>(verb, SKL.parametersContext),
+      '@type': 'https://skl.standard.storage/nouns/Parameters',
+      ...verbParams,
+    };
+    const parametersSchema = verb[SKL.parameters] as NodeObject;
+    const report = await this.convertToQuadsAndValidateAgainstShape(verbParamsAsJsonLd, parametersSchema);
     if (!report.conforms) {
-      throw new Error(`${verbName} parameters do not conform to the schema`);
+      throw new Error(`${verb[SKL.name]} parameters do not conform to the schema`);
     }
   }
 
-  private async performOpenapiOperation(
+  private async performOpenapiOperationWithCredentials(
     operationId: string,
     operationArgs: JSONObject,
     account: SchemaNodeObject,
   ): Promise<any> {
-    const openApiDescriptionSchema = await this.find({
-      type: SKL.OpenApiDescription,
-      [SKL.integration]: (account[SKL.integration] as SchemaNodeObject)['@id'],
-    });
+    const integrationId = (account[SKL.integration] as SchemaNodeObject)['@id'];
+    const openApiDescription = await this.getOpenApiDescriptionForIntegration(integrationId);
+    const openApiExecutor = await this.createOpenApiOperationExecutorWithSpec(openApiDescription);
+    const securityCredentials = await this.findSecurityCredentialsForAccount(account['@id']);
+    const configuration = {
+      accessToken: securityCredentials[SKL.accessToken] as string,
+      apiKey: securityCredentials[SKL.apiKey] as string,
+    };
+    return await openApiExecutor.executeOperation(operationId, configuration, operationArgs)
+      .catch(async(error: Error | AxiosError): Promise<any> => {
+        if (axios.isAxiosError(error) && await this.isInvalidTokenError(error, integrationId)) {
+          const refreshedConfiguration = await this.refreshOpenApiToken(
+            securityCredentials,
+            openApiExecutor,
+            integrationId,
+          );
+          return await openApiExecutor.executeOperation(operationId, refreshedConfiguration, operationArgs);
+        }
+        throw error;
+      });
+  }
 
-    const securityCredentialsSchema = await this.find({
-      type: SKL.SecurityCredentials,
-      [SKL.account]: account['@id'],
-    });
+  private async isInvalidTokenError(error: AxiosError, integrationId: string): Promise<boolean> {
+    const integration = await this.find({ id: integrationId });
+    const errorMatcher = getValueOfFieldInNodeObject<ErrorMatcher | undefined>(
+      integration,
+      SKL.invalidTokenErrorMatcher,
+    );
+    if (errorMatcher && (error.response?.status === errorMatcher.status)) {
+      if (!errorMatcher.messageRegex) {
+        return true;
+      }
 
-    const openApiDescription = (
-      openApiDescriptionSchema[SKL.openApiDescription] as NodeObject
-    )['@value'] as OpenApi;
-    const openApiExecutor = new OpenApiOperationExecutor();
-    await openApiExecutor.setOpenapiSpec(openApiDescription);
-    const response = await openApiExecutor.executeOperation(
-      operationId,
-      {
-        accessToken: securityCredentialsSchema[SKL.accessToken] as string,
-        apiKey: securityCredentialsSchema[SKL.apiKey] as string,
-      },
+      if (
+        error.response?.statusText &&
+        new RegExp(errorMatcher.messageRegex, 'u').test(error.response?.statusText)
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private async refreshOpenApiToken(
+    securityCredentialsSchema: SchemaNodeObject,
+    openApiExecutor: OpenApiOperationExecutor,
+    integrationId: string,
+  ): Promise<OpenApiClientConfiguration> {
+    const getOauthTokenVerb = await this.find({ id: SKL.getOauthTokens });
+    const mapping = await this.findVerbIntegrationMapping(getOauthTokenVerb['@id'], integrationId);
+    const operationArgs = await this.performParameterMappingOnArgsIfDefined(
+      { refreshToken: securityCredentialsSchema[SKL.refreshToken] as string | undefined },
+      mapping,
+    );
+    const operationInfoJsonLd = await this.performOperationMappingWithArgs({}, mapping);
+    const configuration = this.getConfigurationFromSecurityCredentials(securityCredentialsSchema);
+    const rawReturnValue = await openApiExecutor.executeSecuritySchemeStage(
+      operationInfoJsonLd[SKL.schemeName] as string,
+      operationInfoJsonLd[SKL.oauthFlow] as string,
+      operationInfoJsonLd[SKL.stage] as string,
+      configuration,
       operationArgs,
     );
-    return response;
+    const mappedReturnValue = await this.performReturnValueMappingWithFrame(
+      (rawReturnValue as { data: NodeObject }).data, mapping, getOauthTokenVerb,
+    );
+    await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, getOauthTokenVerb);
+    securityCredentialsSchema[SKL.accessToken] = mappedReturnValue[SKL.accessToken];
+    securityCredentialsSchema[SKL.refreshToken] = mappedReturnValue[SKL.refreshToken];
+    await this.update(securityCredentialsSchema);
+    return { accessToken: securityCredentialsSchema[SKL.accessToken] as string };
+  }
+
+  private getConfigurationFromSecurityCredentials(
+    securityCredentialsSchema: SchemaNodeObject,
+  ): OpenApiClientConfiguration {
+    const username = securityCredentialsSchema[SKL.clientId] as string | undefined;
+    const password = securityCredentialsSchema[SKL.clientSecret] as string | undefined;
+    const accessToken = securityCredentialsSchema[SKL.accessToken] as string | undefined;
+    return { username, password, accessToken };
   }
 
   private async assertVerbReturnValueMatchesReturnTypeSchema(
     returnValue: NodeObject,
-    returnTypeSchema: NodeObject,
+    verb: SchemaNodeObject,
   ): Promise<void> {
-    const returnValueAsQuads = await convertJsonLdToQuads([ returnValue ]);
+    const returnTypeSchemaObject = await this.getReturnTypeSchemaFromVerb(verb);
 
-    let returnTypeSchemaObject: NodeObject;
+    let report: ValidationReport | undefined;
+    if (returnValue && Object.keys(returnValue).length > 0 && returnTypeSchemaObject) {
+      returnTypeSchemaObject[SHACL.targetNode] = { '@id': returnValue['@id'] };
+      report = await this.convertToQuadsAndValidateAgainstShape(returnValue, returnTypeSchemaObject);
+    }
+
+    if (!report?.conforms) {
+      throw new Error(`Return value ${returnValue['@id']} does not conform to the schema`);
+    }
+  }
+
+  private async getReturnTypeSchemaFromVerb(verb: SchemaNodeObject): Promise<NodeObject> {
+    const returnTypeSchema = verb[SKL.returnValue] as NodeObject;
     if (typeof returnTypeSchema === 'object' && returnTypeSchema['@type']) {
-      returnTypeSchemaObject = returnTypeSchema;
-    } else if (typeof returnTypeSchema === 'object' && returnTypeSchema['@id']) {
-      returnTypeSchemaObject = await this.find({ id: returnTypeSchema['@id'] });
-    } else {
-      throw new Error('returnTypeSchema is not properly formatted.');
+      return returnTypeSchema;
     }
+    if (typeof returnTypeSchema === 'object' && returnTypeSchema['@id']) {
+      return await this.find({ id: returnTypeSchema['@id'] });
+    }
+    throw new Error('returnTypeSchema is not properly formatted.');
+  }
 
-    if (returnTypeSchemaObject) {
-      returnTypeSchemaObject[SHACL.targetClass] = { '@id': 'https://skl.standard.storage/mappings/frameObject' };
-      // TODO: code duplicated above
-      const shape = await convertJsonLdToQuads(returnTypeSchemaObject);
-      const validator = new SHACLValidator(shape);
-      const report = validator.validate(returnValueAsQuads);
-      if (!report.conforms) {
-        throw new Error(`Return value ${returnValue['@id']} does not conform to the schema`);
-      }
-    }
+  private async convertToQuadsAndValidateAgainstShape(
+    value: NodeObject,
+    schemaNodeObject: NodeObject,
+  ): Promise<ValidationReport> {
+    const valueAsQuads = await convertJsonLdToQuads([ value ]);
+    const shape = await convertJsonLdToQuads(schemaNodeObject);
+    const validator = new SHACLValidator(shape);
+    return validator.validate(valueAsQuads);
   }
 }
