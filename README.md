@@ -22,7 +22,6 @@ We will be posting more documentation on schemas soon.
 
 Once you have schemas defined for your domain, all you have to do is write code using the Verbs and Nouns in your schema to build your application logic.
 
-
 #### Browser support
 To use SKQL Javascript Engine in a browser, you'll need to use a bundling tool such as Webpack, Rollup, Parcel, or Browserify. Some bundlers may require a bit of configuration, such as setting browser: true in rollup-plugin-resolve.
 
@@ -43,6 +42,5 @@ Copyright (c) 2022, Comake, Inc.
 
 # TODO
 
-- [ ] add CONTRIBUTING.md, CODE_OF_CONDUCT.md, etc
 - [ ] add SKDS schema source
 - [ ] Add reference to examples in readme
