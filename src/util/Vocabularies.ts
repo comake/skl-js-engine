@@ -71,6 +71,7 @@ export const SKL = createNamespace('https://skl.standard.storage/', {
   invalidTokenErrorMatcher: 'properties/invalidTokenErrorMatcher',
   getOauthTokens: 'verbs/getOauthTokens',
   records: 'properties/records',
+  mapping: 'properties/mapping',
 });
 
 export const XSD = createNamespace('http://www.w3.org/2001/XMLSchema#', {

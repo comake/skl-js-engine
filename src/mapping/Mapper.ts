@@ -4,7 +4,17 @@ import * as jsonld from 'jsonld';
 import { stringToBoolean, stringToInteger } from '../util/Util';
 import { SKL, XSD } from '../util/Vocabularies';
 
+export interface MapperArgs {
+  functions?: Record<string, (args: any | any[]) => any>;
+}
+
 export class Mapper {
+  private readonly functions?: Record<string, (args: any | any[]) => any>;
+
+  public constructor(args?: MapperArgs) {
+    this.functions = args?.functions;
+  }
+
   public async apply(
     data: jsonld.NodeObject,
     mapping: jsonld.NodeObject,
@@ -26,8 +36,9 @@ export class Mapper {
   private async doMapping(data: jsonld.NodeObject, mapping: jsonld.NodeObject): Promise<jsonld.NodeObject[]> {
     const mappingAsQuads = await this.jsonLdToQuads(mapping);
     const sources = { 'input.json': JSON.stringify(data) };
+    const options = { functions: this.functions };
     // TODO always return arrays...
-    return await RmlParser.parse(mappingAsQuads, sources) as jsonld.NodeObject[];
+    return await RmlParser.parse(mappingAsQuads, sources, options) as jsonld.NodeObject[];
   }
 
   private async frameAndConvertToNativeTypes(

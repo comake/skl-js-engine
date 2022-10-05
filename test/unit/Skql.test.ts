@@ -515,7 +515,7 @@ describe('SKQL', (): void => {
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeOperation, setOpenapiSpec });
     });
 
-    it('can execute a NounMappingVerb.', async(): Promise<void> => {
+    it('can execute a NounMappedVerb.', async(): Promise<void> => {
       const skql = new Skql({ schema });
       const response = await skql.do.sync({
         noun: 'https://skl.standard.storage/nouns/File',
@@ -523,6 +523,18 @@ describe('SKQL', (): void => {
         id: '12345',
       });
       expect(response).toEqual(expectedGetFileResponse);
+    });
+
+    it('can execute a NounMappedVerb with only a mapping.', async(): Promise<void> => {
+      const skql = new Skql({ schema });
+      const response = await skql.do.getName({
+        noun: 'https://skl.standard.storage/nouns/File',
+        entity: { [SKL.name]: 'final.jpg', [SKL.sourceId]: 12345 },
+      });
+      expect(response).toEqual({
+        '@id': 'https://skl.standard.storage/mappingSubject',
+        [SKL.name]: 'final.jpg',
+      });
     });
   });
 

@@ -29,9 +29,10 @@ export type VerbInterface = Record<string, VerbHandler>;
 
 export type MappingResponseOption<T extends boolean> = T extends true ? JSONObject : NodeObject;
 
-export interface SetSchemaArgs {
+export interface SkqlArgs {
   schema?: SchemaNodeObject[];
   skdsUrl?: string;
+  functions?: Record<string, (args: any | any[]) => any>;
 }
 
 export interface ErrorMatcher {
@@ -46,7 +47,7 @@ export class Skql {
   private readonly adapter: QueryAdapter;
   public do: VerbInterface;
 
-  public constructor(args: SetSchemaArgs) {
+  public constructor(args: SkqlArgs) {
     if (args.schema) {
       this.adapter = new MemoryQueryAdapter(args.schema);
     // } else if (args.skdsUrl) {
@@ -55,7 +56,7 @@ export class Skql {
       throw new Error('No schema source found in setSchema args.');
     }
 
-    this.mapper = new Mapper();
+    this.mapper = new Mapper({ functions: args.functions });
 
     // eslint-disable-next-line func-style
     const getVerbHandler = (getTarget: VerbInterface, property: string): VerbHandler =>
@@ -239,6 +240,9 @@ export class Skql {
   private constructNounMappingVerbHandler(verb: SchemaNodeObject): VerbHandler {
     return async(args: JSONObject): Promise<NodeObject> => {
       const mapping = await this.findVerbNounMapping(verb['@id'], args.noun as string);
+      if (mapping[SKL.mapping]) {
+        return await this.performMapping(args as NodeObject, mapping[SKL.mapping] as NodeObject);
+      }
       const verbArgs = await this.performParameterMappingOnArgsIfDefined(args as NodeObject, mapping);
       const verbInfoJsonLd = await this.performVerbMappingWithArgs(args as NodeObject, mapping);
       const mappedVerb = await this.find({ id: verbInfoJsonLd[SKL.verb] as string });
