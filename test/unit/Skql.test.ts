@@ -173,7 +173,7 @@ describe('SKQL', (): void => {
     it('maps data.', async(): Promise<void> => {
       const data = { field: 'abc123' };
       const mapping = await expandJsonLd(simpleMapping);
-      const response = await skql.performMappingAndConvertToJSON(data, mapping as NodeObject, { '@id': 'https://example.com/mapping/subject' });
+      const response = await skql.performMappingAndConvertToJSON(data, mapping as NodeObject);
       expect(response).toEqual({
         field: 'abc123',
       });
@@ -182,9 +182,9 @@ describe('SKQL', (): void => {
     it('maps data without converting it to json.', async(): Promise<void> => {
       const data = { field: 'abc123' };
       const mapping = await expandJsonLd(simpleMapping);
-      const response = await skql.performMapping(data, mapping as NodeObject, { '@id': 'https://example.com/mapping/subject' });
+      const response = await skql.performMapping(data, mapping as NodeObject);
       expect(response).toEqual({
-        '@id': 'https://example.com/mapping/subject',
+        '@id': 'https://skl.standard.storage/mappingSubject',
         'https://skl.standard.storage/properties/field': 'abc123',
       });
     });
@@ -214,23 +214,49 @@ describe('SKQL', (): void => {
       const skql = new Skql({ schema });
       const response = await skql.do.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
+      expect(executeOperation).toHaveBeenCalledTimes(1);
+      expect(executeOperation).toHaveBeenCalledWith(
+        'FilesGetMetadata',
+        { accessToken: 'SPOOFED_TOKEN', apiKey: undefined, basePath: undefined },
+        { path: 'id:12345' },
+      );
     });
+
+    it('returns the raw response if the openapi operation mapping does not have a return value mapping.',
+      async(): Promise<void> => {
+        schema = schema.map((schemaItem: any): any => {
+          if (schemaItem['@id'] === 'https://skl.standard.storage/data/4') {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete schemaItem[SKL.returnValueMapping];
+          }
+          return schemaItem;
+        });
+        const skql = new Skql({ schema });
+        const response = await skql.do.getFile({ account, id: '12345' });
+        expect(response).toEqual({ data: mockDropboxFile });
+        expect(executeOperation).toHaveBeenCalledTimes(1);
+        expect(executeOperation).toHaveBeenCalledWith(
+          'FilesGetMetadata',
+          { accessToken: 'SPOOFED_TOKEN', apiKey: undefined, basePath: undefined },
+          { path: 'id:12345' },
+        );
+      });
 
     it('errors if the executed verb is not defined.', async(): Promise<void> => {
       schema = schema.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://skl.standard.storage/verbs/getFile');
       const skql = new Skql({ schema });
-      await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow(Error);
       await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow(
         'Failed to find the verb getFile in the schema',
       );
+      expect(executeOperation).toHaveBeenCalledTimes(0);
     });
 
     it('errors if the parameters do not conform to the verb parameter schema.', async(): Promise<void> => {
       const skql = new Skql({ schema });
-      await expect(skql.do.getFile({ id: '12345' })).rejects.toThrow(Error);
       await expect(skql.do.getFile({ id: '12345' })).rejects.toThrow(
         'getFile parameters do not conform to the schema',
       );
+      expect(executeOperation).toHaveBeenCalledTimes(0);
     });
 
     it('errors if the return value does not conform to the verb return value schema.', async(): Promise<void> => {
@@ -240,40 +266,50 @@ describe('SKQL', (): void => {
         }
       });
       const skql = new Skql({ schema });
-      await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow(Error);
       await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow(
         'Return value https://skl.standard.storage/data/abc123 does not conform to the schema',
+      );
+      expect(executeOperation).toHaveBeenCalledTimes(1);
+      expect(executeOperation).toHaveBeenCalledWith(
+        'FilesGetMetadata',
+        { accessToken: 'SPOOFED_TOKEN', apiKey: undefined, basePath: undefined },
+        { path: 'id:12345' },
       );
     });
 
     it('errors if no mapping for the verb and the integration is in the schema.', async(): Promise<void> => {
       schema = schema.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://skl.standard.storage/data/4');
       const skql = new Skql({ schema });
-      await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow(Error);
       await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow([
         'No schema found with fields matching',
         '{"type":"https://skl.standard.storage/nouns/VerbIntegrationMapping","https://skl.standard.storage/properties/verb":"https://skl.standard.storage/verbs/getFile","https://skl.standard.storage/properties/integration":"https://skl.standard.storage/integrations/Dropbox"}',
       ].join(' '));
+      expect(executeOperation).toHaveBeenCalledTimes(0);
     });
 
     it('errors if no open api description for the integration is in the schema.', async(): Promise<void> => {
       schema = schema.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://skl.standard.storage/data/DropboxOpenApiDescription');
       const skql = new Skql({ schema });
-      await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow(Error);
       await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow([
         'No schema found with fields matching',
         '{"type":"https://skl.standard.storage/nouns/OpenApiDescription","https://skl.standard.storage/properties/integration":"https://skl.standard.storage/integrations/Dropbox"}',
       ].join(' '));
+      expect(executeOperation).toHaveBeenCalledTimes(0);
     });
 
-    it('errors if no security credentials for the account is in the schema.', async(): Promise<void> => {
+    it(`sends the request with undefined security credentials if no 
+    security credentials for the account are in the schema.`,
+    async(): Promise<void> => {
       schema = schema.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://skl.standard.storage/data/DropboxAccount1SecurityCredentials');
       const skql = new Skql({ schema });
-      await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow(Error);
-      await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow([
-        'No schema found with fields matching',
-        '{"type":"https://skl.standard.storage/nouns/SecurityCredentials","https://skl.standard.storage/properties/account":"https://skl.standard.storage/data/DropboxAccount1"}',
-      ].join(' '));
+      const response = await skql.do.getFile({ account, id: '12345' });
+      expect(response).toEqual(expectedGetFileResponse);
+      expect(executeOperation).toHaveBeenCalledTimes(1);
+      expect(executeOperation).toHaveBeenCalledWith(
+        'FilesGetMetadata',
+        { accessToken: undefined, apiKey: undefined, basePath: undefined },
+        { path: 'id:12345' },
+      );
     });
 
     it('validates the verbs return value against a nested returnType schema.', async(): Promise<void> => {
@@ -303,6 +339,12 @@ describe('SKQL', (): void => {
       const skql = new Skql({ schema });
       const response = await skql.do.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
+      expect(executeOperation).toHaveBeenCalledTimes(1);
+      expect(executeOperation).toHaveBeenCalledWith(
+        'FilesGetMetadata',
+        { accessToken: 'SPOOFED_TOKEN', apiKey: undefined, basePath: undefined },
+        { path: 'id:12345' },
+      );
     });
 
     it('errors if the returnType schema is not properly formatted.', async(): Promise<void> => {
@@ -316,6 +358,12 @@ describe('SKQL', (): void => {
       const skql = new Skql({ schema });
       await expect(skql.do.getFile({ account, id: '12345' }))
         .rejects.toThrow('returnTypeSchema is not properly formatted.');
+      expect(executeOperation).toHaveBeenCalledTimes(1);
+      expect(executeOperation).toHaveBeenCalledWith(
+        'FilesGetMetadata',
+        { accessToken: 'SPOOFED_TOKEN', apiKey: undefined, basePath: undefined },
+        { path: 'id:12345' },
+      );
     });
 
     it(`refreshes the access token and retries the operation if it fails 

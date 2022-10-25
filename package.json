@@ -44,7 +44,7 @@
 	},
 	"dependencies": {
 		"@comake/openapi-operation-executor": "^0.4.2",
-		"@comake/rmlmapper-js": "^0.1.2",
+		"@comake/rmlmapper-js": "^0.1.3",
 		"jsonld": "^5.2.0",
 		"mime-types": "^2.1.35",
 		"n3": "^1.16.2",

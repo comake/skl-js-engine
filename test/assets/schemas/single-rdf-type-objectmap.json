@@ -49,7 +49,7 @@
       ],
       "rr:subjectMap": {
         "@type": "rr:SubjectMap",
-        "rr:template": "https://example.com/mapping/subject"
+        "rr:template": "https://skl.standard.storage/mappingSubject"
       }
     }
   ]

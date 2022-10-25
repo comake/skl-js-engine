@@ -5,3 +5,5 @@ export type SchemaNodeObject = Partial<NodeObject> & Required<Pick<NodeObject, '
 export type NodeObjectWithId = Partial<NodeObject> & Required<Pick<NodeObject, '@id'>>;
 
 export type UnsavedSchemaNodeObject = Omit<SchemaNodeObject, '@id'>;
+
+export type OrArray<T> = T | T[];

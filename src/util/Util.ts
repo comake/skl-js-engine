@@ -45,11 +45,24 @@ export async function convertJsonLdToQuads(jsonldDoc: any): Promise<Store> {
   return store;
 }
 
-export function toJSON(jsonLd: jsonld.NodeObject): JSONObject {
+export function toJSON(jsonLd: NodeObject, convertBeyondFirstLevel = true): JSONObject {
   [ '@context', '@id', '@type' ].forEach((key): void => {
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete jsonLd[key];
   });
+  if (convertBeyondFirstLevel) {
+    Object.keys(jsonLd).forEach((key): void => {
+      if (Array.isArray(jsonLd[key])) {
+        (jsonLd[key] as any[])!.forEach((item, index): void => {
+          if (typeof item === 'object') {
+            (jsonLd[key] as any[])[index] = toJSON(item);
+          }
+        });
+      } else if (typeof jsonLd[key] === 'object') {
+        jsonLd[key] = toJSON(jsonLd[key] as NodeObject);
+      }
+    });
+  }
   return jsonLd as JSONObject;
 }
 

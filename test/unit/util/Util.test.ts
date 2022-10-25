@@ -74,6 +74,36 @@ describe('Util', (): void => {
         name: 'image.jpeg',
       });
     });
+    it('removes @context, @id, and @type keys from all nested objects if convertBeyondFirstLevel is true.',
+      (): void => {
+        const jsonld = {
+          '@context': {
+            name: 'https://skl.standard.storage/properties/name',
+          },
+          '@id': 'https://skl.standard.storage/data/123',
+          '@type': 'https://skl.standard.storage/nouns/File',
+          name: 'image.jpeg',
+          subFileArr: [
+            {
+              '@id': 'https://skl.standard.storage/data/123',
+              '@type': 'https://skl.standard.storage/nouns/File',
+              md5: 'abc123',
+            },
+          ],
+          subFileObj: {
+            '@id': 'https://skl.standard.storage/data/123',
+            '@type': 'https://skl.standard.storage/nouns/File',
+            md5: 'abc123',
+          },
+        };
+        expect(toJSON(jsonld, true)).toEqual({
+          name: 'image.jpeg',
+          subFileArr: [
+            { md5: 'abc123' },
+          ],
+          subFileObj: { md5: 'abc123' },
+        });
+      });
   });
 
   describe('#ensureArray', (): void => {

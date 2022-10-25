@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention, unicorn/expiring-todo-comments */
 import * as RmlParser from '@comake/rmlmapper-js';
-import * as jsonld from 'jsonld';
+import type { NodeObject } from 'jsonld';
+import jsonld from 'jsonld';
+import type { OrArray } from '../util/Types';
 import { stringToBoolean, stringToInteger } from '../util/Util';
 import { SKL, XSD } from '../util/Vocabularies';
 
@@ -16,41 +18,45 @@ export class Mapper {
   }
 
   public async apply(
-    data: jsonld.NodeObject,
-    mapping: jsonld.NodeObject,
+    data: NodeObject,
+    mapping: OrArray<NodeObject>,
     frame: Record<string, any>,
-  ): Promise<jsonld.NodeObject> {
+  ): Promise<NodeObject> {
     const result = await this.doMapping(data, mapping);
     return await this.frameAndConvertToNativeTypes(result, frame);
   }
 
   public async applyAndFrameSklProperties(
-    data: jsonld.NodeObject,
-    mapping: jsonld.NodeObject,
+    data: NodeObject,
+    mapping: OrArray<NodeObject>,
     frame: Record<string, any>,
-  ): Promise<jsonld.NodeObject> {
+  ): Promise<NodeObject> {
     const result = await this.doMapping(data, mapping);
-    return await this.frameSklProertiesAndConvertToNativeTypes(result, frame);
+    return await this.frameSklPropertiesAndConvertToNativeTypes(result, frame);
   }
 
-  private async doMapping(data: jsonld.NodeObject, mapping: jsonld.NodeObject): Promise<jsonld.NodeObject[]> {
+  private async doMapping(data: NodeObject, mapping: OrArray<NodeObject>): Promise<NodeObject[]> {
     const mappingAsQuads = await this.jsonLdToQuads(mapping);
     const sources = { 'input.json': JSON.stringify(data) };
     const options = { functions: this.functions };
     // TODO always return arrays...
-    return await RmlParser.parse(mappingAsQuads, sources, options) as jsonld.NodeObject[];
+    return await RmlParser.parse(mappingAsQuads, sources, options) as NodeObject[];
   }
 
   private async frameAndConvertToNativeTypes(
     jsonldDoc: any[],
     overrideFrame: Record<string, any>,
-  ): Promise<jsonld.NodeObject> {
+  ): Promise<NodeObject> {
     let frame: Record<string, any> = {
       '@context': {},
       '@embed': '@always',
     };
     this.addDefaultTopLevelContextAndConvertNativeValues(jsonldDoc, frame);
-    frame = { ...frame, ...overrideFrame };
+    frame = {
+      ...frame,
+      ...overrideFrame,
+      '@context': { ...frame['@context'], ...overrideFrame?.['@context'] },
+    };
     return await jsonld.frame(jsonldDoc, frame);
   }
 
@@ -82,10 +88,10 @@ export class Mapper {
     });
   }
 
-  private async frameSklProertiesAndConvertToNativeTypes(
+  private async frameSklPropertiesAndConvertToNativeTypes(
     jsonldDoc: any[],
     overrideFrame: Record<string, any>,
-  ): Promise<jsonld.NodeObject> {
+  ): Promise<NodeObject> {
     let frame: Record<string, any> = {
       '@context': {},
       '@embed': '@always',
@@ -144,7 +150,7 @@ export class Mapper {
     return jsonLdTerm;
   }
 
-  private async jsonLdToQuads(jsonldDoc: jsonld.NodeObject): Promise<string> {
+  private async jsonLdToQuads(jsonldDoc: OrArray<NodeObject>): Promise<string> {
     return (await jsonld.toRDF(jsonldDoc, { format: 'application/n-quads' })) as unknown as string;
   }
 }

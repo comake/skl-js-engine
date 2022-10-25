@@ -13,7 +13,7 @@ import type ValidationReport from 'rdf-validate-shacl/src/validation-report';
 import { Mapper } from './mapping/Mapper';
 import { MemoryQueryAdapter } from './storage/MemoryQueryAdapter';
 import type { QueryAdapter, FindQuery } from './storage/QueryAdapter';
-import type { SchemaNodeObject, UnsavedSchemaNodeObject, NodeObjectWithId } from './util/Types';
+import type { SchemaNodeObject, UnsavedSchemaNodeObject, NodeObjectWithId, OrArray } from './util/Types';
 import {
   constructUri,
   convertJsonLdToQuads,
@@ -89,19 +89,26 @@ export class Skql {
 
   public async performMapping(
     args: NodeObject,
-    mapping: NodeObject,
+    mapping: OrArray<NodeObject>,
     frame?: Record<string, any>,
   ): Promise<NodeObject> {
-    return await this.mapper.apply(args, mapping, frame ?? DEFAULT_MAPPING_FRAME);
+    const nonReferenceMappings = await this.resolveMappingReferences(mapping);
+    return await this.mapper.apply(args, nonReferenceMappings, frame ?? DEFAULT_MAPPING_FRAME);
   }
 
   public async performMappingAndConvertToJSON(
     args: NodeObject,
-    mapping: NodeObject,
+    mapping: OrArray<NodeObject>,
+    convertToJsonDeep = true,
     frame?: Record<string, any>,
   ): Promise<JSONObject> {
-    const jsonLd = await this.mapper.applyAndFrameSklProperties(args, mapping, frame ?? DEFAULT_MAPPING_FRAME);
-    return toJSON(jsonLd);
+    const nonReferenceMappings = await this.resolveMappingReferences(mapping);
+    const jsonLd = await this.mapper.applyAndFrameSklProperties(
+      args,
+      nonReferenceMappings,
+      frame ?? DEFAULT_MAPPING_FRAME,
+    );
+    return toJSON(jsonLd, convertToJsonDeep);
   }
 
   private async constructVerbHandlerFromSchema(verbName: string): Promise<VerbHandler> {
@@ -141,9 +148,12 @@ export class Skql {
       const operationInfoJsonLd = await this.performOperationMappingWithArgs(args as NodeObject, mapping);
       const operationId = operationInfoJsonLd[SKL.operationId] as string;
       const rawReturnValue = await this.performOpenapiOperationWithCredentials(operationId, operationArgs, account);
-      const mappedReturnValue = await this.performReturnValueMappingWithFrame(rawReturnValue.data, mapping, verb);
-      await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, verb);
-      return mappedReturnValue;
+      if (mapping[SKL.returnValueMapping]) {
+        const mappedReturnValue = await this.performReturnValueMappingWithFrame(rawReturnValue.data, mapping, verb);
+        await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, verb);
+        return mappedReturnValue;
+      }
+      return rawReturnValue;
     };
   }
 
@@ -156,7 +166,7 @@ export class Skql {
   }
 
   private async performOperationMappingWithArgs(args: NodeObject, mapping: SchemaNodeObject): Promise<NodeObject> {
-    return await this.performMapping(args, mapping[SKL.operationMapping] as NodeObject);
+    return await this.performMapping(args, mapping[SKL.operationMapping] as OrArray<NodeObject>);
   }
 
   private async performReturnValueMappingWithFrame(
@@ -166,12 +176,22 @@ export class Skql {
   ): Promise<NodeObject> {
     return await this.performMapping(
       data,
-      mapping[SKL.returnValueMapping] as NodeObject,
+      mapping[SKL.returnValueMapping] as OrArray<NodeObject>,
       {
         ...getValueOfFieldInNodeObject<Record<string, any>>(verb, SKL.returnValueFrame),
         ...getValueOfFieldInNodeObject<Record<string, any> | undefined>(mapping, SKL.returnValueFrame),
       },
     );
+  }
+
+  private async resolveMappingReferences(mapping: OrArray<NodeObject>): Promise<OrArray<NodeObject>> {
+    if (Array.isArray(mapping)) {
+      return await Promise.all(
+        mapping.map(async(subMapping): Promise<NodeObject> =>
+          await this.resolveMappingReferences(subMapping) as NodeObject),
+      );
+    }
+    return mapping;
   }
 
   private constructOpenApiSecuritySchemeVerbHandler(verb: SchemaNodeObject): VerbHandler {
@@ -209,9 +229,14 @@ export class Skql {
   private async performParameterMappingOnArgsIfDefined(
     args: NodeObject,
     mapping: SchemaNodeObject,
+    convertToJsonDeep = true,
   ): Promise<Record<string, any>> {
     if (mapping[SKL.parameterMapping]) {
-      return await this.performMappingAndConvertToJSON(args, mapping[SKL.parameterMapping] as NodeObject);
+      return await this.performMappingAndConvertToJSON(
+        args,
+        mapping[SKL.parameterMapping] as OrArray<NodeObject>,
+        convertToJsonDeep,
+      );
     }
     return args;
   }
@@ -231,6 +256,17 @@ export class Skql {
     });
   }
 
+  private async findSecurityCredentialsForAccountIfDefined(accountId: string): Promise<SchemaNodeObject | undefined> {
+    try {
+      return await this.find({
+        type: SKL.SecurityCredentials,
+        [SKL.account]: accountId,
+      });
+    } catch {
+      return undefined;
+    }
+  }
+
   private async createOpenApiOperationExecutorWithSpec(openApiDescription: OpenApi): Promise<OpenApiOperationExecutor> {
     const executor = new OpenApiOperationExecutor();
     await executor.setOpenapiSpec(openApiDescription);
@@ -241,9 +277,16 @@ export class Skql {
     return async(args: JSONObject): Promise<NodeObject> => {
       const mapping = await this.findVerbNounMapping(verb['@id'], args.noun as string);
       if (mapping[SKL.mapping]) {
-        return await this.performMapping(args as NodeObject, mapping[SKL.mapping] as NodeObject);
+        return await this.performMapping(
+          args as NodeObject,
+          mapping[SKL.mapping] as NodeObject,
+          {
+            ...getValueOfFieldInNodeObject<Record<string, any>>(verb, SKL.returnValueFrame),
+            ...getValueOfFieldInNodeObject<Record<string, any> | undefined>(mapping, SKL.returnValueFrame),
+          },
+        );
       }
-      const verbArgs = await this.performParameterMappingOnArgsIfDefined(args as NodeObject, mapping);
+      const verbArgs = await this.performParameterMappingOnArgsIfDefined(args as NodeObject, mapping, false);
       const verbInfoJsonLd = await this.performVerbMappingWithArgs(args as NodeObject, mapping);
       const mappedVerb = await this.find({ id: verbInfoJsonLd[SKL.verb] as string });
       return this.constructVerbHandler(mappedVerb)(verbArgs);
@@ -259,10 +302,7 @@ export class Skql {
   }
 
   private async performVerbMappingWithArgs(args: NodeObject, mapping: SchemaNodeObject): Promise<NodeObject> {
-    return await this.performMapping(
-      args,
-      mapping[SKL.verbMapping] as NodeObject,
-    );
+    return await this.performMapping(args, mapping[SKL.verbMapping] as NodeObject);
   }
 
   private async assertVerbParamsMatchParameterSchemas(verbParams: any, verb: SchemaNodeObject): Promise<void> {
@@ -286,14 +326,15 @@ export class Skql {
     const integrationId = (account[SKL.integration] as SchemaNodeObject)['@id'];
     const openApiDescription = await this.getOpenApiDescriptionForIntegration(integrationId);
     const openApiExecutor = await this.createOpenApiOperationExecutorWithSpec(openApiDescription);
-    const securityCredentials = await this.findSecurityCredentialsForAccount(account['@id']);
+    const securityCredentials = await this.findSecurityCredentialsForAccountIfDefined(account['@id']);
     const configuration = {
-      accessToken: securityCredentials[SKL.accessToken] as string,
-      apiKey: securityCredentials[SKL.apiKey] as string,
+      accessToken: securityCredentials?.[SKL.accessToken] as string,
+      apiKey: securityCredentials?.[SKL.apiKey] as string,
+      basePath: account[SKL.overrideBasePath] as string,
     };
     return await openApiExecutor.executeOperation(operationId, configuration, operationArgs)
       .catch(async(error: Error | AxiosError): Promise<any> => {
-        if (axios.isAxiosError(error) && await this.isInvalidTokenError(error, integrationId)) {
+        if (axios.isAxiosError(error) && await this.isInvalidTokenError(error, integrationId) && securityCredentials) {
           const refreshedConfiguration = await this.refreshOpenApiToken(
             securityCredentials,
             openApiExecutor,
@@ -378,7 +419,7 @@ export class Skql {
       report = await this.convertToQuadsAndValidateAgainstShape(returnValue, returnTypeSchemaObject);
     }
 
-    if (!report?.conforms) {
+    if (report && !report?.conforms) {
       throw new Error(`Return value ${returnValue['@id']} does not conform to the schema`);
     }
   }
