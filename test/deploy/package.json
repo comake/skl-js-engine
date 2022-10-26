@@ -7,7 +7,7 @@
 	},
 	"main": "./dist/index.js",
 	"dependencies": {
-		"@comake/skql-js-engine": "file:./comake-skql-js-engine-0.10.1.tgz",
+		"@comake/skql-js-engine": "file:./comake-skql-js-engine-0.10.2.tgz",
 		"jsonld": "^6.0.0"
 	},
 	"devDependencies": {
