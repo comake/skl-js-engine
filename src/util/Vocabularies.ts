@@ -22,7 +22,7 @@ export const SKL = createNamespace('https://skl.standard.storage/', {
   InterfaceComponent: 'nouns/InterfaceComponent',
   Folder: 'nouns/Folder',
   Verb: 'nouns/Verb',
-  OpenApiOperationVerb: 'nouns/OpenApiOperationVerb',
+  OpenApiOperationVerb: 'nouns/Verb',
   OpenApiSecuritySchemeVerb: 'nouns/OpenApiSecuritySchemeVerb',
   NounMappedVerb: 'nouns/NounMappedVerb',
   VerbNounMapping: 'nouns/VerbNounMapping',

@@ -48,11 +48,6 @@ const expectedGetFileResponse = {
   'https://skl.standard.storage/properties/sourceId': 'id:12345',
 };
 
-const unsupportedVerb = {
-  '@id': 'https://skl.standard.storage/verbs/doThis',
-  '@type': 'https://skl.standard.storage/nouns/Verb',
-};
-
 const incorrectReturnValueMapping = {
   '@id': 'https://skl.standard.storage/data/4/returnValueMapping/1',
   '@type': 'http://www.w3.org/ns/r2rml#TriplesMap',
@@ -99,7 +94,7 @@ describe('SKQL', (): void => {
     beforeEach(async(): Promise<void> => {
       schema = [{
         '@id': 'https://skl.standard.storage/verbs/Share',
-        '@type': 'https://skl.standard.storage/verbs/OpenApiOperationVerb',
+        '@type': 'https://skl.standard.storage/nouns/Verb',
       }];
       skql = new Skql({ schema });
     });
@@ -148,7 +143,7 @@ describe('SKQL', (): void => {
       });
       expect(res).toEqual({
         '@id': 'https://skl.standard.storage/verbs/Share',
-        '@type': 'https://skl.standard.storage/verbs/OpenApiOperationVerb',
+        '@type': 'https://skl.standard.storage/nouns/Verb',
         [SKL.name]: 'Share',
       });
       expect(updateSpy).toHaveBeenCalledTimes(1);
@@ -165,7 +160,7 @@ describe('SKQL', (): void => {
     beforeEach(async(): Promise<void> => {
       schema = [{
         '@id': 'https://skl.standard.storage/verbs/Share',
-        '@type': 'https://skl.standard.storage/verbs/OpenApiOperationVerb',
+        '@type': 'https://skl.standard.storage/nouns/Verb',
       }];
       skql = new Skql({ schema });
     });
@@ -253,7 +248,7 @@ describe('SKQL', (): void => {
 
     it('errors if the parameters do not conform to the verb parameter schema.', async(): Promise<void> => {
       const skql = new Skql({ schema });
-      await expect(skql.do.getFile({ id: '12345' })).rejects.toThrow(
+      await expect(skql.do.getFile({ account, ids: [ '12345' ]})).rejects.toThrow(
         'getFile parameters do not conform to the schema',
       );
       expect(executeOperation).toHaveBeenCalledTimes(0);
@@ -586,9 +581,9 @@ describe('SKQL', (): void => {
     });
   });
 
-  it('throws an error when trying to execute an unsupported verb type.', async(): Promise<void> => {
-    const skql = new Skql({ schema: [ ...schema, unsupportedVerb ]});
-    await expect(skql.do.doThis({ account }))
-      .rejects.toThrow('Verb type https://skl.standard.storage/nouns/Verb not supported.');
+  it('throws an error when a noun or account is not supplied with the Verb.', async(): Promise<void> => {
+    const skql = new Skql({ schema });
+    await expect(skql.do.getName({ entity: { [SKL.name]: 'final.jpg', [SKL.sourceId]: 12345 }}))
+      .rejects.toThrow('Verb parameters must include either a noun or an account.');
   });
 });
