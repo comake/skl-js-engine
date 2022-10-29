@@ -48,11 +48,6 @@ const expectedGetFileResponse = {
   'https://skl.standard.storage/properties/sourceId': 'id:12345',
 };
 
-const unsupportedVerb = {
-  '@id': 'https://skl.standard.storage/verbs/doThis',
-  '@type': 'https://skl.standard.storage/nouns/Verb',
-};
-
 const incorrectReturnValueMapping = {
   '@id': 'https://skl.standard.storage/data/4/returnValueMapping/1',
   '@type': 'http://www.w3.org/ns/r2rml#TriplesMap',
@@ -99,7 +94,7 @@ describe('SKQL', (): void => {
     beforeEach(async(): Promise<void> => {
       schema = [{
         '@id': 'https://skl.standard.storage/verbs/Share',
-        '@type': 'https://skl.standard.storage/verbs/OpenApiOperationVerb',
+        '@type': 'https://skl.standard.storage/nouns/Verb',
       }];
       skql = new Skql({ schema });
     });
@@ -148,7 +143,7 @@ describe('SKQL', (): void => {
       });
       expect(res).toEqual({
         '@id': 'https://skl.standard.storage/verbs/Share',
-        '@type': 'https://skl.standard.storage/verbs/OpenApiOperationVerb',
+        '@type': 'https://skl.standard.storage/nouns/Verb',
         [SKL.name]: 'Share',
       });
       expect(updateSpy).toHaveBeenCalledTimes(1);
@@ -165,7 +160,7 @@ describe('SKQL', (): void => {
     beforeEach(async(): Promise<void> => {
       schema = [{
         '@id': 'https://skl.standard.storage/verbs/Share',
-        '@type': 'https://skl.standard.storage/verbs/OpenApiOperationVerb',
+        '@type': 'https://skl.standard.storage/nouns/Verb',
       }];
       skql = new Skql({ schema });
     });
@@ -190,7 +185,7 @@ describe('SKQL', (): void => {
     });
   });
 
-  describe('executing OpenApiOperationVerbs', (): void => {
+  describe('calling Verbs which execute OpenApi operations', (): void => {
     let executeOperation: any;
     let setOpenapiSpec: any;
     let executeSecuritySchemeStage: any;
@@ -253,7 +248,7 @@ describe('SKQL', (): void => {
 
     it('errors if the parameters do not conform to the verb parameter schema.', async(): Promise<void> => {
       const skql = new Skql({ schema });
-      await expect(skql.do.getFile({ id: '12345' })).rejects.toThrow(
+      await expect(skql.do.getFile({ account, ids: [ '12345' ]})).rejects.toThrow(
         'getFile parameters do not conform to the schema',
       );
       expect(executeOperation).toHaveBeenCalledTimes(0);
@@ -463,7 +458,7 @@ describe('SKQL', (): void => {
     });
   });
 
-  describe('executing OpenApiSecuritySchemeVerbs', (): void => {
+  describe('calling Verbs which execute OpenApi security schemes', (): void => {
     let executeSecuritySchemeStage: any;
     let setOpenapiSpec: any;
     let response: any;
@@ -549,7 +544,7 @@ describe('SKQL', (): void => {
       });
   });
 
-  describe('executing NounMappingVerbs', (): void => {
+  describe('calling Verbs which map a Noun to another Verb', (): void => {
     let executeOperation: any;
     let setOpenapiSpec: any;
 
@@ -586,9 +581,70 @@ describe('SKQL', (): void => {
     });
   });
 
-  it('throws an error when trying to execute an unsupported verb type.', async(): Promise<void> => {
-    const skql = new Skql({ schema: [ ...schema, unsupportedVerb ]});
-    await expect(skql.do.doThis({ account }))
-      .rejects.toThrow('Verb type https://skl.standard.storage/nouns/Verb not supported.');
+  describe('calling Verbs which use data from a data source', (): void => {
+    beforeEach(async(): Promise<void> => {
+      schema = await frameAndCombineSchemas([
+        './test/assets/schemas/core.json',
+        './test/assets/schemas/get-dropbox-file.json',
+        './test/assets/schemas/json-file-data-source.json',
+      ]);
+    });
+
+    it('gets data from a JsonDataSource.', async(): Promise<void> => {
+      const skql = new Skql({ schema });
+      const response = await skql.do.getFile({
+        account: 'https://skl.standard.storage/data/JsonSourceAccount1',
+        id: '12345',
+      });
+      expect(response).toEqual({
+        ...expectedGetFileResponse,
+        [SKL.integration]: 'https://skl.standard.storage/integrations/JsonSource',
+      });
+    });
+    it('throws an error for an invalid DataSource.', async(): Promise<void> => {
+      schema = schema.map((schemaItem: any): any => {
+        if (schemaItem['@id'] === 'https://skl.standard.storage/data/JsonSourceDataSource') {
+          schemaItem['@type'] = 'https://skl.standard.storage/nouns/CsvDataSource';
+        }
+        return schemaItem;
+      });
+      const skql = new Skql({ schema });
+      await expect(skql.do.getFile({
+        account: 'https://skl.standard.storage/data/JsonSourceAccount1',
+        id: '12345',
+      }))
+        .rejects.toThrow('DataSource type https://skl.standard.storage/nouns/CsvDataSource is not supported.');
+    });
+  });
+
+  it('throws an error when a noun or account is not supplied with the Verb.', async(): Promise<void> => {
+    const skql = new Skql({ schema });
+    await expect(skql.do.getName({ entity: { [SKL.name]: 'final.jpg' }}))
+      .rejects.toThrow('Verb parameters must include either a noun or an account.');
+  });
+
+  it('throws an error if the operation is not supported.', async(): Promise<void> => {
+    schema = await frameAndCombineSchemas([
+      './test/assets/schemas/core.json',
+      './test/assets/schemas/get-dropbox-file.json',
+    ]);
+    schema = schema.map((schemaItem: any): any => {
+      if (schemaItem['@id'] === 'https://skl.standard.storage/data/4') {
+        schemaItem['https://skl.standard.storage/properties/operationMapping']['http://www.w3.org/ns/r2rml#predicateObjectMap'] = [
+          {
+            '@type': 'http://www.w3.org/ns/r2rml#PredicateObjectMap',
+            'http://www.w3.org/ns/r2rml#objectMap': {
+              '@type': 'http://www.w3.org/ns/r2rml#ObjectMap',
+              'http://www.w3.org/ns/r2rml#constant': 'GetFileFunction',
+            },
+            'http://www.w3.org/ns/r2rml#predicate': { '@id': 'https://skl.standard.storage/function' },
+          },
+        ];
+      }
+      return schemaItem;
+    });
+    const skql = new Skql({ schema });
+    await expect(skql.do.getFile({ account, id: '12345' }))
+      .rejects.toThrow('Operation not supported.');
   });
 });

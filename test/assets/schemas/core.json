@@ -257,7 +257,7 @@
       ]
     },
     {
-      "@id": "https://skl.standard.storage/nouns/OpenApiOperationVerb",
+      "@id": "https://skl.standard.storage/nouns/Verb",
       "@type": ["owl:Class", "shacl:NodeShape"],
       "rdfs:subClassOf": "https://skl.standard.storage/nouns/Verb"
     },

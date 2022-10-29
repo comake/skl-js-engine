@@ -3,6 +3,7 @@ import * as RmlParser from '@comake/rmlmapper-js';
 import type { NodeObject } from 'jsonld';
 import jsonld from 'jsonld';
 import type { OrArray } from '../util/Types';
+import type { JSONObject } from '../util/Util';
 import { stringToBoolean, stringToInteger } from '../util/Util';
 import { SKL, XSD } from '../util/Vocabularies';
 
@@ -18,7 +19,7 @@ export class Mapper {
   }
 
   public async apply(
-    data: NodeObject,
+    data: JSONObject,
     mapping: OrArray<NodeObject>,
     frame: Record<string, any>,
   ): Promise<NodeObject> {
@@ -27,7 +28,7 @@ export class Mapper {
   }
 
   public async applyAndFrameSklProperties(
-    data: NodeObject,
+    data: JSONObject,
     mapping: OrArray<NodeObject>,
     frame: Record<string, any>,
   ): Promise<NodeObject> {
@@ -35,7 +36,7 @@ export class Mapper {
     return await this.frameSklPropertiesAndConvertToNativeTypes(result, frame);
   }
 
-  private async doMapping(data: NodeObject, mapping: OrArray<NodeObject>): Promise<NodeObject[]> {
+  private async doMapping(data: JSONObject, mapping: OrArray<NodeObject>): Promise<NodeObject[]> {
     const mappingAsQuads = await this.jsonLdToQuads(mapping);
     const sources = { 'input.json': JSON.stringify(data) };
     const options = { functions: this.functions };

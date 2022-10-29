@@ -48,7 +48,7 @@
   "@graph": [
     {
       "@id": "https://skl.standard.storage/verbs/getFile",
-      "@type": "https://skl.standard.storage/nouns/OpenApiOperationVerb",
+      "@type": "https://skl.standard.storage/nouns/Verb",
       "https://skl.standard.storage/properties/name": "getFile",
       "sklproperties:parametersContext": {
         "id": {
@@ -67,6 +67,7 @@
           {
             "shacl:datatype": "xsd:integer",
             "shacl:maxCount": 1,
+            "shacl:minCount": 1,
             "shacl:path": "https://skl.standard.storage/properties/id"
           },
           {

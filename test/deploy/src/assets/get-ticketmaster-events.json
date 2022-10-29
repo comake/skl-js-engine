@@ -69,7 +69,7 @@
     },
     {
       "@id": "https://skl.standard.storage/verbs/getEvents",
-      "@type": "https://skl.standard.storage/nouns/OpenApiOperationVerb",
+      "@type": "https://skl.standard.storage/nouns/Verb",
       "https://skl.standard.storage/properties/name": "getEvents",
       "https://skl.standard.storage/properties/parametersContext": {
         "city": {
