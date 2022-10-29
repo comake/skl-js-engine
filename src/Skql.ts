@@ -424,11 +424,11 @@ export class Skql {
 
   private async convertToQuadsAndValidateAgainstShape(
     value: NodeObject,
-    schemaNodeObject: NodeObject,
+    shape: NodeObject,
   ): Promise<ValidationReport> {
     const valueAsQuads = await convertJsonLdToQuads([ value ]);
-    const shape = await convertJsonLdToQuads(schemaNodeObject);
-    const validator = new SHACLValidator(shape);
+    const shapeQuads = await convertJsonLdToQuads(shape);
+    const validator = new SHACLValidator(shapeQuads);
     return validator.validate(valueAsQuads);
   }
 
