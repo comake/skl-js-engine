@@ -26,6 +26,7 @@ export const SKL = createNamespace('https://skl.standard.storage/', {
   OpenApiSecuritySchemeVerb: 'nouns/OpenApiSecuritySchemeVerb',
   NounMappedVerb: 'nouns/NounMappedVerb',
   VerbNounMapping: 'nouns/VerbNounMapping',
+  JsonDataSource: 'nouns/JsonDataSource',
   Integration: 'nouns/Integration',
   StylingTheme: 'nouns/StylingTheme',
   properties: 'properties/',
@@ -73,6 +74,8 @@ export const SKL = createNamespace('https://skl.standard.storage/', {
   records: 'properties/records',
   mapping: 'properties/mapping',
   overrideBasePath: 'properties/overrideBasePath',
+  dataSource: 'properties/dataSource',
+  data: 'properties/data',
 });
 
 export const XSD = createNamespace('http://www.w3.org/2001/XMLSchema#', {

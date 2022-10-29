@@ -40,6 +40,10 @@ export interface ErrorMatcher {
   messageRegex: string;
 }
 
+export interface OperationResponse {
+  data: JSONObject;
+}
+
 const DEFAULT_MAPPING_FRAME = { '@id': 'https://skl.standard.storage/mappingSubject' };
 
 export class Skql {
@@ -86,7 +90,7 @@ export class Skql {
   }
 
   public async performMapping(
-    args: NodeObject,
+    args: JSONObject,
     mapping: OrArray<NodeObject>,
     frame?: Record<string, any>,
   ): Promise<NodeObject> {
@@ -95,7 +99,7 @@ export class Skql {
   }
 
   public async performMappingAndConvertToJSON(
-    args: NodeObject,
+    args: JSONObject,
     mapping: OrArray<NodeObject>,
     convertToJsonDeep = true,
     frame?: Record<string, any>,
@@ -133,8 +137,8 @@ export class Skql {
     const account = await this.find({ id: args.account as string });
     const integrationId = (account[SKL.integration] as SchemaNodeObject)['@id'];
     const mapping = await this.findVerbIntegrationMapping(verb['@id'], integrationId);
-    const operationArgs = await this.performParameterMappingOnArgsIfDefined(args as NodeObject, mapping);
-    const operationInfo = await this.performOperationMappingWithArgs(args as NodeObject, mapping);
+    const operationArgs = await this.performParameterMappingOnArgsIfDefined(args, mapping);
+    const operationInfo = await this.performOperationMappingWithArgs(args, mapping);
     const rawReturnValue = await this.performOperation(operationInfo, operationArgs, account);
 
     if (operationInfo[SKL.schemeName] && (rawReturnValue as CodeAuthorizationUrlResponse).authorizationUrl) {
@@ -143,7 +147,7 @@ export class Skql {
 
     if (mapping[SKL.returnValueMapping]) {
       const mappedReturnValue = await this.performReturnValueMappingWithFrame(
-        (rawReturnValue as { data: NodeObject }).data,
+        (rawReturnValue as OperationResponse).data,
         mapping,
         verb,
       );
@@ -161,7 +165,7 @@ export class Skql {
     });
   }
 
-  private async performOperationMappingWithArgs(args: NodeObject, mapping: SchemaNodeObject): Promise<NodeObject> {
+  private async performOperationMappingWithArgs(args: JSONObject, mapping: SchemaNodeObject): Promise<NodeObject> {
     return await this.performMapping(args, mapping[SKL.operationMapping] as OrArray<NodeObject>);
   }
 
@@ -169,15 +173,25 @@ export class Skql {
     operationInfo: NodeObject,
     operationArgs: JSONObject,
     account: SchemaNodeObject,
-  ): Promise<AxiosResponse | CodeAuthorizationUrlResponse> {
+  ): Promise<OperationResponse | CodeAuthorizationUrlResponse> {
     if (operationInfo[SKL.schemeName]) {
       return await this.performSecuritySchemeStageWithCredentials(operationInfo, operationArgs, account);
     }
-    return await this.performOpenapiOperationWithCredentials(operationInfo, operationArgs, account);
+    if (operationInfo[SKL.dataSource]) {
+      return await this.getDataFromDataSource(operationInfo[SKL.dataSource] as string);
+    }
+    if (operationInfo[SKL.operationId]) {
+      return await this.performOpenapiOperationWithCredentials(
+        operationInfo[SKL.operationId] as string,
+        operationArgs,
+        account,
+      );
+    }
+    throw new Error('Operation not supported.');
   }
 
   private async performReturnValueMappingWithFrame(
-    data: NodeObject,
+    data: JSONObject,
     mapping: SchemaNodeObject,
     verb: SchemaNodeObject,
   ): Promise<NodeObject> {
@@ -202,7 +216,7 @@ export class Skql {
   }
 
   private async performParameterMappingOnArgsIfDefined(
-    args: NodeObject,
+    args: JSONObject,
     mapping: SchemaNodeObject,
     convertToJsonDeep = true,
   ): Promise<Record<string, any>> {
@@ -252,7 +266,7 @@ export class Skql {
     const mapping = await this.findVerbNounMapping(verb['@id'], args.noun as string);
     if (mapping[SKL.mapping]) {
       return await this.performMapping(
-        args as NodeObject,
+        args,
         mapping[SKL.mapping] as NodeObject,
         {
           ...getValueOfFieldInNodeObject<Record<string, any>>(verb, SKL.returnValueFrame),
@@ -260,8 +274,8 @@ export class Skql {
         },
       );
     }
-    const verbArgs = await this.performParameterMappingOnArgsIfDefined(args as NodeObject, mapping, false);
-    const verbInfoJsonLd = await this.performVerbMappingWithArgs(args as NodeObject, mapping);
+    const verbArgs = await this.performParameterMappingOnArgsIfDefined(args, mapping, false);
+    const verbInfoJsonLd = await this.performVerbMappingWithArgs(args, mapping);
     const mappedVerb = await this.find({ id: verbInfoJsonLd[SKL.verb] as string });
     return this.handleIntegrationVerb(mappedVerb, verbArgs);
   }
@@ -274,7 +288,7 @@ export class Skql {
     });
   }
 
-  private async performVerbMappingWithArgs(args: NodeObject, mapping: SchemaNodeObject): Promise<NodeObject> {
+  private async performVerbMappingWithArgs(args: JSONObject, mapping: SchemaNodeObject): Promise<NodeObject> {
     return await this.performMapping(args, mapping[SKL.verbMapping] as NodeObject);
   }
 
@@ -292,11 +306,10 @@ export class Skql {
   }
 
   private async performOpenapiOperationWithCredentials(
-    operationInfo: NodeObject,
+    operationId: string,
     operationArgs: JSONObject,
     account: SchemaNodeObject,
   ): Promise<AxiosResponse> {
-    const operationId = operationInfo[SKL.operationId] as string;
     const integrationId = (account[SKL.integration] as SchemaNodeObject)['@id'];
     const openApiDescription = await this.getOpenApiDescriptionForIntegration(integrationId);
     const openApiExecutor = await this.createOpenApiOperationExecutorWithSpec(openApiDescription);
@@ -350,7 +363,7 @@ export class Skql {
     const getOauthTokenVerb = await this.find({ id: SKL.getOauthTokens });
     const mapping = await this.findVerbIntegrationMapping(getOauthTokenVerb['@id'], integrationId);
     const operationArgs = await this.performParameterMappingOnArgsIfDefined(
-      { refreshToken: securityCredentialsSchema[SKL.refreshToken] as string | undefined },
+      { refreshToken: securityCredentialsSchema[SKL.refreshToken] as string },
       mapping,
     );
     const operationInfoJsonLd = await this.performOperationMappingWithArgs({}, mapping);
@@ -363,7 +376,7 @@ export class Skql {
       operationArgs,
     );
     const mappedReturnValue = await this.performReturnValueMappingWithFrame(
-      (rawReturnValue as { data: NodeObject }).data, mapping, getOauthTokenVerb,
+      (rawReturnValue as OperationResponse).data, mapping, getOauthTokenVerb,
     );
     await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, getOauthTokenVerb);
     securityCredentialsSchema[SKL.accessToken] = mappedReturnValue[SKL.accessToken];
@@ -437,5 +450,15 @@ export class Skql {
       configuration,
       operationArgs,
     );
+  }
+
+  private async getDataFromDataSource(dataSourceId: string): Promise<OperationResponse> {
+    const dataSource = await this.find({ id: dataSourceId });
+    if (dataSource['@type'] === SKL.JsonDataSource) {
+      return {
+        data: (dataSource[SKL.data] as NodeObject)['@value'] as JSONObject,
+      };
+    }
+    throw new Error(`DataSource type ${dataSource['@type']} is not supported.`);
   }
 }
