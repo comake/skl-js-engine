@@ -44,7 +44,7 @@ const expectedGetFileResponse = {
   'https://skl.standard.storage/properties/isWeblink': false,
   'https://skl.standard.storage/properties/mimeType': 'text/plain',
   'https://skl.standard.storage/properties/name': 'Prime_Numbers.txt',
-  'https://skl.standard.storage/properties/size': '7212',
+  'https://skl.standard.storage/properties/size': 7212,
   'https://skl.standard.storage/properties/sourceId': 'id:12345',
 };
 
