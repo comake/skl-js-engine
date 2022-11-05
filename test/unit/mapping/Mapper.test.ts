@@ -81,7 +81,6 @@ describe('A Mapper', (): void => {
         '@context': {
           'https://skl.standard.storage/properties/field': {
             '@type': 'http://www.w3.org/2001/XMLSchema#integer',
-            '@container': '@list',
           },
         },
         '@id': 'https://skl.standard.storage/mappingSubject',
@@ -124,7 +123,6 @@ describe('A Mapper', (): void => {
       expect(response).toEqual({
         '@context': {
           'https://skl.standard.storage/properties/integration': {
-            '@container': '@list',
             '@type': '@id',
           },
         },

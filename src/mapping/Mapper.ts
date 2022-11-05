@@ -70,15 +70,9 @@ export class Mapper {
         const value = subDoc[key];
         if (Array.isArray(value) && typeof value[0] === 'object' && '@type' in value[0]) {
           frame['@context'][key] = { '@type': value[0]['@type'] };
-          if (value.length > 1) {
-            frame['@context'][key]['@container'] = '@list';
-          }
           subDoc[key] = subDoc[key].map((valueItem: any): void => this.convertToNativeValue(valueItem));
         } else if (Array.isArray(value) && typeof value[0] === 'object' && '@id' in value[0]) {
           frame['@context'][key] = { '@type': '@id' };
-          if (value.length > 1) {
-            frame['@context'][key]['@container'] = '@list';
-          }
         } else if (typeof value === 'object' && '@type' in value) {
           frame['@context'][key] = { '@type': value['@type'] };
           subDoc[key] = this.convertToNativeValue(subDoc[key]);
