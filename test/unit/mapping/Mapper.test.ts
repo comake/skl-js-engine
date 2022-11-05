@@ -81,7 +81,7 @@ describe('A Mapper', (): void => {
         '@context': {
           'https://skl.standard.storage/properties/field': {
             '@type': 'http://www.w3.org/2001/XMLSchema#integer',
-            '@container': '@set',
+            '@container': '@list',
           },
         },
         '@id': 'https://skl.standard.storage/mappingSubject',
@@ -124,7 +124,7 @@ describe('A Mapper', (): void => {
       expect(response).toEqual({
         '@context': {
           'https://skl.standard.storage/properties/integration': {
-            '@container': '@set',
+            '@container': '@list',
             '@type': '@id',
           },
         },
@@ -147,7 +147,6 @@ describe('A Mapper', (): void => {
           field: {
             '@id': 'https://skl.standard.storage/properties/field',
             '@type': 'http://www.w3.org/2001/XMLSchema#integer',
-            '@container': '@set',
           },
         },
         '@id': 'https://skl.standard.storage/mappingSubject',
@@ -195,7 +194,6 @@ describe('A Mapper', (): void => {
         '@context': {
           integration: {
             '@id': 'https://skl.standard.storage/properties/integration',
-            '@container': '@set',
             '@type': '@id',
           },
         },

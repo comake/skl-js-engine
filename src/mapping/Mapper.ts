@@ -65,19 +65,19 @@ export class Mapper {
     jsonldDoc: any[],
     frame: Record<string, any>,
   ): void {
-    jsonldDoc.forEach(async(subDoc: any): Promise<void> => {
+    for (const subDoc of jsonldDoc) {
       Object.keys(subDoc).forEach((key: string): void => {
         const value = subDoc[key];
         if (Array.isArray(value) && typeof value[0] === 'object' && '@type' in value[0]) {
           frame['@context'][key] = { '@type': value[0]['@type'] };
           if (value.length > 1) {
-            frame['@context'][key]['@container'] = '@set';
+            frame['@context'][key]['@container'] = '@list';
           }
           subDoc[key] = subDoc[key].map((valueItem: any): void => this.convertToNativeValue(valueItem));
         } else if (Array.isArray(value) && typeof value[0] === 'object' && '@id' in value[0]) {
           frame['@context'][key] = { '@type': '@id' };
           if (value.length > 1) {
-            frame['@context'][key]['@container'] = '@set';
+            frame['@context'][key]['@container'] = '@list';
           }
         } else if (typeof value === 'object' && '@type' in value) {
           frame['@context'][key] = { '@type': value['@type'] };
@@ -86,7 +86,7 @@ export class Mapper {
           frame['@context'][key] = { '@type': '@id' };
         }
       });
-    });
+    }
   }
 
   private async frameSklPropertiesAndConvertToNativeTypes(
@@ -106,24 +106,17 @@ export class Mapper {
     jsonldDoc: any[],
     frame: Record<string, any>,
   ): void {
-    jsonldDoc.forEach(async(subDoc: any): Promise<void> => {
+    for (const subDoc of jsonldDoc) {
       Object.keys(subDoc).forEach((key: string): void => {
         if (key.startsWith(SKL.properties)) {
           const argName = key.slice(SKL.properties.length);
           const value = subDoc[key];
           if (Array.isArray(value) && typeof value[0] === 'object' && '@type' in value[0]) {
             frame['@context'][argName] = { '@id': key, '@type': value[0]['@type'] };
-            if (value.length > 1) {
-              frame['@context'][argName]['@container'] = '@set';
-            }
-
             subDoc[key] = subDoc[key].map((valueItem: any): void =>
               this.convertToNativeValue(valueItem));
           } else if (Array.isArray(value) && typeof value[0] === 'object' && '@id' in value[0]) {
             frame['@context'][argName] = { '@id': key, '@type': '@id' };
-            if (value.length > 1) {
-              frame['@context'][argName]['@container'] = '@set';
-            }
           } else if (typeof value === 'object' && '@type' in value) {
             frame['@context'][argName] = { '@id': key, '@type': value['@type'] };
             subDoc[key] = this.convertToNativeValue(subDoc[key]);
@@ -137,7 +130,7 @@ export class Mapper {
           }
         }
       });
-    });
+    }
   }
 
   private convertToNativeValue(jsonLdTerm: any): any {
