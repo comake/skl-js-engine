@@ -4,6 +4,7 @@ import arrayOfIris from '../../assets/schemas/array-of-iris.json';
 import booleanDataType from '../../assets/schemas/boolean-datatype.json';
 import doubleDataType from '../../assets/schemas/double-datatype.json';
 import integerDatatype from '../../assets/schemas/integer-datatype.json';
+import jsonDatatype from '../../assets/schemas/json-datatype.json';
 import multipleRdfTypeObjectMaps from '../../assets/schemas/multiple-rdf-type-objectmaps.json';
 import nonArrayIri from '../../assets/schemas/non-array-iri.json';
 import simpleMapping from '../../assets/schemas/simple-mapping.json';
@@ -85,6 +86,21 @@ describe('A Mapper', (): void => {
         },
         '@id': 'https://skl.standard.storage/mappingSubject',
         'https://skl.standard.storage/properties/field': [ 1, 2, 3 ],
+      });
+    });
+
+    it('frames json values and does not remove duplicates.', async(): Promise<void> => {
+      data = { field: [ 1, 2, 3, 1 ]};
+      mapping = await expandJsonLd(jsonDatatype);
+      const response = await mapper.apply(data, mapping, { '@id': 'https://skl.standard.storage/mappingSubject' });
+      expect(response).toEqual({
+        '@context': {
+          'https://skl.standard.storage/properties/field': {
+            '@type': '@json',
+          },
+        },
+        '@id': 'https://skl.standard.storage/mappingSubject',
+        'https://skl.standard.storage/properties/field': [ 1, 2, 3, 1 ],
       });
     });
 
