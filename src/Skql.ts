@@ -247,10 +247,7 @@ export class Skql {
 
   private async findSecurityCredentialsForAccountIfDefined(accountId: string): Promise<SchemaNodeObject | undefined> {
     try {
-      return await this.find({
-        type: SKL.SecurityCredentials,
-        [SKL.account]: accountId,
-      });
+      return await this.findSecurityCredentialsForAccount(accountId);
     } catch {
       return undefined;
     }
@@ -386,12 +383,15 @@ export class Skql {
   }
 
   private getConfigurationFromSecurityCredentials(
-    securityCredentialsSchema: SchemaNodeObject,
+    securityCredentialsSchema?: SchemaNodeObject,
   ): OpenApiClientConfiguration {
-    const username = securityCredentialsSchema[SKL.clientId] as string | undefined;
-    const password = securityCredentialsSchema[SKL.clientSecret] as string | undefined;
-    const accessToken = securityCredentialsSchema[SKL.accessToken] as string | undefined;
-    return { username, password, accessToken };
+    if (securityCredentialsSchema) {
+      const username = securityCredentialsSchema[SKL.clientId] as string | undefined;
+      const password = securityCredentialsSchema[SKL.clientSecret] as string | undefined;
+      const accessToken = securityCredentialsSchema[SKL.accessToken] as string | undefined;
+      return { username, password, accessToken };
+    }
+    return {};
   }
 
   private async assertVerbReturnValueMatchesReturnTypeSchema(
@@ -439,9 +439,11 @@ export class Skql {
   ): Promise<AxiosResponse | CodeAuthorizationUrlResponse> {
     const integrationId = (account[SKL.integration] as SchemaNodeObject)['@id'];
     const openApiDescription = await this.getOpenApiDescriptionForIntegration(integrationId);
-    const securityCredentialsSchema = await this.findSecurityCredentialsForAccount(account['@id']);
+    const securityCredentialsSchema = await this.findSecurityCredentialsForAccountIfDefined(account['@id']);
     const configuration = this.getConfigurationFromSecurityCredentials(securityCredentialsSchema);
-    operationArgs.client_id = securityCredentialsSchema[SKL.clientId] as string;
+    if (securityCredentialsSchema) {
+      operationArgs.client_id = securityCredentialsSchema[SKL.clientId] as string;
+    }
     const openApiExecutor = await this.createOpenApiOperationExecutorWithSpec(openApiDescription);
     return await openApiExecutor.executeSecuritySchemeStage(
       operationInfo[SKL.schemeName] as string,
