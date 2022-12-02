@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import jsonld from 'jsonld';
-import type { SchemaNodeObject } from '../../src/util/Types';
+import type { Entity } from '../../src/util/Types';
 
 export function describeIf(envFlag: string, name: string, fn: () => void): void {
   const flag = `TEST_${envFlag.toUpperCase()}`;
@@ -12,7 +12,7 @@ export function describeIf(envFlag: string, name: string, fn: () => void): void 
 export async function frameAndCombineSchemas(
   filePaths: string[],
   env: Record<string, string> = {},
-): Promise<SchemaNodeObject[]> {
+): Promise<Entity[]> {
   const schemas = await Promise.all(
     filePaths.map(async(filePath: string): Promise<jsonld.NodeObject[]> => {
       let schema = await fs.readFile(filePath, { encoding: 'utf8' });
@@ -24,7 +24,7 @@ export async function frameAndCombineSchemas(
   );
   const expandedSchema = schemas.flat();
   const framedSchema = await jsonld.frame(expandedSchema, {});
-  return framedSchema['@graph'] as SchemaNodeObject[];
+  return framedSchema['@graph'] as Entity[];
 }
 
 export async function expandJsonLd(json: jsonld.JsonLdDocument): Promise<jsonld.JsonLdDocument> {

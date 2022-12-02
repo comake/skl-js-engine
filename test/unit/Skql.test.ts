@@ -105,40 +105,55 @@ describe('SKQL', (): void => {
 
     it('delegates calls to find to the query adapter.', async(): Promise<void> => {
       const findSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'find');
-      await expect(skql.find({ id: 'https://skl.standard.storage/verbs/Share' })).resolves.toEqual(schema[0]);
+      await expect(skql.find({ where: { id: 'https://skl.standard.storage/verbs/Share' }})).resolves.toEqual(schema[0]);
       expect(findSpy).toHaveBeenCalledTimes(1);
-      expect(findSpy).toHaveBeenCalledWith({ id: 'https://skl.standard.storage/verbs/Share' });
+      expect(findSpy).toHaveBeenCalledWith({ where: { id: 'https://skl.standard.storage/verbs/Share' }});
     });
 
-    it('throws an error if there is no schema matching the query.', async(): Promise<void> => {
+    it('throws an error if there is no schema matching the query during find.', async(): Promise<void> => {
       const findSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'find');
-      await expect(skql.find({ id: 'https://skl.standard.storage/verbs/Send' })).rejects.toThrow(
-        'No schema found with fields matching {"id":"https://skl.standard.storage/verbs/Send"}',
+      await expect(skql.find({ where: { id: 'https://skl.standard.storage/verbs/Send' }})).rejects.toThrow(
+        'No schema found with fields matching {"where":{"id":"https://skl.standard.storage/verbs/Send"}}',
       );
       expect(findSpy).toHaveBeenCalledTimes(1);
-      expect(findSpy).toHaveBeenCalledWith({ id: 'https://skl.standard.storage/verbs/Send' });
+      expect(findSpy).toHaveBeenCalledWith({ where: { id: 'https://skl.standard.storage/verbs/Send' }});
+    });
+
+    it('delegates calls to findBy to the query adapter.', async(): Promise<void> => {
+      const findBySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'findBy');
+      await expect(skql.findBy({ id: 'https://skl.standard.storage/verbs/Share' })).resolves.toEqual(schema[0]);
+      expect(findBySpy).toHaveBeenCalledTimes(1);
+      expect(findBySpy).toHaveBeenCalledWith({ id: 'https://skl.standard.storage/verbs/Share' });
+    });
+
+    it('throws an error if there is no schema matching the query during findBy.', async(): Promise<void> => {
+      const findBySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'findBy');
+      await expect(skql.findBy({ id: 'https://skl.standard.storage/verbs/Send' })).rejects.toThrow(
+        'No schema found with fields matching {"id":"https://skl.standard.storage/verbs/Send"}',
+      );
+      expect(findBySpy).toHaveBeenCalledTimes(1);
+      expect(findBySpy).toHaveBeenCalledWith({ id: 'https://skl.standard.storage/verbs/Send' });
     });
 
     it('delegates calls to findAll to the query adapter.', async(): Promise<void> => {
       const findAllSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'findAll');
-      await expect(skql.findAll({ id: 'https://skl.standard.storage/verbs/Share' })).resolves.toEqual([ schema[0] ]);
+      await expect(skql.findAll({ where: { id: 'https://skl.standard.storage/verbs/Share' }})).resolves.toEqual([ schema[0] ]);
       expect(findAllSpy).toHaveBeenCalledTimes(1);
-      expect(findAllSpy).toHaveBeenCalledWith({ id: 'https://skl.standard.storage/verbs/Share' });
+      expect(findAllSpy).toHaveBeenCalledWith({ where: { id: 'https://skl.standard.storage/verbs/Share' }});
     });
 
-    it('delegates calls to create to the query adapter.', async(): Promise<void> => {
-      const createSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'create');
-      const res = await skql.create({ '@type': 'https://skl.standard.storage/nouns/Verb' });
-      expect(res['@id']).toMatch(/https:\/\/skl.standard.storage\/data\/[\d+-_/A-Za-z%]+/u);
-      expect(res['@type']).toBe('https://skl.standard.storage/nouns/Verb');
-      expect(createSpy).toHaveBeenCalledTimes(1);
-      expect(createSpy).toHaveBeenCalledWith({ '@type': 'https://skl.standard.storage/nouns/Verb' });
+    it('delegates calls to findAllBy to the query adapter.', async(): Promise<void> => {
+      const findAllBySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'findAllBy');
+      await expect(skql.findAllBy({ id: 'https://skl.standard.storage/verbs/Share' })).resolves.toEqual([ schema[0] ]);
+      expect(findAllBySpy).toHaveBeenCalledTimes(1);
+      expect(findAllBySpy).toHaveBeenCalledWith({ id: 'https://skl.standard.storage/verbs/Share' });
     });
 
-    it('delegates calls to update to the query adapter.', async(): Promise<void> => {
-      const updateSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'update');
-      const res = await skql.update({
+    it('delegates calls to save a single entity to the query adapter.', async(): Promise<void> => {
+      const saveSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'save');
+      const res = await skql.save({
         '@id': 'https://skl.standard.storage/verbs/Share',
+        '@type': 'https://skl.standard.storage/nouns/Verb',
         [SKL.name]: 'Share',
       });
       expect(res).toEqual({
@@ -146,11 +161,66 @@ describe('SKQL', (): void => {
         '@type': 'https://skl.standard.storage/nouns/Verb',
         [SKL.name]: 'Share',
       });
-      expect(updateSpy).toHaveBeenCalledTimes(1);
-      expect(updateSpy).toHaveBeenCalledWith({
+      expect(saveSpy).toHaveBeenCalledTimes(1);
+      expect(saveSpy).toHaveBeenCalledWith({
         '@id': 'https://skl.standard.storage/verbs/Share',
+        '@type': 'https://skl.standard.storage/nouns/Verb',
         [SKL.name]: 'Share',
       });
+    });
+
+    it('delegates calls to save multiple entities to the query adapter.', async(): Promise<void> => {
+      const saveSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'save');
+      const entities = [
+        {
+          '@id': 'https://skl.standard.storage/verbs/Share',
+          '@type': 'https://skl.standard.storage/nouns/Verb',
+          [SKL.name]: 'Share',
+        },
+        {
+          '@id': 'https://skl.standard.storage/verbs/Send',
+          '@type': 'https://skl.standard.storage/nouns/Verb',
+          [SKL.name]: 'Send',
+        },
+      ];
+      const res = await skql.save(entities);
+      expect(res).toEqual(entities);
+      expect(saveSpy).toHaveBeenCalledTimes(1);
+      expect(saveSpy).toHaveBeenCalledWith(entities);
+    });
+
+    it('delegates calls to destroy a single entity to the query adapter.', async(): Promise<void> => {
+      const destroySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'destroy');
+      const entity = {
+        '@id': 'https://skl.standard.storage/verbs/Share',
+        '@type': 'https://skl.standard.storage/nouns/Verb',
+      };
+      await skql.save(entity);
+      const res = await skql.destroy(entity);
+      expect(res).toEqual(entity);
+      expect(destroySpy).toHaveBeenCalledTimes(1);
+      expect(destroySpy).toHaveBeenCalledWith(entity);
+    });
+
+    it('delegates calls to destroy miltiple entities to the query adapter.', async(): Promise<void> => {
+      const destroySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'destroy');
+      const entities = [
+        {
+          '@id': 'https://skl.standard.storage/verbs/Share',
+          '@type': 'https://skl.standard.storage/nouns/Verb',
+          [SKL.name]: 'Share',
+        },
+        {
+          '@id': 'https://skl.standard.storage/verbs/Send',
+          '@type': 'https://skl.standard.storage/nouns/Verb',
+          [SKL.name]: 'Send',
+        },
+      ];
+      await skql.save(entities);
+      const res = await skql.destroy(entities);
+      expect(res).toEqual(entities);
+      expect(destroySpy).toHaveBeenCalledTimes(1);
+      expect(destroySpy).toHaveBeenCalledWith(entities);
     });
   });
 
@@ -518,6 +588,26 @@ describe('SKQL', (): void => {
           grant_type: 'authorization_code',
           code_verifier: 'something',
         },
+      );
+    });
+
+    it(`can execute an OpenApiSecuritySchemeVerb with empty configuration 
+    if no SecurityCredentialsSchema exists for the account.`,
+    async(): Promise<void> => {
+      schema = schema.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://skl.standard.storage/data/DropboxAccount1SecurityCredentials');
+      response = { data: { message: 'Access Denied' }};
+      executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
+      (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
+      const skql = new Skql({ schema });
+      const res = await skql.do.authorizeWithPkceOauth({ account });
+      expect(res[SKL.accessToken]).toBeUndefined();
+      expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
+      expect(executeSecuritySchemeStage).toHaveBeenCalledWith(
+        'oAuth',
+        'authorizationCode',
+        'authorizationUrl',
+        {},
+        { account },
       );
     });
 

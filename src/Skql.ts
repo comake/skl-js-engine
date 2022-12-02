@@ -5,6 +5,7 @@ import type {
   OpenApiClientConfiguration,
 } from '@comake/openapi-operation-executor';
 import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
+import type { ReferenceNodeObject } from '@comake/rmlmapper-js';
 import axios from 'axios';
 import type { AxiosError, AxiosResponse } from 'axios';
 import type { ContextDefinition, NodeObject } from 'jsonld';
@@ -12,8 +13,8 @@ import SHACLValidator from 'rdf-validate-shacl';
 import type ValidationReport from 'rdf-validate-shacl/src/validation-report';
 import { Mapper } from './mapping/Mapper';
 import { MemoryQueryAdapter } from './storage/MemoryQueryAdapter';
-import type { QueryAdapter, FindQuery } from './storage/QueryAdapter';
-import type { SchemaNodeObject, UnsavedSchemaNodeObject, NodeObjectWithId, OrArray } from './util/Types';
+import type { FindAllOptions, FindOneOptions, FindOptionsWhere, QueryAdapter } from './storage/QueryAdapter';
+import type { OrArray, Entity } from './util/Types';
 import {
   constructUri,
   convertJsonLdToQuads,
@@ -30,7 +31,7 @@ export type VerbInterface = Record<string, VerbHandler>;
 export type MappingResponseOption<T extends boolean> = T extends true ? JSONObject : NodeObject;
 
 export interface SkqlArgs {
-  schema?: SchemaNodeObject[];
+  schema?: Entity[];
   skdsUrl?: string;
   functions?: Record<string, (args: any | any[]) => any>;
 }
@@ -69,24 +70,46 @@ export class Skql {
     this.do = new Proxy({} as VerbInterface, { get: getVerbHandler });
   }
 
-  public async find(query: FindQuery): Promise<SchemaNodeObject> {
-    const schema = await this.adapter.find(query);
-    if (schema) {
-      return schema;
+  public async find(options: FindOneOptions): Promise<Entity> {
+    const entity = await this.adapter.find(options);
+    if (entity) {
+      return entity;
     }
-    throw new Error(`No schema found with fields matching ${JSON.stringify(query)}`);
+    throw new Error(`No schema found with fields matching ${JSON.stringify(options)}`);
   }
 
-  public async findAll(query: FindQuery): Promise<SchemaNodeObject[]> {
-    return await this.adapter.findAll(query);
+  public async findBy(where: FindOptionsWhere): Promise<Entity> {
+    const entity = await this.adapter.findBy(where);
+    if (entity) {
+      return entity;
+    }
+    throw new Error(`No schema found with fields matching ${JSON.stringify(where)}`);
   }
 
-  public async create(record: UnsavedSchemaNodeObject): Promise<SchemaNodeObject> {
-    return await this.adapter.create(record);
+  public async findAll(options: FindAllOptions): Promise<Entity[]> {
+    return await this.adapter.findAll(options);
   }
 
-  public async update(record: NodeObjectWithId): Promise<SchemaNodeObject> {
-    return await this.adapter.update(record);
+  public async findAllBy(options: FindOptionsWhere): Promise<Entity[]> {
+    return await this.adapter.findAllBy(options);
+  }
+
+  public async save(entity: Entity): Promise<Entity>;
+  public async save(entities: Entity[]): Promise<Entity[]>;
+  public async save(entityOrEntities: Entity | Entity[]): Promise<Entity | Entity[]> {
+    if (Array.isArray(entityOrEntities)) {
+      return await this.adapter.save(entityOrEntities);
+    }
+    return await this.adapter.save(entityOrEntities);
+  }
+
+  public async destroy(entity: Entity): Promise<Entity>;
+  public async destroy(entities: Entity[]): Promise<Entity[]>;
+  public async destroy(entityOrEntities: Entity | Entity[]): Promise<Entity | Entity[]> {
+    if (Array.isArray(entityOrEntities)) {
+      return await this.adapter.destroy(entityOrEntities);
+    }
+    return await this.adapter.destroy(entityOrEntities);
   }
 
   public async performMapping(
@@ -117,7 +140,7 @@ export class Skql {
     const verbSchemaId = constructUri(SKL.verbs, verbName);
     let verb;
     try {
-      verb = await this.find({ id: verbSchemaId });
+      verb = await this.findBy({ id: verbSchemaId });
     } catch {
       throw new Error(`Failed to find the verb ${verbName} in the schema.`);
     }
@@ -132,10 +155,10 @@ export class Skql {
     throw new Error(`Verb parameters must include either a noun or an account.`);
   }
 
-  private async handleIntegrationVerb(verb: SchemaNodeObject, args: JSONObject): Promise<NodeObject> {
+  private async handleIntegrationVerb(verb: Entity, args: JSONObject): Promise<NodeObject> {
     await this.assertVerbParamsMatchParameterSchemas(args, verb);
-    const account = await this.find({ id: args.account as string });
-    const integrationId = (account[SKL.integration] as SchemaNodeObject)['@id'];
+    const account = await this.findBy({ id: args.account as string });
+    const integrationId = (account[SKL.integration] as ReferenceNodeObject)['@id'];
     const mapping = await this.findVerbIntegrationMapping(verb['@id'], integrationId);
     const operationArgs = await this.performParameterMappingOnArgsIfDefined(args, mapping);
     const operationInfo = await this.performOperationMappingWithArgs(args, mapping);
@@ -157,22 +180,22 @@ export class Skql {
     return rawReturnValue as unknown as NodeObject;
   }
 
-  private async findVerbIntegrationMapping(verbId: string, integrationId: string): Promise<SchemaNodeObject> {
-    return await this.find({
+  private async findVerbIntegrationMapping(verbId: string, integrationId: string): Promise<Entity> {
+    return await this.findBy({
       type: SKL.VerbIntegrationMapping,
       [SKL.verb]: verbId,
       [SKL.integration]: integrationId,
     });
   }
 
-  private async performOperationMappingWithArgs(args: JSONObject, mapping: SchemaNodeObject): Promise<NodeObject> {
+  private async performOperationMappingWithArgs(args: JSONObject, mapping: Entity): Promise<NodeObject> {
     return await this.performMapping(args, mapping[SKL.operationMapping] as OrArray<NodeObject>);
   }
 
   private async performOperation(
     operationInfo: NodeObject,
     operationArgs: JSONObject,
-    account: SchemaNodeObject,
+    account: Entity,
   ): Promise<OperationResponse | CodeAuthorizationUrlResponse> {
     if (operationInfo[SKL.schemeName]) {
       return await this.performSecuritySchemeStageWithCredentials(operationInfo, operationArgs, account);
@@ -192,8 +215,8 @@ export class Skql {
 
   private async performReturnValueMappingWithFrame(
     data: JSONObject,
-    mapping: SchemaNodeObject,
-    verb: SchemaNodeObject,
+    mapping: Entity,
+    verb: Entity,
   ): Promise<NodeObject> {
     return await this.performMapping(
       data,
@@ -217,7 +240,7 @@ export class Skql {
 
   private async performParameterMappingOnArgsIfDefined(
     args: JSONObject,
-    mapping: SchemaNodeObject,
+    mapping: Entity,
     convertToJsonDeep = true,
   ): Promise<Record<string, any>> {
     if (mapping[SKL.parameterMapping]) {
@@ -231,21 +254,21 @@ export class Skql {
   }
 
   private async getOpenApiDescriptionForIntegration(integrationId: string): Promise<OpenApi> {
-    const openApiDescriptionSchema = await this.find({
+    const openApiDescriptionSchema = await this.findBy({
       type: SKL.OpenApiDescription,
       [SKL.integration]: integrationId,
     });
     return getValueOfFieldInNodeObject<OpenApi>(openApiDescriptionSchema, SKL.openApiDescription);
   }
 
-  private async findSecurityCredentialsForAccount(accountId: string): Promise<SchemaNodeObject> {
-    return await this.find({
+  private async findSecurityCredentialsForAccount(accountId: string): Promise<Entity> {
+    return await this.findBy({
       type: SKL.SecurityCredentials,
       [SKL.account]: accountId,
     });
   }
 
-  private async findSecurityCredentialsForAccountIfDefined(accountId: string): Promise<SchemaNodeObject | undefined> {
+  private async findSecurityCredentialsForAccountIfDefined(accountId: string): Promise<Entity | undefined> {
     try {
       return await this.findSecurityCredentialsForAccount(accountId);
     } catch {
@@ -259,7 +282,7 @@ export class Skql {
     return executor;
   }
 
-  private async handleNounMappingVerb(verb: SchemaNodeObject, args: JSONObject): Promise<NodeObject> {
+  private async handleNounMappingVerb(verb: Entity, args: JSONObject): Promise<NodeObject> {
     const mapping = await this.findVerbNounMapping(verb['@id'], args.noun as string);
     if (mapping[SKL.mapping]) {
       return await this.performMapping(
@@ -273,23 +296,23 @@ export class Skql {
     }
     const verbArgs = await this.performParameterMappingOnArgsIfDefined(args, mapping, false);
     const verbInfoJsonLd = await this.performVerbMappingWithArgs(args, mapping);
-    const mappedVerb = await this.find({ id: verbInfoJsonLd[SKL.verb] as string });
+    const mappedVerb = await this.findBy({ id: verbInfoJsonLd[SKL.verb] as string });
     return this.handleIntegrationVerb(mappedVerb, verbArgs);
   }
 
-  private async findVerbNounMapping(verbId: string, noun: string): Promise<SchemaNodeObject> {
-    return await this.find({
+  private async findVerbNounMapping(verbId: string, noun: string): Promise<Entity> {
+    return await this.findBy({
       type: SKL.VerbNounMapping,
       [SKL.verb]: verbId,
       [SKL.noun]: noun,
     });
   }
 
-  private async performVerbMappingWithArgs(args: JSONObject, mapping: SchemaNodeObject): Promise<NodeObject> {
+  private async performVerbMappingWithArgs(args: JSONObject, mapping: Entity): Promise<NodeObject> {
     return await this.performMapping(args, mapping[SKL.verbMapping] as NodeObject);
   }
 
-  private async assertVerbParamsMatchParameterSchemas(verbParams: any, verb: SchemaNodeObject): Promise<void> {
+  private async assertVerbParamsMatchParameterSchemas(verbParams: any, verb: Entity): Promise<void> {
     const verbParamsAsJsonLd = {
       '@context': getValueOfFieldInNodeObject<ContextDefinition>(verb, SKL.parametersContext),
       '@type': 'https://skl.standard.storage/nouns/Parameters',
@@ -305,9 +328,9 @@ export class Skql {
   private async performOpenapiOperationWithCredentials(
     operationId: string,
     operationArgs: JSONObject,
-    account: SchemaNodeObject,
+    account: Entity,
   ): Promise<AxiosResponse> {
-    const integrationId = (account[SKL.integration] as SchemaNodeObject)['@id'];
+    const integrationId = (account[SKL.integration] as ReferenceNodeObject)['@id'];
     const openApiDescription = await this.getOpenApiDescriptionForIntegration(integrationId);
     const openApiExecutor = await this.createOpenApiOperationExecutorWithSpec(openApiDescription);
     const securityCredentials = await this.findSecurityCredentialsForAccountIfDefined(account['@id']);
@@ -331,7 +354,7 @@ export class Skql {
   }
 
   private async isInvalidTokenError(error: AxiosError, integrationId: string): Promise<boolean> {
-    const integration = await this.find({ id: integrationId });
+    const integration = await this.findBy({ id: integrationId });
     const errorMatcher = getValueOfFieldInNodeObject<ErrorMatcher | undefined>(
       integration,
       SKL.invalidTokenErrorMatcher,
@@ -353,11 +376,11 @@ export class Skql {
   }
 
   private async refreshOpenApiToken(
-    securityCredentialsSchema: SchemaNodeObject,
+    securityCredentialsSchema: Entity,
     openApiExecutor: OpenApiOperationExecutor,
     integrationId: string,
   ): Promise<OpenApiClientConfiguration> {
-    const getOauthTokenVerb = await this.find({ id: SKL.getOauthTokens });
+    const getOauthTokenVerb = await this.findBy({ id: SKL.getOauthTokens });
     const mapping = await this.findVerbIntegrationMapping(getOauthTokenVerb['@id'], integrationId);
     const operationArgs = await this.performParameterMappingOnArgsIfDefined(
       { refreshToken: securityCredentialsSchema[SKL.refreshToken] as string },
@@ -376,27 +399,24 @@ export class Skql {
       (rawReturnValue as OperationResponse).data, mapping, getOauthTokenVerb,
     );
     await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, getOauthTokenVerb);
-    securityCredentialsSchema[SKL.accessToken] = mappedReturnValue[SKL.accessToken];
-    securityCredentialsSchema[SKL.refreshToken] = mappedReturnValue[SKL.refreshToken];
-    await this.update(securityCredentialsSchema);
+    securityCredentialsSchema[SKL.accessToken] = mappedReturnValue[SKL.accessToken] as string;
+    securityCredentialsSchema[SKL.refreshToken] = mappedReturnValue[SKL.refreshToken] as string;
+    await this.save(securityCredentialsSchema);
     return { accessToken: securityCredentialsSchema[SKL.accessToken] as string };
   }
 
   private getConfigurationFromSecurityCredentials(
-    securityCredentialsSchema?: SchemaNodeObject,
+    securityCredentialsSchema: Entity,
   ): OpenApiClientConfiguration {
-    if (securityCredentialsSchema) {
-      const username = securityCredentialsSchema[SKL.clientId] as string | undefined;
-      const password = securityCredentialsSchema[SKL.clientSecret] as string | undefined;
-      const accessToken = securityCredentialsSchema[SKL.accessToken] as string | undefined;
-      return { username, password, accessToken };
-    }
-    return {};
+    const username = securityCredentialsSchema[SKL.clientId] as string | undefined;
+    const password = securityCredentialsSchema[SKL.clientSecret] as string | undefined;
+    const accessToken = securityCredentialsSchema[SKL.accessToken] as string | undefined;
+    return { username, password, accessToken };
   }
 
   private async assertVerbReturnValueMatchesReturnTypeSchema(
     returnValue: NodeObject,
-    verb: SchemaNodeObject,
+    verb: Entity,
   ): Promise<void> {
     const returnTypeSchemaObject = await this.getReturnTypeSchemaFromVerb(verb);
 
@@ -411,13 +431,13 @@ export class Skql {
     }
   }
 
-  private async getReturnTypeSchemaFromVerb(verb: SchemaNodeObject): Promise<NodeObject> {
+  private async getReturnTypeSchemaFromVerb(verb: Entity): Promise<NodeObject> {
     const returnTypeSchema = verb[SKL.returnValue] as NodeObject;
     if (typeof returnTypeSchema === 'object' && returnTypeSchema['@type']) {
       return returnTypeSchema;
     }
     if (typeof returnTypeSchema === 'object' && returnTypeSchema['@id']) {
-      return await this.find({ id: returnTypeSchema['@id'] });
+      return await this.findBy({ id: returnTypeSchema['@id'] }) as NodeObject;
     }
     throw new Error('returnTypeSchema is not properly formatted.');
   }
@@ -435,14 +455,17 @@ export class Skql {
   private async performSecuritySchemeStageWithCredentials(
     operationInfo: NodeObject,
     operationArgs: JSONObject,
-    account: SchemaNodeObject,
+    account: Entity,
   ): Promise<AxiosResponse | CodeAuthorizationUrlResponse> {
-    const integrationId = (account[SKL.integration] as SchemaNodeObject)['@id'];
+    const integrationId = (account[SKL.integration] as ReferenceNodeObject)['@id'];
     const openApiDescription = await this.getOpenApiDescriptionForIntegration(integrationId);
     const securityCredentialsSchema = await this.findSecurityCredentialsForAccountIfDefined(account['@id']);
-    const configuration = this.getConfigurationFromSecurityCredentials(securityCredentialsSchema);
+    let configuration: OpenApiClientConfiguration;
     if (securityCredentialsSchema) {
+      configuration = this.getConfigurationFromSecurityCredentials(securityCredentialsSchema);
       operationArgs.client_id = securityCredentialsSchema[SKL.clientId] as string;
+    } else {
+      configuration = {};
     }
     const openApiExecutor = await this.createOpenApiOperationExecutorWithSpec(openApiDescription);
     return await openApiExecutor.executeSecuritySchemeStage(
@@ -455,7 +478,7 @@ export class Skql {
   }
 
   private async getDataFromDataSource(dataSourceId: string): Promise<OperationResponse> {
-    const dataSource = await this.find({ id: dataSourceId });
+    const dataSource = await this.findBy({ id: dataSourceId });
     if (dataSource['@type'] === SKL.JsonDataSource) {
       return {
         data: (dataSource[SKL.data] as NodeObject)['@value'] as JSONObject,

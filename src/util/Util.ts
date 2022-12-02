@@ -2,7 +2,7 @@
 import * as jsonld from 'jsonld';
 import type { NodeObject } from 'jsonld';
 import { Parser, Store } from 'n3';
-import type { SchemaNodeObject } from './Types';
+import type { Entity } from './Types';
 
 export type JSONObject = Record<string, JSONValue>;
 
@@ -66,7 +66,7 @@ export function toJSON(jsonLd: NodeObject, convertBeyondFirstLevel = true): JSON
   return jsonLd as JSONObject;
 }
 
-export function getValueOfFieldInNodeObject<T>(object: SchemaNodeObject, field: string): T {
+export function getValueOfFieldInNodeObject<T>(object: Entity, field: string): T {
   return (object[field] as NodeObject)?.['@value'] as unknown as T;
 }
 
