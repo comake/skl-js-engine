@@ -152,557 +152,546 @@
       "integration": "https://skl.standard.storage/integrations/Ticketmaster",
       "verb": "https://skl.standard.storage/verbs/getEvents",
       "name": "getEventsToTicketmaster",
-      "operationMapping": "https://skl.standard.storage/data/5/operationMapping/1",
-      "parameterMapping": "https://skl.standard.storage/data/5/parameterMapping/1",
+      "operationMapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
+        },
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rr:constant": "SearchEvents"
+            },
+            "rr:predicate": "sklproperties:operationId"
+          }
+        ],
+        "rr:subject": "https://skl.standard.storage/mappingSubject"
+      },
+      "parameterMapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
+        },
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rml:reference": "page",
+              "rr:datatype": "http://www.w3.org/2001/XMLSchema#integer"
+            },
+            "rr:predicate": "sklproperties:page"
+          },
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rml:reference": "pageSize",
+              "rr:datatype": "http://www.w3.org/2001/XMLSchema#integer"
+            },
+            "rr:predicate": "sklproperties:size"
+          },
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rml:reference": "city"
+            },
+            "rr:predicate": "sklproperties:city"
+          },
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rml:reference": "startAfterDate",
+              "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
+            },
+            "rr:predicate": "sklproperties:startDateTime"
+          },
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rml:reference": "startBeforeDate",
+              "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
+            },
+            "rr:predicate": "sklproperties:endDateTime"
+          }
+        ],
+        "rr:subject": "https://skl.standard.storage/mappingSubject"
+      },
       "returnValueMapping": [
-        "https://skl.standard.storage/data/5/returnValueMapping/1",
-        "https://skl.standard.storage/data/5/returnValueMapping/2",
-        "https://skl.standard.storage/data/5/returnValueMapping/3"
-      ]
-    },
-    {
-      "@id": "https://skl.standard.storage/data/5/operationMapping/1",
-      "@type": "rr:TriplesMap",
-      "rml:logicalSource": {
-        "@type": "rml:LogicalSource",
-        "rml:iterator": "$",
-        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-        "rml:source": "input.json"
-      },
-      "rr:predicateObjectMap": [
         {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rr:constant": "SearchEvents"
+          "@type": "rr:TriplesMap",
+          "rml:logicalSource": {
+            "@type": "rml:LogicalSource",
+            "rml:iterator": "$",
+            "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+            "rml:source": "input.json"
           },
-          "rr:predicate": "sklproperties:operationId"
-        }
-      ],
-      "rr:subject": "https://skl.standard.storage/mappingSubject"
-    },
-    {
-      "@id": "https://skl.standard.storage/data/5/parameterMapping/1",
-      "@type": "rr:TriplesMap",
-      "rml:logicalSource": {
-        "@type": "rml:LogicalSource",
-        "rml:iterator": "$",
-        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-        "rml:source": "input.json"
-      },
-      "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "page",
-            "rr:datatype": "http://www.w3.org/2001/XMLSchema#integer"
-          },
-          "rr:predicate": "sklproperties:page"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "pageSize",
-            "rr:datatype": "http://www.w3.org/2001/XMLSchema#integer"
-          },
-          "rr:predicate": "sklproperties:size"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "city"
-          },
-          "rr:predicate": "sklproperties:city"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "startAfterDate",
-            "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
-          },
-          "rr:predicate": "sklproperties:startDateTime"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "startBeforeDate",
-            "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
-          },
-          "rr:predicate": "sklproperties:endDateTime"
-        }
-      ],
-      "rr:subject": "https://skl.standard.storage/mappingSubject"
-    },
-    {
-      "@id": "https://skl.standard.storage/data/5/returnValueMapping/1",
-      "@type": "rr:TriplesMap",
-      "rml:logicalSource": {
-        "@type": "rml:LogicalSource",
-        "rml:iterator": "$",
-        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-        "rml:source": "input.json"
-      },
-      "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rr:parentTriplesMap": "https://skl.standard.storage/data/5/returnValueMapping/2"
-          },
-          "rr:predicate": "sklproperties:records"
-        }
-      ],
-      "rr:subjectMap": {
-        "@type": "rr:SubjectMap",
-        "rr:template": "https://skl.standard.storage/mappingSubject",
-        "rr:class": "https://skl.standard.storage/nouns/TokenPaginatedCollection"
-      }
-    },
-    {
-      "@id": "https://skl.standard.storage/data/5/returnValueMapping/2",
-      "@type": "rr:TriplesMap",
-      "rml:logicalSource": {
-        "@type": "rml:LogicalSource",
-        "rml:iterator": "$.['_embedded'].events[*]",
-        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-        "rml:source": "input.json"
-      },
-      "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:object": "schema:Event",
-          "rr:predicate": "rdf:type"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "name"
-          },
-          "rr:predicate": "schema:name"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "description"
-          },
-          "rr:predicate": "schema:description"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "url"
-          },
-          "rr:predicate": "schema:url"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "images[*].url"
-          },
-          "rr:predicate": "schema:image"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "dates.start.dateTime"
-          },
-          "rr:predicate": "schema:startDate"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "dates.end.dateTime"
-          },
-          "rr:predicate": "schema:endDate"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "dates.access.startDateTime"
-          },
-          "rr:predicate": "schema:doorTime"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rr:template": "https://skl.standard.storage/data/venues/{['_embedded'].venues[*].id}"
-          },
-          "rr:predicate": "schema:location"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "fnml:functionValue": {
-              "@type": "fnml:FunctionValue",
-              "rr:predicateObjectMap": [
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
-                  "rr:predicate": "https://w3id.org/function/ontology#executes"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "fnml:functionValue": {
-                      "@type": "fnml:FunctionValue",
-                      "rr:predicateObjectMap": [
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:object": "http://example.com/idlab/function/equal",
-                          "rr:predicate": "https://w3id.org/function/ontology#executes"
-                        },
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:objectMap": {
-                            "@type": "rr:ObjectMap",
-                            "rml:reference": "dates.status.code"
-                          },
-                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
-                        },
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:objectMap": {
-                            "@type": "rr:ObjectMap",
-                            "rr:constant": "canceled"
-                          },
-                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
-                        }
-                      ]
-                    }
-                  }
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rr:constant": "EventCancelled"
-                  }
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_false",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "fnml:functionValue": {
-                      "@type": "fnml:FunctionValue",
-                      "rr:predicateObjectMap": [
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
-                          "rr:predicate": "https://w3id.org/function/ontology#executes"
-                        },
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b",
-                          "rr:objectMap": {
-                            "@type": "rr:ObjectMap",
-                            "fnml:functionValue": {
-                              "@type": "fnml:FunctionValue",
-                              "rr:predicateObjectMap": [
-                                {
-                                  "@type": "rr:PredicateObjectMap",
-                                  "rr:object": "http://example.com/idlab/function/equal",
-                                  "rr:predicate": "https://w3id.org/function/ontology#executes"
-                                },
-                                {
-                                  "@type": "rr:PredicateObjectMap",
-                                  "rr:objectMap": {
-                                    "@type": "rr:ObjectMap",
-                                    "rml:reference": "dates.status.code"
-                                  },
-                                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
-                                },
-                                {
-                                  "@type": "rr:PredicateObjectMap",
-                                  "rr:objectMap": {
-                                    "@type": "rr:ObjectMap",
-                                    "rr:constant": "postponed"
-                                  },
-                                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
-                                }
-                              ]
-                            }
-                          }
-                        },
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true",
-                          "rr:objectMap": {
-                            "@type": "rr:ObjectMap",
-                            "rr:constant": "EventPostponed"
-                          }
-                        },
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_false",
-                          "rr:objectMap": {
-                            "@type": "rr:ObjectMap",
-                            "fnml:functionValue": {
-                              "@type": "fnml:FunctionValue",
-                              "rr:predicateObjectMap": [
-                                {
-                                  "@type": "rr:PredicateObjectMap",
-                                  "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
-                                  "rr:predicate": "https://w3id.org/function/ontology#executes"
-                                },
-                                {
-                                  "@type": "rr:PredicateObjectMap",
-                                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b",
-                                  "rr:objectMap": {
-                                    "@type": "rr:ObjectMap",
-                                    "fnml:functionValue": {
-                                      "@type": "fnml:FunctionValue",
-                                      "rr:predicateObjectMap": [
-                                        {
-                                          "@type": "rr:PredicateObjectMap",
-                                          "rr:object": "http://example.com/idlab/function/equal",
-                                          "rr:predicate": "https://w3id.org/function/ontology#executes"
-                                        },
-                                        {
-                                          "@type": "rr:PredicateObjectMap",
-                                          "rr:objectMap": {
-                                            "@type": "rr:ObjectMap",
-                                            "rml:reference": "dates.status.code"
-                                          },
-                                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
-                                        },
-                                        {
-                                          "@type": "rr:PredicateObjectMap",
-                                          "rr:objectMap": {
-                                            "@type": "rr:ObjectMap",
-                                            "rr:constant": "rescheduled"
-                                          },
-                                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
-                                        }
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "@type": "rr:PredicateObjectMap",
-                                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true",
-                                  "rr:objectMap": {
-                                    "@type": "rr:ObjectMap",
-                                    "rr:constant": "EventRescheduled"
-                                  }
-                                },
-                                {
-                                  "@type": "rr:PredicateObjectMap",
-                                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_false",
-                                  "rr:objectMap": {
-                                    "@type": "rr:ObjectMap",
-                                    "rr:constant": "EventScheduled"
-                                  }
-                                }
-                              ]
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  }
-                }
-              ]
-            }
-          },
-          "rr:predicate": "schema:eventStatus"
-        }
-      ],
-      "rr:subjectMap": {
-        "@type": "rr:SubjectMap",
-        "fnml:functionValue": {
-          "@type": "fnml:FunctionValue",
           "rr:predicateObjectMap": [
             {
               "@type": "rr:PredicateObjectMap",
               "rr:objectMap": {
                 "@type": "rr:ObjectMap",
+                "rr:parentTriplesMap": {
+                  "@type": "rr:TriplesMap",
+                  "rml:logicalSource": {
+                    "@type": "rml:LogicalSource",
+                    "rml:iterator": "$.['_embedded'].events[*]",
+                    "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+                    "rml:source": "input.json"
+                  },
+                  "rr:predicateObjectMap": [
+                    {
+                      "@type": "rr:PredicateObjectMap",
+                      "rr:object": "schema:Event",
+                      "rr:predicate": "rdf:type"
+                    },
+                    {
+                      "@type": "rr:PredicateObjectMap",
+                      "rr:objectMap": {
+                        "@type": "rr:ObjectMap",
+                        "rml:reference": "name"
+                      },
+                      "rr:predicate": "schema:name"
+                    },
+                    {
+                      "@type": "rr:PredicateObjectMap",
+                      "rr:objectMap": {
+                        "@type": "rr:ObjectMap",
+                        "rml:reference": "description"
+                      },
+                      "rr:predicate": "schema:description"
+                    },
+                    {
+                      "@type": "rr:PredicateObjectMap",
+                      "rr:objectMap": {
+                        "@type": "rr:ObjectMap",
+                        "rml:reference": "url"
+                      },
+                      "rr:predicate": "schema:url"
+                    },
+                    {
+                      "@type": "rr:PredicateObjectMap",
+                      "rr:objectMap": {
+                        "@type": "rr:ObjectMap",
+                        "rml:reference": "images[*].url"
+                      },
+                      "rr:predicate": "schema:image"
+                    },
+                    {
+                      "@type": "rr:PredicateObjectMap",
+                      "rr:objectMap": {
+                        "@type": "rr:ObjectMap",
+                        "rml:reference": "dates.start.dateTime"
+                      },
+                      "rr:predicate": "schema:startDate"
+                    },
+                    {
+                      "@type": "rr:PredicateObjectMap",
+                      "rr:objectMap": {
+                        "@type": "rr:ObjectMap",
+                        "rml:reference": "dates.end.dateTime"
+                      },
+                      "rr:predicate": "schema:endDate"
+                    },
+                    {
+                      "@type": "rr:PredicateObjectMap",
+                      "rr:objectMap": {
+                        "@type": "rr:ObjectMap",
+                        "rml:reference": "dates.access.startDateTime"
+                      },
+                      "rr:predicate": "schema:doorTime"
+                    },
+                    {
+                      "@type": "rr:PredicateObjectMap",
+                      "rr:objectMap": {
+                        "@type": "rr:ObjectMap",
+                        "rr:template": "https://skl.standard.storage/data/venues/{['_embedded'].venues[*].id}"
+                      },
+                      "rr:predicate": "schema:location"
+                    },
+                    {
+                      "@type": "rr:PredicateObjectMap",
+                      "rr:objectMap": {
+                        "@type": "rr:ObjectMap",
+                        "fnml:functionValue": {
+                          "@type": "fnml:FunctionValue",
+                          "rr:predicateObjectMap": [
+                            {
+                              "@type": "rr:PredicateObjectMap",
+                              "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
+                              "rr:predicate": "https://w3id.org/function/ontology#executes"
+                            },
+                            {
+                              "@type": "rr:PredicateObjectMap",
+                              "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b",
+                              "rr:objectMap": {
+                                "@type": "rr:ObjectMap",
+                                "fnml:functionValue": {
+                                  "@type": "fnml:FunctionValue",
+                                  "rr:predicateObjectMap": [
+                                    {
+                                      "@type": "rr:PredicateObjectMap",
+                                      "rr:object": "http://example.com/idlab/function/equal",
+                                      "rr:predicate": "https://w3id.org/function/ontology#executes"
+                                    },
+                                    {
+                                      "@type": "rr:PredicateObjectMap",
+                                      "rr:objectMap": {
+                                        "@type": "rr:ObjectMap",
+                                        "rml:reference": "dates.status.code"
+                                      },
+                                      "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
+                                    },
+                                    {
+                                      "@type": "rr:PredicateObjectMap",
+                                      "rr:objectMap": {
+                                        "@type": "rr:ObjectMap",
+                                        "rr:constant": "canceled"
+                                      },
+                                      "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
+                                    }
+                                  ]
+                                }
+                              }
+                            },
+                            {
+                              "@type": "rr:PredicateObjectMap",
+                              "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true",
+                              "rr:objectMap": {
+                                "@type": "rr:ObjectMap",
+                                "rr:constant": "EventCancelled"
+                              }
+                            },
+                            {
+                              "@type": "rr:PredicateObjectMap",
+                              "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_false",
+                              "rr:objectMap": {
+                                "@type": "rr:ObjectMap",
+                                "fnml:functionValue": {
+                                  "@type": "fnml:FunctionValue",
+                                  "rr:predicateObjectMap": [
+                                    {
+                                      "@type": "rr:PredicateObjectMap",
+                                      "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
+                                      "rr:predicate": "https://w3id.org/function/ontology#executes"
+                                    },
+                                    {
+                                      "@type": "rr:PredicateObjectMap",
+                                      "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b",
+                                      "rr:objectMap": {
+                                        "@type": "rr:ObjectMap",
+                                        "fnml:functionValue": {
+                                          "@type": "fnml:FunctionValue",
+                                          "rr:predicateObjectMap": [
+                                            {
+                                              "@type": "rr:PredicateObjectMap",
+                                              "rr:object": "http://example.com/idlab/function/equal",
+                                              "rr:predicate": "https://w3id.org/function/ontology#executes"
+                                            },
+                                            {
+                                              "@type": "rr:PredicateObjectMap",
+                                              "rr:objectMap": {
+                                                "@type": "rr:ObjectMap",
+                                                "rml:reference": "dates.status.code"
+                                              },
+                                              "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
+                                            },
+                                            {
+                                              "@type": "rr:PredicateObjectMap",
+                                              "rr:objectMap": {
+                                                "@type": "rr:ObjectMap",
+                                                "rr:constant": "postponed"
+                                              },
+                                              "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    },
+                                    {
+                                      "@type": "rr:PredicateObjectMap",
+                                      "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true",
+                                      "rr:objectMap": {
+                                        "@type": "rr:ObjectMap",
+                                        "rr:constant": "EventPostponed"
+                                      }
+                                    },
+                                    {
+                                      "@type": "rr:PredicateObjectMap",
+                                      "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_false",
+                                      "rr:objectMap": {
+                                        "@type": "rr:ObjectMap",
+                                        "fnml:functionValue": {
+                                          "@type": "fnml:FunctionValue",
+                                          "rr:predicateObjectMap": [
+                                            {
+                                              "@type": "rr:PredicateObjectMap",
+                                              "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
+                                              "rr:predicate": "https://w3id.org/function/ontology#executes"
+                                            },
+                                            {
+                                              "@type": "rr:PredicateObjectMap",
+                                              "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b",
+                                              "rr:objectMap": {
+                                                "@type": "rr:ObjectMap",
+                                                "fnml:functionValue": {
+                                                  "@type": "fnml:FunctionValue",
+                                                  "rr:predicateObjectMap": [
+                                                    {
+                                                      "@type": "rr:PredicateObjectMap",
+                                                      "rr:object": "http://example.com/idlab/function/equal",
+                                                      "rr:predicate": "https://w3id.org/function/ontology#executes"
+                                                    },
+                                                    {
+                                                      "@type": "rr:PredicateObjectMap",
+                                                      "rr:objectMap": {
+                                                        "@type": "rr:ObjectMap",
+                                                        "rml:reference": "dates.status.code"
+                                                      },
+                                                      "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
+                                                    },
+                                                    {
+                                                      "@type": "rr:PredicateObjectMap",
+                                                      "rr:objectMap": {
+                                                        "@type": "rr:ObjectMap",
+                                                        "rr:constant": "rescheduled"
+                                                      },
+                                                      "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
+                                                    }
+                                                  ]
+                                                }
+                                              }
+                                            },
+                                            {
+                                              "@type": "rr:PredicateObjectMap",
+                                              "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true",
+                                              "rr:objectMap": {
+                                                "@type": "rr:ObjectMap",
+                                                "rr:constant": "EventRescheduled"
+                                              }
+                                            },
+                                            {
+                                              "@type": "rr:PredicateObjectMap",
+                                              "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_false",
+                                              "rr:objectMap": {
+                                                "@type": "rr:ObjectMap",
+                                                "rr:constant": "EventScheduled"
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      "rr:predicate": "schema:eventStatus"
+                    }
+                  ],
+                  "rr:subjectMap": {
+                    "@type": "rr:SubjectMap",
+                    "fnml:functionValue": {
+                      "@type": "fnml:FunctionValue",
+                      "rr:predicateObjectMap": [
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:objectMap": {
+                            "@type": "rr:ObjectMap",
+                            "fnml:functionValue": {
+                              "@type": "fnml:FunctionValue",
+                              "rr:predicateObjectMap": {
+                                "@type": "rr:PredicateObjectMap",
+                                "rr:object": "http://example.com/idlab/function/random",
+                                "rr:predicate": "https://w3id.org/function/ontology#executes"
+                              }
+                            }
+                          },
+                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_string_replace"
+                        },
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#string_replace",
+                          "rr:predicate": "https://w3id.org/function/ontology#executes"
+                        },
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:objectMap": {
+                            "@type": "rr:ObjectMap",
+                            "rr:constant": "random"
+                          },
+                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_string_find"
+                        },
+                        {
+                          "@type": "rr:PredicateObjectMap",
+                          "rr:objectMap": {
+                            "@type": "rr:ObjectMap",
+                            "rr:constant": "https://skl.standard.storage/data/random"
+                          },
+                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              "rr:predicate": "sklproperties:records"
+            }
+          ],
+          "rr:subjectMap": {
+            "@type": "rr:SubjectMap",
+            "rr:template": "https://skl.standard.storage/mappingSubject",
+            "rr:class": "https://skl.standard.storage/nouns/TokenPaginatedCollection"
+          }
+        },
+        {
+          "@type": "rr:TriplesMap",
+          "rml:logicalSource": {
+            "@type": "rml:LogicalSource",
+            "rml:iterator": "$.['_embedded'].events[*]['_embedded'].venues[*]",
+            "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+            "rml:source": "input.json"
+          },
+          "rr:predicateObjectMap": [
+            {
+              "@type": "rr:PredicateObjectMap",
+              "rr:object": "schema:PostalAddress",
+              "rr:predicate": "rdf:type"
+            },
+            {
+              "@type": "rr:PredicateObjectMap",
+              "rr:objectMap": {
+                "@type": "rr:ObjectMap",
+                "rml:reference": "name"
+              },
+              "rr:predicate": "schema:name"
+            },
+            {
+              "@type": "rr:PredicateObjectMap",
+              "rr:objectMap": {
+                "@type": "rr:ObjectMap",
+                "rml:reference": "description"
+              },
+              "rr:predicate": "schema:description"
+            },
+            {
+              "@type": "rr:PredicateObjectMap",
+              "rr:objectMap": {
+                "@type": "rr:ObjectMap",
+                "rml:reference": "postalCode"
+              },
+              "rr:predicate": "schema:postalCode"
+            },
+            {
+              "@type": "rr:PredicateObjectMap",
+              "rr:objectMap": {
+                "@type": "rr:ObjectMap",
+                "rml:reference": "country.name"
+              },
+              "rr:predicate": "schema:addressCountry"
+            },
+            {
+              "@type": "rr:PredicateObjectMap",
+              "rr:objectMap": {
+                "@type": "rr:ObjectMap",
+                "rml:reference": "state.name"
+              },
+              "rr:predicate": "schema:addressRegion"
+            },
+            {
+              "@type": "rr:PredicateObjectMap",
+              "rr:objectMap": {
+                "@type": "rr:ObjectMap",
+                "rml:reference": "city.name"
+              },
+              "rr:predicate": "schema:addressLocality"
+            },
+            {
+              "@type": "rr:PredicateObjectMap",
+              "rr:objectMap": {
+                "@type": "rr:ObjectMap",
+                "rml:reference": "id"
+              },
+              "rr:predicate": "schema:identifier"
+            },
+            {
+              "@type": "rr:PredicateObjectMap",
+              "rr:objectMap": {
+                "@type": "rr:ObjectMap",
+                "rml:reference": "boxOfficeInfo.phoneNumberDetail"
+              },
+              "rr:predicate": "schema:telephone"
+            },
+            {
+              "@type": "rr:PredicateObjectMap",
+              "rr:predicate": "schema:streetAddress",
+              "rr:objectMap": {
+                "@type": "rr:ObjectMap",
                 "fnml:functionValue": {
                   "@type": "fnml:FunctionValue",
-                  "rr:predicateObjectMap": {
-                    "@type": "rr:PredicateObjectMap",
-                    "rr:object": "http://example.com/idlab/function/random",
-                    "rr:predicate": "https://w3id.org/function/ontology#executes"
-                  }
+                  "rr:predicateObjectMap": [
+                    {
+                      "@type": "rr:PredicateObjectMap",
+                      "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#array_join",
+                      "rr:predicate": "https://w3id.org/function/ontology#executes"
+                    },
+                    {
+                      "@type": "rr:PredicateObjectMap",
+                      "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_string_sep",
+                      "rr:objectMap": {
+                        "@type": "rr:ObjectMap",
+                        "rr:constant": " "
+                      }
+                    },
+                    {
+                      "@type": "rr:PredicateObjectMap",
+                      "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_array_a",
+                      "rr:objectMap": {
+                        "@type": "rr:ObjectMap",
+                        "rml:reference": "address.line1"
+                      }
+                    },
+                    {
+                      "@type": "rr:PredicateObjectMap",
+                      "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_array_a",
+                      "rr:objectMap": {
+                        "@type": "rr:ObjectMap",
+                        "rml:reference": "address.line2"
+                      }
+                    },
+                    {
+                      "@type": "rr:PredicateObjectMap",
+                      "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_array_a",
+                      "rr:objectMap": {
+                        "@type": "rr:ObjectMap",
+                        "rml:reference": "address.line3"
+                      }
+                    }
+                  ]
                 }
-              },
-              "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_string_replace"
-            },
-            {
-              "@type": "rr:PredicateObjectMap",
-              "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#string_replace",
-              "rr:predicate": "https://w3id.org/function/ontology#executes"
-            },
-            {
-              "@type": "rr:PredicateObjectMap",
-              "rr:objectMap": {
-                "@type": "rr:ObjectMap",
-                "rr:constant": "random"
-              },
-              "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_string_find"
-            },
-            {
-              "@type": "rr:PredicateObjectMap",
-              "rr:objectMap": {
-                "@type": "rr:ObjectMap",
-                "rr:constant": "https://skl.standard.storage/data/random"
-              },
-              "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
+              }
             }
-          ]
-        }
-      }
-    },
-    {
-      "@id": "https://skl.standard.storage/data/5/returnValueMapping/3",
-      "@type": "rr:TriplesMap",
-      "rml:logicalSource": {
-        "@type": "rml:LogicalSource",
-        "rml:iterator": "$.['_embedded'].events[*]['_embedded'].venues[*]",
-        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-        "rml:source": "input.json"
-      },
-      "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:object": "schema:PostalAddress",
-          "rr:predicate": "rdf:type"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "name"
-          },
-          "rr:predicate": "schema:name"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "description"
-          },
-          "rr:predicate": "schema:description"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "postalCode"
-          },
-          "rr:predicate": "schema:postalCode"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "country.name"
-          },
-          "rr:predicate": "schema:addressCountry"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "state.name"
-          },
-          "rr:predicate": "schema:addressRegion"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "city.name"
-          },
-          "rr:predicate": "schema:addressLocality"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "id"
-          },
-          "rr:predicate": "schema:identifier"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "boxOfficeInfo.phoneNumberDetail"
-          },
-          "rr:predicate": "schema:telephone"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:predicate": "schema:streetAddress",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "fnml:functionValue": {
-              "@type": "fnml:FunctionValue",
-              "rr:predicateObjectMap": [
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#array_join",
-                  "rr:predicate": "https://w3id.org/function/ontology#executes"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_string_sep",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rr:constant": " "
-                  }
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_array_a",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rml:reference": "address.line1"
-                  }
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_array_a",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rml:reference": "address.line2"
-                  }
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_array_a",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rml:reference": "address.line3"
-                  }
-                }
-              ]
-            }
+          ],
+          "rr:subjectMap": {
+            "@type": "rr:SubjectMap",
+            "rr:template": "https://skl.standard.storage/data/venues/{id}"
           }
         }
-      ],
-      "rr:subjectMap": {
-        "@type": "rr:SubjectMap",
-        "rr:template": "https://skl.standard.storage/data/venues/{id}"
-      }
+      ]
     },
     {
       "@id": "https://skl.standard.storage/data/TicketmasterOpenApiDescription",

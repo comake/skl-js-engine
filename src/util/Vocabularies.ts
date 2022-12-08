@@ -82,7 +82,15 @@ export const XSD = createNamespace('http://www.w3.org/2001/XMLSchema#', {
   boolean: 'boolean',
   integer: 'integer',
   double: 'double',
+  decimal: 'decimal',
   string: 'string',
+  float: 'float',
+  positiveInteger: 'positiveInteger',
+  negativeInteger: 'negativeInteger',
+  int: 'int',
+  date: 'date',
+  time: 'time',
+  datetime: 'datetime',
 });
 
 export const RDF = createNamespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#', {
@@ -90,6 +98,7 @@ export const RDF = createNamespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#'
   first: 'first',
   rest: 'rest',
   datatype: 'datatype',
+  JSON: 'JSON',
 });
 
 export const RDFS = createNamespace('http://www.w3.org/2000/01/rdf-schema#', {

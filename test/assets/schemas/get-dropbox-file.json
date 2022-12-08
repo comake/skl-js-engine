@@ -89,435 +89,429 @@
       "@id": "https://skl.standard.storage/data/4",
       "@type": "https://skl.standard.storage/nouns/VerbIntegrationMapping",
       "integration": "https://skl.standard.storage/integrations/Dropbox",
+      "verb": "https://skl.standard.storage/verbs/getFile",
       "name": "getFileToDropbox",
-      "sklproperties:operationMapping": "https://skl.standard.storage/data/4/operationMapping/1",
-      "sklproperties:parameterMapping": "https://skl.standard.storage/data/4/parameterMapping/1",
-      "sklproperties:returnValueMapping": "https://skl.standard.storage/data/4/returnValueMapping/1",
-      "verb": "https://skl.standard.storage/verbs/getFile"
-    },
-    {
-      "@id": "https://skl.standard.storage/data/4/operationMapping/1",
-      "@type": "rr:TriplesMap",
-      "rml:logicalSource": {
-        "@type": "rml:LogicalSource",
-        "rml:iterator": "$",
-        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-        "rml:source": "input.json"
+      "sklproperties:operationMapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
+        },
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rr:constant": "FilesGetMetadata"
+            },
+            "rr:predicate": "sklproperties:operationId"
+          }
+        ],
+        "rr:subject":  "https://skl.standard.storage/mappingSubject"
       },
-      "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rr:constant": "FilesGetMetadata"
-          },
-          "rr:predicate": "sklproperties:operationId"
-        }
-      ],
-      "rr:subject":  "https://skl.standard.storage/mappingSubject"
-    },
-    {
-      "@id": "https://skl.standard.storage/data/4/parameterMapping/1",
-      "@type": "rr:TriplesMap",
-      "rml:logicalSource": {
-        "@type": "rml:LogicalSource",
-        "rml:iterator": "$",
-        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-        "rml:source": "input.json"
-      },
-      "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:predicate": "sklproperties:path",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "fnml:functionValue": {
-              "@type": "fnml:FunctionValue",
-              "rr:predicateObjectMap": [
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#array_join",
-                  "rr:predicate": "https://w3id.org/function/ontology#executes"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rr:constant": "id:"
+      "sklproperties:parameterMapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
+        },
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:predicate": "sklproperties:path",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "fnml:functionValue": {
+                "@type": "fnml:FunctionValue",
+                "rr:predicateObjectMap": [
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#array_join",
+                    "rr:predicate": "https://w3id.org/function/ontology#executes"
                   },
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_array_a"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rr:reference": "id"
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "rr:constant": "id:"
+                    },
+                    "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_array_a"
                   },
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_array_a"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rr:constant": ""
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "rr:reference": "id"
+                    },
+                    "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_array_a"
                   },
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_string_sep"
-                }
-              ]
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "rr:constant": ""
+                    },
+                    "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_string_sep"
+                  }
+                ]
+              }
             }
           }
-        }
-      ],
-      "rr:subject": "https://skl.standard.storage/mappingSubject"
-    },
-    {
-      "@id": "https://skl.standard.storage/data/4/returnValueMapping/1",
-      "@type": "rr:TriplesMap",
-      "rml:logicalSource": {
-        "@type": "rml:LogicalSource",
-        "rml:iterator": "$",
-        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-        "rml:source": "input.json"
+        ],
+        "rr:subject": "https://skl.standard.storage/mappingSubject"
       },
-      "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "fnml:functionValue": {
-              "@type": "fnml:FunctionValue",
-              "rr:predicateObjectMap": [
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
-                  "rr:predicate": "https://w3id.org/function/ontology#executes"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "fnml:functionValue": {
-                      "@type": "fnml:FunctionValue",
-                      "rr:predicateObjectMap": [
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:object": "http://example.com/idlab/function/notEqual",
-                          "rr:predicate": "https://w3id.org/function/ontology#executes"
-                        },
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:objectMap": {
-                            "@type": "rr:ObjectMap",
-                            "rr:constant": "folder"
-                          },
-                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
-                        },
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:objectMap": {
-                            "@type": "rr:ObjectMap",
-                            "rml:reference": "['.tag']"
-                          },
-                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
-                        }
-                      ]
-                    }
-                  },
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rml:reference": "size"
-                  },
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true"
-                }
-              ]
-            }
-          },
-          "rr:predicate": "sklproperties:size"
+      "sklproperties:returnValueMapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
         },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "fnml:functionValue": {
-              "@type": "fnml:FunctionValue",
-              "rr:predicateObjectMap": [
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:object": "http://example.com/idlab/function/equal",
-                  "rr:predicate": "https://w3id.org/function/ontology#executes"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rml:reference": "['.tag']"
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "fnml:functionValue": {
+                "@type": "fnml:FunctionValue",
+                "rr:predicateObjectMap": [
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
+                    "rr:predicate": "https://w3id.org/function/ontology#executes"
                   },
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rr:constant": "deleted"
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "fnml:functionValue": {
+                        "@type": "fnml:FunctionValue",
+                        "rr:predicateObjectMap": [
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:object": "http://example.com/idlab/function/notEqual",
+                            "rr:predicate": "https://w3id.org/function/ontology#executes"
+                          },
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:objectMap": {
+                              "@type": "rr:ObjectMap",
+                              "rr:constant": "folder"
+                            },
+                            "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
+                          },
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:objectMap": {
+                              "@type": "rr:ObjectMap",
+                              "rml:reference": "['.tag']"
+                            },
+                            "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
+                          }
+                        ]
+                      }
+                    },
+                    "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b"
                   },
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
-                }
-              ]
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "rml:reference": "size"
+                    },
+                    "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true"
+                  }
+                ]
+              }
             },
-            "rr:datatype": "http://www.w3.org/2001/XMLSchema#boolean"
+            "rr:predicate": "sklproperties:size"
           },
-          "rr:predicate": "sklproperties:deleted"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rr:termType": "rr:IRI",
-            "rr:constant": "https://skl.standard.storage/integrations/Dropbox"
-          },
-          "rr:predicate": "sklproperties:integration"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "fnml:functionValue": {
-              "@type": "fnml:FunctionValue",
-              "rr:predicateObjectMap": [
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
-                  "rr:predicate": "https://w3id.org/function/ontology#executes"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "fnml:functionValue": {
-                      "@type": "fnml:FunctionValue",
-                      "rr:predicateObjectMap": [
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:objectMap": {
-                            "@type": "rr:ObjectMap",
-                            "rml:reference": "['.tag']"
-                          },
-                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
-                        },
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:object": "http://example.com/idlab/function/notEqual",
-                          "rr:predicate": "https://w3id.org/function/ontology#executes"
-                        },
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:objectMap": {
-                            "@type": "rr:ObjectMap",
-                            "rr:constant": "folder"
-                          },
-                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
-                        }
-                      ]
-                    }
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "fnml:functionValue": {
+                "@type": "fnml:FunctionValue",
+                "rr:predicateObjectMap": [
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:object": "http://example.com/idlab/function/equal",
+                    "rr:predicate": "https://w3id.org/function/ontology#executes"
                   },
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "fnml:functionValue": {
-                      "@type": "fnml:FunctionValue",
-                      "rr:predicateObjectMap": [
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#string_endsWith",
-                          "rr:predicate": "https://w3id.org/function/ontology#executes"
-                        },
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:objectMap": {
-                            "@type": "rr:ObjectMap",
-                            "rml:reference": "path_display"
-                          },
-                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
-                        },
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:objectMap": {
-                            "@type": "rr:ObjectMap",
-                            "rr:constant": ".url"
-                          },
-                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#string_sub"
-                        }
-                      ]
-                    }
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "rml:reference": "['.tag']"
+                    },
+                    "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
                   },
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true"
-                }
-              ]
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "rr:constant": "deleted"
+                    },
+                    "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
+                  }
+                ]
+              },
+              "rr:datatype": "http://www.w3.org/2001/XMLSchema#boolean"
             },
-            "rr:datatype": "http://www.w3.org/2001/XMLSchema#boolean"
+            "rr:predicate": "sklproperties:deleted"
           },
-          "rr:predicate": "sklproperties:isWeblink"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": { "@type": "rr:ObjectMap", "rml:reference": "name" },
-          "rr:predicate": "sklproperties:name"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "fnml:functionValue": {
-              "@type": "fnml:FunctionValue",
-              "rr:predicateObjectMap": [
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rr:constant": "https://skl.standard.storage/nouns/File"
-                  },
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_false"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "fnml:functionValue": {
-                      "@type": "fnml:FunctionValue",
-                      "rr:predicateObjectMap": [
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:objectMap": {
-                            "@type": "rr:ObjectMap",
-                            "rml:reference": "['.tag']"
-                          },
-                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
-                        },
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:objectMap": {
-                            "@type": "rr:ObjectMap",
-                            "rr:constant": "folder"
-                          },
-                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
-                        },
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:object": "http://example.com/idlab/function/equal",
-                          "rr:predicate": "https://w3id.org/function/ontology#executes"
-                        }
-                      ]
-                    }
-                  },
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
-                  "rr:predicate": "https://w3id.org/function/ontology#executes"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rr:constant": "https://skl.standard.storage/nouns/Folder"
-                  },
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true"
-                }
-              ]
-            }
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rr:termType": "rr:IRI",
+              "rr:constant": "https://skl.standard.storage/integrations/Dropbox"
+            },
+            "rr:predicate": "sklproperties:integration"
           },
-          "rr:predicate": "rdf:type"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "fnml:functionValue": {
-              "@type": "fnml:FunctionValue",
-              "rr:predicateObjectMap": [
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "fnml:functionValue": {
-                      "@type": "fnml:FunctionValue",
-                      "rr:predicateObjectMap": [
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:object": "http://example.com/idlab/function/getMIMEType",
-                          "rr:predicate": "https://w3id.org/function/ontology#executes"
-                        },
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:objectMap": {
-                            "@type": "rr:ObjectMap",
-                            "rml:reference": "name"
-                          },
-                          "rr:predicate": "http://example.com/idlab/function/str"
-                        }
-                      ]
-                    }
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "fnml:functionValue": {
+                "@type": "fnml:FunctionValue",
+                "rr:predicateObjectMap": [
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
+                    "rr:predicate": "https://w3id.org/function/ontology#executes"
                   },
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
-                  "rr:predicate": "https://w3id.org/function/ontology#executes"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "fnml:functionValue": {
-                      "@type": "fnml:FunctionValue",
-                      "rr:predicateObjectMap": [
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:objectMap": {
-                            "@type": "rr:ObjectMap",
-                            "rr:constant": "folder"
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "fnml:functionValue": {
+                        "@type": "fnml:FunctionValue",
+                        "rr:predicateObjectMap": [
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:objectMap": {
+                              "@type": "rr:ObjectMap",
+                              "rml:reference": "['.tag']"
+                            },
+                            "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
                           },
-                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
-                        },
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:objectMap": {
-                            "@type": "rr:ObjectMap",
-                            "rml:reference": "['.tag']"
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:object": "http://example.com/idlab/function/notEqual",
+                            "rr:predicate": "https://w3id.org/function/ontology#executes"
                           },
-                          "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
-                        },
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:object": "http://example.com/idlab/function/notEqual",
-                          "rr:predicate": "https://w3id.org/function/ontology#executes"
-                        }
-                      ]
-                    }
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:objectMap": {
+                              "@type": "rr:ObjectMap",
+                              "rr:constant": "folder"
+                            },
+                            "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
+                          }
+                        ]
+                      }
+                    },
+                    "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b"
                   },
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b"
-                }
-              ]
-            }
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "fnml:functionValue": {
+                        "@type": "fnml:FunctionValue",
+                        "rr:predicateObjectMap": [
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#string_endsWith",
+                            "rr:predicate": "https://w3id.org/function/ontology#executes"
+                          },
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:objectMap": {
+                              "@type": "rr:ObjectMap",
+                              "rml:reference": "path_display"
+                            },
+                            "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
+                          },
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:objectMap": {
+                              "@type": "rr:ObjectMap",
+                              "rr:constant": ".url"
+                            },
+                            "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#string_sub"
+                          }
+                        ]
+                      }
+                    },
+                    "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true"
+                  }
+                ]
+              },
+              "rr:datatype": "http://www.w3.org/2001/XMLSchema#boolean"
+            },
+            "rr:predicate": "sklproperties:isWeblink"
           },
-          "rr:predicate": "sklproperties:mimeType"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": { "@type": "rr:ObjectMap", "rml:reference": "id" },
-          "rr:predicate": "sklproperties:sourceId"
-        }
-      ],
-      "rr:subject": "https://skl.standard.storage/data/abc123"
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": { "@type": "rr:ObjectMap", "rml:reference": "name" },
+            "rr:predicate": "sklproperties:name"
+          },
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "fnml:functionValue": {
+                "@type": "fnml:FunctionValue",
+                "rr:predicateObjectMap": [
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "rr:constant": "https://skl.standard.storage/nouns/File"
+                    },
+                    "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_false"
+                  },
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "fnml:functionValue": {
+                        "@type": "fnml:FunctionValue",
+                        "rr:predicateObjectMap": [
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:objectMap": {
+                              "@type": "rr:ObjectMap",
+                              "rml:reference": "['.tag']"
+                            },
+                            "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
+                          },
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:objectMap": {
+                              "@type": "rr:ObjectMap",
+                              "rr:constant": "folder"
+                            },
+                            "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
+                          },
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:object": "http://example.com/idlab/function/equal",
+                            "rr:predicate": "https://w3id.org/function/ontology#executes"
+                          }
+                        ]
+                      }
+                    },
+                    "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b"
+                  },
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
+                    "rr:predicate": "https://w3id.org/function/ontology#executes"
+                  },
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "rr:constant": "https://skl.standard.storage/nouns/Folder"
+                    },
+                    "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true"
+                  }
+                ]
+              }
+            },
+            "rr:predicate": "rdf:type"
+          },
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "fnml:functionValue": {
+                "@type": "fnml:FunctionValue",
+                "rr:predicateObjectMap": [
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "fnml:functionValue": {
+                        "@type": "fnml:FunctionValue",
+                        "rr:predicateObjectMap": [
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:object": "http://example.com/idlab/function/getMIMEType",
+                            "rr:predicate": "https://w3id.org/function/ontology#executes"
+                          },
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:objectMap": {
+                              "@type": "rr:ObjectMap",
+                              "rml:reference": "name"
+                            },
+                            "rr:predicate": "http://example.com/idlab/function/str"
+                          }
+                        ]
+                      }
+                    },
+                    "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true"
+                  },
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
+                    "rr:predicate": "https://w3id.org/function/ontology#executes"
+                  },
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "fnml:functionValue": {
+                        "@type": "fnml:FunctionValue",
+                        "rr:predicateObjectMap": [
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:objectMap": {
+                              "@type": "rr:ObjectMap",
+                              "rr:constant": "folder"
+                            },
+                            "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter2"
+                          },
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:objectMap": {
+                              "@type": "rr:ObjectMap",
+                              "rml:reference": "['.tag']"
+                            },
+                            "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#valueParameter"
+                          },
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:object": "http://example.com/idlab/function/notEqual",
+                            "rr:predicate": "https://w3id.org/function/ontology#executes"
+                          }
+                        ]
+                      }
+                    },
+                    "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b"
+                  }
+                ]
+              }
+            },
+            "rr:predicate": "sklproperties:mimeType"
+          },
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": { "@type": "rr:ObjectMap", "rml:reference": "id" },
+            "rr:predicate": "sklproperties:sourceId"
+          }
+        ],
+        "rr:subject": "https://skl.standard.storage/data/abc123"
+      }
     },
     {
       "@id": "https://skl.standard.storage/verbs/sync",
@@ -561,57 +555,53 @@
       "sklproperties:verb": "https://skl.standard.storage/verbs/sync",
       "sklproperties:noun": "https://skl.standard.storage/nouns/File",
       "sklproperties:name": "syncFileToGetFile",
-      "sklproperties:verbMapping": "https://skl.standard.storage/data/34/verbMapping/1",
-      "sklproperties:parameterMapping": "https://skl.standard.storage/data/34/parameterMapping/1"
-    },
-    {
-      "@id": "https://skl.standard.storage/data/34/verbMapping/1",
-      "@type": "rr:TriplesMap",
-      "rml:logicalSource": {
-        "@type": "rml:LogicalSource",
-        "rml:iterator": "$",
-        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-        "rml:source": "input.json"
-      },
-      "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:object": "https://skl.standard.storage/verbs/getFile",
-          "rr:predicate": "sklproperties:verb"
-        }
-      ],
-      "rr:subject": "https://skl.standard.storage/mappingSubject"
-    },
-    {
-      "@id": "https://skl.standard.storage/data/34/parameterMapping/1",
-      "@type": "rr:TriplesMap",
-      "rml:logicalSource": {
-        "@type": "rml:LogicalSource",
-        "rml:iterator": "$",
-        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-        "rml:source": "input.json"
-      },
-      "rr:subject": "https://skl.standard.storage/mappingSubject",
-      "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "account",
-            "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
-          },
-          "rr:predicate": "sklproperties:account"
+      "sklproperties:verbMapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
         },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "id",
-            "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:object": "https://skl.standard.storage/verbs/getFile",
+            "rr:predicate": "sklproperties:verb"
+          }
+        ],
+        "rr:subject": "https://skl.standard.storage/mappingSubject"
+      },
+      "sklproperties:parameterMapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
+        },
+        "rr:subject": "https://skl.standard.storage/mappingSubject",
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rml:reference": "account",
+              "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
+            },
+            "rr:predicate": "sklproperties:account"
           },
-          "rr:predicate": "sklproperties:id"
-        }
-      ]
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rml:reference": "id",
+              "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
+            },
+            "rr:predicate": "sklproperties:id"
+          }
+        ]
+      }
     },
     {
       "@id": "https://skl.standard.storage/verbs/getName",
@@ -652,28 +642,26 @@
       "sklproperties:verb": "https://skl.standard.storage/verbs/getName",
       "sklproperties:noun": "https://skl.standard.storage/nouns/File",
       "sklproperties:name": "getNameToFile",
-      "sklproperties:mapping": "https://skl.standard.storage/data/87/mapping/1"
-    },
-    {
-      "@id": "https://skl.standard.storage/data/87/mapping/1",
-      "@type": "rr:TriplesMap",
-      "rml:logicalSource": {
-        "@type": "rml:LogicalSource",
-        "rml:iterator": "$",
-        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-        "rml:source": "input.json"
-      },
-      "rr:subject": "https://skl.standard.storage/mappingSubject",
-      "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "entity['https://skl.standard.storage/properties/name']"
-          },
-          "rr:predicate": "sklproperties:name"
-        }
-      ]
+      "sklproperties:mapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
+        },
+        "rr:subject": "https://skl.standard.storage/mappingSubject",
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rml:reference": "entity['https://skl.standard.storage/properties/name']"
+            },
+            "rr:predicate": "sklproperties:name"
+          }
+        ]
+      }
     },
     {
       "@id": "https://skl.standard.storage/verbs/authorizeWithPkceOauth",
@@ -707,44 +695,42 @@
       "integration": "https://skl.standard.storage/integrations/Dropbox",
       "verb": "https://skl.standard.storage/verbs/authorizeWithPkceOauth",
       "name": "authorizeWithPkceOauthToDropbox",
-      "sklproperties:operationMapping": "https://skl.standard.storage/data/44/operationMapping/1"
-    },
-    {
-      "@id": "https://skl.standard.storage/data/44/operationMapping/1",
-      "@type": "rr:TriplesMap",
-      "rml:logicalSource": {
-        "@type": "rml:LogicalSource",
-        "rml:iterator": "$",
-        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-        "rml:source": "input.json"
-      },
-      "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rr:constant": "oAuth"
-          },
-          "rr:predicate": "sklproperties:schemeName"
+      "sklproperties:operationMapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
         },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rr:constant": "authorizationCode"
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rr:constant": "oAuth"
+            },
+            "rr:predicate": "sklproperties:schemeName"
           },
-          "rr:predicate": "sklproperties:oauthFlow"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rr:constant": "authorizationUrl"
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rr:constant": "authorizationCode"
+            },
+            "rr:predicate": "sklproperties:oauthFlow"
           },
-          "rr:predicate": "sklproperties:stage"
-        }
-      ],
-      "rr:subject": "https://skl.standard.storage/mappingSubject"
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rr:constant": "authorizationUrl"
+            },
+            "rr:predicate": "sklproperties:stage"
+          }
+        ],
+        "rr:subject": "https://skl.standard.storage/mappingSubject"
+      }
     },
     {
       "@id": "https://skl.standard.storage/verbs/getOauthTokens",
@@ -813,170 +799,164 @@
       "integration": "https://skl.standard.storage/integrations/Dropbox",
       "verb": "https://skl.standard.storage/verbs/getOauthTokens",
       "name": "getOauthTokensToDropbox",
-      "sklproperties:parameterMapping": "https://skl.standard.storage/data/45/parameterMapping/1",
-      "sklproperties:operationMapping": "https://skl.standard.storage/data/45/operationMapping/1",
-      "sklproperties:returnValueMapping": "https://skl.standard.storage/data/45/returnValueMapping/1"
-    },
-    {
-      "@id": "https://skl.standard.storage/data/45/operationMapping/1",
-      "@type": "rr:TriplesMap",
-      "rml:logicalSource": {
-        "@type": "rml:LogicalSource",
-        "rml:iterator": "$",
-        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-        "rml:source": "input.json"
-      },
-      "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rr:constant": "oAuth"
-          },
-          "rr:predicate": "sklproperties:schemeName"
+      "sklproperties:parameterMapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
         },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rr:constant": "authorizationCode"
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rml:reference": "codeVerifier"
+            },
+            "rr:predicate": "sklproperties:code_verifier"
           },
-          "rr:predicate": "sklproperties:oauthFlow"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rr:constant": "tokenUrl"
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rml:reference": "code"
+            },
+            "rr:predicate": "sklproperties:code"
           },
-          "rr:predicate": "sklproperties:stage"
-        }
-      ],
-      "rr:subject": "https://skl.standard.storage/mappingSubject"
-    },
-    {
-      "@id": "https://skl.standard.storage/data/45/parameterMapping/1",
-      "@type": "rr:TriplesMap",
-      "rml:logicalSource": {
-        "@type": "rml:LogicalSource",
-        "rml:iterator": "$",
-        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-        "rml:source": "input.json"
-      },
-      "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "codeVerifier"
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rml:reference": "refreshToken"
+            },
+            "rr:predicate": "sklproperties:refresh_token"
           },
-          "rr:predicate": "sklproperties:code_verifier"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "code"
-          },
-          "rr:predicate": "sklproperties:code"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "refreshToken"
-          },
-          "rr:predicate": "sklproperties:refresh_token"
-        },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "fnml:functionValue": {
-              "@type": "fnml:FunctionValue",
-              "rr:predicateObjectMap": [
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
-                  "rr:predicate": "https://w3id.org/function/ontology#executes"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "fnml:functionValue": {
-                      "@type": "fnml:FunctionValue",
-                      "rr:predicateObjectMap": [
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:object": "http://example.com/idlab/function/isNull",
-                          "rr:predicate": "https://w3id.org/function/ontology#executes"
-                        }, 
-                        {
-                          "@type": "rr:PredicateObjectMap",
-                          "rr:predicate": "http://example.com/idlab/function/str",
-                          "rr:objectMap": {
-                            "@type": "rr:ObjectMap",
-                            "rml:reference": "refreshToken"
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "fnml:functionValue": {
+                "@type": "fnml:FunctionValue",
+                "rr:predicateObjectMap": [
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:object": "http://users.ugent.be/~bjdmeest/function/grel.ttl#controls_if",
+                    "rr:predicate": "https://w3id.org/function/ontology#executes"
+                  },
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#bool_b",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "fnml:functionValue": {
+                        "@type": "fnml:FunctionValue",
+                        "rr:predicateObjectMap": [
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:object": "http://example.com/idlab/function/isNull",
+                            "rr:predicate": "https://w3id.org/function/ontology#executes"
+                          }, 
+                          {
+                            "@type": "rr:PredicateObjectMap",
+                            "rr:predicate": "http://example.com/idlab/function/str",
+                            "rr:objectMap": {
+                              "@type": "rr:ObjectMap",
+                              "rml:reference": "refreshToken"
+                            }
                           }
-                        }
-                      ]
+                        ]
+                      }
+                    }
+                  },
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "rr:constant": "authorization_code"
+                    }
+                  },
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_false",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                       "rr:constant": "refresh_token"
                     }
                   }
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rr:constant": "authorization_code"
-                  }
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_false",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                     "rr:constant": "refresh_token"
-                  }
-                }
-              ]
-            }
-          },
-          "rr:predicate": "sklproperties:grant_type"
-        }
-      ],
-      "rr:subject": "https://skl.standard.storage/mappingSubject"
-    },
-    {
-      "@id": "https://skl.standard.storage/data/45/returnValueMapping/1",
-      "@type": "rr:TriplesMap",
-      "rml:logicalSource": {
-        "@type": "rml:LogicalSource",
-        "rml:iterator": "$",
-        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-        "rml:source": "input.json"
+                ]
+              }
+            },
+            "rr:predicate": "sklproperties:grant_type"
+          }
+        ],
+        "rr:subject": "https://skl.standard.storage/mappingSubject"
       },
-      "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "access_token"
-          },
-          "rr:predicate": "sklproperties:accessToken"
+      "sklproperties:operationMapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
         },
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rml:reference": "refresh_token"
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rr:constant": "oAuth"
+            },
+            "rr:predicate": "sklproperties:schemeName"
           },
-          "rr:predicate": "sklproperties:refreshToken"
-        }
-      ],
-      "rr:subject": "https://skl.standard.storage/getOauthTokensReturnValueSubject"
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rr:constant": "authorizationCode"
+            },
+            "rr:predicate": "sklproperties:oauthFlow"
+          },
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rr:constant": "tokenUrl"
+            },
+            "rr:predicate": "sklproperties:stage"
+          }
+        ],
+        "rr:subject": "https://skl.standard.storage/mappingSubject"
+      },
+      "sklproperties:returnValueMapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
+        },
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rml:reference": "access_token"
+            },
+            "rr:predicate": "sklproperties:accessToken"
+          },
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rml:reference": "refresh_token"
+            },
+            "rr:predicate": "sklproperties:refreshToken"
+          }
+        ],
+        "rr:subject": "https://skl.standard.storage/getOauthTokensReturnValueSubject"
+      }
     },
     {
       "@id": "https://skl.standard.storage/data/DropboxAccount1",

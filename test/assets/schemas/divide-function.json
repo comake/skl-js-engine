@@ -30,11 +30,7 @@
     "sklproperties:noun": { "@type": "@id" },
     "sklproperties:verb": { "@type": "@id" },
     "name": "sklproperties:name",
-    "sklproperties:parameterMapping": { "@type": "@id" },
     "sklproperties:mapping": { "@type": "@id" },
-    "sklproperties:returnValueMapping": { "@type": "@id" },
-    "sklproperties:operationMapping": { "@type": "@id" },
-    "sklproperties:verbMapping": { "@type": "@id" },
     "integration": { "@id": "sklproperties:integration", "@type": "@id" },
     "verb": { "@id": "sklproperties:verb", "@type": "@id" },
     "rml:referenceFormulation": { "@type": "@id" },
@@ -85,56 +81,54 @@
       "sklproperties:verb": "https://skl.standard.storage/verbs/divide",
       "sklproperties:noun": "https://skl.standard.storage/nouns/Equation",
       "sklproperties:name": "getNameToFile",
-      "sklproperties:mapping": "https://skl.standard.storage/data/87/mapping/1"
-    },
-    {
-      "@id": "https://skl.standard.storage/data/87/mapping/1",
-      "@type": "rr:TriplesMap",
-      "rml:logicalSource": {
-        "@type": "rml:LogicalSource",
-        "rml:iterator": "$",
-        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-        "rml:source": "input.json"
-      },
-      "rr:subject": "https://skl.standard.storage/mappingSubject",
-      "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rr:datatype": "http://www.w3.org/2001/XMLSchema#float",
-            "fnml:functionValue": {
-              "@type": "fnml:FunctionValue",
-              "rr:predicateObjectMap": [
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:object": "http://example.com/idlab/function/divide",
-                  "rr:predicate": "https://w3id.org/function/ontology#executes"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rml:reference": "numerator",
-                    "rr:datatype": "http://www.w3.org/2001/XMLSchema#float"
+      "sklproperties:mapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
+        },
+        "rr:subject": "https://skl.standard.storage/mappingSubject",
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rr:datatype": "http://www.w3.org/2001/XMLSchema#float",
+              "fnml:functionValue": {
+                "@type": "fnml:FunctionValue",
+                "rr:predicateObjectMap": [
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:object": "http://example.com/idlab/function/divide",
+                    "rr:predicate": "https://w3id.org/function/ontology#executes"
                   },
-                  "rr:predicate": "http://example.com/idlab/function/numerator"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rml:reference": "denominator",
-                    "rr:datatype": "http://www.w3.org/2001/XMLSchema#float"
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "rml:reference": "numerator",
+                      "rr:datatype": "http://www.w3.org/2001/XMLSchema#float"
+                    },
+                    "rr:predicate": "http://example.com/idlab/function/numerator"
                   },
-                  "rr:predicate": "http://example.com/idlab/function/denominator"
-                }
-              ]
-            }
-          },
-          "rr:predicate": "sklproperties:answer"
-        }
-      ]
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "rml:reference": "denominator",
+                      "rr:datatype": "http://www.w3.org/2001/XMLSchema#float"
+                    },
+                    "rr:predicate": "http://example.com/idlab/function/denominator"
+                  }
+                ]
+              }
+            },
+            "rr:predicate": "sklproperties:answer"
+          }
+        ]
+      }
     }
   ]
 }

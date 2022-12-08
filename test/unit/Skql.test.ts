@@ -74,17 +74,23 @@ const incorrectReturnValueMapping = {
 describe('SKQL', (): void => {
   let schema: any[];
 
-  describe('setting schema', (): void => {
-    it('can set the schema from a variable.', async(): Promise<void> => {
-      schema = [];
-      expect(new Skql({ schema })).toBeInstanceOf(Skql);
-    });
+  it('throws an error if schemas or a sparql endpoint are not supplied.', async(): Promise<void> => {
+    expect((): void => {
+      // eslint-disable-next-line no-new
+      new Skql({});
+    }).toThrow('No schema source found in setSchema args.');
+  });
 
-    it('throws an error if schemas are not supplied.', async(): Promise<void> => {
-      expect((): void => {
-        // eslint-disable-next-line no-new
-        new Skql({});
-      }).toThrow('No schema source found in setSchema args.');
+  describe('Memory', (): void => {
+    it('sets the schema.', async(): Promise<void> => {
+      expect(new Skql({ schema: []})).toBeInstanceOf(Skql);
+    });
+  });
+
+  describe('Sparql', (): void => {
+    it('initializes.', async(): Promise<void> => {
+      const sparqlEndpoint = 'https://localhost:9999';
+      expect(new Skql({ sparqlEndpoint })).toBeInstanceOf(Skql);
     });
   });
 

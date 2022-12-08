@@ -1,3 +1,4 @@
+/* eslint-disable capitalized-comments */
 /* eslint-disable unicorn/expiring-todo-comments */
 /* eslint-disable @typescript-eslint/method-signature-style */
 
@@ -9,10 +10,10 @@ export type FindOptionsSelectByString = string[];
 export type FindOptionsRelationsByString = string[];
 
 export interface FindOneOptions {
-  select?: FindOptionsSelect | FindOptionsSelectByString;
   where?: FindOptionsWhere;
-  relations?: FindOptionsRelations;
-  order?: FindOptionsOrder;
+  // select?: FindOptionsSelect | FindOptionsSelectByString;
+  // relations?: FindOptionsRelations;
+  // order?: FindOptionsOrder;
 }
 
 export interface FindOptionsSelect {
@@ -44,6 +45,7 @@ export type updateOrDeleteCriteria = string | string[] | FindOptionsWhere;
 /**
  * Adapts SKQL CRUD operations to a specific persistence layer.
  */
+
 export interface QueryAdapter {
   /**
    * Finds first entity by a given find options.

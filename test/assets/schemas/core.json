@@ -276,7 +276,7 @@
         {
           "shacl:class": "rr:TriplesMap",
           "shacl:nodeKind": { "@id": "shacl:IRI" },
-          "shacl:path": "https://skl.standard.storage/properties/parameterMappings"
+          "shacl:path": "https://skl.standard.storage/properties/parameterMapping"
         },
         {
           "shacl:class": "https://skl.standard.storage/nouns/Verb",
@@ -287,12 +287,12 @@
         {
           "shacl:class": "rr:TriplesMap",
           "shacl:nodeKind": { "@id": "shacl:IRI" },
-          "shacl:path": "https://skl.standard.storage/properties/operationMappings"
+          "shacl:path": "https://skl.standard.storage/properties/operationMapping"
         },
         {
           "shacl:class": "rr:TriplesMap",
           "shacl:nodeKind": { "@id": "shacl:IRI" },
-          "shacl:path": "https://skl.standard.storage/properties/returnValueMappings"
+          "shacl:path": "https://skl.standard.storage/properties/returnValueMapping"
         },
         {
           "shacl:class": "https://skl.standard.storage/nouns/Integration",
@@ -527,15 +527,15 @@
       "rdfs:range": "https://skl.standard.storage/nouns/OpenApiDescription"
     },
     {
-      "@id": "https://skl.standard.storage/properties/operationMappings",
+      "@id": "https://skl.standard.storage/properties/operationMapping",
       "@type": "owl:ObjectProperty",
-      "label": "operationMappings",
+      "label": "operationMapping",
       "rdfs:range": "rr:TriplesMap"
     },
     {
-      "@id": "https://skl.standard.storage/properties/parameterMappings",
+      "@id": "https://skl.standard.storage/properties/parameterMapping",
       "@type": "owl:ObjectProperty",
-      "label": "parameterMappings",
+      "label": "parameterMapping",
       "rdfs:range": "rr:TriplesMap"
     },
     {
@@ -592,9 +592,9 @@
       "rdfs:range": "shacl:NodeShape"
     },
     {
-      "@id": "https://skl.standard.storage/properties/returnValueMappings",
+      "@id": "https://skl.standard.storage/properties/returnValueMapping",
       "@type": "owl:ObjectProperty",
-      "label": "returnValueMappings",
+      "label": "returnValueMapping",
       "rdfs:range": "rr:TriplesMap"
     },
     {

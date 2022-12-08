@@ -14,13 +14,13 @@ import type ValidationReport from 'rdf-validate-shacl/src/validation-report';
 import { Mapper } from './mapping/Mapper';
 import { MemoryQueryAdapter } from './storage/MemoryQueryAdapter';
 import type { FindAllOptions, FindOneOptions, FindOptionsWhere, QueryAdapter } from './storage/QueryAdapter';
+import { SparqlQueryAdapter } from './storage/sparql/SparqlQueryAdapter';
 import type { OrArray, Entity } from './util/Types';
 import {
   constructUri,
   convertJsonLdToQuads,
   getValueOfFieldInNodeObject,
   toJSON,
-  asJsonLdJsonValue,
 } from './util/Util';
 import type { JSONObject } from './util/Util';
 import { SKL, SHACL } from './util/Vocabularies';
@@ -32,7 +32,7 @@ export type MappingResponseOption<T extends boolean> = T extends true ? JSONObje
 
 export interface SkqlArgs {
   schema?: Entity[];
-  skdsUrl?: string;
+  sparqlEndpoint?: string;
   functions?: Record<string, (args: any | any[]) => any>;
 }
 
@@ -55,8 +55,8 @@ export class Skql {
   public constructor(args: SkqlArgs) {
     if (args.schema) {
       this.adapter = new MemoryQueryAdapter(args.schema);
-    // } else if (args.skdsUrl) {
-    //   this.adapter = new SkdsQueryAdapter(args.skdsUrl);
+    } else if (args.sparqlEndpoint) {
+      this.adapter = new SparqlQueryAdapter({ endpointUrl: args.sparqlEndpoint });
     } else {
       throw new Error('No schema source found in setSchema args.');
     }
@@ -163,9 +163,11 @@ export class Skql {
     const operationArgs = await this.performParameterMappingOnArgsIfDefined(args, mapping);
     const operationInfo = await this.performOperationMappingWithArgs(args, mapping);
     const rawReturnValue = await this.performOperation(operationInfo, operationArgs, account);
-
     if (operationInfo[SKL.schemeName] && (rawReturnValue as CodeAuthorizationUrlResponse).authorizationUrl) {
-      return asJsonLdJsonValue(rawReturnValue as unknown as JSONObject);
+      return {
+        '@type': '@json',
+        '@value': rawReturnValue as unknown as JSONObject,
+      } as NodeObject;
     }
 
     if (mapping[SKL.returnValueMapping]) {
@@ -201,11 +203,13 @@ export class Skql {
       return await this.performSecuritySchemeStageWithCredentials(operationInfo, operationArgs, account);
     }
     if (operationInfo[SKL.dataSource]) {
-      return await this.getDataFromDataSource(operationInfo[SKL.dataSource] as string);
+      return await this.getDataFromDataSource(
+        getValueOfFieldInNodeObject(operationInfo, SKL.dataSource)!,
+      );
     }
     if (operationInfo[SKL.operationId]) {
       return await this.performOpenapiOperationWithCredentials(
-        operationInfo[SKL.operationId] as string,
+        getValueOfFieldInNodeObject(operationInfo, SKL.operationId)!,
         operationArgs,
         account,
       );
@@ -258,7 +262,7 @@ export class Skql {
       type: SKL.OpenApiDescription,
       [SKL.integration]: integrationId,
     });
-    return getValueOfFieldInNodeObject<OpenApi>(openApiDescriptionSchema, SKL.openApiDescription);
+    return getValueOfFieldInNodeObject<OpenApi>(openApiDescriptionSchema, SKL.openApiDescription)!;
   }
 
   private async findSecurityCredentialsForAccount(accountId: string): Promise<Entity> {
@@ -287,7 +291,7 @@ export class Skql {
     if (mapping[SKL.mapping]) {
       return await this.performMapping(
         args,
-        mapping[SKL.mapping] as NodeObject,
+        mapping[SKL.mapping] as OrArray<NodeObject>,
         {
           ...getValueOfFieldInNodeObject<Record<string, any>>(verb, SKL.returnValueFrame),
           ...getValueOfFieldInNodeObject<Record<string, any> | undefined>(mapping, SKL.returnValueFrame),
@@ -296,7 +300,9 @@ export class Skql {
     }
     const verbArgs = await this.performParameterMappingOnArgsIfDefined(args, mapping, false);
     const verbInfoJsonLd = await this.performVerbMappingWithArgs(args, mapping);
-    const mappedVerb = await this.findBy({ id: verbInfoJsonLd[SKL.verb] as string });
+    const mappedVerb = await this.findBy({
+      id: getValueOfFieldInNodeObject(verbInfoJsonLd, SKL.verb),
+    });
     return this.handleIntegrationVerb(mappedVerb, verbArgs);
   }
 
@@ -335,9 +341,13 @@ export class Skql {
     const openApiExecutor = await this.createOpenApiOperationExecutorWithSpec(openApiDescription);
     const securityCredentials = await this.findSecurityCredentialsForAccountIfDefined(account['@id']);
     const configuration = {
-      accessToken: securityCredentials?.[SKL.accessToken] as string,
-      apiKey: securityCredentials?.[SKL.apiKey] as string,
-      basePath: account[SKL.overrideBasePath] as string,
+      accessToken: securityCredentials
+        ? getValueOfFieldInNodeObject<string>(securityCredentials, SKL.accessToken)
+        : undefined,
+      apiKey: securityCredentials
+        ? getValueOfFieldInNodeObject<string>(securityCredentials, SKL.apiKey)
+        : undefined,
+      basePath: getValueOfFieldInNodeObject<string>(account, SKL.overrideBasePath),
     };
     return await openApiExecutor.executeOperation(operationId, configuration, operationArgs)
       .catch(async(error: Error | AxiosError): Promise<any> => {
@@ -389,9 +399,9 @@ export class Skql {
     const operationInfoJsonLd = await this.performOperationMappingWithArgs({}, mapping);
     const configuration = this.getConfigurationFromSecurityCredentials(securityCredentialsSchema);
     const rawReturnValue = await openApiExecutor.executeSecuritySchemeStage(
-      operationInfoJsonLd[SKL.schemeName] as string,
-      operationInfoJsonLd[SKL.oauthFlow] as string,
-      operationInfoJsonLd[SKL.stage] as string,
+      getValueOfFieldInNodeObject(operationInfoJsonLd, SKL.schemeName)!,
+      getValueOfFieldInNodeObject(operationInfoJsonLd, SKL.oauthFlow)!,
+      getValueOfFieldInNodeObject(operationInfoJsonLd, SKL.stage)!,
       configuration,
       operationArgs,
     );

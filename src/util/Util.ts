@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import * as jsonld from 'jsonld';
 import type { NodeObject } from 'jsonld';
 import { Parser, Store } from 'n3';
-import type { Entity } from './Types';
 
 export type JSONObject = Record<string, JSONValue>;
 
@@ -66,10 +64,6 @@ export function toJSON(jsonLd: NodeObject, convertBeyondFirstLevel = true): JSON
   return jsonLd as JSONObject;
 }
 
-export function getValueOfFieldInNodeObject<T>(object: Entity, field: string): T {
-  return (object[field] as NodeObject)?.['@value'] as unknown as T;
-}
-
 export function ensureArray<T>(arrayable: T | T[]): T[] {
   if (arrayable !== null && arrayable !== undefined) {
     return Array.isArray(arrayable) ? arrayable : [ arrayable ];
@@ -77,9 +71,24 @@ export function ensureArray<T>(arrayable: T | T[]): T[] {
   return [];
 }
 
-export function asJsonLdJsonValue(value: JSONObject): NodeObject {
-  return {
-    '@type': '@json',
-    '@value': value,
-  } as NodeObject;
+export function getValueOfFieldInNodeObject<T>(object: NodeObject, field: string): T | undefined {
+  if (object[field]) {
+    if (typeof object[field] === 'object') {
+      return (object[field] as NodeObject)!['@value'] as unknown as T;
+    }
+    return object[field] as unknown as T;
+  }
+}
+
+export function isUrl(value: any): boolean {
+  if (typeof value !== 'string') {
+    return false;
+  }
+  try {
+    // eslint-disable-next-line no-new
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
 }

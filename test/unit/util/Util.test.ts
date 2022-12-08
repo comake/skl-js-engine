@@ -7,6 +7,8 @@ import {
   convertJsonLdToQuads,
   toJSON,
   ensureArray,
+  isUrl,
+  getValueOfFieldInNodeObject,
 } from '../../../src/util/Util';
 
 describe('Util', (): void => {
@@ -120,5 +122,42 @@ describe('Util', (): void => {
       (): void => {
         expect(ensureArray('a')).toEqual([ 'a' ]);
       });
+  });
+
+  describe('#getValueOfFieldInNodeObject', (): void => {
+    it('returns undefined if the field is not in the object.', (): void => {
+      expect(getValueOfFieldInNodeObject({}, 'https://example.com/predicate')).toBeUndefined();
+    });
+
+    it('returns the field value if it is not an object.', (): void => {
+      expect(getValueOfFieldInNodeObject(
+        { 'https://example.com/predicate': 'string' },
+        'https://example.com/predicate',
+      )).toBe('string');
+    });
+
+    it('returns the value of the field value if it is an object.', (): void => {
+      expect(getValueOfFieldInNodeObject(
+        { 'https://example.com/predicate': { '@value': 'string' }},
+        'https://example.com/predicate',
+      )).toBe('string');
+    });
+  });
+
+  describe('#isUrl', (): void => {
+    it('returns true for urls.', (): void => {
+      expect(isUrl('https://example.com#hashThing')).toBe(true);
+      expect(isUrl('http://example.org')).toBe(true);
+      expect(isUrl('ftp://user:password@host:21/URI?queryParameters')).toBe(true);
+    });
+
+    it('returns false for non urls.', (): void => {
+      expect(isUrl('example.com#hashThing')).toBe(false);
+      expect(isUrl('http://')).toBe(false);
+      expect(isUrl('/URI?queryParameters')).toBe(false);
+      expect(isUrl('https://example.com hashThing')).toBe(false);
+      expect(isUrl(1)).toBe(false);
+      expect(isUrl(true)).toBe(false);
+    });
   });
 });
