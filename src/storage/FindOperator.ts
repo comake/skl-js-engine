@@ -7,7 +7,7 @@ export interface FindOperatorArgs<T> {
 
 export class FindOperator<T> {
   public readonly type = 'operator';
-  public readonly operator: string;
+  public readonly operator: FindOperatorType;
   public readonly value: T | T[];
 
   public constructor(args: FindOperatorArgs<T>) {

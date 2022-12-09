@@ -490,7 +490,7 @@ describe('A SparqlQueryBuilder', (): void => {
     })).toEqual(query);
   });
 
-  it('throws an error on if there is an unsupported operation.', (): void => {
+  it('throws an error if there is an unsupported operation.', (): void => {
     expect((): void => {
       builder.buildQuery({
         where: {
