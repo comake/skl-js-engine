@@ -1,46 +1,6 @@
-/* eslint-disable capitalized-comments */
-/* eslint-disable unicorn/expiring-todo-comments */
 /* eslint-disable @typescript-eslint/method-signature-style */
-
 import type { Entity } from '../util/Types';
-
-/* eslint-disable @typescript-eslint/naming-convention */
-export type FindOptionsSelectByString = string[];
-
-export type FindOptionsRelationsByString = string[];
-
-export interface FindOneOptions {
-  where?: FindOptionsWhere;
-  // select?: FindOptionsSelect | FindOptionsSelectByString;
-  // relations?: FindOptionsRelations;
-  // order?: FindOptionsOrder;
-}
-
-export interface FindOptionsSelect {
-  [k: string]: boolean | FindOptionsSelect;
-}
-
-export interface FindOptionsRelations {
-  [k: string]: boolean | FindOptionsRelations;
-}
-
-export type FindOptionsOrderValue = 'ASC' | 'DESC' | 'asc' | 'desc' | 1 | -1;
-
-export type FindOptionsOrder = Record<string, FindOptionsOrderValue>;
-
-// TODO add find operators
-export interface FindOptionsWhere {
-  type?: string;
-  id?: string;
-  [k: string]: boolean | number | string | FindOptionsWhere | undefined;
-}
-
-export interface FindAllOptions extends FindOneOptions {
-  offset?: number;
-  limit?: number;
-}
-
-export type updateOrDeleteCriteria = string | string[] | FindOptionsWhere;
+import type { FindAllOptions, FindOneOptions, FindOptionsWhere } from './FindOptionsTypes';
 
 /**
  * Adapts SKQL CRUD operations to a specific persistence layer.
@@ -79,7 +39,8 @@ export interface QueryAdapter {
    * Updates entity partially. Entity can be found by a given conditions.
    * Unlike save method executes a primitive operation without cascades, relations and other operations included
    */
-  // update(criteria: updateOrDeleteCriteria, partialEntity: Partial<Entity>): Promise<void>;
+  // export type UpdateOrDeleteCriteria = string | string[] | FindOptionsWhere;
+  // update(criteria: UpdateOrDeleteCriteria, partialEntity: Partial<Entity>): Promise<void>;
   /**
    * Removes a given entity from the database.
    */
@@ -92,5 +53,5 @@ export interface QueryAdapter {
    * Deletes entities by a given criteria.
    * Unlike destroy method executes a primitive operation without cascades, relations and other operations included.
    */
-  // delete(criteria: updateOrDeleteCriteria): Promise<void>;
+  // delete(criteria: UpdateOrDeleteCriteria): Promise<void>;
 }

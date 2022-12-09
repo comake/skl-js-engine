@@ -12,8 +12,9 @@ import type { ContextDefinition, NodeObject } from 'jsonld';
 import SHACLValidator from 'rdf-validate-shacl';
 import type ValidationReport from 'rdf-validate-shacl/src/validation-report';
 import { Mapper } from './mapping/Mapper';
+import type { FindAllOptions, FindOneOptions, FindOptionsWhere } from './storage/FindOptionsTypes';
 import { MemoryQueryAdapter } from './storage/MemoryQueryAdapter';
-import type { FindAllOptions, FindOneOptions, FindOptionsWhere, QueryAdapter } from './storage/QueryAdapter';
+import type { QueryAdapter } from './storage/QueryAdapter';
 import { SparqlQueryAdapter } from './storage/sparql/SparqlQueryAdapter';
 import type { OrArray, Entity } from './util/Types';
 import {

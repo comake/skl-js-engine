@@ -9,7 +9,8 @@ import type {
 import { Generator } from 'sparqljs';
 import { triplesToJsonld } from '../../util/TripleUtil';
 import type { Entity } from '../../util/Types';
-import type { QueryAdapter, FindOneOptions, FindAllOptions, FindOptionsWhere } from '../QueryAdapter';
+import type { FindOneOptions, FindAllOptions, FindOptionsWhere } from '../FindOptionsTypes';
+import type { QueryAdapter } from '../QueryAdapter';
 import { SparqlQueryBuilder } from './SparqlQueryBuilder';
 import { SparqlUpdateBuilder } from './SparqlUpdateBuilder';
 

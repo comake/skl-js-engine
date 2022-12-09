@@ -1,10 +1,19 @@
 /* eslint-disable unicorn/expiring-todo-comments */
 import type { ReferenceNodeObject } from '@comake/rmlmapper-js';
 import type { ValueObject } from 'jsonld';
-import type { Entity, EntityFieldValue, PossibleArrayFieldValues } from '../util/Types';
+import type { Entity, EntityFieldValue, OrArray, PossibleArrayFieldValues } from '../util/Types';
 import { ensureArray } from '../util/Util';
 import { RDFS } from '../util/Vocabularies';
-import type { QueryAdapter, FindOneOptions, FindAllOptions, FindOptionsWhere } from './QueryAdapter';
+import { FindOperator } from './FindOperator';
+import type {
+  FindOneOptions,
+  FindAllOptions,
+  FindOptionsWhere,
+  FindOptionsWhereField,
+  IdOrTypeFindOptionsWhereField,
+  FieldPrimitiveValue,
+} from './FindOptionsTypes';
+import type { QueryAdapter } from './QueryAdapter';
 
 /**
  * A {@link QueryAdapter} that stores data in memory.
@@ -19,8 +28,7 @@ export class MemoryQueryAdapter implements QueryAdapter {
   }
 
   public async find(options?: FindOneOptions): Promise<Entity | null> {
-    // TODO: add support for select, relations, order
-    if (options?.where?.id && Object.keys(options.where).length === 1) {
+    if (options?.where?.id && Object.keys(options.where).length === 1 && typeof options.where.id === 'string') {
       return this.schemas[options.where.id] ?? null;
     }
 
@@ -41,34 +49,50 @@ export class MemoryQueryAdapter implements QueryAdapter {
   }
 
   public async findAll(options?: FindAllOptions): Promise<Entity[]> {
-    // TODO: add support for select, relations, order, limit, and offset
-    if (options?.where?.id && Object.keys(options.where).length === 1) {
+    // TODO: add support for limit, and offset
+    let results: Entity[] = [];
+    if (options?.where?.id && Object.keys(options.where).length === 1 && typeof options.where.id === 'string') {
       const schema = this.schemas[options.where.id];
-      return schema ? [ schema ] : [];
-    }
-
-    if (options?.where) {
-      const results = [];
+      if (schema) {
+        results = [ schema ];
+      }
+    } else if (options?.where) {
       for (const entity of Object.values(this.schemas)) {
         const matches = await this.entityMatchesQuery(entity, options.where);
         if (matches) {
           results.push(entity);
         }
       }
-      return results;
+    } else {
+      results = Object.values(this.schemas);
     }
-    return Object.values(this.schemas);
+    if (options?.limit ?? options?.offset) {
+      const start = options?.offset ?? 0;
+      const end = options?.limit && options?.offset
+        ? options.offset + options.limit
+        : options?.limit ?? undefined;
+      return results.slice(start, end);
+    }
+    return results;
   }
 
   public async findAllBy(where: FindOptionsWhere): Promise<Entity[]> {
     return this.findAll({ where });
   }
 
-  private async entityMatchesQuery(schema: Entity, where: FindOptionsWhere): Promise<boolean> {
+  private async entityMatchesQuery(entity: Entity, where: FindOptionsWhere): Promise<boolean> {
+    if (where.id) {
+      return this.idMatches(entity, where.id);
+    }
+    if (where.type) {
+      return this.isInstanceOfValueOrOperatorValue(entity, where.type);
+    }
     for (const [ fieldName, fieldValue ] of Object.entries(where)) {
-      const matches = await this.entityMatchesField(schema, fieldName, fieldValue!);
-      if (!matches) {
-        return false;
+      if (fieldName !== 'id' && fieldName !== 'type') {
+        const matches = await this.entityMatchesField(entity, fieldName, fieldValue!);
+        if (!matches) {
+          return false;
+        }
       }
     }
     return true;
@@ -77,19 +101,23 @@ export class MemoryQueryAdapter implements QueryAdapter {
   private async entityMatchesField(
     entity: Entity,
     fieldName: string,
-    fieldValue: boolean | number | string | FindOptionsWhere,
+    fieldValue: FindOptionsWhereField,
   ): Promise<boolean> {
-    if (fieldName === 'type') {
-      return this.isInstanceOf(entity, fieldValue as string);
-    }
-    if (fieldName === 'id') {
-      fieldName = '@id';
-    }
     if (fieldName in entity) {
-      if (typeof fieldValue === 'object') {
+      if (FindOperator.isFindOperator(fieldValue)) {
+        switch ((fieldValue as FindOperator<string>).operator) {
+          case 'in': {
+            const values = this.resolveOperatorValue((fieldValue as FindOperator<FieldPrimitiveValue>).value);
+            return (values as FieldPrimitiveValue[])
+              .some((valueItem): boolean => this.fieldValueMatchesField(valueItem, entity[fieldName]));
+          }
+          default:
+            throw new Error(`Unsupported operation ${JSON.stringify(fieldValue)}`);
+        }
+      } else if (typeof fieldValue === 'object') {
         if (Array.isArray(entity[fieldName])) {
           for (const subFieldValue of (entity[fieldName] as (ReferenceNodeObject | Entity)[])) {
-            const matches = await this.findOptionWhereMatchesNodeObject(fieldValue, subFieldValue);
+            const matches = await this.findOptionWhereMatchesNodeObject(fieldValue as FindOptionsWhere, subFieldValue);
             if (matches) {
               return true;
             }
@@ -98,7 +126,7 @@ export class MemoryQueryAdapter implements QueryAdapter {
         }
         if (typeof entity[fieldName] === 'object') {
           return await this.findOptionWhereMatchesNodeObject(
-            fieldValue,
+            fieldValue as FindOptionsWhere,
             entity[fieldName] as ReferenceNodeObject | Entity,
           );
         }
@@ -114,7 +142,7 @@ export class MemoryQueryAdapter implements QueryAdapter {
   }
 
   private fieldValueMatchesField(
-    fieldValue: boolean | number | string,
+    fieldValue: FieldPrimitiveValue,
     field: EntityFieldValue,
   ): boolean {
     if (typeof field === 'object') {
@@ -140,6 +168,50 @@ export class MemoryQueryAdapter implements QueryAdapter {
       return false;
     }
     return this.entityMatchesQuery(nodeObject as Entity, fieldValue);
+  }
+
+  private idMatches(entity: Entity, value: IdOrTypeFindOptionsWhereField): boolean {
+    if (FindOperator.isFindOperator(value)) {
+      switch ((value as FindOperator<string>).operator) {
+        case 'in': {
+          const values = this.resolveOperatorValue((value as FindOperator<string>).value);
+          return (values as string[]).some((valueItem): boolean => this.idMatches(entity, valueItem));
+        }
+        default:
+          throw new Error(`Unsupported operation ${JSON.stringify(value)}`);
+      }
+    }
+    return entity['@id'] === value;
+  }
+
+  private isInstanceOfValueOrOperatorValue(entity: Entity, value: IdOrTypeFindOptionsWhereField): boolean {
+    if (FindOperator.isFindOperator(value)) {
+      switch ((value as FindOperator<string>).operator) {
+        case 'in': {
+          const values = this.resolveOperatorValue((value as FindOperator<string>).value);
+          return (values as string[])
+            .some((valueItem): boolean => this.isInstanceOfValueOrOperatorValue(entity, valueItem));
+        }
+        default:
+          throw new Error(`Unsupported operation ${JSON.stringify(value)}`);
+      }
+    }
+    return this.isInstanceOf(entity, value as string);
+  }
+
+  private resolveOperatorValue<T>(value: OrArray<T> | FindOperator<T>): OrArray<T> {
+    if (FindOperator.isFindOperator(value)) {
+      return this.resolveOperatorValue(value as FindOperator<any>);
+    }
+    if (Array.isArray(value)) {
+      return value.map((valueItem): T => {
+        if (FindOperator.isFindOperator(valueItem)) {
+          return this.resolveOperatorValue<T>(valueItem) as T;
+        }
+        return valueItem;
+      });
+    }
+    return value as T;
   }
 
   private isInstanceOf(entity: Entity, targetClass: string): boolean {

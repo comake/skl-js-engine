@@ -1,5 +1,6 @@
+/* eslint-disable capitalized-comments */
 import DataFactory from '@rdfjs/data-model';
-import type { Variable } from '@rdfjs/types';
+import type { Variable, NamedNode, Term, Literal } from '@rdfjs/types';
 import type {
   SelectQuery,
   FilterPattern,
@@ -18,8 +19,16 @@ import {
   predicateNode,
   objectNode,
 } from '../../util/TripleUtil';
+import type { OrArray } from '../../util/Types';
 import { isUrl } from '../../util/Util';
-import type { FindAllOptions, FindOptionsWhere } from '../QueryAdapter';
+import { FindOperator } from '../FindOperator';
+import type {
+  FieldPrimitiveValue,
+  FindAllOptions,
+  FindOptionsWhere,
+  FindOptionsWhereField,
+  IdOrTypeFindOptionsWhereField,
+} from '../FindOptionsTypes';
 import { VariableGenerator } from './VariableGenerator';
 
 export interface WhereQueryData {
@@ -114,10 +123,22 @@ export class SparqlQueryBuilder {
     let triples: Triple[] = [];
     let filters: Expression[] = [];
     const hasSingleKey = Object.keys(where).length === 1;
+    if (where.id) {
+      const idFieldWhereQueryData = this.createWhereQueryDataForIdValue(parentVariable, where.id, hasSingleKey);
+      triples = [ ...triples, ...idFieldWhereQueryData.triples ];
+      filters = [ ...filters, ...idFieldWhereQueryData.filters ];
+    }
+    if (where.type) {
+      const typeFieldWhereQueryData = this.createWhereQueryDataForType(parentVariable, where.type);
+      triples = [ ...triples, ...typeFieldWhereQueryData.triples ];
+      filters = [ ...filters, ...typeFieldWhereQueryData.filters ];
+    }
     for (const [ key, value ] of Object.entries(where)) {
-      const graphQueryData = this.createWhereQueryDataFromKeyValue(key, value!, parentVariable, hasSingleKey);
-      triples = [ ...triples, ...graphQueryData.triples ];
-      filters = [ ...filters, ...graphQueryData.filters ];
+      if (key !== 'id' && key !== 'type') {
+        const graphQueryData = this.createWhereQueryDataFromKeyValue(key, value!, parentVariable);
+        triples = [ ...triples, ...graphQueryData.triples ];
+        filters = [ ...filters, ...graphQueryData.filters ];
+      }
     }
 
     return { triples, filters };
@@ -125,32 +146,38 @@ export class SparqlQueryBuilder {
 
   private createWhereQueryDataFromKeyValue(
     key: string,
-    value: boolean | number | string | FindOptionsWhere,
+    value: FindOptionsWhereField,
     parentVariable: Variable,
-    isOnlyKey: boolean,
   ): WhereQueryData {
-    if (key === 'id') {
-      return this.createWhereQueryDataForIdValue(parentVariable, value as string, isOnlyKey);
-    }
-    if (key === 'type') {
-      return this.createWhereQueryDataForType(parentVariable, value as string);
+    if (FindOperator.isFindOperator(value)) {
+      return this.createWhereQueryDataForFindOperator(key, value as FindOperator<any>, parentVariable);
     }
     if (typeof value === 'object') {
-      return this.createWhereQueryDataForNestedWhere(key, value, parentVariable);
+      return this.createWhereQueryDataForNestedWhere(key, value as FindOptionsWhere, parentVariable);
     }
-    if (isUrl(value)) {
-      return this.createWhereQueryDataForNamedNode(key, value as string, parentVariable);
-    }
-    return this.createWhereQueryDataForLiteral(key, value, parentVariable);
+    return {
+      filters: [],
+      triples: [{
+        subject: parentVariable,
+        predicate: DataFactory.namedNode(key),
+        object: this.resolveValueToTerm(value),
+      }],
+    };
   }
 
   private createWhereQueryDataForIdValue(
     term: Variable | IriTerm,
-    value: string,
+    value: IdOrTypeFindOptionsWhereField,
     qualifyWithTriple: boolean,
   ): WhereQueryData {
+    let filter: OperationExpression;
+    if (FindOperator.isFindOperator(value)) {
+      filter = this.resolveFindOperatorAsExpression(term as Expression, value as FindOperator<string>);
+    } else {
+      filter = this.buildEqualOperation(term as Expression, DataFactory.namedNode(value as string));
+    }
     const queryData = {
-      filters: [ this.buildEqualOperation(term as Expression, DataFactory.namedNode(value)) ],
+      filters: [ filter ],
       triples: [],
     } as WhereQueryData;
     if (qualifyWithTriple) {
@@ -163,10 +190,40 @@ export class SparqlQueryBuilder {
     return queryData;
   }
 
-  private createWhereQueryDataForType(subject: Variable | IriTerm, value: string): WhereQueryData {
+  private createWhereQueryDataForType(
+    subject: Variable | IriTerm,
+    value: IdOrTypeFindOptionsWhereField,
+  ): WhereQueryData {
+    if (FindOperator.isFindOperator(value)) {
+      const variable = DataFactory.variable(this.variableGenerator.getNext());
+      const operatorFilter = this.resolveFindOperatorAsExpression(
+        variable as Expression,
+        value as FindOperator<string>,
+      );
+      return {
+        filters: [ operatorFilter ],
+        triples: [ this.buildTypesAndSuperTypesTriple(subject, variable) ],
+      };
+    }
     return {
       filters: [],
-      triples: [ this.buildTypesAndSuperTypesTriple(subject, DataFactory.namedNode(value)) ],
+      triples: [ this.buildTypesAndSuperTypesTriple(subject, DataFactory.namedNode(value as string)) ],
+    };
+  }
+
+  private createWhereQueryDataForFindOperator(
+    key: string,
+    operator: FindOperator<any>,
+    parentVariable: Variable,
+  ): WhereQueryData {
+    const variable = DataFactory.variable(this.variableGenerator.getNext());
+    return {
+      filters: [ this.resolveFindOperatorAsExpression(variable, operator) ],
+      triples: [{
+        subject: parentVariable,
+        predicate: DataFactory.namedNode(key),
+        object: variable,
+      }],
     };
   }
 
@@ -190,33 +247,38 @@ export class SparqlQueryBuilder {
     };
   }
 
-  private createWhereQueryDataForNamedNode(
-    key: string,
-    value: string,
-    parentVariable: Variable,
-  ): WhereQueryData {
-    return {
-      filters: [],
-      triples: [{
-        subject: parentVariable,
-        predicate: DataFactory.namedNode(key),
-        object: DataFactory.namedNode(value),
-      }],
-    };
+  private resolveFindOperatorAsExpression(
+    leftSide: Expression,
+    operator: FindOperator<any>,
+  ): OperationExpression {
+    switch (operator.operator) {
+      case 'in':
+        return this.buildInOperation(
+          leftSide,
+          this.resolveValueToExpression(operator.value) as Expression,
+        );
+      default:
+        throw new Error(`Unsupported operator "${operator.operator}"`);
+    }
   }
 
-  private createWhereQueryDataForLiteral(
-    key: string,
-    value: string | number | boolean,
-    parentVariable: Variable,
-  ): WhereQueryData {
+  private resolveValueToExpression(
+    value: OrArray<any> | FindOperator<any>,
+  ): OperationExpression | OrArray<Term> {
+    // if (FindOperator.isFindOperator(value)) {
+    //   return this.resolveValueToExpression((value as FindOperator<string>).value);
+    // }
+    // if (Array.isArray(value)) {
+    return (value as any[]).map((valueItem): Term => this.resolveValueToTerm(valueItem));
+    // }
+    // return this.resolveValueToTerm(value as FieldPrimitiveValue);
+  }
+
+  private buildInOperation(leftSide: Expression, rightSide: Expression): OperationExpression {
     return {
-      filters: [],
-      triples: [{
-        subject: parentVariable,
-        predicate: DataFactory.namedNode(key),
-        object: valueToLiteral(value),
-      }],
+      type: 'operation',
+      operator: 'IN',
+      args: [ leftSide, rightSide ],
     };
   }
 
@@ -234,5 +296,12 @@ export class SparqlQueryBuilder {
       predicate: allTypesAndSuperTypesPath,
       object,
     };
+  }
+
+  private resolveValueToTerm(value: FieldPrimitiveValue): NamedNode | Literal {
+    if (isUrl(value)) {
+      return DataFactory.namedNode(value as string);
+    }
+    return valueToLiteral(value);
   }
 }

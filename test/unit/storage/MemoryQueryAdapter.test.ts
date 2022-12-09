@@ -418,6 +418,74 @@ describe('a MemoryQueryAdapter', (): void => {
       adapter = new MemoryQueryAdapter(schema);
       await expect(adapter.findAll()).resolves.toEqual(schema);
     });
+
+    it('returns a limited number of entities.',
+      async(): Promise<void> => {
+        schema = [
+          {
+            '@id': 'https://skl.standard.storage/data/123',
+            '@type': 'https://skl.standard.storage/nouns/File',
+          },
+          {
+            '@id': 'https://skl.standard.storage/data/124',
+            '@type': 'https://skl.standard.storage/nouns/File',
+          },
+        ];
+        adapter = new MemoryQueryAdapter(schema);
+        await expect(
+          adapter.findAll({
+            where: { type: SKL.File },
+            limit: 1,
+          }),
+        ).resolves.toEqual([ schema[0] ]);
+      });
+
+    it('returns matching entities after an offset.',
+      async(): Promise<void> => {
+        schema = [
+          {
+            '@id': 'https://skl.standard.storage/data/123',
+            '@type': 'https://skl.standard.storage/nouns/File',
+          },
+          {
+            '@id': 'https://skl.standard.storage/data/124',
+            '@type': 'https://skl.standard.storage/nouns/File',
+          },
+        ];
+        adapter = new MemoryQueryAdapter(schema);
+        await expect(
+          adapter.findAll({
+            where: { type: SKL.File },
+            offset: 1,
+          }),
+        ).resolves.toEqual([ schema[1] ]);
+      });
+
+    it('returns a limited number of matching entities after an offset.',
+      async(): Promise<void> => {
+        schema = [
+          {
+            '@id': 'https://skl.standard.storage/data/123',
+            '@type': 'https://skl.standard.storage/nouns/File',
+          },
+          {
+            '@id': 'https://skl.standard.storage/data/124',
+            '@type': 'https://skl.standard.storage/nouns/File',
+          },
+          {
+            '@id': 'https://skl.standard.storage/data/125',
+            '@type': 'https://skl.standard.storage/nouns/File',
+          },
+        ];
+        adapter = new MemoryQueryAdapter(schema);
+        await expect(
+          adapter.findAll({
+            where: { type: SKL.File },
+            offset: 1,
+            limit: 1,
+          }),
+        ).resolves.toEqual([ schema[1] ]);
+      });
   });
 
   describe('findAllBy', (): void => {
