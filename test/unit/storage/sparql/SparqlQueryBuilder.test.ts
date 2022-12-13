@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import DataFactory from '@rdfjs/data-model';
+import type { FindOperator } from '../../../../src/storage/FindOperator';
+import { Equal } from '../../../../src/storage/operator/Equal';
 import { In } from '../../../../src/storage/operator/In';
+import { Not } from '../../../../src/storage/operator/Not';
 import { SparqlQueryBuilder } from '../../../../src/storage/sparql/SparqlQueryBuilder';
 import {
   entityVariable,
@@ -15,7 +18,7 @@ import { SKL, XSD } from '../../../../src/util/Vocabularies';
 const c1 = DataFactory.variable('c1');
 const c2 = DataFactory.variable('c2');
 const c3 = DataFactory.variable('c3');
-
+const predicate = DataFactory.namedNode('https://example.com/pred');
 const data1 = DataFactory.namedNode('https://example.com/data/1');
 const data2 = DataFactory.namedNode('https://example.com/data/2');
 const file = DataFactory.namedNode(SKL.File);
@@ -49,6 +52,7 @@ describe('A SparqlQueryBuilder', (): void => {
           type: 'group',
           patterns: [{
             type: 'query',
+            prefixes: {},
             queryType: 'SELECT',
             variables: [ entityVariable ],
             where: [{
@@ -83,6 +87,7 @@ describe('A SparqlQueryBuilder', (): void => {
           type: 'group',
           patterns: [{
             type: 'query',
+            prefixes: {},
             queryType: 'SELECT',
             variables: [ entityVariable ],
             where: [
@@ -107,7 +112,7 @@ describe('A SparqlQueryBuilder', (): void => {
                   },
                   {
                     subject: entityVariable,
-                    predicate: DataFactory.namedNode('https://example.com/pred'),
+                    predicate,
                     object: DataFactory.literal('1', XSD.integer),
                   },
                 ],
@@ -159,6 +164,7 @@ describe('A SparqlQueryBuilder', (): void => {
           type: 'group',
           patterns: [{
             type: 'query',
+            prefixes: {},
             queryType: 'SELECT',
             variables: [ entityVariable ],
             where: [
@@ -213,6 +219,7 @@ describe('A SparqlQueryBuilder', (): void => {
           type: 'group',
           patterns: [{
             type: 'query',
+            prefixes: {},
             queryType: 'SELECT',
             variables: [ entityVariable ],
             where: [
@@ -286,6 +293,7 @@ describe('A SparqlQueryBuilder', (): void => {
           type: 'group',
           patterns: [{
             type: 'query',
+            prefixes: {},
             queryType: 'SELECT',
             variables: [ entityVariable ],
             where: [
@@ -294,7 +302,7 @@ describe('A SparqlQueryBuilder', (): void => {
                 triples: [
                   {
                     subject: entityVariable,
-                    predicate: DataFactory.namedNode('https://example.com/pred'),
+                    predicate,
                     object: DataFactory.namedNode('https://example.com/object'),
                   },
                 ],
@@ -332,6 +340,7 @@ describe('A SparqlQueryBuilder', (): void => {
           type: 'group',
           patterns: [{
             type: 'query',
+            prefixes: {},
             queryType: 'SELECT',
             variables: [ entityVariable ],
             where: [
@@ -349,7 +358,7 @@ describe('A SparqlQueryBuilder', (): void => {
                 type: 'filter',
                 expression: {
                   type: 'operation',
-                  operator: 'IN',
+                  operator: 'in',
                   args: [ entityVariable, [ data1 ]],
                 },
               },
@@ -386,6 +395,7 @@ describe('A SparqlQueryBuilder', (): void => {
           type: 'group',
           patterns: [{
             type: 'query',
+            prefixes: {},
             queryType: 'SELECT',
             variables: [ entityVariable ],
             where: [
@@ -414,7 +424,7 @@ describe('A SparqlQueryBuilder', (): void => {
                 type: 'filter',
                 expression: {
                   type: 'operation',
-                  operator: 'IN',
+                  operator: 'in',
                   args: [ c1, [ file, event ]],
                 },
               },
@@ -430,7 +440,7 @@ describe('A SparqlQueryBuilder', (): void => {
     })).toEqual(query);
   });
 
-  it('builds a query with an in operator on a non id or type field.', (): void => {
+  it('builds a query with an in operator on a non id field.', (): void => {
     const query = {
       type: 'query',
       queryType: 'CONSTRUCT',
@@ -451,6 +461,7 @@ describe('A SparqlQueryBuilder', (): void => {
           type: 'group',
           patterns: [{
             type: 'query',
+            prefixes: {},
             queryType: 'SELECT',
             variables: [ entityVariable ],
             where: [
@@ -459,7 +470,7 @@ describe('A SparqlQueryBuilder', (): void => {
                 triples: [
                   {
                     subject: entityVariable,
-                    predicate: DataFactory.namedNode('https://example.com/pred'),
+                    predicate,
                     object: c1,
                   },
                 ],
@@ -468,7 +479,7 @@ describe('A SparqlQueryBuilder', (): void => {
                 type: 'filter',
                 expression: {
                   type: 'operation',
-                  operator: 'IN',
+                  operator: 'in',
                   args: [
                     c1,
                     [
@@ -490,7 +501,525 @@ describe('A SparqlQueryBuilder', (): void => {
     })).toEqual(query);
   });
 
-  it('throws an error if there is an unsupported operation.', (): void => {
+  it('builds a query with a not operator on the id field.', (): void => {
+    const query = {
+      type: 'query',
+      queryType: 'CONSTRUCT',
+      prefixes: {},
+      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      where: [
+        {
+          type: 'graph',
+          name: entityVariable,
+          patterns: [
+            {
+              type: 'bgp',
+              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+            },
+          ],
+        },
+        {
+          type: 'group',
+          patterns: [{
+            type: 'query',
+            prefixes: {},
+            queryType: 'SELECT',
+            variables: [ entityVariable ],
+            where: [
+              {
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate: c1,
+                    object: c2,
+                  },
+                ],
+              },
+              {
+                type: 'filter',
+                expression: {
+                  type: 'operation',
+                  operator: '!=',
+                  args: [ entityVariable, data1 ],
+                },
+              },
+            ],
+          }],
+        },
+      ],
+    };
+    expect(builder.buildQuery({
+      where: {
+        id: Not('https://example.com/data/1'),
+      },
+    })).toEqual(query);
+  });
+
+  it('builds a query with a nested not in operator on the id field.', (): void => {
+    const query = {
+      type: 'query',
+      queryType: 'CONSTRUCT',
+      prefixes: {},
+      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      where: [
+        {
+          type: 'graph',
+          name: entityVariable,
+          patterns: [
+            {
+              type: 'bgp',
+              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+            },
+          ],
+        },
+        {
+          type: 'group',
+          patterns: [{
+            type: 'query',
+            prefixes: {},
+            queryType: 'SELECT',
+            variables: [ entityVariable ],
+            where: [
+              {
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate: c1,
+                    object: c2,
+                  },
+                ],
+              },
+              {
+                type: 'filter',
+                expression: {
+                  type: 'operation',
+                  operator: 'notin',
+                  args: [
+                    entityVariable,
+                    [ data1, data2 ],
+                  ],
+                },
+              },
+            ],
+          }],
+        },
+      ],
+    };
+    expect(builder.buildQuery({
+      where: {
+        id: Not(In([ 'https://example.com/data/1', 'https://example.com/data/2' ])),
+      },
+    })).toEqual(query);
+  });
+
+  it('builds a query with a nested not equal operator on the id field.', (): void => {
+    const query = {
+      type: 'query',
+      queryType: 'CONSTRUCT',
+      prefixes: {},
+      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      where: [
+        {
+          type: 'graph',
+          name: entityVariable,
+          patterns: [
+            {
+              type: 'bgp',
+              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+            },
+          ],
+        },
+        {
+          type: 'group',
+          patterns: [{
+            type: 'query',
+            prefixes: {},
+            queryType: 'SELECT',
+            variables: [ entityVariable ],
+            where: [
+              {
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate: c1,
+                    object: c2,
+                  },
+                ],
+              },
+              {
+                type: 'filter',
+                expression: {
+                  type: 'operation',
+                  operator: '!=',
+                  args: [ entityVariable, data1 ],
+                },
+              },
+            ],
+          }],
+        },
+      ],
+    };
+    expect(builder.buildQuery({
+      where: {
+        id: Not(Equal('https://example.com/data/1')),
+      },
+    })).toEqual(query);
+  });
+
+  it('builds a query with an equal operator on the id field.', (): void => {
+    const query = {
+      type: 'query',
+      queryType: 'CONSTRUCT',
+      prefixes: {},
+      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      where: [
+        {
+          type: 'graph',
+          name: entityVariable,
+          patterns: [
+            {
+              type: 'bgp',
+              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+            },
+          ],
+        },
+        {
+          type: 'group',
+          patterns: [{
+            type: 'query',
+            prefixes: {},
+            queryType: 'SELECT',
+            variables: [ entityVariable ],
+            where: [
+              {
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate: c1,
+                    object: c2,
+                  },
+                ],
+              },
+              {
+                type: 'filter',
+                expression: {
+                  type: 'operation',
+                  operator: '=',
+                  args: [ entityVariable, data1 ],
+                },
+              },
+            ],
+          }],
+        },
+      ],
+    };
+    expect(builder.buildQuery({
+      where: {
+        id: Equal('https://example.com/data/1'),
+      },
+    })).toEqual(query);
+  });
+
+  it('builds a query with a not operator on a non id field.', (): void => {
+    const query = {
+      type: 'query',
+      queryType: 'CONSTRUCT',
+      prefixes: {},
+      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      where: [
+        {
+          type: 'graph',
+          name: entityVariable,
+          patterns: [
+            {
+              type: 'bgp',
+              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+            },
+          ],
+        },
+        {
+          type: 'group',
+          patterns: [{
+            type: 'query',
+            prefixes: {},
+            queryType: 'SELECT',
+            variables: [ entityVariable ],
+            where: [
+              {
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate,
+                    object: c1,
+                  },
+                ],
+              },
+              {
+                type: 'filter',
+                expression: {
+                  type: 'operation',
+                  operator: 'notexists',
+                  args: [{
+                    type: 'group',
+                    patterns: [
+                      {
+                        type: 'bgp',
+                        triples: [{
+                          subject: entityVariable,
+                          predicate,
+                          object: c1,
+                        }],
+                      },
+                      {
+                        type: 'filter',
+                        expression: {
+                          type: 'operation',
+                          operator: '=',
+                          args: [
+                            c1,
+                            DataFactory.literal('1', XSD.integer),
+                          ],
+                        },
+                      },
+                    ],
+                  }],
+                },
+              },
+            ],
+          }],
+        },
+      ],
+    };
+    expect(builder.buildQuery({
+      where: {
+        'https://example.com/pred': Not(1),
+      },
+    })).toEqual(query);
+  });
+
+  it('builds a query with a nested not in operator on a non id field.', (): void => {
+    const query = {
+      type: 'query',
+      queryType: 'CONSTRUCT',
+      prefixes: {},
+      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      where: [
+        {
+          type: 'graph',
+          name: entityVariable,
+          patterns: [
+            {
+              type: 'bgp',
+              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+            },
+          ],
+        },
+        {
+          type: 'group',
+          patterns: [{
+            type: 'query',
+            prefixes: {},
+            queryType: 'SELECT',
+            variables: [ entityVariable ],
+            where: [
+              {
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate,
+                    object: c1,
+                  },
+                ],
+              },
+              {
+                type: 'filter',
+                expression: {
+                  type: 'operation',
+                  operator: 'notexists',
+                  args: [{
+                    type: 'group',
+                    patterns: [
+                      {
+                        type: 'bgp',
+                        triples: [{
+                          subject: entityVariable,
+                          predicate,
+                          object: c1,
+                        }],
+                      },
+                      {
+                        type: 'filter',
+                        expression: {
+                          type: 'operation',
+                          operator: 'in',
+                          args: [
+                            c1,
+                            [
+                              DataFactory.literal('1', XSD.integer),
+                              DataFactory.literal('2', XSD.integer),
+                            ],
+                          ],
+                        },
+                      },
+                    ],
+                  }],
+                },
+              },
+            ],
+          }],
+        },
+      ],
+    };
+    expect(builder.buildQuery({
+      where: {
+        'https://example.com/pred': Not(In([ 1, 2 ])),
+      },
+    })).toEqual(query);
+  });
+
+  it('builds a query with a nested not equal operator on a non id field.', (): void => {
+    const query = {
+      type: 'query',
+      queryType: 'CONSTRUCT',
+      prefixes: {},
+      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      where: [
+        {
+          type: 'graph',
+          name: entityVariable,
+          patterns: [
+            {
+              type: 'bgp',
+              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+            },
+          ],
+        },
+        {
+          type: 'group',
+          patterns: [{
+            type: 'query',
+            prefixes: {},
+            queryType: 'SELECT',
+            variables: [ entityVariable ],
+            where: [
+              {
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate,
+                    object: c1,
+                  },
+                ],
+              },
+              {
+                type: 'filter',
+                expression: {
+                  type: 'operation',
+                  operator: 'notexists',
+                  args: [{
+                    type: 'group',
+                    patterns: [
+                      {
+                        type: 'bgp',
+                        triples: [{
+                          subject: entityVariable,
+                          predicate,
+                          object: c1,
+                        }],
+                      },
+                      {
+                        type: 'filter',
+                        expression: {
+                          type: 'operation',
+                          operator: '=',
+                          args: [
+                            c1,
+                            DataFactory.literal('1', XSD.integer),
+                          ],
+                        },
+                      },
+                    ],
+                  }],
+                },
+              },
+            ],
+          }],
+        },
+      ],
+    };
+    expect(builder.buildQuery({
+      where: {
+        'https://example.com/pred': Not(Equal(1)),
+      },
+    })).toEqual(query);
+  });
+
+  it('builds a query with an equal operator on a non id field.', (): void => {
+    const query = {
+      type: 'query',
+      queryType: 'CONSTRUCT',
+      prefixes: {},
+      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      where: [
+        {
+          type: 'graph',
+          name: entityVariable,
+          patterns: [
+            {
+              type: 'bgp',
+              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+            },
+          ],
+        },
+        {
+          type: 'group',
+          patterns: [{
+            type: 'query',
+            prefixes: {},
+            queryType: 'SELECT',
+            variables: [ entityVariable ],
+            where: [
+              {
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate,
+                    object: c1,
+                  },
+                ],
+              },
+              {
+                type: 'filter',
+                expression: {
+                  type: 'operation',
+                  operator: '=',
+                  args: [
+                    c1,
+                    DataFactory.literal('1', XSD.integer),
+                  ],
+                },
+              },
+            ],
+          }],
+        },
+      ],
+    };
+    expect(builder.buildQuery({
+      where: {
+        'https://example.com/pred': Equal(1),
+      },
+    })).toEqual(query);
+  });
+
+  it('throws an error if there is an unsupported operation on a non id field.', (): void => {
     expect((): void => {
       builder.buildQuery({
         where: {
@@ -502,4 +1031,44 @@ describe('A SparqlQueryBuilder', (): void => {
       });
     }).toThrow('Unsupported operator "and"');
   });
+
+  it('throws an error if there is an unsupported operation on the id field.', (): void => {
+    expect((): void => {
+      builder.buildQuery({
+        where: {
+          id: {
+            type: 'operator',
+            operator: 'and' as any,
+          } as FindOperator<string>,
+        },
+      });
+    }).toThrow('Unsupported operator "and"');
+  });
+
+  it('throws an error if there is an unsupported operation as an argument to a Not operator.', (): void => {
+    expect((): void => {
+      builder.buildQuery({
+        where: {
+          'https://example.com/pred': Not({
+            type: 'operator',
+            operator: 'and',
+          }),
+        },
+      });
+    }).toThrow('Unsupported Not sub operator "and"');
+  });
+
+  it('throws an error if there is an unsupported operation as an argument to a Not operator on the id field.',
+    (): void => {
+      expect((): void => {
+        builder.buildQuery({
+          where: {
+            id: Not({
+              type: 'operator',
+              operator: 'and',
+            }) as unknown as FindOperator<string>,
+          },
+        });
+      }).toThrow('Unsupported Not sub operator "and"');
+    });
 });

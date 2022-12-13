@@ -1,4 +1,3 @@
-/* eslint-disable capitalized-comments */
 import DataFactory from '@rdfjs/data-model';
 import type { Variable, NamedNode, Term, Literal } from '@rdfjs/types';
 import type {
@@ -10,6 +9,8 @@ import type {
   Triple,
   Expression,
   OperationExpression,
+  GroupPattern,
+  GraphPattern,
 } from 'sparqljs';
 import {
   allTypesAndSuperTypesPath,
@@ -44,20 +45,28 @@ export class SparqlQueryBuilder {
   }
 
   public buildQuery(options?: FindAllOptions): ConstructQuery {
-    const graphQuery = {
-      type: 'query',
-      queryType: 'SELECT',
-      variables: [ entityVariable ],
-      where: this.buildPatternsFromQueryData(options?.where),
-    } as unknown as SelectQuery;
+    const entitySelectQuery = this.sparqlSelect(
+      [ entityVariable ],
+      this.buildPatternsFromQueryData(options?.where),
+    );
     if (options?.limit) {
-      graphQuery.limit = options.limit;
+      entitySelectQuery.limit = options.limit;
     }
     if (options?.offset) {
-      graphQuery.offset = options.offset;
+      entitySelectQuery.offset = options.offset;
     }
 
-    return this.buildEntityDataQuery(graphQuery);
+    return this.sparqlConstruct(entitySelectQuery);
+  }
+
+  private sparqlSelect(variables: Variable[], wherePatterns: Pattern[]): SelectQuery {
+    return {
+      type: 'query',
+      queryType: 'SELECT',
+      variables,
+      where: wherePatterns,
+      prefixes: {},
+    };
   }
 
   private buildPatternsFromQueryData(where?: FindOptionsWhere): Pattern[] {
@@ -81,29 +90,33 @@ export class SparqlQueryBuilder {
     return patterns;
   }
 
-  private buildEntityDataQuery(graphSelectionQuery: SelectQuery): ConstructQuery {
+  private sparqlConstruct(graphSelectionQuery: SelectQuery): ConstructQuery {
+    const pattern = { subject: subjectNode, predicate: predicateNode, object: objectNode };
     return {
       type: 'query',
-      queryType: 'CONSTRUCT',
       prefixes: {},
-      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      queryType: 'CONSTRUCT',
+      template: [ pattern ],
       where: [
-        {
-          type: 'graph',
-          name: entityVariable,
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
-        },
-        {
-          type: 'group',
-          patterns: [ graphSelectionQuery ],
-        },
+        this.sparqlSelectGraph(entityVariable, [ pattern ]),
+        this.sparqlSelectGroup([ graphSelectionQuery ]),
       ],
-    } as unknown as ConstructQuery;
+    };
+  }
+
+  private sparqlSelectGraph(name: Variable | NamedNode, triples: Triple[]): GraphPattern {
+    return {
+      type: 'graph',
+      name: name as IriTerm,
+      patterns: [{ type: 'bgp', triples }],
+    };
+  }
+
+  private sparqlSelectGroup(patterns: Pattern[]): GroupPattern {
+    return {
+      type: 'group',
+      patterns,
+    };
   }
 
   private createWhereQueryData(
@@ -120,28 +133,30 @@ export class SparqlQueryBuilder {
         filters: [],
       };
     }
-    let triples: Triple[] = [];
-    let filters: Expression[] = [];
-    const hasSingleKey = Object.keys(where).length === 1;
-    if (where.id) {
-      const idFieldWhereQueryData = this.createWhereQueryDataForIdValue(parentVariable, where.id, hasSingleKey);
-      triples = [ ...triples, ...idFieldWhereQueryData.triples ];
-      filters = [ ...filters, ...idFieldWhereQueryData.filters ];
-    }
-    if (where.type) {
-      const typeFieldWhereQueryData = this.createWhereQueryDataForType(parentVariable, where.type);
-      triples = [ ...triples, ...typeFieldWhereQueryData.triples ];
-      filters = [ ...filters, ...typeFieldWhereQueryData.filters ];
-    }
-    for (const [ key, value ] of Object.entries(where)) {
-      if (key !== 'id' && key !== 'type') {
-        const graphQueryData = this.createWhereQueryDataFromKeyValue(key, value!, parentVariable);
-        triples = [ ...triples, ...graphQueryData.triples ];
-        filters = [ ...filters, ...graphQueryData.filters ];
-      }
-    }
 
-    return { triples, filters };
+    const hasSingleKey = Object.keys(where).length === 1;
+    return Object.entries(where).reduce((obj: WhereQueryData, [ key, value ]): WhereQueryData => {
+      const whereQueryData = this.createWhereQueryDataForField(key, value!, parentVariable, hasSingleKey);
+      return {
+        triples: [ ...obj.triples, ...whereQueryData.triples ],
+        filters: [ ...obj.filters, ...whereQueryData.filters ],
+      };
+    }, { filters: [], triples: []});
+  }
+
+  private createWhereQueryDataForField(
+    field: string,
+    value: IdOrTypeFindOptionsWhereField | FindOptionsWhereField,
+    parentVariable: Variable,
+    isOnlyField: boolean,
+  ): WhereQueryData {
+    if (field === 'id') {
+      return this.createWhereQueryDataForIdValue(parentVariable, value as IdOrTypeFindOptionsWhereField, isOnlyField);
+    }
+    if (field === 'type') {
+      return this.createWhereQueryDataForType(parentVariable, value as IdOrTypeFindOptionsWhereField);
+    }
+    return this.createWhereQueryDataFromKeyValue(field, value, parentVariable);
   }
 
   private createWhereQueryDataFromKeyValue(
@@ -172,7 +187,7 @@ export class SparqlQueryBuilder {
   ): WhereQueryData {
     let filter: OperationExpression;
     if (FindOperator.isFindOperator(value)) {
-      filter = this.resolveFindOperatorAsExpression(term as Expression, value as FindOperator<string>);
+      filter = this.resolveFindOperatorAsExpressionWithSingleValue(term as Expression, value as FindOperator<string>);
     } else {
       filter = this.buildEqualOperation(term as Expression, DataFactory.namedNode(value as string));
     }
@@ -180,6 +195,7 @@ export class SparqlQueryBuilder {
       filters: [ filter ],
       triples: [],
     } as WhereQueryData;
+
     if (qualifyWithTriple) {
       queryData.triples.push({
         subject: term,
@@ -196,13 +212,15 @@ export class SparqlQueryBuilder {
   ): WhereQueryData {
     if (FindOperator.isFindOperator(value)) {
       const variable = DataFactory.variable(this.variableGenerator.getNext());
-      const operatorFilter = this.resolveFindOperatorAsExpression(
+      const triple = this.buildTypesAndSuperTypesTriple(subject, variable);
+      const operatorFilter = this.resolveFindOperatorAsExpressionWithMultipleValues(
         variable as Expression,
         value as FindOperator<string>,
+        triple,
       );
       return {
         filters: [ operatorFilter ],
-        triples: [ this.buildTypesAndSuperTypesTriple(subject, variable) ],
+        triples: [ triple ],
       };
     }
     return {
@@ -217,13 +235,14 @@ export class SparqlQueryBuilder {
     parentVariable: Variable,
   ): WhereQueryData {
     const variable = DataFactory.variable(this.variableGenerator.getNext());
+    const triple = {
+      subject: parentVariable,
+      predicate: DataFactory.namedNode(key),
+      object: variable,
+    };
     return {
-      filters: [ this.resolveFindOperatorAsExpression(variable, operator) ],
-      triples: [{
-        subject: parentVariable,
-        predicate: DataFactory.namedNode(key),
-        object: variable,
-      }],
+      filters: [ this.resolveFindOperatorAsExpressionWithMultipleValues(variable, operator, triple) ],
+      triples: [ triple ],
     };
   }
 
@@ -247,13 +266,54 @@ export class SparqlQueryBuilder {
     };
   }
 
-  private resolveFindOperatorAsExpression(
+  private resolveFindOperatorAsExpressionWithMultipleValues(
+    leftSide: Expression,
+    operator: FindOperator<any>,
+    triple: Triple,
+    parentOperator?: string,
+  ): OperationExpression {
+    switch (operator.operator) {
+      case 'in':
+        return this.buildInOperation(
+          leftSide,
+          this.resolveValueToExpression(operator.value) as Expression,
+        );
+      case 'not':
+        return this.buildNotOperationForMultiValued(
+          leftSide,
+          this.resolveValueToExpression(operator.value) as Expression | FindOperator<any>,
+          triple,
+        );
+      case 'equal':
+        return this.buildEqualOperation(
+          leftSide,
+          this.resolveValueToExpression(operator.value) as Expression,
+        );
+      default:
+        if (parentOperator) {
+          throw new Error(`Unsupported ${parentOperator} sub operator "${operator.operator}"`);
+        }
+        throw new Error(`Unsupported operator "${operator.operator}"`);
+    }
+  }
+
+  private resolveFindOperatorAsExpressionWithSingleValue(
     leftSide: Expression,
     operator: FindOperator<any>,
   ): OperationExpression {
     switch (operator.operator) {
       case 'in':
         return this.buildInOperation(
+          leftSide,
+          this.resolveValueToExpression(operator.value) as Expression,
+        );
+      case 'not':
+        return this.buildNotOperationForSingleValue(
+          leftSide,
+          this.resolveValueToExpression(operator.value) as Expression | FindOperator<any>,
+        );
+      case 'equal':
+        return this.buildEqualOperation(
           leftSide,
           this.resolveValueToExpression(operator.value) as Expression,
         );
@@ -264,22 +324,94 @@ export class SparqlQueryBuilder {
 
   private resolveValueToExpression(
     value: OrArray<any> | FindOperator<any>,
-  ): OperationExpression | OrArray<Term> {
-    // if (FindOperator.isFindOperator(value)) {
-    //   return this.resolveValueToExpression((value as FindOperator<string>).value);
-    // }
-    // if (Array.isArray(value)) {
-    return (value as any[]).map((valueItem): Term => this.resolveValueToTerm(valueItem));
-    // }
-    // return this.resolveValueToTerm(value as FieldPrimitiveValue);
+  ): FindOperator<any> | OrArray<Term> {
+    if (FindOperator.isFindOperator(value)) {
+      return value;
+    }
+    if (Array.isArray(value)) {
+      return value.map((valueItem): Term => this.resolveValueToTerm(valueItem));
+    }
+    return this.resolveValueToTerm(value as FieldPrimitiveValue);
   }
 
   private buildInOperation(leftSide: Expression, rightSide: Expression): OperationExpression {
     return {
       type: 'operation',
-      operator: 'IN',
+      operator: 'in',
       args: [ leftSide, rightSide ],
     };
+  }
+
+  private buildNotInOperation(leftSide: Expression, rightSide: Expression): OperationExpression {
+    return {
+      type: 'operation',
+      operator: 'notin',
+      args: [ leftSide, rightSide ],
+    };
+  }
+
+  private buildNotOperationForMultiValued(
+    leftSide: Expression,
+    rightSide: Expression | FindOperator<any>,
+    triple: Triple,
+  ): OperationExpression {
+    let filterExpression: FilterPattern;
+    const rightSideIsOperation = typeof rightSide === 'object' && 'operator' in rightSide;
+    if (rightSideIsOperation) {
+      filterExpression = {
+        type: 'filter',
+        expression: this.resolveFindOperatorAsExpressionWithMultipleValues(
+          leftSide,
+          rightSide as FindOperator<any>,
+          triple,
+          'Not',
+        ),
+      };
+    } else {
+      filterExpression = {
+        type: 'filter',
+        expression: this.buildEqualOperation(leftSide, rightSide as Expression),
+      };
+    }
+    return {
+      type: 'operation',
+      operator: 'notexists',
+      args: [
+        {
+          type: 'group',
+          patterns: [
+            {
+              type: 'bgp',
+              triples: [ triple ],
+            },
+            filterExpression,
+          ],
+        } as GroupPattern,
+      ],
+    };
+  }
+
+  private buildNotOperationForSingleValue(
+    leftSide: Expression,
+    rightSide: Expression | FindOperator<any>,
+  ): OperationExpression {
+    if (FindOperator.isFindOperator(rightSide)) {
+      switch ((rightSide as FindOperator<string>).operator) {
+        case 'in':
+          return this.buildNotInOperation(
+            leftSide,
+            this.resolveValueToExpression((rightSide as FindOperator<string>).value) as Expression,
+          );
+        case 'equal':
+          return this.buildNotEqualOperation(
+            leftSide,
+            this.resolveValueToExpression((rightSide as FindOperator<string>).value) as Expression,
+          );
+        default:
+          throw new Error(`Unsupported Not sub operator "${(rightSide as FindOperator<string>).operator}"`);
+      }
+    }
+    return this.buildNotEqualOperation(leftSide, rightSide as Expression);
   }
 
   private buildEqualOperation(leftSide: Expression, rightSide: Expression): OperationExpression {
@@ -290,12 +422,16 @@ export class SparqlQueryBuilder {
     };
   }
 
-  private buildTypesAndSuperTypesTriple(subject: IriTerm | Variable, object: IriTerm | Variable): Triple {
+  private buildNotEqualOperation(leftSide: Expression, rightSide: Expression): OperationExpression {
     return {
-      subject,
-      predicate: allTypesAndSuperTypesPath,
-      object,
+      type: 'operation',
+      operator: '!=',
+      args: [ leftSide, rightSide ],
     };
+  }
+
+  private buildTypesAndSuperTypesTriple(subject: IriTerm | Variable, object: IriTerm | Variable): Triple {
+    return { subject, predicate: allTypesAndSuperTypesPath, object };
   }
 
   private resolveValueToTerm(value: FieldPrimitiveValue): NamedNode | Literal {

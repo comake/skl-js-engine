@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { OWL } from '@comake/rmlmapper-js';
 import { MemoryQueryAdapter } from '../../../src/storage/MemoryQueryAdapter';
+import { Equal } from '../../../src/storage/operator/Equal';
 import { In } from '../../../src/storage/operator/In';
+import { Not } from '../../../src/storage/operator/Not';
 import type { Entity } from '../../../src/util/Types';
 import { RDFS, SKL } from '../../../src/util/Vocabularies';
 
@@ -488,53 +490,7 @@ describe('a MemoryQueryAdapter', (): void => {
         ).resolves.toEqual([ schema[1] ]);
       });
 
-    it('returns entities matching an in operator on the id field.', async(): Promise<void> => {
-      schema = [
-        {
-          '@id': 'https://example.com/data/1',
-          '@type': 'https://skl.standard.storage/nouns/File',
-        },
-        {
-          '@id': 'https://example.com/data/2',
-          '@type': 'https://skl.standard.storage/nouns/File',
-        },
-        {
-          '@id': 'https://example.com/data/3',
-          '@type': 'https://skl.standard.storage/nouns/File',
-        },
-      ];
-      adapter = new MemoryQueryAdapter(schema);
-      await expect(adapter.findAll({
-        where: {
-          id: In([ 'https://example.com/data/2', 'https://example.com/data/3' ]),
-        },
-      })).resolves.toEqual([ schema[1], schema[2] ]);
-    });
-
-    it('returns entities matching an operator on the type field.', async(): Promise<void> => {
-      schema = [
-        {
-          '@id': 'https://skl.standard.storage/data/1',
-          '@type': 'https://skl.standard.storage/nouns/File',
-        },
-        {
-          '@id': 'https://skl.standard.storage/data/2',
-          '@type': 'https://skl.standard.storage/nouns/Article',
-        },
-        {
-          '@id': 'https://skl.standard.storage/data/3',
-          '@type': 'https://skl.standard.storage/nouns/Event',
-        },
-      ];
-      adapter = new MemoryQueryAdapter(schema);
-      await expect(adapter.findAll({
-        where: {
-          type: In([ SKL.File, 'https://skl.standard.storage/nouns/Article' ]),
-        },
-      })).resolves.toEqual([ schema[0], schema[1] ]);
-    });
-
-    it('returns entities matching an in operator on a non id or type field.', async(): Promise<void> => {
+    it('returns entities matching an in operator.', async(): Promise<void> => {
       schema = [
         {
           '@id': 'https://skl.standard.storage/data/1',
@@ -550,6 +506,86 @@ describe('a MemoryQueryAdapter', (): void => {
       await expect(adapter.findAll({
         where: {
           [SKL.name]: In([ 'image.jpeg' ]),
+        },
+      })).resolves.toEqual([ schema[1] ]);
+    });
+
+    it('returns entities matching a not operator.', async(): Promise<void> => {
+      schema = [
+        {
+          '@id': 'https://skl.standard.storage/data/1',
+          '@type': 'https://skl.standard.storage/nouns/File',
+        },
+        {
+          '@id': 'https://skl.standard.storage/data/2',
+          '@type': 'https://skl.standard.storage/nouns/File',
+          [SKL.name]: 'image.jpeg',
+        },
+      ];
+      adapter = new MemoryQueryAdapter(schema);
+      await expect(adapter.findAll({
+        where: {
+          [SKL.name]: Not('image.jpeg'),
+        },
+      })).resolves.toEqual([ schema[0] ]);
+    });
+
+    it('returns entities matching a nested not in operator.', async(): Promise<void> => {
+      schema = [
+        {
+          '@id': 'https://skl.standard.storage/data/1',
+          '@type': 'https://skl.standard.storage/nouns/File',
+        },
+        {
+          '@id': 'https://skl.standard.storage/data/2',
+          '@type': 'https://skl.standard.storage/nouns/File',
+          [SKL.name]: 'image.jpeg',
+        },
+      ];
+      adapter = new MemoryQueryAdapter(schema);
+      await expect(adapter.findAll({
+        where: {
+          [SKL.name]: Not(In([ 'image.jpeg' ])),
+        },
+      })).resolves.toEqual([ schema[0] ]);
+    });
+
+    it('returns entities matching a nested not equal operator.', async(): Promise<void> => {
+      schema = [
+        {
+          '@id': 'https://skl.standard.storage/data/1',
+          '@type': 'https://skl.standard.storage/nouns/File',
+        },
+        {
+          '@id': 'https://skl.standard.storage/data/2',
+          '@type': 'https://skl.standard.storage/nouns/File',
+          [SKL.name]: 'image.jpeg',
+        },
+      ];
+      adapter = new MemoryQueryAdapter(schema);
+      await expect(adapter.findAll({
+        where: {
+          [SKL.name]: Not(Equal('image.jpeg')),
+        },
+      })).resolves.toEqual([ schema[0] ]);
+    });
+
+    it('returns entities matching an equal operator.', async(): Promise<void> => {
+      schema = [
+        {
+          '@id': 'https://skl.standard.storage/data/1',
+          '@type': 'https://skl.standard.storage/nouns/File',
+        },
+        {
+          '@id': 'https://skl.standard.storage/data/2',
+          '@type': 'https://skl.standard.storage/nouns/File',
+          [SKL.name]: 'image.jpeg',
+        },
+      ];
+      adapter = new MemoryQueryAdapter(schema);
+      await expect(adapter.findAll({
+        where: {
+          [SKL.name]: Equal('image.jpeg'),
         },
       })).resolves.toEqual([ schema[1] ]);
     });

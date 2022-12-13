@@ -1,8 +1,6 @@
-/* eslint-disable capitalized-comments */
-/* eslint-disable unicorn/expiring-todo-comments */
 import type { ReferenceNodeObject } from '@comake/rmlmapper-js';
 import type { ValueObject } from 'jsonld';
-import type { Entity, EntityFieldValue, OrArray, PossibleArrayFieldValues } from '../util/Types';
+import type { Entity, EntityFieldValue, PossibleArrayFieldValues } from '../util/Types';
 import { ensureArray } from '../util/Util';
 import { RDFS } from '../util/Vocabularies';
 import type { FindOperatorType } from './FindOperator';
@@ -12,7 +10,6 @@ import type {
   FindAllOptions,
   FindOptionsWhere,
   FindOptionsWhereField,
-  IdOrTypeFindOptionsWhereField,
   FieldPrimitiveValue,
 } from './FindOptionsTypes';
 import type { QueryAdapter } from './QueryAdapter';
@@ -51,7 +48,6 @@ export class MemoryQueryAdapter implements QueryAdapter {
   }
 
   public async findAll(options?: FindAllOptions): Promise<Entity[]> {
-    // TODO: add support for limit, and offset
     let results: Entity[] = [];
     if (options?.where?.id && Object.keys(options.where).length === 1 && typeof options.where.id === 'string') {
       const schema = this.schemas[options.where.id];
@@ -83,18 +79,10 @@ export class MemoryQueryAdapter implements QueryAdapter {
   }
 
   private async entityMatchesQuery(entity: Entity, where: FindOptionsWhere): Promise<boolean> {
-    if (where.id && !this.idMatches(entity, where.id)) {
-      return false;
-    }
-    if (where.type && !this.isInstanceOfValueOrOperatorValue(entity, where.type)) {
-      return false;
-    }
     for (const [ fieldName, fieldValue ] of Object.entries(where)) {
-      if (fieldName !== 'id' && fieldName !== 'type') {
-        const matches = await this.entityMatchesField(entity, fieldName, fieldValue!);
-        if (!matches) {
-          return false;
-        }
+      const matches = await this.entityMatchesField(entity, fieldName, fieldValue!);
+      if (!matches) {
+        return false;
       }
     }
     return true;
@@ -105,44 +93,62 @@ export class MemoryQueryAdapter implements QueryAdapter {
     fieldName: string,
     fieldValue: FindOptionsWhereField,
   ): Promise<boolean> {
-    if (fieldName in entity) {
-      if (FindOperator.isFindOperator(fieldValue)) {
-        return this.handleOperator(
-          (fieldValue as FindOperator<string>).operator,
-          {
-            in: (): boolean => {
-              const values = this.resolveOperatorValue((fieldValue as FindOperator<FieldPrimitiveValue>).value);
-              return (values as FieldPrimitiveValue[])
-                .some((valueItem): boolean => this.fieldValueMatchesField(valueItem, entity[fieldName]));
-            },
-          },
-        );
-      }
-      if (typeof fieldValue === 'object') {
-        if (Array.isArray(entity[fieldName])) {
-          for (const subFieldValue of (entity[fieldName] as (ReferenceNodeObject | Entity)[])) {
-            const matches = await this.findOptionWhereMatchesNodeObject(fieldValue as FindOptionsWhere, subFieldValue);
-            if (matches) {
-              return true;
+    if (FindOperator.isFindOperator(fieldValue)) {
+      return await this.handleOperator(
+        (fieldValue as FindOperator<string>).operator,
+        {
+          in: async(): Promise<boolean> => {
+            const values = (fieldValue as FindOperator<FieldPrimitiveValue[]>).value as FieldPrimitiveValue[];
+            for (const valueItem of values) {
+              if (await this.entityMatchesField(entity, fieldName, valueItem)) {
+                return true;
+              }
             }
+            return false;
+          },
+          not: async(): Promise<boolean> => {
+            if (FindOperator.isFindOperator((fieldValue as FindOperator<string>).value)) {
+              return !await this.entityMatchesField(entity, fieldName, (fieldValue as FindOperator<string>).value);
+            }
+            const valueItem = (fieldValue as FindOperator<string>).value as string;
+            return !await this.entityMatchesField(entity, fieldName, valueItem);
+          },
+          equal: async(): Promise<boolean> => {
+            const valueItem = (fieldValue as FindOperator<FieldPrimitiveValue>).value as FieldPrimitiveValue;
+            return this.entityMatchesField(entity, fieldName, valueItem);
+          },
+        },
+      );
+    }
+    if (fieldName === 'id') {
+      return entity['@id'] === fieldValue as string;
+    }
+    if (fieldName === 'type') {
+      return this.isInstanceOf(entity, fieldValue as string);
+    }
+    if (typeof fieldValue === 'object') {
+      if (Array.isArray(entity[fieldName])) {
+        for (const subFieldValue of (entity[fieldName] as (ReferenceNodeObject | Entity)[])) {
+          const matches = await this.findOptionWhereMatchesNodeObject(fieldValue as FindOptionsWhere, subFieldValue);
+          if (matches) {
+            return true;
           }
-          return false;
-        }
-        if (typeof entity[fieldName] === 'object') {
-          return await this.findOptionWhereMatchesNodeObject(
-            fieldValue as FindOptionsWhere,
-            entity[fieldName] as ReferenceNodeObject | Entity,
-          );
         }
         return false;
       }
-      if (Array.isArray(entity[fieldName])) {
-        return (entity[fieldName] as PossibleArrayFieldValues[]).some((field): boolean =>
-          this.fieldValueMatchesField(fieldValue, field));
+      if (typeof entity[fieldName] === 'object') {
+        return await this.findOptionWhereMatchesNodeObject(
+          fieldValue as FindOptionsWhere,
+          entity[fieldName] as ReferenceNodeObject | Entity,
+        );
       }
-      return this.fieldValueMatchesField(fieldValue, entity[fieldName]);
+      return false;
     }
-    return false;
+    if (Array.isArray(entity[fieldName])) {
+      return (entity[fieldName] as PossibleArrayFieldValues[]).some((field): boolean =>
+        this.fieldValueMatchesField(fieldValue, field));
+    }
+    return this.fieldValueMatchesField(fieldValue, entity[fieldName]);
   }
 
   private fieldValueMatchesField(
@@ -174,61 +180,14 @@ export class MemoryQueryAdapter implements QueryAdapter {
     return this.entityMatchesQuery(nodeObject as Entity, fieldValue);
   }
 
-  private idMatches(entity: Entity, value: IdOrTypeFindOptionsWhereField): boolean {
-    if (FindOperator.isFindOperator(value)) {
-      return this.handleOperator(
-        (value as FindOperator<string>).operator,
-        {
-          in: (): boolean => {
-            const values = this.resolveOperatorValue((value as FindOperator<string>).value);
-            return (values as string[]).some((valueItem): boolean => this.idMatches(entity, valueItem));
-          },
-        },
-      );
-    }
-    return entity['@id'] === value;
-  }
-
-  private isInstanceOfValueOrOperatorValue(entity: Entity, value: IdOrTypeFindOptionsWhereField): boolean {
-    if (FindOperator.isFindOperator(value)) {
-      return this.handleOperator(
-        (value as FindOperator<string>).operator,
-        {
-          in: (): boolean => {
-            const values = this.resolveOperatorValue((value as FindOperator<string>).value);
-            return (values as string[])
-              .some((valueItem): boolean => this.isInstanceOfValueOrOperatorValue(entity, valueItem));
-          },
-        },
-      );
-    }
-    return this.isInstanceOf(entity, value as string);
-  }
-
-  private handleOperator(
+  private async handleOperator(
     operator: FindOperatorType,
-    operatorHandlers: Record<FindOperatorType, () => boolean>,
-  ): boolean {
+    operatorHandlers: Record<FindOperatorType, () => Promise<boolean>>,
+  ): Promise<boolean> {
     if (operator in operatorHandlers) {
-      return operatorHandlers[operator]();
+      return await operatorHandlers[operator]();
     }
     throw new Error(`Unsupported operator "${operator}"`);
-  }
-
-  private resolveOperatorValue<T>(value: OrArray<T> | FindOperator<T>): OrArray<T> {
-    return (value as any[]).map((valueItem): T => valueItem);
-    // if (FindOperator.isFindOperator(value)) {
-    //   return this.resolveOperatorValue(value as FindOperator<any>);
-    // }
-    // if (Array.isArray(value)) {
-    //   return value.map((valueItem): T => {
-    //     if (FindOperator.isFindOperator(valueItem)) {
-    //       return this.resolveOperatorValue<T>(valueItem) as T;
-    //     }
-    //     return valueItem;
-    //   });
-    // }
-    // return value as T;
   }
 
   private isInstanceOf(entity: Entity, targetClass: string): boolean {

@@ -28,7 +28,7 @@ export type FieldPrimitiveValue = boolean | number | string;
 // OrArray<boolean | number | string>;
 export type FindOptionsWhereField = FieldPrimitiveValue | FindOptionsWhere | FindOperator<any>;
 
-export type IdOrTypeFindOptionsWhereField = string | FindOperator<string>;
+export type IdOrTypeFindOptionsWhereField = string | FindOperator<string> | FindOperator<string[]>;
 
 export interface FindOptionsWhere {
   type?: IdOrTypeFindOptionsWhereField;

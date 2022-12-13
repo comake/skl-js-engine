@@ -1,14 +1,14 @@
-export type FindOperatorType = 'in';
+export type FindOperatorType = 'in' | 'not' | 'equal';
 
 export interface FindOperatorArgs<T> {
   operator: FindOperatorType;
-  value: T | T[];
+  value: T | FindOperator<T>;
 }
 
 export class FindOperator<T> {
   public readonly type = 'operator';
   public readonly operator: FindOperatorType;
-  public readonly value: T | T[];
+  public readonly value: T | FindOperator<T>;
 
   public constructor(args: FindOperatorArgs<T>) {
     this.operator = args.operator;
