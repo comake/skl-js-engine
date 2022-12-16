@@ -11,6 +11,7 @@ import type {
   OperationExpression,
   GroupPattern,
   GraphPattern,
+  Ordering,
 } from 'sparqljs';
 import {
   allTypesAndSuperTypesPath,
@@ -26,6 +27,8 @@ import { FindOperator } from '../FindOperator';
 import type {
   FieldPrimitiveValue,
   FindAllOptions,
+  FindOptionsOrder,
+  FindOptionsOrderValue,
   FindOptionsWhere,
   FindOptionsWhereField,
   IdOrTypeFindOptionsWhereField,
@@ -33,8 +36,20 @@ import type {
 import { VariableGenerator } from './VariableGenerator';
 
 export interface WhereQueryData {
-  triples: Triple[];
   filters: Expression[];
+  triples: Triple[];
+}
+
+export interface OrderQueryData {
+  optionalTriples: Triple[];
+  orders: Ordering[];
+}
+
+export type QueryData = WhereQueryData & OrderQueryData;
+
+export interface SelectQueryData {
+  where: Pattern[];
+  orders: Ordering[];
 }
 
 export class SparqlQueryBuilder {
@@ -45,33 +60,55 @@ export class SparqlQueryBuilder {
   }
 
   public buildQuery(options?: FindAllOptions): ConstructQuery {
+    const selectQueryData = this.buildPatternsFromQueryData(options?.where, options?.order);
     const entitySelectQuery = this.sparqlSelect(
       [ entityVariable ],
-      this.buildPatternsFromQueryData(options?.where),
+      selectQueryData.where,
+      selectQueryData.orders,
+      options?.limit,
+      options?.offset,
     );
-    if (options?.limit) {
-      entitySelectQuery.limit = options.limit;
-    }
-    if (options?.offset) {
-      entitySelectQuery.offset = options.offset;
-    }
 
     return this.sparqlConstruct(entitySelectQuery);
   }
 
-  private sparqlSelect(variables: Variable[], wherePatterns: Pattern[]): SelectQuery {
+  private sparqlSelect(
+    variables: Variable[],
+    where: Pattern[],
+    order: Ordering[],
+    limit?: number,
+    offset?: number,
+  ): SelectQuery {
     return {
       type: 'query',
       queryType: 'SELECT',
       variables,
-      where: wherePatterns,
+      where,
+      order: order.length > 0 ? order : undefined,
+      limit,
+      offset,
       prefixes: {},
     };
   }
 
-  private buildPatternsFromQueryData(where?: FindOptionsWhere): Pattern[] {
-    const queryData = this.createWhereQueryData(entityVariable, where);
-    const patterns: Pattern[] = [{ type: 'bgp', triples: queryData.triples }];
+  private buildPatternsFromQueryData(where?: FindOptionsWhere, order?: FindOptionsOrder): SelectQueryData {
+    const queryData = this.createQueryData(entityVariable, where, order);
+    const patterns: Pattern[] = [];
+    if (queryData.triples.length > 0) {
+      patterns.push({
+        type: 'bgp',
+        triples: queryData.triples,
+      });
+    }
+    if (queryData.optionalTriples.length > 0) {
+      patterns.push({
+        type: 'optional',
+        patterns: [{
+          type: 'bgp',
+          triples: queryData.optionalTriples,
+        }],
+      });
+    }
     if (queryData.filters.length === 1) {
       patterns.push({
         type: 'filter',
@@ -87,7 +124,10 @@ export class SparqlQueryBuilder {
         },
       } as FilterPattern);
     }
-    return patterns;
+    return {
+      where: patterns,
+      orders: queryData.orders,
+    };
   }
 
   private sparqlConstruct(graphSelectionQuery: SelectQuery): ConstructQuery {
@@ -119,21 +159,27 @@ export class SparqlQueryBuilder {
     };
   }
 
-  private createWhereQueryData(
+  private createQueryData(
     parentVariable: Variable,
     where?: FindOptionsWhere,
-  ): WhereQueryData {
+    order?: FindOptionsOrder,
+  ): QueryData {
+    const whereQueryData = this.createWhereQueryData(parentVariable, where);
+    const orderQueryData = this.createOrderQueryData(parentVariable, order);
+    return { ...whereQueryData, ...orderQueryData };
+  }
+
+  private createWhereQueryData(parentVariable: Variable, where?: FindOptionsWhere): WhereQueryData {
     if (!where) {
       return {
         triples: [{
-          subject: DataFactory.variable(this.variableGenerator.getNext()),
+          subject: parentVariable,
           predicate: DataFactory.variable(this.variableGenerator.getNext()),
           object: DataFactory.variable(this.variableGenerator.getNext()),
         }],
         filters: [],
       };
     }
-
     const hasSingleKey = Object.keys(where).length === 1;
     return Object.entries(where).reduce((obj: WhereQueryData, [ key, value ]): WhereQueryData => {
       const whereQueryData = this.createWhereQueryDataForField(key, value!, parentVariable, hasSingleKey);
@@ -187,13 +233,15 @@ export class SparqlQueryBuilder {
   ): WhereQueryData {
     let filter: OperationExpression;
     if (FindOperator.isFindOperator(value)) {
-      filter = this.resolveFindOperatorAsExpressionWithSingleValue(term as Expression, value as FindOperator<string>);
+      filter = this.resolveFindOperatorAsExpressionForId(term as Expression, value as FindOperator<string>);
     } else {
       filter = this.buildEqualOperation(term as Expression, DataFactory.namedNode(value as string));
     }
     const queryData = {
       filters: [ filter ],
       triples: [],
+      optionalTriples: [],
+      orders: [],
     } as WhereQueryData;
 
     if (qualifyWithTriple) {
@@ -297,7 +345,7 @@ export class SparqlQueryBuilder {
     }
   }
 
-  private resolveFindOperatorAsExpressionWithSingleValue(
+  private resolveFindOperatorAsExpressionForId(
     leftSide: Expression,
     operator: FindOperator<any>,
   ): OperationExpression {
@@ -308,7 +356,7 @@ export class SparqlQueryBuilder {
           this.resolveValueToExpression(operator.value) as Expression,
         );
       case 'not':
-        return this.buildNotOperationForSingleValue(
+        return this.buildNotOperationForId(
           leftSide,
           this.resolveValueToExpression(operator.value) as Expression | FindOperator<any>,
         );
@@ -391,7 +439,7 @@ export class SparqlQueryBuilder {
     };
   }
 
-  private buildNotOperationForSingleValue(
+  private buildNotOperationForId(
     leftSide: Expression,
     rightSide: Expression | FindOperator<any>,
   ): OperationExpression {
@@ -439,5 +487,40 @@ export class SparqlQueryBuilder {
       return DataFactory.namedNode(value as string);
     }
     return valueToLiteral(value);
+  }
+
+  private createOrderQueryData(parentVariable: Variable, order?: FindOptionsOrder): OrderQueryData {
+    if (!order) {
+      return {
+        optionalTriples: [],
+        orders: [],
+      };
+    }
+    return Object.entries(order).reduce((obj: OrderQueryData, [ property, direction ]): OrderQueryData => {
+      const orderQueryData = this.createOrderQueryDataForProperty(property, direction, parentVariable);
+      return {
+        optionalTriples: [ ...obj.optionalTriples, orderQueryData.triple ],
+        orders: [ ...obj.orders, orderQueryData.order ],
+      };
+    }, { optionalTriples: [], orders: []});
+  }
+
+  private createOrderQueryDataForProperty(
+    property: string,
+    direction: FindOptionsOrderValue,
+    parentVariable: Variable,
+  ): { triple: Triple; order: Ordering } {
+    const variable = DataFactory.variable(this.variableGenerator.getNext());
+    return {
+      triple: {
+        subject: parentVariable,
+        predicate: DataFactory.namedNode(property),
+        object: variable,
+      },
+      order: {
+        expression: variable,
+        descending: direction === 'DESC' || direction === 'desc',
+      },
+    };
   }
 }

@@ -57,8 +57,15 @@ describe('A SparqlQueryBuilder', (): void => {
             variables: [ entityVariable ],
             where: [{
               type: 'bgp',
-              triples: [{ subject: c1, predicate: c2, object: c3 }],
+              triples: [{
+                subject: entityVariable,
+                predicate: c1,
+                object: c2,
+              }],
             }],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
           }],
         },
       ],
@@ -128,6 +135,7 @@ describe('A SparqlQueryBuilder', (): void => {
             ],
             limit: 5,
             offset: 5,
+            order: undefined,
           }],
         },
       ],
@@ -187,6 +195,9 @@ describe('A SparqlQueryBuilder', (): void => {
                 },
               },
             ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
           }],
         },
       ],
@@ -258,6 +269,9 @@ describe('A SparqlQueryBuilder', (): void => {
                 },
               },
             ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
           }],
         },
       ],
@@ -272,7 +286,7 @@ describe('A SparqlQueryBuilder', (): void => {
     })).toEqual(query);
   });
 
-  it('builds a query with a URL filter.', (): void => {
+  it('builds a query with a NamedNode filter.', (): void => {
     const query = {
       type: 'query',
       queryType: 'CONSTRUCT',
@@ -308,6 +322,9 @@ describe('A SparqlQueryBuilder', (): void => {
                 ],
               },
             ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
           }],
         },
       ],
@@ -363,6 +380,9 @@ describe('A SparqlQueryBuilder', (): void => {
                 },
               },
             ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
           }],
         },
       ],
@@ -429,6 +449,9 @@ describe('A SparqlQueryBuilder', (): void => {
                 },
               },
             ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
           }],
         },
       ],
@@ -490,6 +513,9 @@ describe('A SparqlQueryBuilder', (): void => {
                 },
               },
             ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
           }],
         },
       ],
@@ -545,6 +571,9 @@ describe('A SparqlQueryBuilder', (): void => {
                 },
               },
             ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
           }],
         },
       ],
@@ -603,6 +632,9 @@ describe('A SparqlQueryBuilder', (): void => {
                 },
               },
             ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
           }],
         },
       ],
@@ -658,6 +690,9 @@ describe('A SparqlQueryBuilder', (): void => {
                 },
               },
             ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
           }],
         },
       ],
@@ -713,6 +748,9 @@ describe('A SparqlQueryBuilder', (): void => {
                 },
               },
             ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
           }],
         },
       ],
@@ -791,6 +829,9 @@ describe('A SparqlQueryBuilder', (): void => {
                 },
               },
             ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
           }],
         },
       ],
@@ -872,6 +913,9 @@ describe('A SparqlQueryBuilder', (): void => {
                 },
               },
             ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
           }],
         },
       ],
@@ -950,6 +994,9 @@ describe('A SparqlQueryBuilder', (): void => {
                 },
               },
             ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
           }],
         },
       ],
@@ -1008,6 +1055,9 @@ describe('A SparqlQueryBuilder', (): void => {
                 },
               },
             ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
           }],
         },
       ],
@@ -1071,4 +1121,66 @@ describe('A SparqlQueryBuilder', (): void => {
         });
       }).toThrow('Unsupported Not sub operator "and"');
     });
+
+  it('builds a query with a with an order.', (): void => {
+    const query = {
+      type: 'query',
+      queryType: 'CONSTRUCT',
+      prefixes: {},
+      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      where: [
+        {
+          type: 'graph',
+          name: entityVariable,
+          patterns: [
+            {
+              type: 'bgp',
+              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+            },
+          ],
+        },
+        {
+          type: 'group',
+          patterns: [{
+            type: 'query',
+            prefixes: {},
+            queryType: 'SELECT',
+            variables: [ entityVariable ],
+            where: [
+              {
+                type: 'bgp',
+                triples: [{
+                  subject: entityVariable,
+                  predicate: c1,
+                  object: c2,
+                }],
+              },
+              {
+                type: 'optional',
+                patterns: [{
+                  type: 'bgp',
+                  triples: [{
+                    subject: entityVariable,
+                    predicate,
+                    object: c3,
+                  }],
+                }],
+              },
+            ],
+            limit: undefined,
+            offset: undefined,
+            order: [{
+              expression: c3,
+              descending: true,
+            }],
+          }],
+        },
+      ],
+    };
+    expect(builder.buildQuery({
+      order: {
+        'https://example.com/pred': 'desc',
+      },
+    })).toEqual(query);
+  });
 });

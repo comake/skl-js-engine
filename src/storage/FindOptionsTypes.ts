@@ -9,7 +9,7 @@ export interface FindOneOptions {
   where?: FindOptionsWhere;
   // select?: FindOptionsSelect | FindOptionsSelectByString;
   // relations?: FindOptionsRelations;
-  // order?: FindOptionsOrder;
+  order?: FindOptionsOrder;
 }
 
 export interface FindOptionsSelect {
