@@ -18,11 +18,13 @@ import { SKL, XSD } from '../../../../src/util/Vocabularies';
 const c1 = DataFactory.variable('c1');
 const c2 = DataFactory.variable('c2');
 const c3 = DataFactory.variable('c3');
+const c4 = DataFactory.variable('c4');
 const predicate = DataFactory.namedNode('https://example.com/pred');
 const data1 = DataFactory.namedNode('https://example.com/data/1');
 const data2 = DataFactory.namedNode('https://example.com/data/2');
 const file = DataFactory.namedNode(SKL.File);
 const event = DataFactory.namedNode(SKL.Event);
+const graphPattern = [{ subject: subjectNode, predicate: predicateNode, object: objectNode }];
 
 describe('A SparqlQueryBuilder', (): void => {
   let builder: SparqlQueryBuilder;
@@ -36,17 +38,12 @@ describe('A SparqlQueryBuilder', (): void => {
       type: 'query',
       queryType: 'CONSTRUCT',
       prefixes: {},
-      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      template: graphPattern,
       where: [
         {
           type: 'graph',
           name: entityVariable,
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
+          patterns: [{ type: 'bgp', triples: graphPattern }],
         },
         {
           type: 'group',
@@ -78,17 +75,12 @@ describe('A SparqlQueryBuilder', (): void => {
       type: 'query',
       queryType: 'CONSTRUCT',
       prefixes: {},
-      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      template: graphPattern,
       where: [
         {
           type: 'graph',
           name: entityVariable,
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
+          patterns: [{ type: 'bgp', triples: graphPattern }],
         },
         {
           type: 'group',
@@ -156,17 +148,12 @@ describe('A SparqlQueryBuilder', (): void => {
       type: 'query',
       queryType: 'CONSTRUCT',
       prefixes: {},
-      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      template: graphPattern,
       where: [
         {
           type: 'graph',
           name: entityVariable,
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
+          patterns: [{ type: 'bgp', triples: graphPattern }],
         },
         {
           type: 'group',
@@ -214,17 +201,12 @@ describe('A SparqlQueryBuilder', (): void => {
       type: 'query',
       queryType: 'CONSTRUCT',
       prefixes: {},
-      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      template: graphPattern,
       where: [
         {
           type: 'graph',
           name: entityVariable,
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
+          patterns: [{ type: 'bgp', triples: graphPattern }],
         },
         {
           type: 'group',
@@ -291,17 +273,12 @@ describe('A SparqlQueryBuilder', (): void => {
       type: 'query',
       queryType: 'CONSTRUCT',
       prefixes: {},
-      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      template: graphPattern,
       where: [
         {
           type: 'graph',
           name: entityVariable,
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
+          patterns: [{ type: 'bgp', triples: graphPattern }],
         },
         {
           type: 'group',
@@ -341,17 +318,12 @@ describe('A SparqlQueryBuilder', (): void => {
       type: 'query',
       queryType: 'CONSTRUCT',
       prefixes: {},
-      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      template: graphPattern,
       where: [
         {
           type: 'graph',
           name: entityVariable,
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
+          patterns: [{ type: 'bgp', triples: graphPattern }],
         },
         {
           type: 'group',
@@ -399,17 +371,12 @@ describe('A SparqlQueryBuilder', (): void => {
       type: 'query',
       queryType: 'CONSTRUCT',
       prefixes: {},
-      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      template: graphPattern,
       where: [
         {
           type: 'graph',
           name: entityVariable,
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
+          patterns: [{ type: 'bgp', triples: graphPattern }],
         },
         {
           type: 'group',
@@ -468,17 +435,12 @@ describe('A SparqlQueryBuilder', (): void => {
       type: 'query',
       queryType: 'CONSTRUCT',
       prefixes: {},
-      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      template: graphPattern,
       where: [
         {
           type: 'graph',
           name: entityVariable,
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
+          patterns: [{ type: 'bgp', triples: graphPattern }],
         },
         {
           type: 'group',
@@ -532,17 +494,12 @@ describe('A SparqlQueryBuilder', (): void => {
       type: 'query',
       queryType: 'CONSTRUCT',
       prefixes: {},
-      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      template: graphPattern,
       where: [
         {
           type: 'graph',
           name: entityVariable,
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
+          patterns: [{ type: 'bgp', triples: graphPattern }],
         },
         {
           type: 'group',
@@ -590,17 +547,12 @@ describe('A SparqlQueryBuilder', (): void => {
       type: 'query',
       queryType: 'CONSTRUCT',
       prefixes: {},
-      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      template: graphPattern,
       where: [
         {
           type: 'graph',
           name: entityVariable,
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
+          patterns: [{ type: 'bgp', triples: graphPattern }],
         },
         {
           type: 'group',
@@ -651,17 +603,12 @@ describe('A SparqlQueryBuilder', (): void => {
       type: 'query',
       queryType: 'CONSTRUCT',
       prefixes: {},
-      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      template: graphPattern,
       where: [
         {
           type: 'graph',
           name: entityVariable,
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
+          patterns: [{ type: 'bgp', triples: graphPattern }],
         },
         {
           type: 'group',
@@ -709,17 +656,12 @@ describe('A SparqlQueryBuilder', (): void => {
       type: 'query',
       queryType: 'CONSTRUCT',
       prefixes: {},
-      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      template: graphPattern,
       where: [
         {
           type: 'graph',
           name: entityVariable,
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
+          patterns: [{ type: 'bgp', triples: graphPattern }],
         },
         {
           type: 'group',
@@ -767,17 +709,12 @@ describe('A SparqlQueryBuilder', (): void => {
       type: 'query',
       queryType: 'CONSTRUCT',
       prefixes: {},
-      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      template: graphPattern,
       where: [
         {
           type: 'graph',
           name: entityVariable,
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
+          patterns: [{ type: 'bgp', triples: graphPattern }],
         },
         {
           type: 'group',
@@ -848,17 +785,12 @@ describe('A SparqlQueryBuilder', (): void => {
       type: 'query',
       queryType: 'CONSTRUCT',
       prefixes: {},
-      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      template: graphPattern,
       where: [
         {
           type: 'graph',
           name: entityVariable,
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
+          patterns: [{ type: 'bgp', triples: graphPattern }],
         },
         {
           type: 'group',
@@ -932,17 +864,12 @@ describe('A SparqlQueryBuilder', (): void => {
       type: 'query',
       queryType: 'CONSTRUCT',
       prefixes: {},
-      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      template: graphPattern,
       where: [
         {
           type: 'graph',
           name: entityVariable,
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
+          patterns: [{ type: 'bgp', triples: graphPattern }],
         },
         {
           type: 'group',
@@ -1013,17 +940,12 @@ describe('A SparqlQueryBuilder', (): void => {
       type: 'query',
       queryType: 'CONSTRUCT',
       prefixes: {},
-      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      template: graphPattern,
       where: [
         {
           type: 'graph',
           name: entityVariable,
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
+          patterns: [{ type: 'bgp', triples: graphPattern }],
         },
         {
           type: 'group',
@@ -1127,17 +1049,12 @@ describe('A SparqlQueryBuilder', (): void => {
       type: 'query',
       queryType: 'CONSTRUCT',
       prefixes: {},
-      template: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      template: graphPattern,
       where: [
         {
           type: 'graph',
           name: entityVariable,
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
+          patterns: [{ type: 'bgp', triples: graphPattern }],
         },
         {
           type: 'group',
@@ -1181,6 +1098,105 @@ describe('A SparqlQueryBuilder', (): void => {
       order: {
         'https://example.com/pred': 'desc',
       },
+    })).toEqual(query);
+  });
+
+  it('builds a query with a nested select clause.', (): void => {
+    const selectPattern = [
+      { subject: entityVariable, predicate, object: c3 },
+      { subject: c3, predicate: DataFactory.namedNode('https://example.com/pred2'), object: c4 },
+    ];
+    const query = {
+      type: 'query',
+      queryType: 'CONSTRUCT',
+      prefixes: {},
+      template: selectPattern,
+      where: [
+        {
+          type: 'graph',
+          name: entityVariable,
+          patterns: [{
+            type: 'optional',
+            patterns: [{ type: 'bgp', triples: selectPattern }],
+          }],
+        },
+        {
+          type: 'group',
+          patterns: [{
+            type: 'query',
+            prefixes: {},
+            queryType: 'SELECT',
+            variables: [ entityVariable ],
+            where: [{
+              type: 'bgp',
+              triples: [{
+                subject: entityVariable,
+                predicate: c1,
+                object: c2,
+              }],
+            }],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
+          }],
+        },
+      ],
+    };
+    expect(builder.buildQuery({
+      select: {
+        'https://example.com/pred': {
+          'https://example.com/pred2': true,
+        },
+      },
+    })).toEqual(query);
+  });
+
+  it('builds a query with an array of selections.', (): void => {
+    const selectPattern = [
+      { subject: entityVariable, predicate, object: c3 },
+      { subject: entityVariable, predicate: DataFactory.namedNode('https://example.com/pred2'), object: c4 },
+    ];
+    const query = {
+      type: 'query',
+      queryType: 'CONSTRUCT',
+      prefixes: {},
+      template: selectPattern,
+      where: [
+        {
+          type: 'graph',
+          name: entityVariable,
+          patterns: [{
+            type: 'optional',
+            patterns: [{ type: 'bgp', triples: selectPattern }],
+          }],
+        },
+        {
+          type: 'group',
+          patterns: [{
+            type: 'query',
+            prefixes: {},
+            queryType: 'SELECT',
+            variables: [ entityVariable ],
+            where: [{
+              type: 'bgp',
+              triples: [{
+                subject: entityVariable,
+                predicate: c1,
+                object: c2,
+              }],
+            }],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
+          }],
+        },
+      ],
+    };
+    expect(builder.buildQuery({
+      select: [
+        'https://example.com/pred',
+        'https://example.com/pred2',
+      ],
     })).toEqual(query);
   });
 });

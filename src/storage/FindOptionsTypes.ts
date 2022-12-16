@@ -5,15 +5,13 @@ export type FindOptionsSelectByString = string[];
 
 export type FindOptionsRelationsByString = string[];
 
+export type FindOptionsSelect = FindOptionsSelectByString | {[key: string]: boolean | FindOptionsSelect };
+
 export interface FindOneOptions {
   where?: FindOptionsWhere;
-  // select?: FindOptionsSelect | FindOptionsSelectByString;
+  select?: FindOptionsSelect;
   // relations?: FindOptionsRelations;
   order?: FindOptionsOrder;
-}
-
-export interface FindOptionsSelect {
-  [k: string]: boolean | FindOptionsSelect;
 }
 
 export interface FindOptionsRelations {

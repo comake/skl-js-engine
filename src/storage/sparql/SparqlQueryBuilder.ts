@@ -29,6 +29,7 @@ import type {
   FindAllOptions,
   FindOptionsOrder,
   FindOptionsOrderValue,
+  FindOptionsSelect,
   FindOptionsWhere,
   FindOptionsWhereField,
   IdOrTypeFindOptionsWhereField,
@@ -69,7 +70,7 @@ export class SparqlQueryBuilder {
       options?.offset,
     );
 
-    return this.sparqlConstruct(entitySelectQuery);
+    return this.sparqlConstruct(entitySelectQuery, options?.select);
   }
 
   private sparqlSelect(
@@ -130,18 +131,47 @@ export class SparqlQueryBuilder {
     };
   }
 
-  private sparqlConstruct(graphSelectionQuery: SelectQuery): ConstructQuery {
-    const pattern = { subject: subjectNode, predicate: predicateNode, object: objectNode };
+  private sparqlConstruct(
+    graphSelectionQuery: SelectQuery,
+    select?: FindOptionsSelect,
+  ): ConstructQuery {
+    let pattern: Triple[];
+    let graphSelect: GraphPattern;
+    if (select) {
+      pattern = this.createSelectPattern(select, entityVariable);
+      graphSelect = this.sparqlOptionalSelectGraph(entityVariable, pattern);
+    } else {
+      pattern = [{ subject: subjectNode, predicate: predicateNode, object: objectNode }];
+      graphSelect = this.sparqlSelectGraph(entityVariable, pattern);
+    }
     return {
       type: 'query',
       prefixes: {},
       queryType: 'CONSTRUCT',
-      template: [ pattern ],
+      template: pattern,
       where: [
-        this.sparqlSelectGraph(entityVariable, [ pattern ]),
+        graphSelect,
         this.sparqlSelectGroup([ graphSelectionQuery ]),
       ],
     };
+  }
+
+  private createSelectPattern(select: FindOptionsSelect, parentVariable: Variable): Triple[] {
+    if (Array.isArray(select)) {
+      return select.map((selectPredicate): Triple => ({
+        subject: parentVariable,
+        predicate: DataFactory.namedNode(selectPredicate),
+        object: DataFactory.variable(this.variableGenerator.getNext()),
+      }));
+    }
+    return Object.entries(select).reduce((arr: Triple[], [ key, value ]): Triple[] => {
+      const variable = DataFactory.variable(this.variableGenerator.getNext());
+      arr.push({ subject: parentVariable, predicate: DataFactory.namedNode(key), object: variable });
+      if (typeof value === 'object') {
+        arr = [ ...arr, ...this.createSelectPattern(value, variable) ];
+      }
+      return arr;
+    }, []);
   }
 
   private sparqlSelectGraph(name: Variable | NamedNode, triples: Triple[]): GraphPattern {
@@ -149,6 +179,20 @@ export class SparqlQueryBuilder {
       type: 'graph',
       name: name as IriTerm,
       patterns: [{ type: 'bgp', triples }],
+    };
+  }
+
+  private sparqlOptionalSelectGraph(name: Variable | NamedNode, triples: Triple[]): GraphPattern {
+    return {
+      type: 'graph',
+      name: name as IriTerm,
+      patterns: [{
+        type: 'optional',
+        patterns: [{
+          type: 'bgp',
+          triples,
+        }],
+      }],
     };
   }
 
