@@ -16,27 +16,27 @@
     "rml": "http://semweb.mmlab.be/ns/rml#",
     "owl": "http://www.w3.org/2002/07/owl#",
     "skos": "http://www.w3.org/2004/02/skos/core#",
-    "https://skl.standard.storage/properties/integration": { "@type": "@id" },
-    "https://skl.standard.storage/properties/account": { "@type": "@id" },
-    "https://skl.standard.storage/properties/openApiDescription": { "@type": "@json" },
-    "sklproperties": "https://skl.standard.storage/properties/",
-    "https://skl.standard.storage/properties/parametersContext": { "@type": "@json" },
-    "https://skl.standard.storage/properties/returnValueFrame": { "@type": "@json" },
-    "name": "sklproperties:name",
+    "https://skl.standard.storage/integration": { "@type": "@id" },
+    "https://skl.standard.storage/account": { "@type": "@id" },
+    "https://skl.standard.storage/openApiDescription": { "@type": "@json" },
+    "skl": "https://skl.standard.storage/",
+    "https://skl.standard.storage/parametersContext": { "@type": "@json" },
+    "https://skl.standard.storage/returnValueFrame": { "@type": "@json" },
+    "name": "skl:name",
     "parameterMapping": {
-      "@id": "sklproperties:parameterMapping",
+      "@id": "skl:parameterMapping",
       "@type": "@id"
     },
     "returnValueMapping": {
-      "@id": "sklproperties:returnValueMapping",
+      "@id": "skl:returnValueMapping",
       "@type": "@id"
     },
     "operationMapping": {
-      "@id": "sklproperties:operationMapping",
+      "@id": "skl:operationMapping",
       "@type": "@id"
     },
-    "integration": { "@id": "sklproperties:integration", "@type": "@id" },
-    "verb": { "@id": "sklproperties:verb", "@type": "@id" },
+    "integration": { "@id": "skl:integration", "@type": "@id" },
+    "verb": { "@id": "skl:verb", "@type": "@id" },
     "rml:referenceFormulation": { "@type": "@id" },
     "rr:parentTriplesMap": { "@type": "@id" },
     "rr:predicate": { "@type": "@id" },
@@ -48,109 +48,109 @@
     {
       "@id": "schema:Event",
       "@type": ["owl:Class", "shacl:NodeShape"],
-      "rdfs:subClassOf": "https://skl.standard.storage/nouns/Noun"
+      "rdfs:subClassOf": "https://skl.standard.storage/Noun"
     },
     {
       "@id": "https://skl.standard.storage/data/TicketmasterAccount1",
-      "@type": "https://skl.standard.storage/nouns/Account",
-      "https://skl.standard.storage/properties/integration": "https://skl.standard.storage/integrations/Ticketmaster"
+      "@type": "https://skl.standard.storage/Account",
+      "https://skl.standard.storage/integration": "https://skl.standard.storage/integrations/Ticketmaster"
     },
     {
       "@id": "https://skl.standard.storage/data/TicketmasterAccount1SecurityCredentials",
-      "@type": "https://skl.standard.storage/nouns/SecurityCredentials",
-      "https://skl.standard.storage/properties/apiKey": "ENV_TICKETMASTER_APIKEY",
-      "https://skl.standard.storage/properties/account": "https://skl.standard.storage/data/TicketmasterAccount1"
+      "@type": "https://skl.standard.storage/SecurityCredentials",
+      "https://skl.standard.storage/apiKey": "ENV_TICKETMASTER_APIKEY",
+      "https://skl.standard.storage/account": "https://skl.standard.storage/data/TicketmasterAccount1"
     },
     {
       "@id": "https://skl.standard.storage/integrations/Ticketmaster",
-      "@type": "https://skl.standard.storage/nouns/Integration",
-      "https://skl.standard.storage/properties/description": "Buy and sell tickets online for concerts, sports, theater, family and other events near you from Ticketmaster.",
-      "https://skl.standard.storage/properties/name": "Ticketmaster"
+      "@type": "https://skl.standard.storage/Integration",
+      "https://skl.standard.storage/description": "Buy and sell tickets online for concerts, sports, theater, family and other events near you from Ticketmaster.",
+      "https://skl.standard.storage/name": "Ticketmaster"
     },
     {
-      "@id": "https://skl.standard.storage/verbs/getEvents",
-      "@type": "https://skl.standard.storage/nouns/Verb",
-      "https://skl.standard.storage/properties/name": "getEvents",
-      "https://skl.standard.storage/properties/parametersContext": {
+      "@id": "https://skl.standard.storage/getEvents",
+      "@type": "https://skl.standard.storage/Verb",
+      "https://skl.standard.storage/name": "getEvents",
+      "https://skl.standard.storage/parametersContext": {
         "city": {
-          "@id": "https://skl.standard.storage/properties/city",
+          "@id": "https://skl.standard.storage/city",
           "@type": "http://www.w3.org/2001/XMLSchema#string"
         },
         "startAfterdate": {
-          "@id": "https://skl.standard.storage/properties/date",
+          "@id": "https://skl.standard.storage/date",
           "@type": "http://www.w3.org/2001/XMLSchema#string"
         },
         "startBeforedate": {
-          "@id": "https://skl.standard.storage/properties/date",
+          "@id": "https://skl.standard.storage/date",
           "@type": "http://www.w3.org/2001/XMLSchema#string"
         },
         "page": {
-          "@id": "https://skl.standard.storage/properties/page",
+          "@id": "https://skl.standard.storage/page",
           "@type": "http://www.w3.org/2001/XMLSchema#integer"
         },
         "pageSize": {
-          "@id": "https://skl.standard.storage/properties/pageSize",
+          "@id": "https://skl.standard.storage/pageSize",
           "@type": "http://www.w3.org/2001/XMLSchema#integer"
         },
         "account": {
-          "@id": "https://skl.standard.storage/properties/account",
+          "@id": "https://skl.standard.storage/account",
           "@type": "@id"
         }
       },
-      "https://skl.standard.storage/properties/parameters": {
+      "https://skl.standard.storage/parameters": {
         "@type": "shacl:NodeShape",
-        "shacl:targetClass": "https://skl.standard.storage/nouns/Parameters",
+        "shacl:targetClass": "https://skl.standard.storage/Parameters",
         "shacl:property": [
           {
             "shacl:datatype": "xsd:string",
             "shacl:maxCount": 1,
             "shacl:name": "city",
-            "shacl:path": "https://skl.standard.storage/properties/city"
+            "shacl:path": "https://skl.standard.storage/city"
           },
           {
             "shacl:datatype": "xsd:string",
             "shacl:maxCount": 1,
             "shacl:name": "startAfterDate",
-            "shacl:path": "https://skl.standard.storage/properties/startAfterDate"
+            "shacl:path": "https://skl.standard.storage/startAfterDate"
           },
           {
             "shacl:datatype": "xsd:string",
             "shacl:maxCount": 1,
             "shacl:name": "startBeforeDate",
-            "shacl:path": "https://skl.standard.storage/properties/startBeforeDate"
+            "shacl:path": "https://skl.standard.storage/startBeforeDate"
           },
           {
             "shacl:datatype": "xsd:integer",
             "shacl:maxCount": 1,
             "shacl:name": "page",
-            "shacl:path": "https://skl.standard.storage/properties/page"
+            "shacl:path": "https://skl.standard.storage/page"
           },
           {
             "shacl:datatype": "xsd:integer",
             "shacl:maxCount": 1,
             "shacl:name": "pageSize",
-            "shacl:path": "https://skl.standard.storage/properties/pageSize"
+            "shacl:path": "https://skl.standard.storage/pageSize"
           },
           {
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
             "shacl:name": "account",
-            "shacl:path": "https://skl.standard.storage/properties/account"
+            "shacl:path": "https://skl.standard.storage/account"
           }
         ]
       },
-      "https://skl.standard.storage/properties/returnValue": {
-        "@id": "https://skl.standard.storage/nouns/TokenPaginatedCollection"
+      "https://skl.standard.storage/returnValue": {
+        "@id": "https://skl.standard.storage/TokenPaginatedCollection"
       },
-      "https://skl.standard.storage/properties/returnValueFrame": {
-        "@type": "https://skl.standard.storage/nouns/TokenPaginatedCollection"
+      "https://skl.standard.storage/returnValueFrame": {
+        "@type": "https://skl.standard.storage/TokenPaginatedCollection"
       }
     },
     {
       "@id": "https://skl.standard.storage/data/5",
-      "@type": "https://skl.standard.storage/nouns/VerbIntegrationMapping",
+      "@type": "https://skl.standard.storage/VerbIntegrationMapping",
       "integration": "https://skl.standard.storage/integrations/Ticketmaster",
-      "verb": "https://skl.standard.storage/verbs/getEvents",
+      "verb": "https://skl.standard.storage/getEvents",
       "name": "getEventsToTicketmaster",
       "operationMapping": {
         "@type": "rr:TriplesMap",
@@ -167,7 +167,7 @@
               "@type": "rr:ObjectMap",
               "rr:constant": "SearchEvents"
             },
-            "rr:predicate": "sklproperties:operationId"
+            "rr:predicate": "skl:operationId"
           }
         ],
         "rr:subject": "https://skl.standard.storage/mappingSubject"
@@ -188,7 +188,7 @@
               "rml:reference": "page",
               "rr:datatype": "http://www.w3.org/2001/XMLSchema#integer"
             },
-            "rr:predicate": "sklproperties:page"
+            "rr:predicate": "skl:page"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -197,7 +197,7 @@
               "rml:reference": "pageSize",
               "rr:datatype": "http://www.w3.org/2001/XMLSchema#integer"
             },
-            "rr:predicate": "sklproperties:size"
+            "rr:predicate": "skl:size"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -205,7 +205,7 @@
               "@type": "rr:ObjectMap",
               "rml:reference": "city"
             },
-            "rr:predicate": "sklproperties:city"
+            "rr:predicate": "skl:city"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -214,7 +214,7 @@
               "rml:reference": "startAfterDate",
               "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
             },
-            "rr:predicate": "sklproperties:startDateTime"
+            "rr:predicate": "skl:startDateTime"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -223,7 +223,7 @@
               "rml:reference": "startBeforeDate",
               "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
             },
-            "rr:predicate": "sklproperties:endDateTime"
+            "rr:predicate": "skl:endDateTime"
           }
         ],
         "rr:subject": "https://skl.standard.storage/mappingSubject"
@@ -549,13 +549,13 @@
                   }
                 }
               },
-              "rr:predicate": "sklproperties:records"
+              "rr:predicate": "skl:records"
             }
           ],
           "rr:subjectMap": {
             "@type": "rr:SubjectMap",
             "rr:template": "https://skl.standard.storage/mappingSubject",
-            "rr:class": "https://skl.standard.storage/nouns/TokenPaginatedCollection"
+            "rr:class": "https://skl.standard.storage/TokenPaginatedCollection"
           }
         },
         {
@@ -695,9 +695,9 @@
     },
     {
       "@id": "https://skl.standard.storage/data/TicketmasterOpenApiDescription",
-      "@type": "https://skl.standard.storage/nouns/OpenApiDescription",
-      "https://skl.standard.storage/properties/integration": "https://skl.standard.storage/integrations/Ticketmaster",
-      "https://skl.standard.storage/properties/openApiDescription": {
+      "@type": "https://skl.standard.storage/OpenApiDescription",
+      "https://skl.standard.storage/integration": "https://skl.standard.storage/integrations/Ticketmaster",
+      "https://skl.standard.storage/openApiDescription": {
         "openapi": "3.0.0",
         "servers": [
           {

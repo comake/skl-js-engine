@@ -27,7 +27,7 @@ describe('A Mapper', (): void => {
       const response = await mapper.apply(data, mapping, { '@id': 'https://skl.standard.storage/mappingSubject' });
       expect(response).toEqual({
         '@id': 'https://skl.standard.storage/mappingSubject',
-        'https://skl.standard.storage/properties/field': 'abc123',
+        'https://skl.standard.storage/field': 'abc123',
       });
     });
 
@@ -39,7 +39,7 @@ describe('A Mapper', (): void => {
       expect(response).toEqual({
         '@id': 'https://skl.standard.storage/mappingSubject',
         '@type': 'https://skl.standard.storage/MappingSubject',
-        'https://skl.standard.storage/properties/field': 'abc123',
+        'https://skl.standard.storage/field': 'abc123',
       });
     });
 
@@ -54,7 +54,7 @@ describe('A Mapper', (): void => {
           'https://example.com/person',
           'https://example.com/thing',
         ],
-        'https://skl.standard.storage/properties/field': 'abc123',
+        'https://skl.standard.storage/field': 'abc123',
       });
     });
 
@@ -64,12 +64,12 @@ describe('A Mapper', (): void => {
     const response = await mapper.apply(data, mapping, { '@id': 'https://skl.standard.storage/mappingSubject' });
     expect(response).toEqual({
       '@context': {
-        'https://skl.standard.storage/properties/field': {
+        'https://skl.standard.storage/field': {
           '@type': 'http://www.w3.org/2001/XMLSchema#boolean',
         },
       },
       '@id': 'https://skl.standard.storage/mappingSubject',
-      'https://skl.standard.storage/properties/field': true,
+      'https://skl.standard.storage/field': true,
     });
   });
 
@@ -80,12 +80,12 @@ describe('A Mapper', (): void => {
       const response = await mapper.apply(data, mapping, { '@id': 'https://skl.standard.storage/mappingSubject' });
       expect(response).toEqual({
         '@context': {
-          'https://skl.standard.storage/properties/field': {
+          'https://skl.standard.storage/field': {
             '@type': 'http://www.w3.org/2001/XMLSchema#integer',
           },
         },
         '@id': 'https://skl.standard.storage/mappingSubject',
-        'https://skl.standard.storage/properties/field': [ 1, 2, 3 ],
+        'https://skl.standard.storage/field': [ 1, 2, 3 ],
       });
     });
 
@@ -95,12 +95,12 @@ describe('A Mapper', (): void => {
       const response = await mapper.apply(data, mapping, { '@id': 'https://skl.standard.storage/mappingSubject' });
       expect(response).toEqual({
         '@context': {
-          'https://skl.standard.storage/properties/field': {
+          'https://skl.standard.storage/field': {
             '@type': '@json',
           },
         },
         '@id': 'https://skl.standard.storage/mappingSubject',
-        'https://skl.standard.storage/properties/field': [ 1, 2, 3, 1 ],
+        'https://skl.standard.storage/field': [ 1, 2, 3, 1 ],
       });
     });
 
@@ -110,12 +110,12 @@ describe('A Mapper', (): void => {
       const response = await mapper.apply(data, mapping, { '@id': 'https://skl.standard.storage/mappingSubject' });
       expect(response).toEqual({
         '@context': {
-          'https://skl.standard.storage/properties/field': {
+          'https://skl.standard.storage/field': {
             '@type': 'http://www.w3.org/2001/XMLSchema#double',
           },
         },
         '@id': 'https://skl.standard.storage/mappingSubject',
-        'https://skl.standard.storage/properties/field': 3.14159,
+        'https://skl.standard.storage/field': 3.14159,
       });
     });
 
@@ -125,10 +125,10 @@ describe('A Mapper', (): void => {
       const response = await mapper.apply(data, mapping, { '@id': 'https://skl.standard.storage/mappingSubject' });
       expect(response).toEqual({
         '@context': {
-          'https://skl.standard.storage/properties/integration': { '@type': '@id' },
+          'https://skl.standard.storage/integration': { '@type': '@id' },
         },
         '@id': 'https://skl.standard.storage/mappingSubject',
-        'https://skl.standard.storage/properties/integration': 'https://skl.standard.storage/integrations/Dropbox',
+        'https://skl.standard.storage/integration': 'https://skl.standard.storage/integrations/Dropbox',
       });
     });
 
@@ -138,12 +138,12 @@ describe('A Mapper', (): void => {
       const response = await mapper.apply(data, mapping, { '@id': 'https://skl.standard.storage/mappingSubject' });
       expect(response).toEqual({
         '@context': {
-          'https://skl.standard.storage/properties/integration': {
+          'https://skl.standard.storage/integration': {
             '@type': '@id',
           },
         },
         '@id': 'https://skl.standard.storage/mappingSubject',
-        'https://skl.standard.storage/properties/integration': [
+        'https://skl.standard.storage/integration': [
           'https://skl.standard.storage/integrations/Dropbox',
           'https://skl.standard.storage/integrations/AirTable',
         ],
@@ -159,7 +159,7 @@ describe('A Mapper', (): void => {
       expect(response).toEqual({
         '@context': {
           field: {
-            '@id': 'https://skl.standard.storage/properties/field',
+            '@id': 'https://skl.standard.storage/field',
             '@type': 'http://www.w3.org/2001/XMLSchema#integer',
           },
         },
@@ -175,7 +175,7 @@ describe('A Mapper', (): void => {
       expect(response).toEqual({
         '@context': {
           field: {
-            '@id': 'https://skl.standard.storage/properties/field',
+            '@id': 'https://skl.standard.storage/field',
             '@type': 'http://www.w3.org/2001/XMLSchema#double',
           },
         },
@@ -191,7 +191,7 @@ describe('A Mapper', (): void => {
       expect(response).toEqual({
         '@context': {
           integration: {
-            '@id': 'https://skl.standard.storage/properties/integration',
+            '@id': 'https://skl.standard.storage/integration',
             '@type': '@id',
           },
         },
@@ -207,7 +207,7 @@ describe('A Mapper', (): void => {
       expect(response).toEqual({
         '@context': {
           integration: {
-            '@id': 'https://skl.standard.storage/properties/integration',
+            '@id': 'https://skl.standard.storage/integration',
             '@type': '@id',
           },
         },

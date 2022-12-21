@@ -37,7 +37,7 @@
             "rml:reference": "field",
             "rr:datatype": "http://www.w3.org/2001/XMLSchema#integer"
           },
-          "rr:predicate": "https://skl.standard.storage/properties/field"
+          "rr:predicate": "https://skl.standard.storage/field"
         }
       ],
       "rr:subjectMap": {

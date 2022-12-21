@@ -19,7 +19,7 @@
     "rr:predicate": { "@type": "@id" },
     "rr:object": { "@type": "@id" },
     "rr:termType": { "@type": "@id" },
-    "sklproperties": "https://skl.standard.storage/properties/"
+    "skl": "https://skl.standard.storage/"
   },
   "@graph": [
     {
@@ -39,7 +39,7 @@
             "rr:termType": "rr:IRI",
             "rr:constant": "https://skl.standard.storage/integrations/Dropbox"
           },
-          "rr:predicate": "sklproperties:integration"
+          "rr:predicate": "skl:integration"
         },
         {
           "@type": "rr:PredicateObjectMap",
@@ -48,7 +48,7 @@
             "rr:termType": "rr:IRI",
             "rr:constant": "https://skl.standard.storage/integrations/AirTable"
           },
-          "rr:predicate": "sklproperties:integration"
+          "rr:predicate": "skl:integration"
         }
       ],
       "rr:subjectMap": {

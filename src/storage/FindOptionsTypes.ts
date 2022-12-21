@@ -1,4 +1,5 @@
 /* eslint-disable capitalized-comments */
+import type { OrArray } from '../util/Types';
 import type { FindOperator } from './FindOperator';
 
 export type FindOptionsSelectByString = string[];
@@ -23,8 +24,8 @@ export type FindOptionsOrderValue = 'ASC' | 'DESC' | 'asc' | 'desc' | 1 | -1;
 export type FindOptionsOrder = Record<string, FindOptionsOrderValue>;
 
 export type FieldPrimitiveValue = boolean | number | string;
-// OrArray<boolean | number | string>;
-export type FindOptionsWhereField = FieldPrimitiveValue | FindOptionsWhere | FindOperator<any>;
+
+export type FindOptionsWhereField = OrArray<FieldPrimitiveValue> | FindOptionsWhere | FindOperator<any>;
 
 export type IdOrTypeFindOptionsWhereField = string | FindOperator<string> | FindOperator<string[]>;
 

@@ -12,6 +12,7 @@ import type {
   GroupPattern,
   GraphPattern,
   Ordering,
+  AskQuery,
 } from 'sparqljs';
 import {
   allTypesAndSuperTypesPath,
@@ -60,7 +61,21 @@ export class SparqlQueryBuilder {
     this.variableGenerator = new VariableGenerator();
   }
 
-  public buildQuery(options?: FindAllOptions): ConstructQuery {
+  public buildEntityExistQuery(where: FindOptionsWhere): AskQuery {
+    const selectQueryData = this.buildPatternsFromQueryData(where);
+    return this.sparqlAsk(selectQueryData.where);
+  }
+
+  private sparqlAsk(where: Pattern[]): AskQuery {
+    return {
+      type: 'query',
+      queryType: 'ASK',
+      where,
+      prefixes: {},
+    };
+  }
+
+  public buildEntityQuery(options?: FindAllOptions): ConstructQuery {
     const selectQueryData = this.buildPatternsFromQueryData(options?.where, options?.order);
     const entitySelectQuery = this.sparqlSelect(
       [ entityVariable ],
@@ -69,7 +84,6 @@ export class SparqlQueryBuilder {
       options?.limit,
       options?.offset,
     );
-
     return this.sparqlConstruct(entitySelectQuery, options?.select);
   }
 
@@ -256,6 +270,15 @@ export class SparqlQueryBuilder {
   ): WhereQueryData {
     if (FindOperator.isFindOperator(value)) {
       return this.createWhereQueryDataForFindOperator(key, value as FindOperator<any>, parentVariable);
+    }
+    if (Array.isArray(value)) {
+      return value.reduce((obj: WhereQueryData, valueItem): WhereQueryData => {
+        const valueWhereQueryData = this.createWhereQueryDataFromKeyValue(key, valueItem, parentVariable);
+        return {
+          filters: [ ...obj.filters, ...valueWhereQueryData.filters ],
+          triples: [ ...obj.triples, ...valueWhereQueryData.triples ],
+        };
+      }, { filters: [], triples: []});
     }
     if (typeof value === 'object') {
       return this.createWhereQueryDataForNestedWhere(key, value as FindOptionsWhere, parentVariable);

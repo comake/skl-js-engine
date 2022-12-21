@@ -13,9 +13,11 @@ import SHACLValidator from 'rdf-validate-shacl';
 import type ValidationReport from 'rdf-validate-shacl/src/validation-report';
 import { Mapper } from './mapping/Mapper';
 import type { FindAllOptions, FindOneOptions, FindOptionsWhere } from './storage/FindOptionsTypes';
-import { MemoryQueryAdapter } from './storage/MemoryQueryAdapter';
+import { MemoryQueryAdapter } from './storage/memory/MemoryQueryAdapter';
+import type { MemoryQueryAdapterOptions } from './storage/memory/MemoryQueryAdapterOptions';
 import type { QueryAdapter } from './storage/QueryAdapter';
 import { SparqlQueryAdapter } from './storage/sparql/SparqlQueryAdapter';
+import type { SparqlQueryAdapterOptions } from './storage/sparql/SparqlQueryAdapterOptions';
 import type { OrArray, Entity } from './util/Types';
 import {
   constructUri,
@@ -24,18 +26,14 @@ import {
   toJSON,
 } from './util/Util';
 import type { JSONObject } from './util/Util';
-import { SKL, SHACL } from './util/Vocabularies';
+import { SKL, SHACL, sklNamespace } from './util/Vocabularies';
 
 export type VerbHandler = (args: JSONObject) => Promise<NodeObject>;
 export type VerbInterface = Record<string, VerbHandler>;
 
 export type MappingResponseOption<T extends boolean> = T extends true ? JSONObject : NodeObject;
 
-export interface SkqlArgs {
-  schema?: Entity[];
-  sparqlEndpoint?: string;
-  functions?: Record<string, (args: any | any[]) => any>;
-}
+export type SkqlOptions = MemoryQueryAdapterOptions | SparqlQueryAdapterOptions;
 
 export interface ErrorMatcher {
   status: number;
@@ -46,23 +44,26 @@ export interface OperationResponse {
   data: JSONObject;
 }
 
-const DEFAULT_MAPPING_FRAME = { '@id': 'https://skl.standard.storage/mappingSubject' };
+const DEFAULT_MAPPING_FRAME = { '@id': SKL.mappingSubject };
 
 export class Skql {
   private readonly mapper: Mapper;
   private readonly adapter: QueryAdapter;
   public do: VerbInterface;
 
-  public constructor(args: SkqlArgs) {
-    if (args.schema) {
-      this.adapter = new MemoryQueryAdapter(args.schema);
-    } else if (args.sparqlEndpoint) {
-      this.adapter = new SparqlQueryAdapter({ endpointUrl: args.sparqlEndpoint });
-    } else {
-      throw new Error('No schema source found in setSchema args.');
+  public constructor(options: SkqlOptions) {
+    switch (options.type) {
+      case 'memory':
+        this.adapter = new MemoryQueryAdapter(options);
+        break;
+      case 'sparql':
+        this.adapter = new SparqlQueryAdapter(options);
+        break;
+      default:
+        throw new Error('No schema source found in setSchema args.');
     }
 
-    this.mapper = new Mapper({ functions: args.functions });
+    this.mapper = new Mapper({ functions: options.functions });
 
     // eslint-disable-next-line func-style
     const getVerbHandler = (getTarget: VerbInterface, property: string): VerbHandler =>
@@ -93,6 +94,10 @@ export class Skql {
 
   public async findAllBy(options: FindOptionsWhere): Promise<Entity[]> {
     return await this.adapter.findAllBy(options);
+  }
+
+  public async exists(options: FindOptionsWhere): Promise<boolean> {
+    return await this.adapter.exists(options);
   }
 
   public async save(entity: Entity): Promise<Entity>;
@@ -138,7 +143,7 @@ export class Skql {
   }
 
   private async handleVerb(verbName: string, verbArgs: JSONObject): Promise<NodeObject> {
-    const verbSchemaId = constructUri(SKL.verbs, verbName);
+    const verbSchemaId = constructUri(sklNamespace, verbName);
     let verb;
     try {
       verb = await this.findBy({ id: verbSchemaId });
@@ -322,7 +327,7 @@ export class Skql {
   private async assertVerbParamsMatchParameterSchemas(verbParams: any, verb: Entity): Promise<void> {
     const verbParamsAsJsonLd = {
       '@context': getValueOfFieldInNodeObject<ContextDefinition>(verb, SKL.parametersContext),
-      '@type': 'https://skl.standard.storage/nouns/Parameters',
+      '@type': SKL.Parameters,
       ...verbParams,
     };
     const parametersSchema = verb[SKL.parameters] as NodeObject;

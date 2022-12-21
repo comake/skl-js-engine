@@ -67,7 +67,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery()).toEqual(query);
+    expect(builder.buildEntityQuery()).toEqual(query);
   });
 
   it('builds a query with where, limit, and offset options.', (): void => {
@@ -132,7 +132,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery({
+    expect(builder.buildEntityQuery({
       where: {
         id: 'https://example.com/data/1',
         type: SKL.File,
@@ -189,7 +189,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery({
+    expect(builder.buildEntityQuery({
       where: {
         id: 'https://example.com/data/1',
       },
@@ -258,7 +258,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery({
+    expect(builder.buildEntityQuery({
       where: {
         id: 'https://example.com/data/1',
         'https://example.com/nested': {
@@ -306,9 +306,59 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery({
+    expect(builder.buildEntityQuery({
       where: {
         'https://example.com/pred': 'https://example.com/object',
+      },
+    })).toEqual(query);
+  });
+
+  it('builds a query with an array valued filter.', (): void => {
+    const query = {
+      type: 'query',
+      queryType: 'CONSTRUCT',
+      prefixes: {},
+      template: graphPattern,
+      where: [
+        {
+          type: 'graph',
+          name: entityVariable,
+          patterns: [{ type: 'bgp', triples: graphPattern }],
+        },
+        {
+          type: 'group',
+          patterns: [{
+            type: 'query',
+            prefixes: {},
+            queryType: 'SELECT',
+            variables: [ entityVariable ],
+            where: [
+              {
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate,
+                    object: DataFactory.literal('1', XSD.integer),
+                  },
+                  {
+                    subject: entityVariable,
+                    predicate,
+                    object: DataFactory.literal('2', XSD.integer),
+                  },
+                ],
+              },
+            ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
+          }],
+        },
+      ],
+    };
+    expect(builder.buildEntityQuery({
+      where: {
+        'https://example.com/pred': [ 1, 2 ],
       },
     })).toEqual(query);
   });
@@ -359,7 +409,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery({
+    expect(builder.buildEntityQuery({
       where: {
         id: In([ 'https://example.com/data/1' ]),
       },
@@ -423,7 +473,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery({
+    expect(builder.buildEntityQuery({
       where: {
         type: In([ SKL.File, SKL.Event ]),
       },
@@ -482,7 +532,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery({
+    expect(builder.buildEntityQuery({
       where: {
         'https://example.com/pred': In([ 1, 2 ]),
       },
@@ -535,7 +585,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery({
+    expect(builder.buildEntityQuery({
       where: {
         id: Not('https://example.com/data/1'),
       },
@@ -591,7 +641,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery({
+    expect(builder.buildEntityQuery({
       where: {
         id: Not(In([ 'https://example.com/data/1', 'https://example.com/data/2' ])),
       },
@@ -644,7 +694,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery({
+    expect(builder.buildEntityQuery({
       where: {
         id: Not(Equal('https://example.com/data/1')),
       },
@@ -697,7 +747,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery({
+    expect(builder.buildEntityQuery({
       where: {
         id: Equal('https://example.com/data/1'),
       },
@@ -773,7 +823,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery({
+    expect(builder.buildEntityQuery({
       where: {
         'https://example.com/pred': Not(1),
       },
@@ -852,7 +902,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery({
+    expect(builder.buildEntityQuery({
       where: {
         'https://example.com/pred': Not(In([ 1, 2 ])),
       },
@@ -928,7 +978,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery({
+    expect(builder.buildEntityQuery({
       where: {
         'https://example.com/pred': Not(Equal(1)),
       },
@@ -984,7 +1034,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery({
+    expect(builder.buildEntityQuery({
       where: {
         'https://example.com/pred': Equal(1),
       },
@@ -993,7 +1043,7 @@ describe('A SparqlQueryBuilder', (): void => {
 
   it('throws an error if there is an unsupported operation on a non id field.', (): void => {
     expect((): void => {
-      builder.buildQuery({
+      builder.buildEntityQuery({
         where: {
           'https://example.com/pred': {
             type: 'operator',
@@ -1006,7 +1056,7 @@ describe('A SparqlQueryBuilder', (): void => {
 
   it('throws an error if there is an unsupported operation on the id field.', (): void => {
     expect((): void => {
-      builder.buildQuery({
+      builder.buildEntityQuery({
         where: {
           id: {
             type: 'operator',
@@ -1019,7 +1069,7 @@ describe('A SparqlQueryBuilder', (): void => {
 
   it('throws an error if there is an unsupported operation as an argument to a Not operator.', (): void => {
     expect((): void => {
-      builder.buildQuery({
+      builder.buildEntityQuery({
         where: {
           'https://example.com/pred': Not({
             type: 'operator',
@@ -1033,7 +1083,7 @@ describe('A SparqlQueryBuilder', (): void => {
   it('throws an error if there is an unsupported operation as an argument to a Not operator on the id field.',
     (): void => {
       expect((): void => {
-        builder.buildQuery({
+        builder.buildEntityQuery({
           where: {
             id: Not({
               type: 'operator',
@@ -1094,7 +1144,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery({
+    expect(builder.buildEntityQuery({
       order: {
         'https://example.com/pred': 'desc',
       },
@@ -1142,7 +1192,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery({
+    expect(builder.buildEntityQuery({
       select: {
         'https://example.com/pred': {
           'https://example.com/pred2': true,
@@ -1192,7 +1242,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildQuery({
+    expect(builder.buildEntityQuery({
       select: [
         'https://example.com/pred',
         'https://example.com/pred2',

@@ -2,8 +2,6 @@
 import { Quad, NamedNode } from 'n3';
 import {
   constructUri,
-  stringToBoolean,
-  stringToInteger,
   convertJsonLdToQuads,
   toJSON,
   ensureArray,
@@ -18,46 +16,18 @@ describe('Util', (): void => {
     });
   });
 
-  describe('#stringToBoolean', (): void => {
-    it('returns true if the value is the "true" string.', (): void => {
-      expect(stringToBoolean('true')).toBe(true);
-    });
-
-    it('returns false if the value is the "false" string.', (): void => {
-      expect(stringToBoolean('false')).toBe(false);
-    });
-
-    it('returns the value if the value is not the "true" or "false" string.', (): void => {
-      expect(stringToBoolean('abc')).toBe('abc');
-    });
-  });
-
-  describe('#stringToInteger', (): void => {
-    it('returns the value as an integer if it is a string encoded integer.', (): void => {
-      expect(stringToInteger('123')).toBe(123);
-      expect(stringToInteger('1')).toBe(1);
-    });
-
-    it('returns string if it is not a string encoded integer.', (): void => {
-      expect(stringToInteger('1.4')).toBe('1.4');
-      expect(stringToInteger('123.45')).toBe('123.45');
-      expect(stringToInteger('abc')).toBe('abc');
-      expect(stringToInteger('abc123')).toBe('abc123');
-    });
-  });
-
   describe('#convertJsonLdToQuads', (): void => {
     it('converts the input jsonLd to a store of quads.', async(): Promise<void> => {
       const jsonld = [{
         '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/nouns/File',
+        '@type': 'https://skl.standard.storage/File',
       }];
       const res = await convertJsonLdToQuads(jsonld);
       expect(res.size).toBe(1);
       expect(res.has(new Quad(
         new NamedNode('https://skl.standard.storage/data/123'),
         new NamedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
-        new NamedNode('https://skl.standard.storage/nouns/File'),
+        new NamedNode('https://skl.standard.storage/File'),
       ))).toBe(true);
     });
   });
@@ -66,10 +36,10 @@ describe('Util', (): void => {
     it('removes @context, @id, and @type keys from the jsonLd NodeObject.', (): void => {
       const jsonld = {
         '@context': {
-          name: 'https://skl.standard.storage/properties/name',
+          name: 'https://skl.standard.storage/name',
         },
         '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/nouns/File',
+        '@type': 'https://skl.standard.storage/File',
         name: 'image.jpeg',
       };
       expect(toJSON(jsonld)).toEqual({
@@ -80,21 +50,21 @@ describe('Util', (): void => {
       (): void => {
         const jsonld = {
           '@context': {
-            name: 'https://skl.standard.storage/properties/name',
+            name: 'https://skl.standard.storage/name',
           },
           '@id': 'https://skl.standard.storage/data/123',
-          '@type': 'https://skl.standard.storage/nouns/File',
+          '@type': 'https://skl.standard.storage/File',
           name: 'image.jpeg',
           subFileArr: [
             {
               '@id': 'https://skl.standard.storage/data/123',
-              '@type': 'https://skl.standard.storage/nouns/File',
+              '@type': 'https://skl.standard.storage/File',
               md5: 'abc123',
             },
           ],
           subFileObj: {
             '@id': 'https://skl.standard.storage/data/123',
-            '@type': 'https://skl.standard.storage/nouns/File',
+            '@type': 'https://skl.standard.storage/File',
             md5: 'abc123',
           },
         };

@@ -15,24 +15,6 @@ export function constructUri(base: string, local: string): string {
   return `${base}${local}`;
 }
 
-export function stringToBoolean(value: string): boolean | string {
-  if (value === 'true') {
-    return true;
-  }
-  if (value === 'false') {
-    return false;
-  }
-  return value;
-}
-
-export function stringToInteger(value: string): number | string {
-  const i = Number.parseInt(value, 10);
-  if (i.toFixed(0) === value) {
-    return i;
-  }
-  return value;
-}
-
 export async function convertJsonLdToQuads(jsonldDoc: any): Promise<Store> {
   const nquads = await jsonld.toRDF(jsonldDoc, { format: 'application/n-quads' }) as unknown as string;
   const turtleParser = new Parser({ format: 'application/n-quads' });

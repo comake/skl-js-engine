@@ -26,6 +26,10 @@ export interface QueryAdapter {
    */
   findAllBy(where: FindOptionsWhere): Promise<Entity[]>;
   /**
+   * Determines if an entity matching the given where condition exists in the database.
+   */
+  exists(where?: FindOptionsWhere): Promise<boolean>;
+  /**
    * Saves a given entity in the database.
    * If entity does not exist in the database then inserts, otherwise updates.
    */

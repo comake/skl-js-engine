@@ -4,7 +4,7 @@ import { Skql } from '../../src/Skql';
 import { SCHEMA, SKL } from '../../src/util/Vocabularies';
 import { describeIf, frameAndCombineSchemas } from '../util/Util';
 
-const sparqlEndpoint = 'http://localhost:9999/blazegraph/namespace/kb/sparql';
+const endpointUrl = 'http://localhost:9999/blazegraph/namespace/kb/sparql';
 
 describeIf('docker', 'An Skql engine backed by a sparql query adapter', (): void => {
   it('can get events from ticketmaster.', async(): Promise<void> => {
@@ -15,7 +15,7 @@ describeIf('docker', 'An Skql engine backed by a sparql query adapter', (): void
     const env = { TICKETMASTER_APIKEY: process.env.TICKETMASTER_APIKEY! };
     const schema = await frameAndCombineSchemas(schemas, env);
 
-    const skql = new Skql({ sparqlEndpoint });
+    const skql = new Skql({ type: 'sparql', endpointUrl });
     await skql.save(schema);
     const eventsCollection = await skql.do.getEvents({
       account: 'https://skl.standard.storage/data/TicketmasterAccount1',

@@ -3,21 +3,18 @@ import type { Quad } from '@rdfjs/types';
 import SparqlClient from 'sparql-http-client';
 import type {
   Update,
-  Query,
+  ConstructQuery,
   SparqlGenerator,
+  AskQuery,
 } from 'sparqljs';
 import { Generator } from 'sparqljs';
 import { triplesToJsonld } from '../../util/TripleUtil';
 import type { Entity } from '../../util/Types';
 import type { FindOneOptions, FindAllOptions, FindOptionsWhere } from '../FindOptionsTypes';
 import type { QueryAdapter } from '../QueryAdapter';
+import type { SparqlQueryAdapterOptions } from './SparqlQueryAdapterOptions';
 import { SparqlQueryBuilder } from './SparqlQueryBuilder';
 import { SparqlUpdateBuilder } from './SparqlUpdateBuilder';
-
-export interface SparqlQueryAdapterArgs {
-  endpointUrl: string;
-  updateUrl?: string;
-}
 
 /**
  * A {@link QueryAdapter} that stores data in a database through a sparql endpoint.
@@ -25,19 +22,21 @@ export interface SparqlQueryAdapterArgs {
 export class SparqlQueryAdapter implements QueryAdapter {
   private readonly sparqlClient: SparqlClient;
   private readonly sparqlGenerator: SparqlGenerator;
+  private readonly setTimestamps: boolean;
 
-  public constructor(args: SparqlQueryAdapterArgs) {
+  public constructor(options: SparqlQueryAdapterOptions) {
     this.sparqlClient = new SparqlClient({
-      endpointUrl: args.endpointUrl,
-      updateUrl: args.updateUrl ?? args.endpointUrl,
+      endpointUrl: options.endpointUrl,
+      updateUrl: options.updateUrl ?? options.endpointUrl,
     });
     this.sparqlGenerator = new Generator();
+    this.setTimestamps = options.setTimestamps ?? false;
   }
 
   public async find(options?: FindOneOptions): Promise<Entity | null> {
     const queryBuilder = new SparqlQueryBuilder();
-    const query = queryBuilder.buildQuery({ ...options, limit: 1 });
-    const responseTriples = await this.executeQueryAndGetData(query);
+    const query = queryBuilder.buildEntityQuery({ ...options, limit: 1 });
+    const responseTriples = await this.executeSparqlConstructAndGetData(query);
     if (responseTriples.length === 0) {
       return null;
     }
@@ -51,8 +50,8 @@ export class SparqlQueryAdapter implements QueryAdapter {
 
   public async findAll(options?: FindAllOptions): Promise<Entity[]> {
     const queryBuilder = new SparqlQueryBuilder();
-    const query = queryBuilder.buildQuery(options);
-    const responseTriples = await this.executeQueryAndGetData(query);
+    const query = queryBuilder.buildEntityQuery(options);
+    const responseTriples = await this.executeSparqlConstructAndGetData(query);
     if (responseTriples.length === 0) {
       return [];
     }
@@ -64,12 +63,18 @@ export class SparqlQueryAdapter implements QueryAdapter {
     return this.findAll({ where });
   }
 
+  public async exists(where: FindOptionsWhere): Promise<boolean> {
+    const queryBuilder = new SparqlQueryBuilder();
+    const query = queryBuilder.buildEntityExistQuery(where);
+    return await this.executeAskQueryAndGetResponse(query);
+  }
+
   public async save(entity: Entity): Promise<Entity>;
   public async save(entities: Entity[]): Promise<Entity[]>;
   public async save(entityOrEntities: Entity | Entity[]): Promise<Entity | Entity[]> {
-    const queryBuilder = new SparqlUpdateBuilder();
+    const queryBuilder = new SparqlUpdateBuilder({ setTimestamps: this.setTimestamps });
     const query = queryBuilder.buildUpdate(entityOrEntities);
-    await this.executeUpdate(query);
+    await this.executeSparqlUpdate(query);
     return entityOrEntities;
   }
 
@@ -78,11 +83,11 @@ export class SparqlQueryAdapter implements QueryAdapter {
   public async destroy(entityOrEntities: Entity | Entity[]): Promise<Entity | Entity[]> {
     const queryBuilder = new SparqlUpdateBuilder();
     const query = queryBuilder.buildDelete(entityOrEntities);
-    await this.executeUpdate(query);
+    await this.executeSparqlUpdate(query);
     return entityOrEntities;
   }
 
-  private async executeQueryAndGetData(query: Query): Promise<Quad[]> {
+  private async executeSparqlConstructAndGetData(query: ConstructQuery): Promise<Quad[]> {
     const generatedQuery = this.sparqlGenerator.stringify(query);
     const stream = await this.sparqlClient.query.select(generatedQuery);
     return new Promise((resolve, reject): void => {
@@ -101,8 +106,13 @@ export class SparqlQueryAdapter implements QueryAdapter {
     });
   }
 
-  private async executeUpdate(query: Update): Promise<void> {
+  private async executeSparqlUpdate(query: Update): Promise<void> {
     const generatedQuery = this.sparqlGenerator.stringify(query);
     await this.sparqlClient.query.update(generatedQuery);
+  }
+
+  private async executeAskQueryAndGetResponse(query: AskQuery): Promise<boolean> {
+    const generatedQuery = this.sparqlGenerator.stringify(query);
+    return await this.sparqlClient.query.ask(generatedQuery);
   }
 }

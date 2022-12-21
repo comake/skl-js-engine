@@ -7,7 +7,7 @@ import { rdfTypeNamedNode } from '../../../../src/util/TripleUtil';
 import { SKL } from '../../../../src/util/Vocabularies';
 import { streamFrom } from '../../../util/Util';
 
-const sparqlEndpointUrl = 'https://example.com/sparql';
+const endpointUrl = 'https://example.com/sparql';
 const file = DataFactory.namedNode(SKL.File);
 const data1 = DataFactory.namedNode('https://example.com/data/1');
 const data2 = DataFactory.namedNode('https://example.com/data/2');
@@ -18,6 +18,7 @@ describe('a SparqlQueryAdapter', (): void => {
   let response: any[] = [];
   let select: any;
   let update: any;
+  let ask: any;
   let error: any;
   let adapter: SparqlQueryAdapter;
 
@@ -37,10 +38,11 @@ describe('a SparqlQueryAdapter', (): void => {
       return streamFrom(response);
     });
     update = jest.fn();
+    ask = jest.fn();
     (SparqlClient as unknown as jest.Mock).mockReturnValue({
-      query: { select, update },
+      query: { select, update, ask },
     });
-    adapter = new SparqlQueryAdapter({ endpointUrl: sparqlEndpointUrl });
+    adapter = new SparqlQueryAdapter({ type: 'sparql', endpointUrl });
   });
 
   describe('find', (): void => {
@@ -84,7 +86,7 @@ describe('a SparqlQueryAdapter', (): void => {
           }),
         ).resolves.toEqual({
           '@id': 'https://example.com/data/1',
-          '@type': 'https://skl.standard.storage/nouns/File',
+          '@type': 'https://skl.standard.storage/File',
         });
         expect(select).toHaveBeenCalledTimes(1);
         expect(select.mock.calls[0][0].split('\n')).toEqual([
@@ -161,7 +163,7 @@ describe('a SparqlQueryAdapter', (): void => {
           adapter.findBy({ id: 'https://example.com/data/1' }),
         ).resolves.toEqual({
           '@id': 'https://example.com/data/1',
-          '@type': 'https://skl.standard.storage/nouns/File',
+          '@type': 'https://skl.standard.storage/File',
         });
         expect(select).toHaveBeenCalledTimes(1);
         expect(select.mock.calls[0][0].split('\n')).toEqual([
@@ -195,7 +197,7 @@ describe('a SparqlQueryAdapter', (): void => {
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
-          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/nouns/File>. } }',
+          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/File>. } }',
           '}',
         ]);
       });
@@ -223,11 +225,11 @@ describe('a SparqlQueryAdapter', (): void => {
         ).resolves.toEqual([
           {
             '@id': 'https://example.com/data/1',
-            '@type': 'https://skl.standard.storage/nouns/File',
+            '@type': 'https://skl.standard.storage/File',
           },
           {
             '@id': 'https://example.com/data/2',
-            '@type': 'https://skl.standard.storage/nouns/File',
+            '@type': 'https://skl.standard.storage/File',
           },
         ]);
         expect(select).toHaveBeenCalledTimes(1);
@@ -235,7 +237,7 @@ describe('a SparqlQueryAdapter', (): void => {
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
-          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/nouns/File>. } }',
+          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/File>. } }',
           '}',
         ]);
       });
@@ -252,7 +254,7 @@ describe('a SparqlQueryAdapter', (): void => {
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
-          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/nouns/File>. } }',
+          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/File>. } }',
           '}',
         ]);
       });
@@ -276,11 +278,11 @@ describe('a SparqlQueryAdapter', (): void => {
         ).resolves.toEqual([
           {
             '@id': 'https://example.com/data/1',
-            '@type': 'https://skl.standard.storage/nouns/File',
+            '@type': 'https://skl.standard.storage/File',
           },
           {
             '@id': 'https://example.com/data/2',
-            '@type': 'https://skl.standard.storage/nouns/File',
+            '@type': 'https://skl.standard.storage/File',
           },
         ]);
         expect(select).toHaveBeenCalledTimes(1);
@@ -288,34 +290,41 @@ describe('a SparqlQueryAdapter', (): void => {
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
-          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/nouns/File>. } }',
+          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/File>. } }',
           '}',
         ]);
       });
+  });
+
+  describe('exists', (): void => {
+    it('querues for the existence of an entity matching the where parameter.', async(): Promise<void> => {
+      ask.mockReturnValue(true);
+      await expect(adapter.exists({ type: SKL.File })).resolves.toBe(true);
+    });
   });
 
   describe('save', (): void => {
     it('saves a single schema.', async(): Promise<void> => {
       const entity = {
         '@id': 'https://example.com/data/1',
-        '@type': 'https://skl.standard.storage/nouns/File',
+        '@type': 'https://skl.standard.storage/File',
       };
       await expect(adapter.save(entity)).resolves.toEqual(entity);
       expect(update).toHaveBeenCalledTimes(1);
       expect(update.mock.calls[0][0].split('\n')).toEqual([
         'DELETE WHERE { GRAPH <https://example.com/data/1> { ?c1 ?c2 ?c3. } };',
-        'INSERT DATA { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://skl.standard.storage/nouns/File>. } }',
+        'INSERT DATA { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://skl.standard.storage/File>. } }',
       ]);
     });
     it('saves multiple schema.', async(): Promise<void> => {
       const entities = [
         {
           '@id': 'https://example.com/data/1',
-          '@type': 'https://skl.standard.storage/nouns/File',
+          '@type': 'https://skl.standard.storage/File',
         },
         {
           '@id': 'https://example.com/data/2',
-          '@type': 'https://skl.standard.storage/nouns/Article',
+          '@type': 'https://skl.standard.storage/Article',
         },
       ];
       await expect(adapter.save(entities)).resolves.toEqual(entities);
@@ -326,8 +335,8 @@ describe('a SparqlQueryAdapter', (): void => {
         '  GRAPH <https://example.com/data/2> { ?c4 ?c5 ?c6. }',
         '};',
         'INSERT DATA {',
-        '  GRAPH <https://example.com/data/1> { <https://example.com/data/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://skl.standard.storage/nouns/File>. }',
-        '  GRAPH <https://example.com/data/2> { <https://example.com/data/2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://skl.standard.storage/nouns/Article>. }',
+        '  GRAPH <https://example.com/data/1> { <https://example.com/data/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://skl.standard.storage/File>. }',
+        '  GRAPH <https://example.com/data/2> { <https://example.com/data/2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://skl.standard.storage/Article>. }',
         '}',
       ]);
     });
@@ -337,7 +346,7 @@ describe('a SparqlQueryAdapter', (): void => {
     it('destroys a single schema.', async(): Promise<void> => {
       const entity = {
         '@id': 'https://example.com/data/1',
-        '@type': 'https://skl.standard.storage/nouns/File',
+        '@type': 'https://skl.standard.storage/File',
       };
       await expect(adapter.destroy(entity)).resolves.toEqual(entity);
       expect(update).toHaveBeenCalledTimes(1);
@@ -350,11 +359,11 @@ describe('a SparqlQueryAdapter', (): void => {
       const entities = [
         {
           '@id': 'https://example.com/data/1',
-          '@type': 'https://skl.standard.storage/nouns/File',
+          '@type': 'https://skl.standard.storage/File',
         },
         {
           '@id': 'https://example.com/data/2',
-          '@type': 'https://skl.standard.storage/nouns/Article',
+          '@type': 'https://skl.standard.storage/Article',
         },
       ];
       await expect(adapter.destroy(entities)).resolves.toEqual(entities);

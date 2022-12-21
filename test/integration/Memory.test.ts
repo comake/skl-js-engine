@@ -6,13 +6,13 @@ import { describeIf, frameAndCombineSchemas } from '../util/Util';
 
 describeIf('docker', 'An Skql engine backed by a memory query adapter', (): void => {
   it('can get events from ticketmaster.', async(): Promise<void> => {
-    const schemas = [
+    const schemaFiles = [
       './test/assets/schemas/core.json',
       './test/assets/schemas/get-ticketmaster-events.json',
     ];
     const env = { TICKETMASTER_APIKEY: process.env.TICKETMASTER_APIKEY! };
-    const schema = await frameAndCombineSchemas(schemas, env);
-    const skql = new Skql({ schema });
+    const schemas = await frameAndCombineSchemas(schemaFiles, env);
+    const skql = new Skql({ type: 'memory', schemas });
     const eventsCollection = await skql.do.getEvents({
       account: 'https://skl.standard.storage/data/TicketmasterAccount1',
       city: 'Atlanta',

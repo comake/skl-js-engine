@@ -1,127 +1,131 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-function createNamespace<T extends string>(
-  baseUri: string,
-  localNames: Record<T, string>,
-): Record<keyof typeof localNames, string> {
+function createNamespace<T extends string>(baseUri: string, localNames: T[]): Record<T, string> {
   const namespace: Record<T, string> = {} as Record<T, string>;
-  for (const [ key, value ] of Object.entries(localNames)) {
-    namespace[key as T] = `${baseUri}${value}`;
+  for (const localName of localNames) {
+    namespace[localName] = `${baseUri}${localName}`;
   }
   return namespace;
 }
 
-export const SKL = createNamespace('https://skl.standard.storage/', {
-  verbs: 'verbs/',
-  Noun: 'nouns/Noun',
-  Mapping: 'nouns/Mapping',
-  VerbIntegrationMapping: 'nouns/VerbIntegrationMapping',
-  NounInterfaceMapping: 'nouns/NounInterfaceMapping',
-  OpenApiDescription: 'nouns/OpenApiDescription',
-  Account: 'nouns/Account',
-  SecurityCredentials: 'nouns/SecurityCredentials',
-  InterfaceComponent: 'nouns/InterfaceComponent',
-  Folder: 'nouns/Folder',
-  Verb: 'nouns/Verb',
-  OpenApiOperationVerb: 'nouns/Verb',
-  OpenApiSecuritySchemeVerb: 'nouns/OpenApiSecuritySchemeVerb',
-  NounMappedVerb: 'nouns/NounMappedVerb',
-  VerbNounMapping: 'nouns/VerbNounMapping',
-  JsonDataSource: 'nouns/JsonDataSource',
-  Integration: 'nouns/Integration',
-  StylingTheme: 'nouns/StylingTheme',
-  properties: 'properties/',
-  verb: 'properties/verb',
-  account: 'properties/account',
-  integration: 'properties/integration',
-  parameters: 'properties/parameters',
-  name: 'properties/name',
-  parameterMapping: 'properties/parameterMapping',
-  returnValueMapping: 'properties/returnValueMapping',
-  operationMapping: 'properties/operationMapping',
-  verbMapping: 'properties/verbMapping',
-  openApiDescription: 'properties/openApiDescription',
-  accessToken: 'properties/accessToken',
-  refreshToken: 'properties/refreshToken',
-  apiKey: 'properties/apiKey',
-  sourceId: 'properties/sourceId',
-  returnValue: 'properties/returnValue',
-  parametersContext: 'properties/parametersContext',
-  nodes: 'properties/nodes',
-  sourceUrl: 'properties/sourceUrl',
-  interface: 'properties/interface',
-  noun: 'properties/noun',
-  propertiesMapping: 'properties/propertiesMapping',
-  styling: 'properties/styling',
-  designTokens: 'properties/designTokens',
-  iterate: 'properties/iterate',
-  iterateItemAccessor: 'properties/iterateItemAccessor',
-  clientId: 'properties/clientId',
-  IntegrationSyncConfiguration: 'nouns/IntegrationSyncConfiguration',
-  syncStepDefaultArgs: 'properties/syncStepDefaultArgs',
-  syncSteps: 'properties/syncSteps',
-  TokenPaginatedCollection: 'nouns/TokenPaginatedCollection',
-  paginatedCollection: 'nouns/PaginatedCollection',
-  File: 'nouns/File',
-  Event: 'nouns/Event',
-  schemeName: 'properties/schemeName',
-  oauthFlow: 'properties/oauthFlow',
-  stage: 'properties/stage',
-  operationId: 'properties/operationId',
-  returnValueFrame: 'properties/returnValueFrame',
-  clientSecret: 'properties/clientSecret',
-  invalidTokenErrorMatcher: 'properties/invalidTokenErrorMatcher',
-  getOauthTokens: 'verbs/getOauthTokens',
-  records: 'properties/records',
-  mapping: 'properties/mapping',
-  overrideBasePath: 'properties/overrideBasePath',
-  dataSource: 'properties/dataSource',
-  data: 'properties/data',
-});
+export const sklNamespace = 'https://skl.standard.storage/';
 
-export const XSD = createNamespace('http://www.w3.org/2001/XMLSchema#', {
-  boolean: 'boolean',
-  integer: 'integer',
-  double: 'double',
-  decimal: 'decimal',
-  string: 'string',
-  float: 'float',
-  positiveInteger: 'positiveInteger',
-  negativeInteger: 'negativeInteger',
-  int: 'int',
-  date: 'date',
-  time: 'time',
-  datetime: 'datetime',
-});
+export const SKL = createNamespace(sklNamespace, [
+  'Verb',
+  'Noun',
+  'Mapping',
+  'Parameters',
+  'mappingSubject',
+  'VerbIntegrationMapping',
+  'NounInterfaceMapping',
+  'OpenApiDescription',
+  'Account',
+  'SecurityCredentials',
+  'InterfaceComponent',
+  'Folder',
+  'Verb',
+  'Verb',
+  'OpenApiSecuritySchemeVerb',
+  'NounMappedVerb',
+  'VerbNounMapping',
+  'JsonDataSource',
+  'Integration',
+  'StylingTheme',
+  'verb',
+  'account',
+  'integration',
+  'parameters',
+  'name',
+  'parameterMapping',
+  'returnValueMapping',
+  'operationMapping',
+  'verbMapping',
+  'openApiDescription',
+  'accessToken',
+  'refreshToken',
+  'apiKey',
+  'sourceId',
+  'returnValue',
+  'parametersContext',
+  'nodes',
+  'sourceUrl',
+  'interface',
+  'noun',
+  'propertiesMapping',
+  'styling',
+  'designTokens',
+  'iterate',
+  'iterateItemAccessor',
+  'clientId',
+  'IntegrationSyncConfiguration',
+  'syncStepDefaultArgs',
+  'syncSteps',
+  'TokenPaginatedCollection',
+  'PaginatedCollection',
+  'File',
+  'Event',
+  'schemeName',
+  'oauthFlow',
+  'stage',
+  'operationId',
+  'returnValueFrame',
+  'clientSecret',
+  'invalidTokenErrorMatcher',
+  'getOauthTokens',
+  'records',
+  'mapping',
+  'overrideBasePath',
+  'dataSource',
+  'data',
+]);
 
-export const RDF = createNamespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#', {
-  type: 'type',
-  first: 'first',
-  rest: 'rest',
-  datatype: 'datatype',
-  JSON: 'JSON',
-});
+export const XSD = createNamespace('http://www.w3.org/2001/XMLSchema#', [
+  'boolean',
+  'integer',
+  'double',
+  'decimal',
+  'string',
+  'float',
+  'positiveInteger',
+  'negativeInteger',
+  'int',
+  'date',
+  'time',
+  'datetime',
+]);
 
-export const RDFS = createNamespace('http://www.w3.org/2000/01/rdf-schema#', {
-  subClassOf: 'subClassOf',
-  label: 'label',
-  range: 'range',
-});
+export const RDF = createNamespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#', [
+  'type',
+  'first',
+  'rest',
+  'datatype',
+  'JSON',
+]);
 
-export const OWL = createNamespace('http://www.w3.org/2002/07/owl#', {
-  restriction: 'Restriction',
-  onProperty: 'onProperty',
-  allValuesFrom: 'allValuesFrom',
-  class: 'Class',
-  intersectionOf: 'intersectionOf',
-  someValuesFrom: 'someValuesFrom',
-  objectProperty: 'ObjectProperty',
-});
+export const RDFS = createNamespace('http://www.w3.org/2000/01/rdf-schema#', [
+  'subClassOf',
+  'label',
+  'range',
+]);
 
-export const SHACL = createNamespace('http://www.w3.org/ns/shacl#', {
-  targetClass: 'targetClass',
-  targetNode: 'targetNode',
-});
+export const OWL = createNamespace('http://www.w3.org/2002/07/owl#', [
+  'Restriction',
+  'onProperty',
+  'allValuesFrom',
+  'Class',
+  'intersectionOf',
+  'someValuesFrom',
+  'ObjectProperty',
+]);
 
-export const SCHEMA = createNamespace('https://schema.org/', {
-  Event: 'Event',
-});
+export const SHACL = createNamespace('http://www.w3.org/ns/shacl#', [
+  'targetClass',
+  'targetNode',
+]);
+
+export const SCHEMA = createNamespace('https://schema.org/', [
+  'Event',
+]);
+
+export const DCTERMS = createNamespace('http://purl.org/dc/terms/', [
+  'created',
+  'modified',
+]);

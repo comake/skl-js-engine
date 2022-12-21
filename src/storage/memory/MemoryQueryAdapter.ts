@@ -1,29 +1,35 @@
 import type { ReferenceNodeObject } from '@comake/rmlmapper-js';
 import type { ValueObject } from 'jsonld';
-import type { Entity, EntityFieldValue, PossibleArrayFieldValues } from '../util/Types';
-import { ensureArray } from '../util/Util';
-import { RDFS } from '../util/Vocabularies';
-import type { FindOperatorType } from './FindOperator';
-import { FindOperator } from './FindOperator';
+import { toJSValueFromDataType } from '../../util/TripleUtil';
+import type { Entity, EntityFieldValue, PossibleArrayFieldValues } from '../../util/Types';
+import { ensureArray } from '../../util/Util';
+import { RDFS } from '../../util/Vocabularies';
+import type { FindOperatorType } from '../FindOperator';
+import { FindOperator } from '../FindOperator';
 import type {
   FindOneOptions,
   FindAllOptions,
   FindOptionsWhere,
   FindOptionsWhereField,
   FieldPrimitiveValue,
-} from './FindOptionsTypes';
-import type { QueryAdapter } from './QueryAdapter';
+} from '../FindOptionsTypes';
+import type { QueryAdapter } from '../QueryAdapter';
+import type { MemoryQueryAdapterOptions } from './MemoryQueryAdapterOptions';
 
 /**
  * A {@link QueryAdapter} that stores data in memory.
  */
 export class MemoryQueryAdapter implements QueryAdapter {
   private readonly schemas: Record<string, Entity> = {};
+  private readonly setTimestamps: boolean;
 
-  public constructor(schemas: Entity[]) {
-    for (const schema of schemas) {
-      this.schemas[schema['@id']] = schema;
+  public constructor(options: MemoryQueryAdapterOptions) {
+    if (options.schemas) {
+      for (const schema of options.schemas) {
+        this.schemas[schema['@id']] = schema;
+      }
     }
+    this.setTimestamps = options.setTimestamps ?? false;
   }
 
   public async find(options?: FindOneOptions): Promise<Entity | null> {
@@ -126,6 +132,14 @@ export class MemoryQueryAdapter implements QueryAdapter {
     if (fieldName === 'type') {
       return this.isInstanceOf(entity, fieldValue as string);
     }
+    if (Array.isArray(fieldValue)) {
+      for (const valueItem of fieldValue) {
+        if (!await this.entityMatchesField(entity, fieldName, valueItem)) {
+          return false;
+        }
+      }
+      return true;
+    }
     if (typeof fieldValue === 'object') {
       if (Array.isArray(entity[fieldName])) {
         for (const subFieldValue of (entity[fieldName] as (ReferenceNodeObject | Entity)[])) {
@@ -160,7 +174,11 @@ export class MemoryQueryAdapter implements QueryAdapter {
         return (field as ReferenceNodeObject)['@id'] === fieldValue;
       }
       if ((field as ValueObject)['@value']) {
-        return (field as ValueObject)['@value'] === fieldValue;
+        const jsValue = toJSValueFromDataType(
+          (field as any)['@value'],
+          (field as any)['@type'],
+        );
+        return jsValue === fieldValue;
       }
     }
     return field === fieldValue;
@@ -213,6 +231,11 @@ export class MemoryQueryAdapter implements QueryAdapter {
       }
       return subClasses;
     }, [ targetClass ]);
+  }
+
+  public async exists(where: FindOptionsWhere): Promise<boolean> {
+    const res = await this.find({ where });
+    return res !== null;
   }
 
   public async save(entity: Entity): Promise<Entity>;

@@ -2,10 +2,10 @@
 import * as RmlParser from '@comake/rmlmapper-js';
 import type { NodeObject } from 'jsonld';
 import jsonld from 'jsonld';
+import { toJSValueFromDataType } from '../util/TripleUtil';
 import type { OrArray } from '../util/Types';
 import type { JSONObject } from '../util/Util';
-import { stringToBoolean, stringToInteger } from '../util/Util';
-import { SKL, XSD } from '../util/Vocabularies';
+import { sklNamespace } from '../util/Vocabularies';
 
 export interface MapperArgs {
   functions?: Record<string, (args: any | any[]) => any>;
@@ -102,8 +102,8 @@ export class Mapper {
   ): void {
     for (const subDoc of jsonldDoc) {
       Object.keys(subDoc).forEach((key: string): void => {
-        if (key.startsWith(SKL.properties)) {
-          const argName = key.slice(SKL.properties.length);
+        if (key.startsWith(sklNamespace)) {
+          const argName = key.slice(sklNamespace.length);
           const value = subDoc[key];
           if (Array.isArray(value) && typeof value[0] === 'object' && '@type' in value[0]) {
             frame['@context'][argName] = { '@id': key, '@type': value[0]['@type'] };
@@ -128,14 +128,10 @@ export class Mapper {
   }
 
   private convertToNativeValue(jsonLdTerm: any): any {
-    if (jsonLdTerm['@type'] === XSD.boolean) {
-      jsonLdTerm['@value'] = stringToBoolean(jsonLdTerm['@value']);
-    } else if (jsonLdTerm['@type'] === XSD.integer) {
-      jsonLdTerm['@value'] = stringToInteger(jsonLdTerm['@value']);
-    } else if (jsonLdTerm['@type'] === XSD.double) {
-      jsonLdTerm['@value'] = Number.parseFloat(jsonLdTerm['@value']);
-    }
-    return jsonLdTerm;
+    return {
+      ...jsonLdTerm,
+      '@value': toJSValueFromDataType(jsonLdTerm['@value'], jsonLdTerm['@type']),
+    };
   }
 
   private async jsonLdToQuads(jsonldDoc: OrArray<NodeObject>): Promise<string> {

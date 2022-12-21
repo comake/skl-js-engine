@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import DataFactory from '@rdfjs/data-model';
 import type { Quad } from '@rdfjs/types';
-import { rdfTypeNamedNode, triplesToJsonld, valueToLiteral } from '../../../src/util/TripleUtil';
+import { rdfTypeNamedNode, triplesToJsonld, valueToLiteral, toJSValueFromDataType } from '../../../src/util/TripleUtil';
 import { RDF, SKL, XSD } from '../../../src/util/Vocabularies';
 
 const data1 = DataFactory.namedNode('https://example.com/data/1');
@@ -9,6 +9,32 @@ const data2 = DataFactory.namedNode('https://example.com/data/2');
 const file = DataFactory.namedNode(SKL.File);
 
 describe('TripleUtil', (): void => {
+  describe('#toJSValueFromDataType', (): void => {
+    it('returns an float for data with datatype xsd:decimal, xsd:double, xsd:float.', (): void => {
+      expect(toJSValueFromDataType('3.14', XSD.decimal)).toBe(3.14);
+      expect(toJSValueFromDataType('222.333', XSD.decimal)).toBe(222.333);
+      expect(toJSValueFromDataType('0.1', XSD.decimal)).toBe(0.1);
+    });
+
+    it('returns an integer for data with datatype xsd:integer, xsd:positiveInteger, xsd:negativeInteger, xsd:int.',
+      (): void => {
+        expect(toJSValueFromDataType('3', XSD.integer)).toBe(3);
+        expect(toJSValueFromDataType('1000', XSD.integer)).toBe(1000);
+        expect(toJSValueFromDataType('0', XSD.integer)).toBe(0);
+        // eslint-disable-next-line unicorn/no-zero-fractions
+        expect(toJSValueFromDataType('10', XSD.integer)).toBe(10.0);
+      });
+
+    it('returns a literal with datatype xsd:boolean for booleans.', (): void => {
+      expect(toJSValueFromDataType('true', XSD.boolean)).toBe(true);
+      expect(toJSValueFromDataType('false', XSD.boolean)).toBe(false);
+    });
+
+    it('returns a literal with datatype xsd:string for non numbers and booleans.', (): void => {
+      expect(toJSValueFromDataType('string', XSD.string)).toBe('string');
+    });
+  });
+
   describe('#triplesToJsonld', (): void => {
     let triples: Quad[];
 

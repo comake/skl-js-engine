@@ -2,7 +2,7 @@
 import { RDF, XSD } from '@comake/rmlmapper-js';
 import DataFactory from '@rdfjs/data-model';
 import { SparqlUpdateBuilder } from '../../../../src/storage/sparql/SparqlUpdateBuilder';
-import { rdfTypeNamedNode } from '../../../../src/util/TripleUtil';
+import { created, modified, now, rdfTypeNamedNode } from '../../../../src/util/TripleUtil';
 import { SKL } from '../../../../src/util/Vocabularies';
 
 const c1 = DataFactory.variable('c1');
@@ -172,6 +172,58 @@ describe('A SparqlUpdateBuilder', (): void => {
               triples: [{ subject: data2, predicate: rdfTypeNamedNode, object: file }],
             },
           ],
+        },
+      ],
+    };
+    expect(builder.buildUpdate(entity)).toEqual(query);
+  });
+
+  it('builds an update query with created and modified timestamps if setTimestamps is turned on.', (): void => {
+    builder = new SparqlUpdateBuilder({ setTimestamps: true });
+    const entity = {
+      '@id': 'https://example.com/data/1',
+      '@type': SKL.File,
+    };
+    const query = {
+      type: 'update',
+      prefixes: {},
+      updates: [
+        {
+          updateType: 'deletewhere',
+          delete: [{
+            type: 'graph',
+            name: data1,
+            triples: [{ subject: c1, predicate: c2, object: c3 }],
+          }],
+        },
+        {
+          updateType: 'insert',
+          insert: [
+            {
+              type: 'graph',
+              name: data1,
+              triples: [
+                { subject: data1, predicate: rdfTypeNamedNode, object: file },
+                { subject: data1, predicate: created, object: now },
+                { subject: data1, predicate: modified, object: now },
+              ],
+            },
+          ],
+          where: [{
+            type: 'query',
+            queryType: 'SELECT',
+            prefixes: {},
+            variables: [ now ],
+            where: [{
+              type: 'bind',
+              variable: now,
+              expression: {
+                type: 'operation',
+                operator: 'now',
+                args: [],
+              },
+            }],
+          }],
         },
       ],
     };

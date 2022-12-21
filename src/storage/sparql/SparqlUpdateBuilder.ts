@@ -6,10 +6,13 @@ import type {
   Update,
   GraphQuads,
   Triple,
+  InsertDeleteOperation,
+  SelectQuery,
 } from 'sparqljs';
-import { rdfTypeNamedNode, valueToLiteral } from '../../util/TripleUtil';
+import { rdfTypeNamedNode, valueToLiteral, now, created, modified } from '../../util/TripleUtil';
 import type { Entity } from '../../util/Types';
 import { ensureArray } from '../../util/Util';
+import { DCTERMS } from '../../util/Vocabularies';
 import { VariableGenerator } from './VariableGenerator';
 
 export interface EntityUpdateQueries {
@@ -17,11 +20,17 @@ export interface EntityUpdateQueries {
   deletions: GraphQuads[];
 }
 
+export interface SparqlUpdateBuilderArgs {
+  setTimestamps?: boolean;
+}
+
 export class SparqlUpdateBuilder {
   private readonly variableGenerator: VariableGenerator;
+  private readonly setTimestamps: boolean;
 
-  public constructor() {
+  public constructor(args?: SparqlUpdateBuilderArgs) {
     this.variableGenerator = new VariableGenerator();
+    this.setTimestamps = args?.setTimestamps ?? false;
   }
 
   public buildUpdate(entityOrEntities: Entity | Entity[]): Update {
@@ -33,7 +42,7 @@ export class SparqlUpdateBuilder {
   public buildDelete(entityOrEntities: Entity | Entity[]): Update {
     const entities = ensureArray(entityOrEntities);
     const deletions = this.entitiesToGraphDeletions(entities);
-    return this.buildUpdateWithInsertionsAndDeletions(deletions, []);
+    return this.buildUpdateWithInsertionsAndDeletions(deletions);
   }
 
   private entitiesToGraphDeletionsAndInsertions(
@@ -78,7 +87,7 @@ export class SparqlUpdateBuilder {
   }
 
   private entityToTriples(entity: NodeObject, subject: BlankNode | NamedNode): Triple[] {
-    return Object.entries(entity).reduce((triples: Triple[], [ key, value ]): Triple[] => {
+    const entityTriples = Object.entries(entity).reduce((triples: Triple[], [ key, value ]): Triple[] => {
       const values = ensureArray(value);
       if (key !== '@id') {
         if (key === '@type') {
@@ -98,6 +107,14 @@ export class SparqlUpdateBuilder {
       }
       return triples;
     }, []);
+
+    if (this.setTimestamps && subject.termType === 'NamedNode') {
+      if (!entity[DCTERMS.created]) {
+        entityTriples.push({ subject, predicate: created, object: now });
+      }
+      entityTriples.push({ subject, predicate: modified, object: now });
+    }
+    return entityTriples;
   }
 
   private buildTriplesForSubjectPredicateAndValues(
@@ -166,7 +183,10 @@ export class SparqlUpdateBuilder {
     ];
   }
 
-  private buildUpdateWithInsertionsAndDeletions(deletions: GraphQuads[], insertions: GraphQuads[]): Update {
+  private buildUpdateWithInsertionsAndDeletions(
+    deletions: GraphQuads[],
+    insertions: GraphQuads[] = [],
+  ): Update {
     const update = {
       type: 'update',
       prefixes: {},
@@ -174,11 +194,34 @@ export class SparqlUpdateBuilder {
     } as Update;
 
     if (deletions.length > 0) {
-      update.updates.push({ updateType: 'deletewhere', delete: deletions });
+      const deletion = { updateType: 'deletewhere', delete: deletions } as InsertDeleteOperation;
+      update.updates.push(deletion);
     }
     if (insertions.length > 0) {
-      update.updates.push({ updateType: 'insert', insert: insertions });
+      const insert = { updateType: 'insert', insert: insertions } as InsertDeleteOperation;
+      if (this.setTimestamps) {
+        insert.where = [ this.selectNow() ];
+      }
+      update.updates.push(insert);
     }
     return update;
+  }
+
+  private selectNow(): SelectQuery {
+    return {
+      type: 'query',
+      queryType: 'SELECT',
+      prefixes: {},
+      variables: [ now ],
+      where: [{
+        type: 'bind',
+        variable: now,
+        expression: {
+          type: 'operation',
+          operator: 'now',
+          args: [],
+        },
+      }],
+    };
   }
 }

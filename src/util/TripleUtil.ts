@@ -5,7 +5,7 @@ import * as jsonld from 'jsonld';
 import type { NodeObject, ValueObject } from 'jsonld';
 import type { PropertyPath } from 'sparqljs';
 import type { OrArray } from './Types';
-import { RDF, XSD, RDFS } from './Vocabularies';
+import { RDF, XSD, RDFS, DCTERMS } from './Vocabularies';
 
 export const rdfTypeNamedNode = DataFactory.namedNode(RDF.type);
 export const rdfsSubClassOfNamedNode = DataFactory.namedNode(RDFS.subClassOf);
@@ -13,6 +13,9 @@ export const subjectNode = DataFactory.variable('subject');
 export const predicateNode = DataFactory.variable('predicate');
 export const objectNode = DataFactory.variable('object');
 export const entityVariable = DataFactory.variable('entity');
+export const now = DataFactory.variable('now');
+export const created = DataFactory.namedNode(DCTERMS.created);
+export const modified = DataFactory.namedNode(DCTERMS.modified);
 
 export const allTypesAndSuperTypesPath: PropertyPath = {
   type: 'path',
@@ -27,7 +30,7 @@ export const allTypesAndSuperTypesPath: PropertyPath = {
   ],
 };
 
-function toJSValueFromDataType(value: string, dataType: string): any {
+export function toJSValueFromDataType(value: string, dataType: string): any {
   switch (dataType) {
     case XSD.int:
     case XSD.positiveInteger:
@@ -36,7 +39,13 @@ function toJSValueFromDataType(value: string, dataType: string): any {
       return Number.parseInt(value, 10);
     }
     case XSD.boolean: {
-      return value === 'true';
+      if (value === 'true') {
+        return true;
+      }
+      if (value === 'false') {
+        return false;
+      }
+      return value;
     }
     case XSD.double:
     case XSD.decimal:
