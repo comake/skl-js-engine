@@ -3,7 +3,11 @@ export * from './mapping/Mapper';
 
 // Storage/Operator
 export * from './storage/operator/Equal';
+export * from './storage/operator/GreaterThan';
+export * from './storage/operator/GreaterThanOrEqual';
 export * from './storage/operator/In';
+export * from './storage/operator/LessThan';
+export * from './storage/operator/LessThanOrEqual';
 export * from './storage/operator/Not';
 
 // Storage/Sparql

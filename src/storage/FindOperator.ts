@@ -1,4 +1,4 @@
-export type FindOperatorType = 'in' | 'not' | 'equal';
+export type FindOperatorType = 'in' | 'not' | 'equal' | 'gt' | 'gte' | 'lt' | 'lte';
 
 export interface FindOperatorArgs<T> {
   operator: FindOperatorType;

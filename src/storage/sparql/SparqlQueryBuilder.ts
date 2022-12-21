@@ -404,6 +404,26 @@ export class SparqlQueryBuilder {
           leftSide,
           this.resolveValueToExpression(operator.value) as Expression,
         );
+      case 'gt':
+        return this.buildGtOperation(
+          leftSide,
+          this.resolveValueToExpression(operator.value) as Expression,
+        );
+      case 'gte':
+        return this.buildGteOperation(
+          leftSide,
+          this.resolveValueToExpression(operator.value) as Expression,
+        );
+      case 'lt':
+        return this.buildLtOperation(
+          leftSide,
+          this.resolveValueToExpression(operator.value) as Expression,
+        );
+      case 'lte':
+        return this.buildLteOperation(
+          leftSide,
+          this.resolveValueToExpression(operator.value) as Expression,
+        );
       default:
         if (parentOperator) {
           throw new Error(`Unsupported ${parentOperator} sub operator "${operator.operator}"`);
@@ -533,6 +553,38 @@ export class SparqlQueryBuilder {
     return {
       type: 'operation',
       operator: '=',
+      args: [ leftSide, rightSide ],
+    };
+  }
+
+  private buildGtOperation(leftSide: Expression, rightSide: Expression): OperationExpression {
+    return {
+      type: 'operation',
+      operator: '>',
+      args: [ leftSide, rightSide ],
+    };
+  }
+
+  private buildGteOperation(leftSide: Expression, rightSide: Expression): OperationExpression {
+    return {
+      type: 'operation',
+      operator: '>=',
+      args: [ leftSide, rightSide ],
+    };
+  }
+
+  private buildLtOperation(leftSide: Expression, rightSide: Expression): OperationExpression {
+    return {
+      type: 'operation',
+      operator: '<',
+      args: [ leftSide, rightSide ],
+    };
+  }
+
+  private buildLteOperation(leftSide: Expression, rightSide: Expression): OperationExpression {
+    return {
+      type: 'operation',
+      operator: '<=',
       args: [ leftSide, rightSide ],
     };
   }

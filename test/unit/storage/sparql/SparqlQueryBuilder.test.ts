@@ -2,7 +2,11 @@
 import DataFactory from '@rdfjs/data-model';
 import type { FindOperator } from '../../../../src/storage/FindOperator';
 import { Equal } from '../../../../src/storage/operator/Equal';
+import { GreaterThan } from '../../../../src/storage/operator/GreaterThan';
+import { GreaterThanOrEqual } from '../../../../src/storage/operator/GreaterThanOrEqual';
 import { In } from '../../../../src/storage/operator/In';
+import { LessThan } from '../../../../src/storage/operator/LessThan';
+import { LessThanOrEqual } from '../../../../src/storage/operator/LessThanOrEqual';
 import { Not } from '../../../../src/storage/operator/Not';
 import { SparqlQueryBuilder } from '../../../../src/storage/sparql/SparqlQueryBuilder';
 import {
@@ -1037,6 +1041,230 @@ describe('A SparqlQueryBuilder', (): void => {
     expect(builder.buildEntityQuery({
       where: {
         'https://example.com/pred': Equal(1),
+      },
+    })).toEqual(query);
+  });
+
+  it('builds a query with a gt operator.', (): void => {
+    const query = {
+      type: 'query',
+      queryType: 'CONSTRUCT',
+      prefixes: {},
+      template: graphPattern,
+      where: [
+        {
+          type: 'graph',
+          name: entityVariable,
+          patterns: [{ type: 'bgp', triples: graphPattern }],
+        },
+        {
+          type: 'group',
+          patterns: [{
+            type: 'query',
+            prefixes: {},
+            queryType: 'SELECT',
+            variables: [ entityVariable ],
+            where: [
+              {
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate,
+                    object: c1,
+                  },
+                ],
+              },
+              {
+                type: 'filter',
+                expression: {
+                  type: 'operation',
+                  operator: '>',
+                  args: [
+                    c1,
+                    DataFactory.literal('1', XSD.integer),
+                  ],
+                },
+              },
+            ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
+          }],
+        },
+      ],
+    };
+    expect(builder.buildEntityQuery({
+      where: {
+        'https://example.com/pred': GreaterThan(1),
+      },
+    })).toEqual(query);
+  });
+
+  it('builds a query with a gte operator.', (): void => {
+    const query = {
+      type: 'query',
+      queryType: 'CONSTRUCT',
+      prefixes: {},
+      template: graphPattern,
+      where: [
+        {
+          type: 'graph',
+          name: entityVariable,
+          patterns: [{ type: 'bgp', triples: graphPattern }],
+        },
+        {
+          type: 'group',
+          patterns: [{
+            type: 'query',
+            prefixes: {},
+            queryType: 'SELECT',
+            variables: [ entityVariable ],
+            where: [
+              {
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate,
+                    object: c1,
+                  },
+                ],
+              },
+              {
+                type: 'filter',
+                expression: {
+                  type: 'operation',
+                  operator: '>=',
+                  args: [
+                    c1,
+                    DataFactory.literal('1', XSD.integer),
+                  ],
+                },
+              },
+            ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
+          }],
+        },
+      ],
+    };
+    expect(builder.buildEntityQuery({
+      where: {
+        'https://example.com/pred': GreaterThanOrEqual(1),
+      },
+    })).toEqual(query);
+  });
+
+  it('builds a query with a lt operator.', (): void => {
+    const query = {
+      type: 'query',
+      queryType: 'CONSTRUCT',
+      prefixes: {},
+      template: graphPattern,
+      where: [
+        {
+          type: 'graph',
+          name: entityVariable,
+          patterns: [{ type: 'bgp', triples: graphPattern }],
+        },
+        {
+          type: 'group',
+          patterns: [{
+            type: 'query',
+            prefixes: {},
+            queryType: 'SELECT',
+            variables: [ entityVariable ],
+            where: [
+              {
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate,
+                    object: c1,
+                  },
+                ],
+              },
+              {
+                type: 'filter',
+                expression: {
+                  type: 'operation',
+                  operator: '<',
+                  args: [
+                    c1,
+                    DataFactory.literal('1', XSD.integer),
+                  ],
+                },
+              },
+            ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
+          }],
+        },
+      ],
+    };
+    expect(builder.buildEntityQuery({
+      where: {
+        'https://example.com/pred': LessThan(1),
+      },
+    })).toEqual(query);
+  });
+
+  it('builds a query with a lte operator.', (): void => {
+    const query = {
+      type: 'query',
+      queryType: 'CONSTRUCT',
+      prefixes: {},
+      template: graphPattern,
+      where: [
+        {
+          type: 'graph',
+          name: entityVariable,
+          patterns: [{ type: 'bgp', triples: graphPattern }],
+        },
+        {
+          type: 'group',
+          patterns: [{
+            type: 'query',
+            prefixes: {},
+            queryType: 'SELECT',
+            variables: [ entityVariable ],
+            where: [
+              {
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate,
+                    object: c1,
+                  },
+                ],
+              },
+              {
+                type: 'filter',
+                expression: {
+                  type: 'operation',
+                  operator: '<=',
+                  args: [
+                    c1,
+                    DataFactory.literal('1', XSD.integer),
+                  ],
+                },
+              },
+            ],
+            limit: undefined,
+            offset: undefined,
+            order: undefined,
+          }],
+        },
+      ],
+    };
+    expect(builder.buildEntityQuery({
+      where: {
+        'https://example.com/pred': LessThanOrEqual(1),
       },
     })).toEqual(query);
   });

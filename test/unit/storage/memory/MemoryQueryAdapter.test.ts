@@ -2,7 +2,11 @@
 import { OWL, XSD } from '@comake/rmlmapper-js';
 import { MemoryQueryAdapter } from '../../../../src/storage/memory/MemoryQueryAdapter';
 import { Equal } from '../../../../src/storage/operator/Equal';
+import { GreaterThan } from '../../../../src/storage/operator/GreaterThan';
+import { GreaterThanOrEqual } from '../../../../src/storage/operator/GreaterThanOrEqual';
 import { In } from '../../../../src/storage/operator/In';
+import { LessThan } from '../../../../src/storage/operator/LessThan';
+import { LessThanOrEqual } from '../../../../src/storage/operator/LessThanOrEqual';
 import { Not } from '../../../../src/storage/operator/Not';
 import type { Entity } from '../../../../src/util/Types';
 import { RDFS, SKL } from '../../../../src/util/Vocabularies';
@@ -635,6 +639,78 @@ describe('a MemoryQueryAdapter', (): void => {
           },
         }),
       ).rejects.toThrow('Unsupported operator "and"');
+    });
+
+    it('does not support the gt operator.', async(): Promise<void> => {
+      schemas = [
+        {
+          '@id': 'https://skl.standard.storage/data/2',
+          '@type': 'https://skl.standard.storage/File',
+          'https://skl.standard.storage/rating': [
+            { '@value': '3', '@type': XSD.integer },
+          ],
+        },
+      ];
+      adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
+      await expect(adapter.findAll({
+        where: {
+          'https://skl.standard.storage/rating': GreaterThan(1),
+        },
+      })).resolves.toEqual([]);
+    });
+
+    it('does not support the gte operator.', async(): Promise<void> => {
+      schemas = [
+        {
+          '@id': 'https://skl.standard.storage/data/2',
+          '@type': 'https://skl.standard.storage/File',
+          'https://skl.standard.storage/rating': [
+            { '@value': '3', '@type': XSD.integer },
+          ],
+        },
+      ];
+      adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
+      await expect(adapter.findAll({
+        where: {
+          'https://skl.standard.storage/rating': GreaterThanOrEqual(1),
+        },
+      })).resolves.toEqual([]);
+    });
+
+    it('does not support the lt operator.', async(): Promise<void> => {
+      schemas = [
+        {
+          '@id': 'https://skl.standard.storage/data/2',
+          '@type': 'https://skl.standard.storage/File',
+          'https://skl.standard.storage/rating': [
+            { '@value': '2', '@type': XSD.integer },
+          ],
+        },
+      ];
+      adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
+      await expect(adapter.findAll({
+        where: {
+          'https://skl.standard.storage/rating': LessThan(3),
+        },
+      })).resolves.toEqual([]);
+    });
+
+    it('does not support the lte operator.', async(): Promise<void> => {
+      schemas = [
+        {
+          '@id': 'https://skl.standard.storage/data/2',
+          '@type': 'https://skl.standard.storage/File',
+          'https://skl.standard.storage/rating': [
+            { '@value': '2', '@type': XSD.integer },
+          ],
+        },
+      ];
+      adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
+      await expect(adapter.findAll({
+        where: {
+          'https://skl.standard.storage/rating': LessThanOrEqual(3),
+        },
+      })).resolves.toEqual([]);
     });
   });
 

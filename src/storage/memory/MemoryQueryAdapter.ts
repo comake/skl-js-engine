@@ -123,6 +123,10 @@ export class MemoryQueryAdapter implements QueryAdapter {
             const valueItem = (fieldValue as FindOperator<FieldPrimitiveValue>).value as FieldPrimitiveValue;
             return this.entityMatchesField(entity, fieldName, valueItem);
           },
+          gt: async(): Promise<boolean> => false,
+          gte: async(): Promise<boolean> => false,
+          lt: async(): Promise<boolean> => false,
+          lte: async(): Promise<boolean> => false,
         },
       );
     }
