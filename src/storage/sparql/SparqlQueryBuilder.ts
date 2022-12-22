@@ -25,6 +25,7 @@ import {
   predicateNode,
   objectNode,
   graphVariable,
+  countVariable,
 } from '../../util/TripleUtil';
 import type { OrArray } from '../../util/Types';
 import { isUrl } from '../../util/Util';
@@ -76,6 +77,32 @@ export class SparqlQueryBuilder {
 
   public constructor() {
     this.variableGenerator = new VariableGenerator();
+  }
+
+  public buildEntityCountQuery(where: FindOptionsWhere): SelectQuery {
+    const selectQueryData = this.buildPatternsFromQueryData(where);
+    return this.sparqlCountSelect(selectQueryData.where);
+  }
+
+  private sparqlCountSelect(where: Pattern[]): SelectQuery {
+    return {
+      type: 'query',
+      queryType: 'SELECT',
+      variables: [{
+        expression: {
+          type: 'aggregate',
+          aggregation: 'count',
+          distinct: false,
+          expression: entityVariable,
+        },
+        variable: countVariable,
+      }],
+      where,
+      group: [{
+        expression: entityVariable,
+      }],
+      prefixes: {},
+    };
   }
 
   public buildEntityExistQuery(where: FindOptionsWhere): AskQuery {

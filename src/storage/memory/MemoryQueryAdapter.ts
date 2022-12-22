@@ -247,6 +247,11 @@ export class MemoryQueryAdapter implements QueryAdapter {
     return res !== null;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public async count(where: FindOptionsWhere): Promise<number> {
+    return 0;
+  }
+
   public async save(entity: Entity): Promise<Entity>;
   public async save(entities: Entity[]): Promise<Entity[]>;
   public async save(entityOrEntities: Entity | Entity[]): Promise<Entity | Entity[]> {

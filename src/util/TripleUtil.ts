@@ -14,6 +14,7 @@ export const predicateNode = DataFactory.variable('predicate');
 export const objectNode = DataFactory.variable('object');
 export const entityVariable = DataFactory.variable('entity');
 export const graphVariable = DataFactory.variable('graph');
+export const countVariable = DataFactory.variable('count');
 export const now = DataFactory.variable('now');
 export const created = DataFactory.namedNode(DCTERMS.created);
 export const modified = DataFactory.namedNode(DCTERMS.modified);

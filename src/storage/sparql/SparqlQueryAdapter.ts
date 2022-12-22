@@ -5,6 +5,7 @@ import type {
   Update,
   SparqlGenerator,
   AskQuery,
+  SelectQuery,
 } from 'sparqljs';
 import { Generator } from 'sparqljs';
 import { triplesToJsonld } from '../../util/TripleUtil';
@@ -79,6 +80,12 @@ export class SparqlQueryAdapter implements QueryAdapter {
     return await this.executeAskQueryAndGetResponse(query);
   }
 
+  public async count(where: FindOptionsWhere): Promise<number> {
+    const queryBuilder = new SparqlQueryBuilder();
+    const query = queryBuilder.buildEntityCountQuery(where);
+    return await this.executeSelectCountAndGetResponse(query);
+  }
+
   public async save(entity: Entity): Promise<Entity>;
   public async save(entities: Entity[]): Promise<Entity[]>;
   public async save(entityOrEntities: Entity | Entity[]): Promise<Entity | Entity[]> {
@@ -123,5 +130,24 @@ export class SparqlQueryAdapter implements QueryAdapter {
   private async executeAskQueryAndGetResponse(query: AskQuery): Promise<boolean> {
     const generatedQuery = this.sparqlGenerator.stringify(query);
     return await this.sparqlClient.query.ask(generatedQuery);
+  }
+
+  private async executeSelectCountAndGetResponse(query: SelectQuery): Promise<number> {
+    const generatedQuery = this.sparqlGenerator.stringify(query);
+    const stream = await this.sparqlClient.query.select(generatedQuery);
+    return new Promise((resolve, reject): void => {
+      let count: number;
+      stream.on('data', (row): void => {
+        ({ count } = row);
+      });
+
+      stream.on('end', (): void => {
+        resolve(count);
+      });
+
+      stream.on('error', (error): void => {
+        reject(error);
+      });
+    });
   }
 }

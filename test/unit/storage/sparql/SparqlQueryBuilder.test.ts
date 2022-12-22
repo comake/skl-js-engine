@@ -10,6 +10,7 @@ import { LessThanOrEqual } from '../../../../src/storage/operator/LessThanOrEqua
 import { Not } from '../../../../src/storage/operator/Not';
 import { SparqlQueryBuilder } from '../../../../src/storage/sparql/SparqlQueryBuilder';
 import {
+  countVariable,
   entityVariable,
   graphVariable,
   objectNode,
@@ -55,6 +56,39 @@ describe('A SparqlQueryBuilder', (): void => {
         }],
       };
       expect(builder.buildEntityExistQuery({
+        'https://example.com/pred': 1,
+      })).toEqual(query);
+    });
+  });
+
+  describe('count query', (): void => {
+    it('builds a select count query.', (): void => {
+      const query = {
+        type: 'query',
+        queryType: 'SELECT',
+        prefixes: {},
+        variables: [{
+          expression: {
+            type: 'aggregate',
+            aggregation: 'count',
+            distinct: false,
+            expression: entityVariable,
+          },
+          variable: countVariable,
+        }],
+        where: [{
+          type: 'bgp',
+          triples: [{
+            subject: entityVariable,
+            predicate,
+            object: DataFactory.literal('1', XSD.integer),
+          }],
+        }],
+        group: [{
+          expression: entityVariable,
+        }],
+      };
+      expect(builder.buildEntityCountQuery({
         'https://example.com/pred': 1,
       })).toEqual(query);
     });

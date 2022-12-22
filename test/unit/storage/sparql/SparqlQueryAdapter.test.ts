@@ -116,6 +116,42 @@ describe('a SparqlQueryAdapter', (): void => {
       });
   });
 
+  describe('count', (): void => {
+    it('queries for the count of entities matching.', async(): Promise<void> => {
+      response = [{ count: 1 }];
+      await expect(
+        adapter.count({
+          id: 'https://example.com/data/1',
+        }),
+      ).resolves.toBe(1);
+      expect(select).toHaveBeenCalledTimes(1);
+      expect(select.mock.calls[0][0].split('\n')).toEqual([
+        'SELECT (COUNT(?entity) AS ?count) WHERE {',
+        '  ?entity ?c1 ?c2.',
+        '  FILTER(?entity = <https://example.com/data/1>)',
+        '}',
+        'GROUP BY ?entity',
+      ]);
+    });
+
+    it('throws an error when the sparql endpoint stream errors.', async(): Promise<void> => {
+      error = new Error('Something bad happened');
+      await expect(
+        adapter.count({
+          id: 'https://example.com/data/1',
+        }),
+      ).rejects.toThrow('Something bad happened');
+      expect(select).toHaveBeenCalledTimes(1);
+      expect(select.mock.calls[0][0].split('\n')).toEqual([
+        'SELECT (COUNT(?entity) AS ?count) WHERE {',
+        '  ?entity ?c1 ?c2.',
+        '  FILTER(?entity = <https://example.com/data/1>)',
+        '}',
+        'GROUP BY ?entity',
+      ]);
+    });
+  });
+
   describe('find', (): void => {
     it('queries for entities with a limit of 1 and returns null if there is not response.',
       async(): Promise<void> => {
