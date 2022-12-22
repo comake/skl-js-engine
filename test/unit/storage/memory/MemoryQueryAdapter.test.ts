@@ -19,6 +19,19 @@ describe('a MemoryQueryAdapter', (): void => {
     schemas = [];
   });
 
+  describe('query', (): void => {
+    it('is not supported.', async(): Promise<void> => {
+      schemas = [{
+        '@id': 'https://skl.standard.storage/data/123',
+        '@type': 'https://skl.standard.storage/File',
+      }];
+      adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
+      await expect(
+        adapter.query(''),
+      ).resolves.toEqual([]);
+    });
+  });
+
   describe('find', (): void => {
     it('returns a schema by id.', async(): Promise<void> => {
       schemas = [{

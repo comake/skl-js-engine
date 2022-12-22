@@ -72,6 +72,10 @@ export class Skql {
     this.do = new Proxy({} as VerbInterface, { get: getVerbHandler });
   }
 
+  public async query(query: string): Promise<any> {
+    return await this.adapter.query(query);
+  }
+
   public async find(options: FindOneOptions): Promise<Entity> {
     const entity = await this.adapter.find(options);
     if (entity) {

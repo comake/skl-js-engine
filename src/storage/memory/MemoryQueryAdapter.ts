@@ -32,6 +32,11 @@ export class MemoryQueryAdapter implements QueryAdapter {
     this.setTimestamps = options.setTimestamps ?? false;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public async query(query: string): Promise<any> {
+    return [];
+  }
+
   public async find(options?: FindOneOptions): Promise<Entity | null> {
     if (options?.where?.id && Object.keys(options.where).length === 1 && typeof options.where.id === 'string') {
       return this.schemas[options.where.id] ?? null;

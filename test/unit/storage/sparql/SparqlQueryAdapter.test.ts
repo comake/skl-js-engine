@@ -45,6 +45,77 @@ describe('a SparqlQueryAdapter', (): void => {
     adapter = new SparqlQueryAdapter({ type: 'sparql', endpointUrl });
   });
 
+  describe('query', (): void => {
+    it('executes a sparql construct query and returns an empty array if no triples are found.',
+      async(): Promise<void> => {
+        await expect(
+          adapter.query([
+            'CONSTRUCT { ?subject ?predicate ?object. }',
+            'WHERE {',
+            '  GRAPH ?entity { ?subject ?predicate ?object. }',
+            '  {',
+            '    SELECT ?entity WHERE {',
+            '      ?entity ?c1 ?c2.',
+            '    }',
+            '    LIMIT 1',
+            '  }',
+            '}',
+          ].join('\n')),
+        ).resolves.toEqual([]);
+        expect(select).toHaveBeenCalledTimes(1);
+        expect(select.mock.calls[0][0].split('\n')).toEqual([
+          'CONSTRUCT { ?subject ?predicate ?object. }',
+          'WHERE {',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
+          '  {',
+          '    SELECT ?entity WHERE {',
+          '      ?entity ?c1 ?c2.',
+          '    }',
+          '    LIMIT 1',
+          '  }',
+          '}',
+        ]);
+      });
+    it('executes a sparql construct query and returns an array of nodes.',
+      async(): Promise<void> => {
+        response = [{
+          subject: data1,
+          predicate: rdfTypeNamedNode,
+          object: file,
+        }];
+        await expect(
+          adapter.query([
+            'CONSTRUCT { ?subject ?predicate ?object. }',
+            'WHERE {',
+            '  GRAPH ?entity { ?subject ?predicate ?object. }',
+            '  {',
+            '    SELECT ?entity WHERE {',
+            '      ?entity ?c1 ?c2.',
+            '    }',
+            '    LIMIT 1',
+            '  }',
+            '}',
+          ].join('\n')),
+        ).resolves.toEqual({
+          '@id': 'https://example.com/data/1',
+          '@type': 'https://skl.standard.storage/File',
+        });
+        expect(select).toHaveBeenCalledTimes(1);
+        expect(select.mock.calls[0][0].split('\n')).toEqual([
+          'CONSTRUCT { ?subject ?predicate ?object. }',
+          'WHERE {',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
+          '  {',
+          '    SELECT ?entity WHERE {',
+          '      ?entity ?c1 ?c2.',
+          '    }',
+          '    LIMIT 1',
+          '  }',
+          '}',
+        ]);
+      });
+  });
+
   describe('find', (): void => {
     it('queries for entities with a limit of 1 and returns null if there is not response.',
       async(): Promise<void> => {

@@ -8,6 +8,10 @@ import type { FindAllOptions, FindOneOptions, FindOptionsWhere } from './FindOpt
 
 export interface QueryAdapter {
   /**
+   * Performs a raw query for data matching the query.
+   */
+  query(query: string): Promise<any>;
+  /**
    * Finds first entity by a given find options.
    * If entity was not found in the database - returns null.
    */

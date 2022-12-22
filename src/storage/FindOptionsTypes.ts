@@ -1,4 +1,3 @@
-/* eslint-disable capitalized-comments */
 import type { OrArray } from '../util/Types';
 import type { FindOperator } from './FindOperator';
 
@@ -9,9 +8,9 @@ export type FindOptionsRelationsByString = string[];
 export type FindOptionsSelect = FindOptionsSelectByString | {[key: string]: boolean | FindOptionsSelect };
 
 export interface FindOneOptions {
-  where?: FindOptionsWhere;
   select?: FindOptionsSelect;
-  // relations?: FindOptionsRelations;
+  where?: FindOptionsWhere;
+  relations?: FindOptionsRelations;
   order?: FindOptionsOrder;
 }
 

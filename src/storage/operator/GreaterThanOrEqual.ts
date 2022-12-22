@@ -1,7 +1,7 @@
 import { FindOperator } from '../FindOperator';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function GreaterThanOrEqual<T>(
+export function GreaterThanOrEqual<T extends number | Date | string>(
   value: T,
 ): FindOperator<T> {
   return new FindOperator<T>({

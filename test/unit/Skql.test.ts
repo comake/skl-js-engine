@@ -115,6 +115,13 @@ describe('SKQL', (): void => {
       jest.restoreAllMocks();
     });
 
+    it('delegates calls to query to the query adapter.', async(): Promise<void> => {
+      const querySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'query');
+      await expect(skql.query('')).resolves.toEqual([]);
+      expect(querySpy).toHaveBeenCalledTimes(1);
+      expect(querySpy).toHaveBeenCalledWith('');
+    });
+
     it('delegates calls to find to the query adapter.', async(): Promise<void> => {
       const findSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'find');
       await expect(skql.find({ where: { id: 'https://skl.standard.storage/Share' }})).resolves.toEqual(schemas[0]);

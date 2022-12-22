@@ -3,7 +3,6 @@ import type { Quad } from '@rdfjs/types';
 import SparqlClient from 'sparql-http-client';
 import type {
   Update,
-  ConstructQuery,
   SparqlGenerator,
   AskQuery,
 } from 'sparqljs';
@@ -33,10 +32,20 @@ export class SparqlQueryAdapter implements QueryAdapter {
     this.setTimestamps = options.setTimestamps ?? false;
   }
 
+  public async query(query: string): Promise<any> {
+    const responseTriples = await this.executeSparqlConstructAndGetData(query);
+    if (responseTriples.length === 0) {
+      return [];
+    }
+    const jsonld = await triplesToJsonld(responseTriples);
+    return jsonld as any;
+  }
+
   public async find(options?: FindOneOptions): Promise<Entity | null> {
     const queryBuilder = new SparqlQueryBuilder();
     const query = queryBuilder.buildEntityQuery({ ...options, limit: 1 });
-    const responseTriples = await this.executeSparqlConstructAndGetData(query);
+    const generatedQuery = this.sparqlGenerator.stringify(query);
+    const responseTriples = await this.executeSparqlConstructAndGetData(generatedQuery);
     if (responseTriples.length === 0) {
       return null;
     }
@@ -51,7 +60,8 @@ export class SparqlQueryAdapter implements QueryAdapter {
   public async findAll(options?: FindAllOptions): Promise<Entity[]> {
     const queryBuilder = new SparqlQueryBuilder();
     const query = queryBuilder.buildEntityQuery(options);
-    const responseTriples = await this.executeSparqlConstructAndGetData(query);
+    const generatedQuery = this.sparqlGenerator.stringify(query);
+    const responseTriples = await this.executeSparqlConstructAndGetData(generatedQuery);
     if (responseTriples.length === 0) {
       return [];
     }
@@ -87,9 +97,8 @@ export class SparqlQueryAdapter implements QueryAdapter {
     return entityOrEntities;
   }
 
-  private async executeSparqlConstructAndGetData(query: ConstructQuery): Promise<Quad[]> {
-    const generatedQuery = this.sparqlGenerator.stringify(query);
-    const stream = await this.sparqlClient.query.select(generatedQuery);
+  private async executeSparqlConstructAndGetData(query: string): Promise<Quad[]> {
+    const stream = await this.sparqlClient.query.select(query);
     return new Promise((resolve, reject): void => {
       const data: Quad[] = [];
       stream.on('data', (row): void => {
