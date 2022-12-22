@@ -175,6 +175,13 @@ describe('SKQL', (): void => {
       expect(existsSpy).toHaveBeenCalledWith({ id: 'https://skl.standard.storage/Share' });
     });
 
+    it('delegates calls to count to the query adapter.', async(): Promise<void> => {
+      const countSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'count');
+      await expect(skql.count({ id: 'https://skl.standard.storage/Share' })).resolves.toBe(0);
+      expect(countSpy).toHaveBeenCalledTimes(1);
+      expect(countSpy).toHaveBeenCalledWith({ id: 'https://skl.standard.storage/Share' });
+    });
+
     it('delegates calls to save a single entity to the query adapter.', async(): Promise<void> => {
       const saveSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'save');
       const res = await skql.save({

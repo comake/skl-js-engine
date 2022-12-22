@@ -104,6 +104,10 @@ export class Skql {
     return await this.adapter.exists(options);
   }
 
+  public async count(options: FindOptionsWhere): Promise<number> {
+    return await this.adapter.count(options);
+  }
+
   public async save(entity: Entity): Promise<Entity>;
   public async save(entities: Entity[]): Promise<Entity[]>;
   public async save(entityOrEntities: Entity | Entity[]): Promise<Entity | Entity[]> {
