@@ -8,8 +8,18 @@ import type {
   Triple,
   InsertDeleteOperation,
   SelectQuery,
+  UpdateOperation,
 } from 'sparqljs';
-import { rdfTypeNamedNode, valueToLiteral, now, created, modified } from '../../util/TripleUtil';
+import {
+  rdfTypeNamedNode,
+  valueToLiteral,
+  now,
+  created,
+  modified,
+  subjectNode,
+  predicateNode,
+  objectNode,
+} from '../../util/TripleUtil';
 import type { Entity } from '../../util/Types';
 import { ensureArray } from '../../util/Util';
 import { DCTERMS } from '../../util/Vocabularies';
@@ -43,6 +53,17 @@ export class SparqlUpdateBuilder {
     const entities = ensureArray(entityOrEntities);
     const deletions = this.entitiesToGraphDeletions(entities);
     return this.buildUpdateWithInsertionsAndDeletions(deletions);
+  }
+
+  public buildDeleteAll(): Update {
+    const updates = [{
+      updateType: 'deletewhere',
+      delete: [{
+        type: 'bgp',
+        triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+      }],
+    }] as InsertDeleteOperation[];
+    return this.sparqlUpdate(updates);
   }
 
   private entitiesToGraphDeletionsAndInsertions(
@@ -187,24 +208,37 @@ export class SparqlUpdateBuilder {
     deletions: GraphQuads[],
     insertions: GraphQuads[] = [],
   ): Update {
-    const update = {
-      type: 'update',
-      prefixes: {},
-      updates: [],
-    } as Update;
+    const updates = this.createUpdatesFromInsertionsAndDeletions(deletions, insertions);
+    return this.sparqlUpdate(updates);
+  }
 
+  private createUpdatesFromInsertionsAndDeletions(
+    deletions: GraphQuads[],
+    insertions: GraphQuads[],
+  ): InsertDeleteOperation[] {
+    const updates: InsertDeleteOperation[] = [];
     if (deletions.length > 0) {
-      const deletion = { updateType: 'deletewhere', delete: deletions } as InsertDeleteOperation;
-      update.updates.push(deletion);
+      updates.push({
+        updateType: 'deletewhere',
+        delete: deletions,
+      } as InsertDeleteOperation);
     }
     if (insertions.length > 0) {
       const insert = { updateType: 'insert', insert: insertions } as InsertDeleteOperation;
       if (this.setTimestamps) {
         insert.where = [ this.selectNow() ];
       }
-      update.updates.push(insert);
+      updates.push(insert);
     }
-    return update;
+    return updates;
+  }
+
+  private sparqlUpdate(updates: UpdateOperation[]): Update {
+    return {
+      type: 'update',
+      prefixes: {},
+      updates,
+    };
   }
 
   private selectNow(): SelectQuery {

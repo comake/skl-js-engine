@@ -45,11 +45,11 @@ describe('a SparqlQueryAdapter', (): void => {
     adapter = new SparqlQueryAdapter({ type: 'sparql', endpointUrl });
   });
 
-  describe('query', (): void => {
+  describe('executeRawQuery', (): void => {
     it('executes a sparql construct query and returns an empty array if no triples are found.',
       async(): Promise<void> => {
         await expect(
-          adapter.query([
+          adapter.executeRawQuery([
             'CONSTRUCT { ?subject ?predicate ?object. }',
             'WHERE {',
             '  GRAPH ?entity { ?subject ?predicate ?object. }',
@@ -84,7 +84,7 @@ describe('a SparqlQueryAdapter', (): void => {
           object: file,
         }];
         await expect(
-          adapter.query([
+          adapter.executeRawQuery([
             'CONSTRUCT { ?subject ?predicate ?object. }',
             'WHERE {',
             '  GRAPH ?entity { ?subject ?predicate ?object. }',
@@ -480,6 +480,16 @@ describe('a SparqlQueryAdapter', (): void => {
         '  GRAPH <https://example.com/data/1> { ?c1 ?c2 ?c3. }',
         '  GRAPH <https://example.com/data/2> { ?c4 ?c5 ?c6. }',
         '}',
+      ]);
+    });
+  });
+
+  describe('destroyAll', (): void => {
+    it('destroys all schema.', async(): Promise<void> => {
+      await expect(adapter.destroyAll()).resolves.toBeUndefined();
+      expect(update).toHaveBeenCalledTimes(1);
+      expect(update.mock.calls[0][0].split('\n')).toEqual([
+        'DELETE WHERE { ?subject ?predicate ?object. }',
       ]);
     });
   });

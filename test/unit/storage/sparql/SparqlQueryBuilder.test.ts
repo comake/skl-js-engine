@@ -1437,6 +1437,50 @@ describe('A SparqlQueryBuilder', (): void => {
       })).toEqual(query);
     });
 
+    it('builds a query with a with an order on id.', (): void => {
+      const query = {
+        type: 'query',
+        queryType: 'CONSTRUCT',
+        prefixes: {},
+        template: graphPattern,
+        where: [
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
+          {
+            type: 'group',
+            patterns: [{
+              type: 'query',
+              prefixes: {},
+              queryType: 'SELECT',
+              variables: [ entityVariable ],
+              where: [
+                {
+                  type: 'bgp',
+                  triples: [{
+                    subject: entityVariable,
+                    predicate: c1,
+                    object: c2,
+                  }],
+                },
+              ],
+              limit: undefined,
+              offset: undefined,
+              order: [{
+                expression: entityVariable,
+                descending: true,
+              }],
+            }],
+          },
+        ],
+      };
+      expect(builder.buildEntityQuery({
+        order: { id: 'desc' },
+      })).toEqual(query);
+    });
+
     it('builds a query with a nested select clause.', (): void => {
       const selectPattern = [
         { subject: entityVariable, predicate, object: c3 },

@@ -10,7 +10,7 @@ export interface QueryAdapter {
   /**
    * Performs a raw query for data matching the query.
    */
-  query(query: string): Promise<any>;
+  executeRawQuery(query: string): Promise<any>;
   /**
    * Finds first entity by a given find options.
    * If entity was not found in the database - returns null.
@@ -66,4 +66,8 @@ export interface QueryAdapter {
    * Unlike destroy method executes a primitive operation without cascades, relations and other operations included.
    */
   // delete(criteria: UpdateOrDeleteCriteria): Promise<void>;
+  /**
+   * Removes all entities from the database.
+   */
+  destroyAll(): Promise<void>;
 }

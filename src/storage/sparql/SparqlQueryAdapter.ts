@@ -33,7 +33,7 @@ export class SparqlQueryAdapter implements QueryAdapter {
     this.setTimestamps = options.setTimestamps ?? false;
   }
 
-  public async query(query: string): Promise<any> {
+  public async executeRawQuery(query: string): Promise<any> {
     const responseTriples = await this.executeSparqlConstructAndGetData(query);
     if (responseTriples.length === 0) {
       return [];
@@ -102,6 +102,12 @@ export class SparqlQueryAdapter implements QueryAdapter {
     const query = queryBuilder.buildDelete(entityOrEntities);
     await this.executeSparqlUpdate(query);
     return entityOrEntities;
+  }
+
+  public async destroyAll(): Promise<void> {
+    const queryBuilder = new SparqlUpdateBuilder();
+    const query = queryBuilder.buildDeleteAll();
+    await this.executeSparqlUpdate(query);
   }
 
   private async executeSparqlConstructAndGetData(query: string): Promise<Quad[]> {

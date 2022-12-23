@@ -116,8 +116,8 @@ describe('SKQL', (): void => {
     });
 
     it('delegates calls to query to the query adapter.', async(): Promise<void> => {
-      const querySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'query');
-      await expect(skql.query('')).resolves.toEqual([]);
+      const querySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'executeRawQuery');
+      await expect(skql.executeRawQuery('')).resolves.toEqual([]);
       expect(querySpy).toHaveBeenCalledTimes(1);
       expect(querySpy).toHaveBeenCalledWith('');
     });
@@ -254,6 +254,13 @@ describe('SKQL', (): void => {
       expect(res).toEqual(entities);
       expect(destroySpy).toHaveBeenCalledTimes(1);
       expect(destroySpy).toHaveBeenCalledWith(entities);
+    });
+
+    it('delegates calls to destroyAll to the query adapter.', async(): Promise<void> => {
+      const destroyAllSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'destroyAll');
+      const res = await skql.destroyAll();
+      expect(res).toBeUndefined();
+      expect(destroyAllSpy).toHaveBeenCalledTimes(1);
     });
   });
 

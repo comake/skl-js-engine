@@ -19,7 +19,7 @@ describe('a MemoryQueryAdapter', (): void => {
     schemas = [];
   });
 
-  describe('query', (): void => {
+  describe('executeRawQuery', (): void => {
     it('is not supported.', async(): Promise<void> => {
       schemas = [{
         '@id': 'https://skl.standard.storage/data/123',
@@ -27,7 +27,7 @@ describe('a MemoryQueryAdapter', (): void => {
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
-        adapter.query(''),
+        adapter.executeRawQuery(''),
       ).resolves.toEqual([]);
     });
   });
@@ -909,6 +909,21 @@ describe('a MemoryQueryAdapter', (): void => {
       ).resolves.toBeNull();
       await expect(
         adapter.findBy({ id: entities[1]['@id'] }),
+      ).resolves.toBeNull();
+    });
+  });
+
+  describe('destroyAll', (): void => {
+    it('destroys all the schema.', async(): Promise<void> => {
+      schemas = [{
+        '@id': 'https://skl.standard.storage/data/123',
+        '@type': 'https://skl.standard.storage/File',
+      }];
+      adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
+      const res = await adapter.destroyAll();
+      expect(res).toBeUndefined();
+      await expect(
+        adapter.findBy({ id: schemas[0]['@id'] }),
       ).resolves.toBeNull();
     });
   });

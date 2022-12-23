@@ -2,7 +2,15 @@
 import { RDF, XSD } from '@comake/rmlmapper-js';
 import DataFactory from '@rdfjs/data-model';
 import { SparqlUpdateBuilder } from '../../../../src/storage/sparql/SparqlUpdateBuilder';
-import { created, modified, now, rdfTypeNamedNode } from '../../../../src/util/TripleUtil';
+import {
+  created,
+  modified,
+  now,
+  objectNode,
+  predicateNode,
+  rdfTypeNamedNode,
+  subjectNode,
+} from '../../../../src/util/TripleUtil';
 import { SKL } from '../../../../src/util/Vocabularies';
 
 const c1 = DataFactory.variable('c1');
@@ -287,5 +295,24 @@ describe('A SparqlUpdateBuilder', (): void => {
       ],
     };
     expect(builder.buildDelete(entities)).toEqual(query);
+  });
+
+  it('builds a delete query for all triples.', (): void => {
+    const query = {
+      type: 'update',
+      prefixes: {},
+      updates: [
+        {
+          updateType: 'deletewhere',
+          delete: [
+            {
+              type: 'bgp',
+              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
+            },
+          ],
+        },
+      ],
+    };
+    expect(builder.buildDeleteAll()).toEqual(query);
   });
 });

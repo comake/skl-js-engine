@@ -695,10 +695,11 @@ export class SparqlQueryBuilder {
     }
     return Object.entries(order).reduce((obj: OrderQueryData, [ property, direction ]): OrderQueryData => {
       const orderQueryData = this.createOrderQueryDataForProperty(property, direction, parentVariable);
-      return {
-        triples: [ ...obj.triples, orderQueryData.triple ],
-        orders: [ ...obj.orders, orderQueryData.order ],
-      };
+      obj.orders = [ ...obj.orders, orderQueryData.order ];
+      if (orderQueryData.triple) {
+        obj.triples = [ ...obj.triples, orderQueryData.triple ];
+      }
+      return obj;
     }, { triples: [], orders: []});
   }
 
@@ -706,7 +707,16 @@ export class SparqlQueryBuilder {
     property: string,
     direction: FindOptionsOrderValue,
     parentVariable: Variable,
-  ): { triple: Triple; order: Ordering } {
+  ): { triple?: Triple; order: Ordering } {
+    if (property === 'id') {
+      return {
+        triple: undefined,
+        order: {
+          expression: parentVariable,
+          descending: direction === 'DESC' || direction === 'desc',
+        },
+      };
+    }
     const variable = DataFactory.variable(this.variableGenerator.getNext());
     return {
       triple: {

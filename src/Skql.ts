@@ -72,11 +72,11 @@ export class Skql {
     this.do = new Proxy({} as VerbInterface, { get: getVerbHandler });
   }
 
-  public async query(query: string): Promise<any> {
-    return await this.adapter.query(query);
+  public async executeRawQuery(query: string): Promise<any> {
+    return await this.adapter.executeRawQuery(query);
   }
 
-  public async find(options: FindOneOptions): Promise<Entity> {
+  public async find(options?: FindOneOptions): Promise<Entity> {
     const entity = await this.adapter.find(options);
     if (entity) {
       return entity;
@@ -92,20 +92,20 @@ export class Skql {
     throw new Error(`No schema found with fields matching ${JSON.stringify(where)}`);
   }
 
-  public async findAll(options: FindAllOptions): Promise<Entity[]> {
+  public async findAll(options?: FindAllOptions): Promise<Entity[]> {
     return await this.adapter.findAll(options);
   }
 
-  public async findAllBy(options: FindOptionsWhere): Promise<Entity[]> {
-    return await this.adapter.findAllBy(options);
+  public async findAllBy(where: FindOptionsWhere): Promise<Entity[]> {
+    return await this.adapter.findAllBy(where);
   }
 
-  public async exists(options: FindOptionsWhere): Promise<boolean> {
-    return await this.adapter.exists(options);
+  public async exists(where: FindOptionsWhere): Promise<boolean> {
+    return await this.adapter.exists(where);
   }
 
-  public async count(options: FindOptionsWhere): Promise<number> {
-    return await this.adapter.count(options);
+  public async count(where: FindOptionsWhere): Promise<number> {
+    return await this.adapter.count(where);
   }
 
   public async save(entity: Entity): Promise<Entity>;
@@ -124,6 +124,10 @@ export class Skql {
       return await this.adapter.destroy(entityOrEntities);
     }
     return await this.adapter.destroy(entityOrEntities);
+  }
+
+  public async destroyAll(): Promise<void> {
+    return await this.adapter.destroyAll();
   }
 
   public async performMapping(

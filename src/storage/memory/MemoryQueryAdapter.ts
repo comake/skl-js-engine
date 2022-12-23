@@ -33,7 +33,7 @@ export class MemoryQueryAdapter implements QueryAdapter {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async query(query: string): Promise<any> {
+  public async executeRawQuery(query: string): Promise<any> {
     return [];
   }
 
@@ -274,6 +274,16 @@ export class MemoryQueryAdapter implements QueryAdapter {
       return entityOrEntities.map((entity): Entity => this.destroyEntity(entity));
     }
     return this.destroyEntity(entityOrEntities);
+  }
+
+  public async destroyAll(): Promise<void> {
+    for (const key of Object.keys(this.schemas)) {
+      // eslint-disable-next-line no-prototype-builtins
+      if (this.schemas.hasOwnProperty(key)) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        delete this.schemas[key];
+      }
+    }
   }
 
   private destroyEntity(entity: Entity): Entity {
