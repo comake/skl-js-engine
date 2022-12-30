@@ -41,10 +41,7 @@
     "rr:object": { "@type": "@id" },
     "rr:subject": { "@type": "@id" },
     "rr:class": { "@type": "@id" },
-    "rr:termType": { "@type": "@id" },
-    "https://skl.standard.storage/data": {
-      "@type": "@json"
-    }
+    "rr:termType": { "@type": "@id" }
   },
   "@graph": [
     {
@@ -62,19 +59,7 @@
       "@id": "https://skl.standard.storage/data/JsonSourceDataSource",
       "@type": "https://skl.standard.storage/JsonDataSource",
       "integration": "https://skl.standard.storage/integrations/JsonSource",
-      "https://skl.standard.storage/data": {
-        ".tag": "file",
-        "client_modified": "2015-05-12T15:50:38Z",
-        "content_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-        "has_explicit_shared_members": false,
-        "id": "id:12345",
-        "is_downloadable": true,
-        "name": "Prime_Numbers.txt",
-        "path_display": "/Homework/math/Prime_Numbers.txt",
-        "path_lower": "/homework/math/prime_numbers.txt",
-        "server_modified": "2015-05-12T15:50:38Z",
-        "size": 7212
-      }
+      "https://skl.standard.storage/source": "data.json"
     },
     {
       "@id": "https://skl.standard.storage/data/2",

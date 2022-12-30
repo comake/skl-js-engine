@@ -4,7 +4,6 @@
     "fnml": "http://semweb.mmlab.be/ns/fnml#",
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-    "label": "rdfs:label",
     "rdfs:subClassOf": { "@type": "@id" },
     "rdfs:range": { "@type": "@id" },
     "rdfs:domain": { "@type": "@id" },
@@ -29,7 +28,6 @@
     "skl:returnValueFrame": { "@type": "@json" },
     "skl:noun": { "@type": "@id" },
     "skl:verb": { "@type": "@id" },
-    "name": "skl:name",
     "skl:parameterMapping": { "@type": "@id" },
     "skl:mapping": { "@type": "@id" },
     "skl:returnValueMapping": { "@type": "@id" },
@@ -49,7 +47,7 @@
     {
       "@id": "https://skl.standard.storage/getFile",
       "@type": "https://skl.standard.storage/Verb",
-      "https://skl.standard.storage/name": "getFile",
+      "rdfs:label": "getFile",
       "skl:parametersContext": {
         "id": {
           "@id": "https://skl.standard.storage/id",
@@ -90,7 +88,7 @@
       "@type": "https://skl.standard.storage/VerbIntegrationMapping",
       "integration": "https://skl.standard.storage/integrations/Dropbox",
       "verb": "https://skl.standard.storage/getFile",
-      "name": "getFileToDropbox",
+      "label": "getFileToDropbox",
       "skl:operationMapping": {
         "@type": "rr:TriplesMap",
         "rml:logicalSource": {
@@ -177,6 +175,7 @@
             "@type": "rr:PredicateObjectMap",
             "rr:objectMap": {
               "@type": "rr:ObjectMap",
+              "rr:datatype": "http://www.w3.org/2001/XMLSchema#integer",
               "fnml:functionValue": {
                 "@type": "fnml:FunctionValue",
                 "rr:predicateObjectMap": [
@@ -361,7 +360,7 @@
           {
             "@type": "rr:PredicateObjectMap",
             "rr:objectMap": { "@type": "rr:ObjectMap", "rml:reference": "name" },
-            "rr:predicate": "skl:name"
+            "rr:predicate": "rdfs:label"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -516,7 +515,7 @@
     {
       "@id": "https://skl.standard.storage/sync",
       "@type": "https://skl.standard.storage/NounMappedVerb",
-      "skl:name": "sync",
+      "label": "sync",
       "skl:parametersContext": {
         "noun": {
           "@id": "https://skl.standard.storage/noun",
@@ -554,7 +553,7 @@
       "@type": "https://skl.standard.storage/VerbNounMapping",
       "skl:verb": "https://skl.standard.storage/sync",
       "skl:noun": "https://skl.standard.storage/File",
-      "skl:name": "syncFileToGetFile",
+      "label": "syncFileToGetFile",
       "skl:verbMapping": {
         "@type": "rr:TriplesMap",
         "rml:logicalSource": {
@@ -606,7 +605,7 @@
     {
       "@id": "https://skl.standard.storage/getName",
       "@type": "https://skl.standard.storage/NounMappedVerb",
-      "skl:name": "getName",
+      "label": "getName",
       "skl:parametersContext": {
         "noun": {
           "@id": "https://skl.standard.storage/noun",
@@ -641,7 +640,7 @@
       "@type": "https://skl.standard.storage/VerbNounMapping",
       "skl:verb": "https://skl.standard.storage/getName",
       "skl:noun": "https://skl.standard.storage/File",
-      "skl:name": "getNameToFile",
+      "label": "getNameToFile",
       "skl:mapping": {
         "@type": "rr:TriplesMap",
         "rml:logicalSource": {
@@ -656,9 +655,9 @@
             "@type": "rr:PredicateObjectMap",
             "rr:objectMap": {
               "@type": "rr:ObjectMap",
-              "rml:reference": "entity['https://skl.standard.storage/name']"
+              "rml:reference": "entity['http://www.w3.org/2000/01/rdf-schema#label']"
             },
-            "rr:predicate": "skl:name"
+            "rr:predicate": "rdfs:label"
           }
         ]
       }
@@ -666,7 +665,7 @@
     {
       "@id": "https://skl.standard.storage/authorizeWithPkceOauth",
       "@type": "https://skl.standard.storage/OpenApiSecuritySchemeVerb",
-      "https://skl.standard.storage/name": "authorizeWithPkceOauth",
+      "rdfs:label": "authorizeWithPkceOauth",
       "skl:parametersContext": {
         "account": {
           "@id": "https://skl.standard.storage/account",
@@ -694,7 +693,7 @@
       "@type": "https://skl.standard.storage/VerbIntegrationMapping",
       "integration": "https://skl.standard.storage/integrations/Dropbox",
       "verb": "https://skl.standard.storage/authorizeWithPkceOauth",
-      "name": "authorizeWithPkceOauthToDropbox",
+      "label": "authorizeWithPkceOauthToDropbox",
       "skl:operationMapping": {
         "@type": "rr:TriplesMap",
         "rml:logicalSource": {
@@ -735,7 +734,7 @@
     {
       "@id": "https://skl.standard.storage/getOauthTokens",
       "@type": "https://skl.standard.storage/OpenApiSecuritySchemeVerb",
-      "https://skl.standard.storage/name": "getOauthTokens",
+      "rdfs:label": "getOauthTokens",
       "skl:parametersContext": {
         "codeVerifier": {
           "@id": "https://skl.standard.storage/codeVerifier",
@@ -798,7 +797,7 @@
       "@type": "https://skl.standard.storage/VerbIntegrationMapping",
       "integration": "https://skl.standard.storage/integrations/Dropbox",
       "verb": "https://skl.standard.storage/getOauthTokens",
-      "name": "getOauthTokensToDropbox",
+      "label": "getOauthTokensToDropbox",
       "skl:parameterMapping": {
         "@type": "rr:TriplesMap",
         "rml:logicalSource": {
@@ -976,7 +975,7 @@
       "@id": "https://skl.standard.storage/integrations/Dropbox",
       "@type": "https://skl.standard.storage/Integration",
       "https://skl.standard.storage/description": "Dropbox is a modern workspace designed to reduce busywork-so you can focus on the things that matter. Sign in and put your creative energy to work.",
-      "https://skl.standard.storage/name": "Dropbox",
+      "rdfs:label": "Dropbox",
       "skl:invalidTokenErrorMatcher": {
         "status": 401,
         "messageRegex": "^Unauthorized$"

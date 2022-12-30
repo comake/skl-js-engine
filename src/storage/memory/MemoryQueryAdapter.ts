@@ -1,7 +1,7 @@
 import type { ReferenceNodeObject } from '@comake/rmlmapper-js';
-import type { ValueObject } from 'jsonld';
 import { toJSValueFromDataType } from '../../util/TripleUtil';
 import type { Entity, EntityFieldValue, PossibleArrayFieldValues } from '../../util/Types';
+import type { JSONObject, JSONArray } from '../../util/Util';
 import { ensureArray } from '../../util/Util';
 import { RDFS } from '../../util/Vocabularies';
 import type { FindOperatorType } from '../FindOperator';
@@ -12,6 +12,7 @@ import type {
   FindOptionsWhere,
   FindOptionsWhereField,
   FieldPrimitiveValue,
+  ValueObject,
 } from '../FindOptionsTypes';
 import type { QueryAdapter } from '../QueryAdapter';
 import type { MemoryQueryAdapterOptions } from './MemoryQueryAdapterOptions';
@@ -150,6 +151,12 @@ export class MemoryQueryAdapter implements QueryAdapter {
       return true;
     }
     if (typeof fieldValue === 'object') {
+      if ('@value' in fieldValue) {
+        return this.fieldValueMatchesField(
+          fieldValue['@value'] as FieldPrimitiveValue | JSONObject | JSONArray,
+          entity[fieldName],
+        );
+      }
       if (Array.isArray(entity[fieldName])) {
         for (const subFieldValue of (entity[fieldName] as (ReferenceNodeObject | Entity)[])) {
           const matches = await this.findOptionWhereMatchesNodeObject(fieldValue as FindOptionsWhere, subFieldValue);
@@ -175,7 +182,7 @@ export class MemoryQueryAdapter implements QueryAdapter {
   }
 
   private fieldValueMatchesField(
-    fieldValue: FieldPrimitiveValue,
+    fieldValue: FieldPrimitiveValue | JSONObject | JSONArray,
     field: EntityFieldValue,
   ): boolean {
     if (typeof field === 'object') {
@@ -248,7 +255,7 @@ export class MemoryQueryAdapter implements QueryAdapter {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async count(where: FindOptionsWhere): Promise<number> {
+  public async count(where?: FindOptionsWhere): Promise<number> {
     return 0;
   }
 

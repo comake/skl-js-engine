@@ -22,7 +22,6 @@
     "skl": "https://skl.standard.storage/",
     "https://skl.standard.storage/parametersContext": { "@type": "@json" },
     "https://skl.standard.storage/returnValueFrame": { "@type": "@json" },
-    "name": "skl:name",
     "parameterMapping": {
       "@id": "skl:parameterMapping",
       "@type": "@id"
@@ -65,12 +64,12 @@
       "@id": "https://skl.standard.storage/integrations/Ticketmaster",
       "@type": "https://skl.standard.storage/Integration",
       "https://skl.standard.storage/description": "Buy and sell tickets online for concerts, sports, theater, family and other events near you from Ticketmaster.",
-      "https://skl.standard.storage/name": "Ticketmaster"
+      "label": "Ticketmaster"
     },
     {
       "@id": "https://skl.standard.storage/getEvents",
       "@type": "https://skl.standard.storage/Verb",
-      "https://skl.standard.storage/name": "getEvents",
+      "label": "getEvents",
       "https://skl.standard.storage/parametersContext": {
         "city": {
           "@id": "https://skl.standard.storage/city",
@@ -151,7 +150,7 @@
       "@type": "https://skl.standard.storage/VerbIntegrationMapping",
       "integration": "https://skl.standard.storage/integrations/Ticketmaster",
       "verb": "https://skl.standard.storage/getEvents",
-      "name": "getEventsToTicketmaster",
+      "label": "getEventsToTicketmaster",
       "operationMapping": {
         "@type": "rr:TriplesMap",
         "rml:logicalSource": {

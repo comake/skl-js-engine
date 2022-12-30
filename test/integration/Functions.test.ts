@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Skql } from '../../src/Skql';
+import { getValueIfDefined } from '../../src/util/Util';
 import { frameAndCombineSchemas } from '../util/Util';
 
 describe('An Skql engine with user supplied functions', (): void => {
@@ -21,6 +22,6 @@ describe('An Skql engine with user supplied functions', (): void => {
       numerator: 10,
       denominator: 5,
     });
-    expect(response['https://skl.standard.storage/answer']).toBe(2);
+    expect(getValueIfDefined(response['https://skl.standard.storage/answer'])).toBe(2);
   });
 });

@@ -58,7 +58,7 @@ describe('a MemoryQueryAdapter', (): void => {
         adapter.find({
           where: {
             id: 'https://skl.standard.storage/data/123',
-            [SKL.name]: 'image.jpeg',
+            [RDFS.label]: 'image.jpeg',
           },
         }),
       ).resolves.toBeNull();
@@ -68,13 +68,13 @@ describe('a MemoryQueryAdapter', (): void => {
       schemas = [{
         '@id': 'https://skl.standard.storage/data/123',
         '@type': 'https://skl.standard.storage/File',
-        [SKL.name]: 'image.jpeg',
+        [RDFS.label]: 'image.jpeg',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
         adapter.find({
           where: {
-            [SKL.name]: 'image.jpeg',
+            [RDFS.label]: 'image.jpeg',
           },
         }),
       ).resolves.toEqual(schemas[0]);
@@ -85,12 +85,12 @@ describe('a MemoryQueryAdapter', (): void => {
         {
           '@id': 'https://skl.standard.storage/data/123',
           '@type': 'https://skl.standard.storage/File',
-          [SKL.name]: 'image.jpeg',
+          [RDFS.label]: 'image.jpeg',
         },
         {
           '@id': 'https://skl.standard.storage/data/124',
           '@type': 'https://skl.standard.storage/File',
-          [SKL.name]: 'image.jpeg',
+          [RDFS.label]: 'image.jpeg',
           'https://skl.standard.storage/rating': [
             { '@value': '1', '@type': XSD.integer },
             { '@value': '2', '@type': XSD.integer },
@@ -148,7 +148,7 @@ describe('a MemoryQueryAdapter', (): void => {
         {
           '@id': 'https://skl.standard.storage/data/BoxIntegration',
           '@type': 'https://skl.standard.storage/Integration',
-          [SKL.name]: 'Box',
+          [RDFS.label]: 'Box',
         },
       ];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
@@ -157,7 +157,7 @@ describe('a MemoryQueryAdapter', (): void => {
           where: {
             '@type': 'https://skl.standard.storage/File',
             [SKL.integration]: {
-              [SKL.name]: 'Box',
+              [RDFS.label]: 'Box',
             },
           },
         }),
@@ -175,7 +175,7 @@ describe('a MemoryQueryAdapter', (): void => {
           {
             '@id': 'https://skl.standard.storage/data/BoxIntegration',
             '@type': 'https://skl.standard.storage/Integration',
-            [SKL.name]: 'Box',
+            [RDFS.label]: 'Box',
             'https://skl.standard.storage/rating': [
               { '@value': '1', '@type': XSD.integer },
               { '@value': '2', '@type': XSD.integer },
@@ -210,7 +210,7 @@ describe('a MemoryQueryAdapter', (): void => {
           {
             '@id': 'https://skl.standard.storage/data/BoxIntegration',
             '@type': 'https://skl.standard.storage/Integration',
-            [SKL.name]: 'Box',
+            [RDFS.label]: 'Box',
           },
         ];
         adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
@@ -219,7 +219,7 @@ describe('a MemoryQueryAdapter', (): void => {
             where: {
               '@type': 'https://skl.standard.storage/File',
               [SKL.integration]: {
-                [SKL.name]: 'Box',
+                [RDFS.label]: 'Box',
               },
             },
           }),
@@ -240,7 +240,7 @@ describe('a MemoryQueryAdapter', (): void => {
           {
             '@id': 'https://skl.standard.storage/data/BoxIntegration',
             '@type': 'https://skl.standard.storage/Integration',
-            [SKL.name]: 'Box',
+            [RDFS.label]: 'Box',
           },
         ];
         adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
@@ -249,25 +249,39 @@ describe('a MemoryQueryAdapter', (): void => {
             where: {
               '@type': 'https://skl.standard.storage/File',
               [SKL.integration]: {
-                [SKL.name]: 'Dropbox',
+                [RDFS.label]: 'Dropbox',
               },
             },
           }),
         ).resolves.toBeNull();
       });
 
-    it('does not returns entities with a literal value when filtering with an object field value.',
+    it('returns entities with a literal value when filtering with an object field value.',
       async(): Promise<void> => {
         schemas = [{
           '@id': 'https://skl.standard.storage/data/123',
           '@type': 'https://skl.standard.storage/File',
-          [SKL.name]: 'image.jpeg',
+          [RDFS.label]: 'image.jpeg',
         }];
         adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
         await expect(
           adapter.find({
             where: {
-              [SKL.name]: {
+              [RDFS.label]: {
+                '@value': 'image.jpeg',
+              },
+            },
+          }),
+        ).resolves.toEqual(schemas[0]);
+      });
+
+    it('does not return entities when it references a node that does not exist.',
+      async(): Promise<void> => {
+        adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
+        await expect(
+          adapter.find({
+            where: {
+              [RDFS.label]: {
                 '@value': 'image.jpeg',
               },
             },
@@ -275,15 +289,18 @@ describe('a MemoryQueryAdapter', (): void => {
         ).resolves.toBeNull();
       });
 
-    it('does not returns entities when it references a node that does not exist.',
+    it('does not return entities if the where field includes an object for a field which is not an object.',
       async(): Promise<void> => {
+        schemas = [{
+          '@id': 'https://skl.standard.storage/data/123',
+          '@type': 'https://skl.standard.storage/File',
+          [RDFS.label]: 'image.jpeg',
+        }];
         adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
         await expect(
           adapter.find({
             where: {
-              [SKL.name]: {
-                '@value': 'image.jpeg',
-              },
+              [RDFS.label]: { value: 'image.jpeg' },
             },
           }),
         ).resolves.toBeNull();
@@ -336,7 +353,7 @@ describe('a MemoryQueryAdapter', (): void => {
       await expect(
         adapter.findBy({
           id: 'https://skl.standard.storage/data/123',
-          [SKL.name]: 'image.jpeg',
+          [RDFS.label]: 'image.jpeg',
         }),
       ).resolves.toBeNull();
     });
@@ -345,12 +362,12 @@ describe('a MemoryQueryAdapter', (): void => {
       schemas = [{
         '@id': 'https://skl.standard.storage/data/123',
         '@type': 'https://skl.standard.storage/File',
-        [SKL.name]: 'image.jpeg',
+        [RDFS.label]: 'image.jpeg',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
         adapter.findBy({
-          [SKL.name]: 'image.jpeg',
+          [RDFS.label]: 'image.jpeg',
         }),
       ).resolves.toEqual(schemas[0]);
     });
@@ -544,13 +561,13 @@ describe('a MemoryQueryAdapter', (): void => {
         {
           '@id': 'https://skl.standard.storage/data/2',
           '@type': 'https://skl.standard.storage/File',
-          [SKL.name]: 'image.jpeg',
+          [RDFS.label]: 'image.jpeg',
         },
       ];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(adapter.findAll({
         where: {
-          [SKL.name]: In([ 'image.jpeg' ]),
+          [RDFS.label]: In([ 'image.jpeg' ]),
         },
       })).resolves.toEqual([ schemas[1] ]);
     });
@@ -564,13 +581,13 @@ describe('a MemoryQueryAdapter', (): void => {
         {
           '@id': 'https://skl.standard.storage/data/2',
           '@type': 'https://skl.standard.storage/File',
-          [SKL.name]: 'image.jpeg',
+          [RDFS.label]: 'image.jpeg',
         },
       ];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(adapter.findAll({
         where: {
-          [SKL.name]: Not('image.jpeg'),
+          [RDFS.label]: Not('image.jpeg'),
         },
       })).resolves.toEqual([ schemas[0] ]);
     });
@@ -584,13 +601,13 @@ describe('a MemoryQueryAdapter', (): void => {
         {
           '@id': 'https://skl.standard.storage/data/2',
           '@type': 'https://skl.standard.storage/File',
-          [SKL.name]: 'image.jpeg',
+          [RDFS.label]: 'image.jpeg',
         },
       ];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(adapter.findAll({
         where: {
-          [SKL.name]: Not(In([ 'image.jpeg' ])),
+          [RDFS.label]: Not(In([ 'image.jpeg' ])),
         },
       })).resolves.toEqual([ schemas[0] ]);
     });
@@ -604,13 +621,13 @@ describe('a MemoryQueryAdapter', (): void => {
         {
           '@id': 'https://skl.standard.storage/data/2',
           '@type': 'https://skl.standard.storage/File',
-          [SKL.name]: 'image.jpeg',
+          [RDFS.label]: 'image.jpeg',
         },
       ];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(adapter.findAll({
         where: {
-          [SKL.name]: Not(Equal('image.jpeg')),
+          [RDFS.label]: Not(Equal('image.jpeg')),
         },
       })).resolves.toEqual([ schemas[0] ]);
     });
@@ -624,13 +641,13 @@ describe('a MemoryQueryAdapter', (): void => {
         {
           '@id': 'https://skl.standard.storage/data/2',
           '@type': 'https://skl.standard.storage/File',
-          [SKL.name]: 'image.jpeg',
+          [RDFS.label]: 'image.jpeg',
         },
       ];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(adapter.findAll({
         where: {
-          [SKL.name]: Equal('image.jpeg'),
+          [RDFS.label]: Equal('image.jpeg'),
         },
       })).resolves.toEqual([ schemas[1] ]);
     });
@@ -826,7 +843,7 @@ describe('a MemoryQueryAdapter', (): void => {
       schemas = [{
         '@id': 'https://skl.standard.storage/File',
         '@type': 'https://skl.standard.storage/Noun',
-        [SKL.name]: 'File',
+        [RDFS.label]: 'File',
       }];
       const entity = schemas[0];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });

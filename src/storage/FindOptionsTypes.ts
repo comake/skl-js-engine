@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { OrArray } from '../util/Types';
+import type { JSONArray, JSONObject } from '../util/Util';
 import type { FindOperator } from './FindOperator';
 
 export type FindOptionsSelectByString = string[];
@@ -24,7 +26,28 @@ export type FindOptionsOrder = Record<string, FindOptionsOrderValue>;
 
 export type FieldPrimitiveValue = boolean | number | string;
 
-export type FindOptionsWhereField = OrArray<FieldPrimitiveValue> | FindOptionsWhere | FindOperator<any>;
+export type JsonValueObject = {
+  '@value': FieldPrimitiveValue | JSONObject | JSONArray;
+  '@type': '@json';
+};
+
+export type LanguageValueObject = {
+  '@value': string;
+  '@language': string;
+  '@direction': string;
+};
+
+export type NonJsonValueObject = {
+  '@value': FieldPrimitiveValue;
+  '@type': string;
+};
+
+export type ValueObject =
+  | JsonValueObject
+  | LanguageValueObject
+  | NonJsonValueObject;
+
+export type FindOptionsWhereField = OrArray<FieldPrimitiveValue> | ValueObject | FindOptionsWhere | FindOperator<any>;
 
 export type IdOrTypeFindOptionsWhereField = string | FindOperator<string> | FindOperator<string[]>;
 

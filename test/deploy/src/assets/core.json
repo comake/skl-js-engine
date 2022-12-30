@@ -57,7 +57,7 @@
         {
           "shacl:maxCount": 1,
           "shacl:minCount": 1,
-          "shacl:path": "https://skl.standard.storage/name"
+          "shacl:path": "rdfs:label"
         }
       ]
     },
@@ -72,7 +72,7 @@
         {
           "shacl:maxCount": 1,
           "shacl:minCount": 1,
-          "shacl:path": "https://skl.standard.storage/name"
+          "shacl:path": "rdfs:label"
         },
         {
           "shacl:maxCount": 1,
@@ -128,7 +128,7 @@
       "shacl:property": [
         {
           "shacl:maxCount": 1,
-          "shacl:path": "https://skl.standard.storage/name"
+          "shacl:path": "rdfs:label"
         },
         {
           "shacl:maxCount": 1,
@@ -149,7 +149,7 @@
       "shacl:closed": false,
       "shacl:property": {
         "shacl:maxCount": 1,
-        "shacl:path": "https://skl.standard.storage/name"
+        "shacl:path": "rdfs:label"
       }
     },
     {
@@ -248,7 +248,7 @@
         },
         {
           "shacl:maxCount": 1,
-          "shacl:path": "https://skl.standard.storage/name"
+          "shacl:path": "rdfs:label"
         },
         {
           "shacl:maxCount": 1,
@@ -338,7 +338,7 @@
         },
         {
           "shacl:maxCount": 1,
-          "shacl:path": "https://skl.standard.storage/name"
+          "shacl:path": "rdfs:label"
         },
         {
           "shacl:class": "https://skl.standard.storage/File",

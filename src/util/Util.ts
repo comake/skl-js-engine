@@ -1,13 +1,18 @@
 import * as jsonld from 'jsonld';
-import type { NodeObject } from 'jsonld';
+import type { NodeObject, ValueObject } from 'jsonld';
 import { Parser, Store } from 'n3';
+import type { EntityFieldSingularValue, EntityFieldValue } from './Types';
 
-export type JSONObject = Record<string, JSONValue>;
-
-export type JSONValue =
+export type JSONPrimitive =
   | string
   | number
   | boolean
+  | null;
+export type JSONObject = Record<string, JSONValue>;
+export interface JSONArray extends Array<JSONValue> {}
+
+export type JSONValue =
+  | JSONPrimitive
   | {[x: string]: JSONValue }
   | JSONValue[];
 
@@ -53,12 +58,16 @@ export function ensureArray<T>(arrayable: T | T[]): T[] {
   return [];
 }
 
-export function getValueOfFieldInNodeObject<T>(object: NodeObject, field: string): T | undefined {
-  if (object[field]) {
-    if (typeof object[field] === 'object') {
-      return (object[field] as NodeObject)!['@value'] as unknown as T;
-    }
-    return object[field] as unknown as T;
+export function getValueIfDefined<T>(fieldValue?: EntityFieldValue): T | undefined {
+  if (fieldValue && Array.isArray(fieldValue)) {
+    return fieldValue.map((valueItem): EntityFieldSingularValue =>
+      getValueIfDefined<EntityFieldSingularValue>(valueItem)!) as unknown as T;
+  }
+  if (fieldValue && typeof fieldValue === 'object') {
+    return (fieldValue as ValueObject)['@value'] as unknown as T;
+  }
+  if (fieldValue !== undefined && fieldValue !== null) {
+    return fieldValue as unknown as T;
   }
 }
 

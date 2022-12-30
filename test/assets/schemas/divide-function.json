@@ -29,7 +29,6 @@
     "skl:returnValueFrame": { "@type": "@json" },
     "skl:noun": { "@type": "@id" },
     "skl:verb": { "@type": "@id" },
-    "name": "skl:name",
     "skl:mapping": { "@type": "@id" },
     "integration": { "@id": "skl:integration", "@type": "@id" },
     "verb": { "@id": "skl:verb", "@type": "@id" },
@@ -45,7 +44,7 @@
     {
       "@id": "https://skl.standard.storage/divide",
       "@type": "https://skl.standard.storage/NounMappedVerb",
-      "skl:name": "divide",
+      "label": "divide",
       "skl:parametersContext": {
         "numerator": {
           "@id": "https://skl.standard.storage/numerator",
@@ -80,7 +79,7 @@
       "@type": "https://skl.standard.storage/VerbNounMapping",
       "skl:verb": "https://skl.standard.storage/divide",
       "skl:noun": "https://skl.standard.storage/Equation",
-      "skl:name": "getNameToFile",
+      "label": "getNameToFile",
       "skl:mapping": {
         "@type": "rr:TriplesMap",
         "rml:logicalSource": {

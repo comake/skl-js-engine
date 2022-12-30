@@ -1,5 +1,5 @@
 import DataFactory from '@rdfjs/data-model';
-import type { Quad } from '@rdfjs/types';
+import type { Quad, Literal } from '@rdfjs/types';
 import SparqlClient from 'sparql-http-client';
 import type {
   Update,
@@ -51,7 +51,7 @@ export class SparqlQueryAdapter implements QueryAdapter {
       return null;
     }
     const jsonld = await triplesToJsonld(responseTriples);
-    return jsonld as any;
+    return jsonld as Entity;
   }
 
   public async findBy(where: FindOptionsWhere): Promise<Entity | null> {
@@ -67,7 +67,10 @@ export class SparqlQueryAdapter implements QueryAdapter {
       return [];
     }
     const jsonld = await triplesToJsonld(responseTriples);
-    return jsonld as any;
+    if (Array.isArray(jsonld)) {
+      return jsonld as Entity[];
+    }
+    return [ jsonld ] as Entity[];
   }
 
   public async findAllBy(where: FindOptionsWhere): Promise<Entity[]> {
@@ -80,7 +83,7 @@ export class SparqlQueryAdapter implements QueryAdapter {
     return await this.executeAskQueryAndGetResponse(query);
   }
 
-  public async count(where: FindOptionsWhere): Promise<number> {
+  public async count(where?: FindOptionsWhere): Promise<number> {
     const queryBuilder = new SparqlQueryBuilder();
     const query = queryBuilder.buildEntityCountQuery(where);
     return await this.executeSelectCountAndGetResponse(query);
@@ -142,13 +145,14 @@ export class SparqlQueryAdapter implements QueryAdapter {
     const generatedQuery = this.sparqlGenerator.stringify(query);
     const stream = await this.sparqlClient.query.select(generatedQuery);
     return new Promise((resolve, reject): void => {
-      let count: number;
-      stream.on('data', (row): void => {
-        ({ count } = row);
+      let countValue: number;
+      stream.on('data', (row: { count: Literal }): void => {
+        const { count } = row;
+        countValue = Number.parseInt(count.value, 10);
       });
 
       stream.on('end', (): void => {
-        resolve(count);
+        resolve(countValue);
       });
 
       stream.on('error', (error): void => {

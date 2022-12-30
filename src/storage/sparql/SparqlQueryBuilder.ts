@@ -29,6 +29,7 @@ import {
 } from '../../util/TripleUtil';
 import type { OrArray } from '../../util/Types';
 import { isUrl } from '../../util/Util';
+import { RDF } from '../../util/Vocabularies';
 import { FindOperator } from '../FindOperator';
 import type {
   FieldPrimitiveValue,
@@ -40,6 +41,7 @@ import type {
   FindOptionsWhere,
   FindOptionsWhereField,
   IdOrTypeFindOptionsWhereField,
+  ValueObject,
 } from '../FindOptionsTypes';
 import { VariableGenerator } from './VariableGenerator';
 
@@ -56,6 +58,7 @@ export interface RelationsQueryData {
 export interface OrderQueryData {
   triples: Triple[];
   orders: Ordering[];
+  variables: Variable[];
 }
 
 export type QueryData = {
@@ -64,12 +67,14 @@ export type QueryData = {
   triples: Triple[];
   optionalTriples: Triple[];
   orders: Ordering[];
+  graphFilters: OperationExpression[];
 };
 
 export interface SelectQueryData {
   variables: Variable[];
   where: Pattern[];
   orders: Ordering[];
+  graphFilters: OperationExpression[];
 }
 
 export class SparqlQueryBuilder {
@@ -79,7 +84,7 @@ export class SparqlQueryBuilder {
     this.variableGenerator = new VariableGenerator();
   }
 
-  public buildEntityCountQuery(where: FindOptionsWhere): SelectQuery {
+  public buildEntityCountQuery(where?: FindOptionsWhere): SelectQuery {
     const selectQueryData = this.buildPatternsFromQueryData(where);
     return this.sparqlCountSelect(selectQueryData.where);
   }
@@ -92,15 +97,12 @@ export class SparqlQueryBuilder {
         expression: {
           type: 'aggregate',
           aggregation: 'count',
-          distinct: false,
+          distinct: true,
           expression: entityVariable,
         },
         variable: countVariable,
       }],
-      where,
-      group: [{
-        expression: entityVariable,
-      }],
+      where: [ this.sparqlSelectGraph(entityVariable, where) ],
       prefixes: {},
     };
   }
@@ -128,7 +130,7 @@ export class SparqlQueryBuilder {
       options?.limit,
       options?.offset,
     );
-    return this.sparqlConstruct(entitySelectQuery, options?.select, options?.relations !== undefined);
+    return this.sparqlConstruct(entitySelectQuery, selectQueryData.graphFilters, options?.select);
   }
 
   private sparqlSelect(
@@ -157,13 +159,14 @@ export class SparqlQueryBuilder {
   ): SelectQueryData {
     const queryData = this.createQueryData(entityVariable, where, order, relations);
     const patterns = this.createWherePatternsFromQueryData(queryData);
+    const variables = [ entityVariable, ...queryData.variables ];
+    const uniqueVariables = variables.filter((variable, index): boolean =>
+      index === variables.findIndex((variable2): boolean => variable2.equals(variable)));
     return {
-      variables: [
-        relations ? graphVariable : entityVariable,
-        ...queryData.variables,
-      ],
+      variables: uniqueVariables,
       where: patterns,
       orders: queryData.orders,
+      graphFilters: queryData.graphFilters,
     };
   }
 
@@ -214,31 +217,35 @@ export class SparqlQueryBuilder {
 
   private sparqlConstruct(
     graphSelectionQuery: SelectQuery,
+    graphFilters: OperationExpression[],
     select?: FindOptionsSelect,
-    hasVariableGraphSelection?: boolean,
   ): ConstructQuery {
-    let pattern: Triple[];
-    let graphSelect: GraphPattern;
+    let triples: Triple[];
+    const where: Pattern[] = [];
     if (select) {
       // TODO fix when select and relations are used.
-      pattern = this.createSelectPattern(select, entityVariable);
-      graphSelect = this.sparqlOptionalSelectGraph(entityVariable, pattern);
+      triples = this.createSelectPattern(select, entityVariable);
+      where.push(this.sparqlOptionalSelectGraph(entityVariable, triples));
+      where.push(this.sparqlSelectGroup([ graphSelectionQuery ]));
     } else {
-      pattern = [{ subject: subjectNode, predicate: predicateNode, object: objectNode }];
-      graphSelect = this.sparqlSelectGraph(
-        hasVariableGraphSelection ? graphVariable : entityVariable,
-        pattern,
+      triples = [{ subject: subjectNode, predicate: predicateNode, object: objectNode }];
+      where.push(
+        this.sparqlSelectGraph(
+          graphFilters.length > 0 ? graphVariable : entityVariable,
+          [ this.sparqlBasicGraphPattern(triples) ],
+        ),
       );
+      where.push(this.sparqlSelectGroup([ graphSelectionQuery ]));
+      if (graphFilters.length > 0) {
+        where.push(this.filterPatternFromFilters(graphFilters)!);
+      }
     }
     return {
       type: 'query',
       prefixes: {},
       queryType: 'CONSTRUCT',
-      template: pattern,
-      where: [
-        graphSelect,
-        this.sparqlSelectGroup([ graphSelectionQuery ]),
-      ],
+      template: triples,
+      where,
     };
   }
 
@@ -260,11 +267,11 @@ export class SparqlQueryBuilder {
     }, []);
   }
 
-  private sparqlSelectGraph(name: Variable | NamedNode, triples: Triple[]): GraphPattern {
+  private sparqlSelectGraph(name: Variable | NamedNode, patterns: Pattern[]): GraphPattern {
     return {
       type: 'graph',
       name: name as IriTerm,
-      patterns: [{ type: 'bgp', triples }],
+      patterns,
     };
   }
 
@@ -298,13 +305,14 @@ export class SparqlQueryBuilder {
     const whereQueryData = this.createWhereQueryData(parentVariable, where);
     const orderQueryData = this.createOrderQueryData(parentVariable, order);
     const relationsQueryData = this.createRelationsQueryData(parentVariable, relations);
-    const relationsFilters = this.buildRelationsFilters(relationsQueryData.variables);
+    const graphFilters = this.buildGraphFilters(relationsQueryData.variables);
     return {
-      variables: relationsQueryData.variables,
+      variables: [ ...relationsQueryData.variables, ...orderQueryData.variables ],
       triples: whereQueryData.triples,
-      filters: [ ...whereQueryData.filters, ...relationsFilters ],
+      filters: whereQueryData.filters,
       optionalTriples: [ ...relationsQueryData.triples, ...orderQueryData.triples ],
       orders: orderQueryData.orders,
+      graphFilters,
     };
   }
 
@@ -362,6 +370,9 @@ export class SparqlQueryBuilder {
       }, { filters: [], triples: []});
     }
     if (typeof value === 'object') {
+      if ('@value' in value) {
+        return this.createWhereQueryDataForValueObject(key, value as ValueObject, parentVariable);
+      }
       return this.createWhereQueryDataForNestedWhere(key, value as FindOptionsWhere, parentVariable);
     }
     return {
@@ -460,6 +471,34 @@ export class SparqlQueryBuilder {
         ...subWhereQueryData.triples,
       ],
     };
+  }
+
+  private createWhereQueryDataForValueObject(
+    key: string,
+    valueObject: ValueObject,
+    parentVariable: Variable,
+  ): WhereQueryData {
+    return {
+      filters: [],
+      triples: [{
+        subject: parentVariable,
+        predicate: DataFactory.namedNode(key),
+        object: this.valueObjectToTerm(valueObject),
+      }],
+    };
+  }
+
+  private valueObjectToTerm(valueObject: ValueObject): Literal {
+    let typeOrLanguage: string;
+    let value: string;
+    if ('@type' in valueObject && valueObject['@type'] === '@json') {
+      typeOrLanguage = RDF.JSON;
+      value = JSON.stringify(valueObject['@value']);
+    } else {
+      typeOrLanguage = ('@type' in valueObject ? valueObject['@type'] : valueObject['@language'])!;
+      value = (valueObject['@value'] as FieldPrimitiveValue).toString();
+    }
+    return DataFactory.literal(value, typeOrLanguage);
   }
 
   private resolveFindOperatorAsExpressionWithMultipleValues(
@@ -691,23 +730,24 @@ export class SparqlQueryBuilder {
 
   private createOrderQueryData(parentVariable: Variable, order?: FindOptionsOrder): OrderQueryData {
     if (!order) {
-      return { triples: [], orders: []};
+      return { triples: [], orders: [], variables: []};
     }
     return Object.entries(order).reduce((obj: OrderQueryData, [ property, direction ]): OrderQueryData => {
       const orderQueryData = this.createOrderQueryDataForProperty(property, direction, parentVariable);
       obj.orders = [ ...obj.orders, orderQueryData.order ];
+      obj.variables.push(orderQueryData.variable);
       if (orderQueryData.triple) {
-        obj.triples = [ ...obj.triples, orderQueryData.triple ];
+        obj.triples.push(orderQueryData.triple);
       }
       return obj;
-    }, { triples: [], orders: []});
+    }, { triples: [], orders: [], variables: []});
   }
 
   private createOrderQueryDataForProperty(
     property: string,
     direction: FindOptionsOrderValue,
     parentVariable: Variable,
-  ): { triple?: Triple; order: Ordering } {
+  ): { triple?: Triple; order: Ordering; variable: Variable } {
     if (property === 'id') {
       return {
         triple: undefined,
@@ -715,6 +755,7 @@ export class SparqlQueryBuilder {
           expression: parentVariable,
           descending: direction === 'DESC' || direction === 'desc',
         },
+        variable: parentVariable,
       };
     }
     const variable = DataFactory.variable(this.variableGenerator.getNext());
@@ -728,6 +769,7 @@ export class SparqlQueryBuilder {
         expression: variable,
         descending: direction === 'DESC' || direction === 'desc',
       },
+      variable,
     };
   }
 
@@ -752,7 +794,7 @@ export class SparqlQueryBuilder {
     }, { variables: [], triples: []});
   }
 
-  private buildRelationsFilters(variables: Variable[]): OperationExpression[] {
+  private buildGraphFilters(variables: Variable[]): OperationExpression[] {
     if (variables.length === 0) {
       return [];
     }

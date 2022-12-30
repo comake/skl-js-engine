@@ -28,6 +28,9 @@ describe('TripleUtil', (): void => {
     it('returns a literal with datatype xsd:boolean for booleans.', (): void => {
       expect(toJSValueFromDataType('true', XSD.boolean)).toBe(true);
       expect(toJSValueFromDataType('false', XSD.boolean)).toBe(false);
+      expect(toJSValueFromDataType('true', XSD.boolean)).toBe(true);
+      expect(toJSValueFromDataType('false', XSD.boolean)).toBe(false);
+      expect(toJSValueFromDataType('magic', XSD.boolean)).toBe('magic');
     });
 
     it('returns a literal with datatype xsd:string for non numbers and booleans.', (): void => {
@@ -287,6 +290,31 @@ describe('TripleUtil', (): void => {
         },
         {
           '@id': 'https://example.com/data/2',
+          '@type': SKL.File,
+        },
+      ]);
+    });
+
+    it('maintains order of nodes in the input triples.', async(): Promise<void> => {
+      triples = [
+        {
+          subject: DataFactory.namedNode('https://example.com/data/def'),
+          predicate: rdfTypeNamedNode,
+          object: file,
+        } as Quad,
+        {
+          subject: DataFactory.namedNode('https://example.com/data/abc'),
+          predicate: rdfTypeNamedNode,
+          object: file,
+        } as Quad,
+      ];
+      await expect(triplesToJsonld(triples)).resolves.toEqual([
+        {
+          '@id': 'https://example.com/data/def',
+          '@type': SKL.File,
+        },
+        {
+          '@id': 'https://example.com/data/abc',
           '@type': SKL.File,
         },
       ]);

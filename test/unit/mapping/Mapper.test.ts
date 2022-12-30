@@ -4,7 +4,6 @@ import arrayOfIris from '../../assets/schemas/array-of-iris.json';
 import booleanDataType from '../../assets/schemas/boolean-datatype.json';
 import doubleDataType from '../../assets/schemas/double-datatype.json';
 import integerDatatype from '../../assets/schemas/integer-datatype.json';
-import jsonDatatype from '../../assets/schemas/json-datatype.json';
 import multipleRdfTypeObjectMaps from '../../assets/schemas/multiple-rdf-type-objectmaps.json';
 import nonArrayIri from '../../assets/schemas/non-array-iri.json';
 import simpleMapping from '../../assets/schemas/simple-mapping.json';
@@ -63,89 +62,34 @@ describe('A Mapper', (): void => {
     mapping = await expandJsonLd(booleanDataType);
     const response = await mapper.apply(data, mapping, { '@id': 'https://skl.standard.storage/mappingSubject' });
     expect(response).toEqual({
-      '@context': {
-        'https://skl.standard.storage/field': {
-          '@type': 'http://www.w3.org/2001/XMLSchema#boolean',
-        },
-      },
       '@id': 'https://skl.standard.storage/mappingSubject',
-      'https://skl.standard.storage/field': true,
+      'https://skl.standard.storage/field': {
+        '@type': 'http://www.w3.org/2001/XMLSchema#boolean',
+        '@value': true,
+      },
     });
   });
 
   describe('without framing SKL properties', (): void => {
-    it('frames and converts integers to native type in the return value.', async(): Promise<void> => {
+    it('frames the mapping subject.', async(): Promise<void> => {
       data = { field: [ 1, 2, 3 ]};
       mapping = await expandJsonLd(integerDatatype);
       const response = await mapper.apply(data, mapping, { '@id': 'https://skl.standard.storage/mappingSubject' });
       expect(response).toEqual({
-        '@context': {
-          'https://skl.standard.storage/field': {
+        '@id': 'https://skl.standard.storage/mappingSubject',
+        'https://skl.standard.storage/field': [
+          {
             '@type': 'http://www.w3.org/2001/XMLSchema#integer',
+            '@value': 1,
           },
-        },
-        '@id': 'https://skl.standard.storage/mappingSubject',
-        'https://skl.standard.storage/field': [ 1, 2, 3 ],
-      });
-    });
-
-    it('frames json values and does not remove duplicates.', async(): Promise<void> => {
-      data = { field: [ 1, 2, 3, 1 ]};
-      mapping = await expandJsonLd(jsonDatatype);
-      const response = await mapper.apply(data, mapping, { '@id': 'https://skl.standard.storage/mappingSubject' });
-      expect(response).toEqual({
-        '@context': {
-          'https://skl.standard.storage/field': {
-            '@type': '@json',
+          {
+            '@type': 'http://www.w3.org/2001/XMLSchema#integer',
+            '@value': 2,
           },
-        },
-        '@id': 'https://skl.standard.storage/mappingSubject',
-        'https://skl.standard.storage/field': [ 1, 2, 3, 1 ],
-      });
-    });
-
-    it('frames and converts doubles to native type in the return value.', async(): Promise<void> => {
-      data = { field: 3.14159 };
-      mapping = await expandJsonLd(doubleDataType);
-      const response = await mapper.apply(data, mapping, { '@id': 'https://skl.standard.storage/mappingSubject' });
-      expect(response).toEqual({
-        '@context': {
-          'https://skl.standard.storage/field': {
-            '@type': 'http://www.w3.org/2001/XMLSchema#double',
+          {
+            '@type': 'http://www.w3.org/2001/XMLSchema#integer',
+            '@value': 3,
           },
-        },
-        '@id': 'https://skl.standard.storage/mappingSubject',
-        'https://skl.standard.storage/field': 3.14159,
-      });
-    });
-
-    it('frames and converts an IRI termType.', async(): Promise<void> => {
-      data = {};
-      mapping = await expandJsonLd(nonArrayIri);
-      const response = await mapper.apply(data, mapping, { '@id': 'https://skl.standard.storage/mappingSubject' });
-      expect(response).toEqual({
-        '@context': {
-          'https://skl.standard.storage/integration': { '@type': '@id' },
-        },
-        '@id': 'https://skl.standard.storage/mappingSubject',
-        'https://skl.standard.storage/integration': 'https://skl.standard.storage/integrations/Dropbox',
-      });
-    });
-
-    it('frames converts an array of IRIs.', async(): Promise<void> => {
-      data = {};
-      mapping = await expandJsonLd(arrayOfIris);
-      const response = await mapper.apply(data, mapping, { '@id': 'https://skl.standard.storage/mappingSubject' });
-      expect(response).toEqual({
-        '@context': {
-          'https://skl.standard.storage/integration': {
-            '@type': '@id',
-          },
-        },
-        '@id': 'https://skl.standard.storage/mappingSubject',
-        'https://skl.standard.storage/integration': [
-          'https://skl.standard.storage/integrations/Dropbox',
-          'https://skl.standard.storage/integrations/AirTable',
         ],
       });
     });

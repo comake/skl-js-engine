@@ -19,7 +19,7 @@ import {
   rdfTypeNamedNode,
   subjectNode,
 } from '../../../../src/util/TripleUtil';
-import { SKL, XSD } from '../../../../src/util/Vocabularies';
+import { RDF, SKL, XSD } from '../../../../src/util/Vocabularies';
 
 const c1 = DataFactory.variable('c1');
 const c2 = DataFactory.variable('c2');
@@ -71,21 +71,22 @@ describe('A SparqlQueryBuilder', (): void => {
           expression: {
             type: 'aggregate',
             aggregation: 'count',
-            distinct: false,
+            distinct: true,
             expression: entityVariable,
           },
           variable: countVariable,
         }],
         where: [{
-          type: 'bgp',
-          triples: [{
-            subject: entityVariable,
-            predicate,
-            object: DataFactory.literal('1', XSD.integer),
+          type: 'graph',
+          name: entityVariable,
+          patterns: [{
+            type: 'bgp',
+            triples: [{
+              subject: entityVariable,
+              predicate,
+              object: DataFactory.literal('1', XSD.integer),
+            }],
           }],
-        }],
-        group: [{
-          expression: entityVariable,
         }],
       };
       expect(builder.buildEntityCountQuery({
@@ -325,6 +326,72 @@ describe('A SparqlQueryBuilder', (): void => {
           id: 'https://example.com/data/1',
           'https://example.com/nested': {
             id: 'https://example.com/data/2',
+          },
+        },
+      })).toEqual(query);
+    });
+
+    it('builds a query with a literal value filter.', (): void => {
+      const query = {
+        type: 'query',
+        queryType: 'CONSTRUCT',
+        prefixes: {},
+        template: graphPattern,
+        where: [
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
+          {
+            type: 'group',
+            patterns: [{
+              type: 'query',
+              prefixes: {},
+              queryType: 'SELECT',
+              variables: [ entityVariable ],
+              where: [
+                {
+                  type: 'bgp',
+                  triples: [
+                    {
+                      subject: entityVariable,
+                      predicate,
+                      object: DataFactory.literal('{"alpha":1}', RDF.JSON),
+                    },
+                    {
+                      subject: entityVariable,
+                      predicate: predicate2,
+                      object: DataFactory.literal('false', XSD.boolean),
+                    },
+                    {
+                      subject: entityVariable,
+                      predicate: DataFactory.namedNode('https://example.com/pred3'),
+                      object: DataFactory.literal('hello', 'en'),
+                    },
+                  ],
+                },
+              ],
+              limit: undefined,
+              offset: undefined,
+              order: undefined,
+            }],
+          },
+        ],
+      };
+      expect(builder.buildEntityQuery({
+        where: {
+          'https://example.com/pred': {
+            '@value': { alpha: 1 },
+            '@type': '@json',
+          },
+          'https://example.com/pred2': {
+            '@value': false,
+            '@type': XSD.boolean,
+          },
+          'https://example.com/pred3': {
+            '@value': 'hello',
+            '@language': 'en',
           },
         },
       })).toEqual(query);
@@ -1398,7 +1465,7 @@ describe('A SparqlQueryBuilder', (): void => {
               type: 'query',
               prefixes: {},
               queryType: 'SELECT',
-              variables: [ entityVariable ],
+              variables: [ entityVariable, c3 ],
               where: [
                 {
                   type: 'bgp',
@@ -1598,7 +1665,7 @@ describe('A SparqlQueryBuilder', (): void => {
               type: 'query',
               prefixes: {},
               queryType: 'SELECT',
-              variables: [ graphVariable, c3, c4 ],
+              variables: [ entityVariable, c3, c4 ],
               where: [
                 {
                   type: 'bgp',
@@ -1626,41 +1693,41 @@ describe('A SparqlQueryBuilder', (): void => {
                     ],
                   }],
                 },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: '||',
-                    args: [
-                      {
-                        type: 'operation',
-                        operator: '=',
-                        args: [ graphVariable, entityVariable ],
-                      },
-                      {
-                        type: 'operation',
-                        operator: '||',
-                        args: [
-                          {
-                            type: 'operation',
-                            operator: '=',
-                            args: [ graphVariable, c3 ],
-                          },
-                          {
-                            type: 'operation',
-                            operator: '=',
-                            args: [ graphVariable, c4 ],
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                },
               ],
               limit: undefined,
               offset: undefined,
               order: undefined,
             }],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: '||',
+              args: [
+                {
+                  type: 'operation',
+                  operator: '=',
+                  args: [ graphVariable, entityVariable ],
+                },
+                {
+                  type: 'operation',
+                  operator: '||',
+                  args: [
+                    {
+                      type: 'operation',
+                      operator: '=',
+                      args: [ graphVariable, c3 ],
+                    },
+                    {
+                      type: 'operation',
+                      operator: '=',
+                      args: [ graphVariable, c4 ],
+                    },
+                  ],
+                },
+              ],
+            },
           },
         ],
       };

@@ -5,7 +5,6 @@
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "schema": "https://schema.org/",
-    "label": "rdfs:label",
     "rdfs:subClassOf": { "@type": "@id" },
     "rdfs:range": { "@id": "rdfs:range", "@type": "@id" },
     "rdfs:domain": { "@id": "rdfs:domain", "@type": "@id" },
@@ -22,7 +21,6 @@
     "skl": "https://skl.standard.storage/",
     "https://skl.standard.storage/parametersContext": { "@type": "@json" },
     "https://skl.standard.storage/returnValueFrame": { "@type": "@json" },
-    "name": "skl:name",
     "parameterMapping": {
       "@id": "skl:parameterMapping",
       "@type": "@id"
@@ -53,7 +51,8 @@
     {
       "@id": "https://skl.standard.storage/data/TicketmasterAccount1",
       "@type": "https://skl.standard.storage/Account",
-      "https://skl.standard.storage/integration": "https://skl.standard.storage/integrations/Ticketmaster"
+      "https://skl.standard.storage/integration": "https://skl.standard.storage/integrations/Ticketmaster",
+      "rdfs:label": "Ticketmaster Account"
     },
     {
       "@id": "https://skl.standard.storage/data/TicketmasterAccount1SecurityCredentials",
@@ -65,12 +64,12 @@
       "@id": "https://skl.standard.storage/integrations/Ticketmaster",
       "@type": "https://skl.standard.storage/Integration",
       "https://skl.standard.storage/description": "Buy and sell tickets online for concerts, sports, theater, family and other events near you from Ticketmaster.",
-      "https://skl.standard.storage/name": "Ticketmaster"
+      "rdfs:label": "Ticketmaster"
     },
     {
       "@id": "https://skl.standard.storage/getEvents",
       "@type": "https://skl.standard.storage/Verb",
-      "https://skl.standard.storage/name": "getEvents",
+      "rdfs:label": "getEvents",
       "https://skl.standard.storage/parametersContext": {
         "city": {
           "@id": "https://skl.standard.storage/city",
@@ -151,7 +150,7 @@
       "@type": "https://skl.standard.storage/VerbIntegrationMapping",
       "integration": "https://skl.standard.storage/integrations/Ticketmaster",
       "verb": "https://skl.standard.storage/getEvents",
-      "name": "getEventsToTicketmaster",
+      "rdfs:label": "getEventsToTicketmaster",
       "operationMapping": {
         "@type": "rr:TriplesMap",
         "rml:logicalSource": {

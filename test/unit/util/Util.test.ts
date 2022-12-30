@@ -6,7 +6,7 @@ import {
   toJSON,
   ensureArray,
   isUrl,
-  getValueOfFieldInNodeObject,
+  getValueIfDefined,
 } from '../../../src/util/Util';
 
 describe('Util', (): void => {
@@ -36,25 +36,25 @@ describe('Util', (): void => {
     it('removes @context, @id, and @type keys from the jsonLd NodeObject.', (): void => {
       const jsonld = {
         '@context': {
-          name: 'https://skl.standard.storage/name',
+          label: 'http://www.w3.org/2000/01/rdf-schema#label',
         },
         '@id': 'https://skl.standard.storage/data/123',
         '@type': 'https://skl.standard.storage/File',
-        name: 'image.jpeg',
+        label: 'image.jpeg',
       };
       expect(toJSON(jsonld)).toEqual({
-        name: 'image.jpeg',
+        label: 'image.jpeg',
       });
     });
     it('removes @context, @id, and @type keys from all nested objects if convertBeyondFirstLevel is true.',
       (): void => {
         const jsonld = {
           '@context': {
-            name: 'https://skl.standard.storage/name',
+            label: 'http://www.w3.org/2000/01/rdf-schema#label',
           },
           '@id': 'https://skl.standard.storage/data/123',
           '@type': 'https://skl.standard.storage/File',
-          name: 'image.jpeg',
+          label: 'image.jpeg',
           subFileArr: [
             {
               '@id': 'https://skl.standard.storage/data/123',
@@ -69,7 +69,7 @@ describe('Util', (): void => {
           },
         };
         expect(toJSON(jsonld, true)).toEqual({
-          name: 'image.jpeg',
+          label: 'image.jpeg',
           subFileArr: [
             { md5: 'abc123' },
           ],
@@ -94,23 +94,26 @@ describe('Util', (): void => {
       });
   });
 
-  describe('#getValueOfFieldInNodeObject', (): void => {
-    it('returns undefined if the field is not in the object.', (): void => {
-      expect(getValueOfFieldInNodeObject({}, 'https://example.com/predicate')).toBeUndefined();
+  describe('#getValueIfDefined', (): void => {
+    it('returns the value at the @value key of the nodeObject if it\'s defined.', (): void => {
+      expect(getValueIfDefined({ '@value': { alpha: 1 }})).toEqual({ alpha: 1 });
+      expect(getValueIfDefined({ '@value': 1 })).toBe(1);
+      expect(getValueIfDefined({ '@value': false })).toBe(false);
+      expect(getValueIfDefined({})).toBeUndefined();
     });
 
-    it('returns the field value if it is not an object.', (): void => {
-      expect(getValueOfFieldInNodeObject(
-        { 'https://example.com/predicate': 'string' },
-        'https://example.com/predicate',
-      )).toBe('string');
+    it('returns null if the nodeObject is not defined or null.', (): void => {
+      expect(getValueIfDefined(undefined)).toBeUndefined();
+      expect(getValueIfDefined(null)).toBeUndefined();
     });
 
-    it('returns the value of the field value if it is an object.', (): void => {
-      expect(getValueOfFieldInNodeObject(
-        { 'https://example.com/predicate': { '@value': 'string' }},
-        'https://example.com/predicate',
-      )).toBe('string');
+    it('returns all values from an array of value objects.', (): void => {
+      expect(
+        getValueIfDefined([
+          { '@value': 1 },
+          { '@value': 2 },
+        ]),
+      ).toEqual([ 1, 2 ]);
     });
   });
 

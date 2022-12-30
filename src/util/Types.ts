@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/indent */
 /* eslint-disable @typescript-eslint/naming-convention */
 import type {
   GraphObject,
@@ -14,7 +13,16 @@ import type {
 } from 'jsonld';
 
 export type PossibleArrayFieldValues =
-  | null
+  | boolean
+  | number
+  | string
+  | NodeObject
+  | GraphObject
+  | ValueObject
+  | ListObject
+  | SetObject;
+
+export type EntityFieldSingularValue =
   | boolean
   | number
   | string
@@ -25,17 +33,7 @@ export type PossibleArrayFieldValues =
   | SetObject;
 
 export type EntityFieldValue =
-  | OrArray<
-    | null
-    | boolean
-    | number
-    | string
-    | NodeObject
-    | GraphObject
-    | ValueObject
-    | ListObject
-    | SetObject
-  >
+  | OrArray<EntityFieldSingularValue>
   | LanguageMap
   | IndexMap
   | IncludedBlock

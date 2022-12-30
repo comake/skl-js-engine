@@ -6,7 +6,7 @@ import type { SkqlOptions } from '../../src/Skql';
 import { Skql } from '../../src/Skql';
 import type { QueryAdapterType } from '../../src/storage/BaseQueryAdapterOptions';
 import { MemoryQueryAdapter } from '../../src/storage/memory/MemoryQueryAdapter';
-import { SKL } from '../../src/util/Vocabularies';
+import { SKL, RDFS } from '../../src/util/Vocabularies';
 import simpleMapping from '../assets/schemas/simple-mapping.json';
 import { frameAndCombineSchemas, expandJsonLd } from '../util/Util';
 
@@ -28,25 +28,25 @@ const mockDropboxFile = {
 };
 
 const expectedGetFileResponse = {
-  '@context': {
-    'https://skl.standard.storage/deleted': {
-      '@type': 'http://www.w3.org/2001/XMLSchema#boolean',
-    },
-    'https://skl.standard.storage/integration': {
-      '@type': '@id',
-    },
-    'https://skl.standard.storage/isWeblink': {
-      '@type': 'http://www.w3.org/2001/XMLSchema#boolean',
-    },
-  },
   '@id': 'https://skl.standard.storage/data/abc123',
   '@type': 'https://skl.standard.storage/File',
-  'https://skl.standard.storage/deleted': false,
-  'https://skl.standard.storage/integration': 'https://skl.standard.storage/integrations/Dropbox',
-  'https://skl.standard.storage/isWeblink': false,
+  'https://skl.standard.storage/deleted': {
+    '@type': 'http://www.w3.org/2001/XMLSchema#boolean',
+    '@value': false,
+  },
+  'https://skl.standard.storage/integration': {
+    '@id': 'https://skl.standard.storage/integrations/Dropbox',
+  },
+  'https://skl.standard.storage/isWeblink': {
+    '@type': 'http://www.w3.org/2001/XMLSchema#boolean',
+    '@value': false,
+  },
   'https://skl.standard.storage/mimeType': 'text/plain',
-  'https://skl.standard.storage/name': 'Prime_Numbers.txt',
-  'https://skl.standard.storage/size': 7212,
+  'http://www.w3.org/2000/01/rdf-schema#label': 'Prime_Numbers.txt',
+  'https://skl.standard.storage/size': {
+    '@type': 'http://www.w3.org/2001/XMLSchema#integer',
+    '@value': 7212,
+  },
   'https://skl.standard.storage/sourceId': 'id:12345',
 };
 
@@ -187,18 +187,18 @@ describe('SKQL', (): void => {
       const res = await skql.save({
         '@id': 'https://skl.standard.storage/Share',
         '@type': 'https://skl.standard.storage/Verb',
-        [SKL.name]: 'Share',
+        [RDFS.label]: 'Share',
       });
       expect(res).toEqual({
         '@id': 'https://skl.standard.storage/Share',
         '@type': 'https://skl.standard.storage/Verb',
-        [SKL.name]: 'Share',
+        [RDFS.label]: 'Share',
       });
       expect(saveSpy).toHaveBeenCalledTimes(1);
       expect(saveSpy).toHaveBeenCalledWith({
         '@id': 'https://skl.standard.storage/Share',
         '@type': 'https://skl.standard.storage/Verb',
-        [SKL.name]: 'Share',
+        [RDFS.label]: 'Share',
       });
     });
 
@@ -208,12 +208,12 @@ describe('SKQL', (): void => {
         {
           '@id': 'https://skl.standard.storage/Share',
           '@type': 'https://skl.standard.storage/Verb',
-          [SKL.name]: 'Share',
+          [RDFS.label]: 'Share',
         },
         {
           '@id': 'https://skl.standard.storage/Send',
           '@type': 'https://skl.standard.storage/Verb',
-          [SKL.name]: 'Send',
+          [RDFS.label]: 'Send',
         },
       ];
       const res = await skql.save(entities);
@@ -241,12 +241,12 @@ describe('SKQL', (): void => {
         {
           '@id': 'https://skl.standard.storage/Share',
           '@type': 'https://skl.standard.storage/Verb',
-          [SKL.name]: 'Share',
+          [RDFS.label]: 'Share',
         },
         {
           '@id': 'https://skl.standard.storage/Send',
           '@type': 'https://skl.standard.storage/Verb',
-          [SKL.name]: 'Send',
+          [RDFS.label]: 'Send',
         },
       ];
       await skql.save(entities);
@@ -433,7 +433,7 @@ describe('SKQL', (): void => {
                   '@type': 'http://www.w3.org/2001/XMLSchema#integer',
                   '@value': '1',
                 },
-                'http://www.w3.org/ns/shacl#path': { '@id': 'https://skl.standard.storage/name' },
+                'http://www.w3.org/ns/shacl#path': { '@id': 'http://www.w3.org/2000/01/rdf-schema#label' },
               },
             ],
           };
@@ -702,25 +702,22 @@ describe('SKQL', (): void => {
       const skql = new Skql({ type: 'memory', schemas });
       const response = await skql.do.getName({
         noun: 'https://skl.standard.storage/File',
-        entity: { [SKL.name]: 'final.jpg', [SKL.sourceId]: 12345 },
+        entity: { [RDFS.label]: 'final.jpg', [SKL.sourceId]: 12345 },
       });
       expect(response).toEqual({
         '@id': 'https://skl.standard.storage/mappingSubject',
-        [SKL.name]: 'final.jpg',
+        [RDFS.label]: 'final.jpg',
       });
     });
   });
 
   describe('calling Verbs which use data from a data source', (): void => {
-    beforeEach(async(): Promise<void> => {
+    it('gets data from a JsonDataSource from the data field.', async(): Promise<void> => {
       schemas = await frameAndCombineSchemas([
         './test/assets/schemas/core.json',
         './test/assets/schemas/get-dropbox-file.json',
         './test/assets/schemas/json-file-data-source.json',
       ]);
-    });
-
-    it('gets data from a JsonDataSource.', async(): Promise<void> => {
       const skql = new Skql({ type: 'memory', schemas });
       const response = await skql.do.getFile({
         account: 'https://skl.standard.storage/data/JsonSourceAccount1',
@@ -728,10 +725,65 @@ describe('SKQL', (): void => {
       });
       expect(response).toEqual({
         ...expectedGetFileResponse,
-        [SKL.integration]: 'https://skl.standard.storage/integrations/JsonSource',
+        [SKL.integration]: { '@id': 'https://skl.standard.storage/integrations/JsonSource' },
       });
     });
+
+    it('gets data from a JsonDataSource from the source field.', async(): Promise<void> => {
+      schemas = await frameAndCombineSchemas([
+        './test/assets/schemas/core.json',
+        './test/assets/schemas/get-dropbox-file.json',
+        './test/assets/schemas/json-source-data-source.json',
+      ]);
+      const skql = new Skql({
+        type: 'memory',
+        schemas,
+        inputFiles: {
+          'data.json': `{
+            ".tag": "file",
+            "client_modified": "2015-05-12T15:50:38Z",
+            "content_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "has_explicit_shared_members": false,
+            "id": "id:12345",
+            "is_downloadable": true,
+            "name": "Prime_Numbers.txt",
+            "path_display": "/Homework/math/Prime_Numbers.txt",
+            "path_lower": "/homework/math/prime_numbers.txt",
+            "server_modified": "2015-05-12T15:50:38Z",
+            "size": 7212
+          }`,
+        },
+      });
+      const response = await skql.do.getFile({
+        account: 'https://skl.standard.storage/data/JsonSourceAccount1',
+        id: '12345',
+      });
+      expect(response).toEqual({
+        ...expectedGetFileResponse,
+        [SKL.integration]: { '@id': 'https://skl.standard.storage/integrations/JsonSource' },
+      });
+    });
+
+    it('throws an error if a json data source was not provided.', async(): Promise<void> => {
+      schemas = await frameAndCombineSchemas([
+        './test/assets/schemas/core.json',
+        './test/assets/schemas/get-dropbox-file.json',
+        './test/assets/schemas/json-source-data-source.json',
+      ]);
+      const skql = new Skql({ type: 'memory', schemas, inputFiles: {}});
+      await expect(skql.do.getFile({
+        account: 'https://skl.standard.storage/data/JsonSourceAccount1',
+        id: '12345',
+      }))
+        .rejects.toThrow('Failed to get data from source data.json');
+    });
+
     it('throws an error for an invalid DataSource.', async(): Promise<void> => {
+      schemas = await frameAndCombineSchemas([
+        './test/assets/schemas/core.json',
+        './test/assets/schemas/get-dropbox-file.json',
+        './test/assets/schemas/json-file-data-source.json',
+      ]);
       schemas = schemas.map((schemaItem: any): any => {
         if (schemaItem['@id'] === 'https://skl.standard.storage/data/JsonSourceDataSource') {
           schemaItem['@type'] = 'https://skl.standard.storage/CsvDataSource';
@@ -749,7 +801,7 @@ describe('SKQL', (): void => {
 
   it('throws an error when a noun or account is not supplied with the Verb.', async(): Promise<void> => {
     const skql = new Skql({ type: 'memory', schemas });
-    await expect(skql.do.getName({ entity: { [SKL.name]: 'final.jpg' }}))
+    await expect(skql.do.getName({ entity: { [RDFS.label]: 'final.jpg' }}))
       .rejects.toThrow('Verb parameters must include either a noun or an account.');
   });
 

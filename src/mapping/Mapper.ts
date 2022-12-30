@@ -24,7 +24,7 @@ export class Mapper {
     frame: Record<string, any>,
   ): Promise<NodeObject> {
     const result = await this.doMapping(data, mapping);
-    return await this.frameAndConvertToNativeTypes(result, frame);
+    return await this.frame(result, frame);
   }
 
   public async applyAndFrameSklProperties(
@@ -44,7 +44,7 @@ export class Mapper {
     return await RmlParser.parse(mappingAsQuads, sources, options) as NodeObject[];
   }
 
-  private async frameAndConvertToNativeTypes(
+  private async frame(
     jsonldDoc: any[],
     overrideFrame: Record<string, any>,
   ): Promise<NodeObject> {
@@ -52,35 +52,12 @@ export class Mapper {
       '@context': {},
       '@embed': '@always',
     };
-    this.addDefaultTopLevelContextAndConvertNativeValues(jsonldDoc, frame);
     frame = {
       ...frame,
       ...overrideFrame,
       '@context': { ...frame['@context'], ...overrideFrame?.['@context'] },
     };
     return await jsonld.frame(jsonldDoc, frame);
-  }
-
-  private addDefaultTopLevelContextAndConvertNativeValues(
-    jsonldDoc: any[],
-    frame: Record<string, any>,
-  ): void {
-    for (const subDoc of jsonldDoc) {
-      Object.keys(subDoc).forEach((key: string): void => {
-        const value = subDoc[key];
-        if (Array.isArray(value) && typeof value[0] === 'object' && '@type' in value[0]) {
-          frame['@context'][key] = { '@type': value[0]['@type'] };
-          subDoc[key] = subDoc[key].map((valueItem: any): void => this.convertToNativeValue(valueItem));
-        } else if (Array.isArray(value) && typeof value[0] === 'object' && '@id' in value[0]) {
-          frame['@context'][key] = { '@type': '@id' };
-        } else if (typeof value === 'object' && '@type' in value) {
-          frame['@context'][key] = { '@type': value['@type'] };
-          subDoc[key] = this.convertToNativeValue(subDoc[key]);
-        } else if (typeof value === 'object' && '@id' in value) {
-          frame['@context'][key] = { '@type': '@id' };
-        }
-      });
-    }
   }
 
   private async frameSklPropertiesAndConvertToNativeTypes(

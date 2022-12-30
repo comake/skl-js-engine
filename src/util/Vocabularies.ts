@@ -33,7 +33,6 @@ export const SKL = createNamespace(sklNamespace, [
   'account',
   'integration',
   'parameters',
-  'name',
   'parameterMapping',
   'returnValueMapping',
   'operationMapping',
@@ -75,6 +74,7 @@ export const SKL = createNamespace(sklNamespace, [
   'overrideBasePath',
   'dataSource',
   'data',
+  'source',
 ]);
 
 export const XSD = createNamespace('http://www.w3.org/2001/XMLSchema#', [

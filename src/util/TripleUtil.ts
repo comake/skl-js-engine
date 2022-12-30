@@ -19,6 +19,8 @@ export const now = DataFactory.variable('now');
 export const created = DataFactory.namedNode(DCTERMS.created);
 export const modified = DataFactory.namedNode(DCTERMS.modified);
 
+const BLANK_NODE_PREFIX = '_:';
+
 export const allTypesAndSuperTypesPath: PropertyPath = {
   type: 'path',
   pathType: '/',
@@ -89,6 +91,7 @@ function toJsonLdSubject(object: Quad_Subject): string {
 }
 
 export async function triplesToJsonld(triples: Quad[]): Promise<OrArray<NodeObject>> {
+  const nodeIdOrder: string[] = [];
   const nodesById = triples.reduce((obj: Record<string, NodeObject>, triple): Record<string, NodeObject> => {
     const subject = toJsonLdSubject(triple.subject);
     const isTypePredicate = triple.predicate.value === RDF.type;
@@ -112,21 +115,24 @@ export async function triplesToJsonld(triples: Quad[]): Promise<OrArray<NodeObje
         '@id': subject,
         [predicate]: object,
       };
+      if (!subject.startsWith(BLANK_NODE_PREFIX)) {
+        nodeIdOrder.push(subject);
+      }
     }
     return obj;
   }, {});
 
-  const nodeObject = { '@graph': Object.values(nodesById) };
-  const nonBlankNodes = Object.keys(nodesById).filter((id): boolean => !id.startsWith('_:'));
   const framed = await jsonld.frame(
-    nodeObject,
+    { '@graph': Object.values(nodesById) },
     {
       '@context': {},
-      '@id': nonBlankNodes as any,
+      '@id': nodeIdOrder as any,
     },
   );
-  if (framed['@graph']) {
-    return framed['@graph'];
+  if ('@graph' in framed) {
+    return (framed['@graph'] as NodeObject[])
+      .sort((aNode, bNode): number =>
+        nodeIdOrder.indexOf(aNode['@id']!) - nodeIdOrder.indexOf(bNode['@id']!));
   }
   return framed;
 }

@@ -15,7 +15,7 @@ const data2 = DataFactory.namedNode('https://example.com/data/2');
 jest.mock('sparql-http-client');
 
 describe('a SparqlQueryAdapter', (): void => {
-  let response: any[] = [];
+  let response: any = [];
   let select: any;
   let update: any;
   let ask: any;
@@ -118,7 +118,7 @@ describe('a SparqlQueryAdapter', (): void => {
 
   describe('count', (): void => {
     it('queries for the count of entities matching.', async(): Promise<void> => {
-      response = [{ count: 1 }];
+      response = [{ count: { value: 1 }}];
       await expect(
         adapter.count({
           id: 'https://example.com/data/1',
@@ -126,11 +126,12 @@ describe('a SparqlQueryAdapter', (): void => {
       ).resolves.toBe(1);
       expect(select).toHaveBeenCalledTimes(1);
       expect(select.mock.calls[0][0].split('\n')).toEqual([
-        'SELECT (COUNT(?entity) AS ?count) WHERE {',
-        '  ?entity ?c1 ?c2.',
-        '  FILTER(?entity = <https://example.com/data/1>)',
+        'SELECT (COUNT(DISTINCT ?entity) AS ?count) WHERE {',
+        '  GRAPH ?entity {',
+        '    ?entity ?c1 ?c2.',
+        '    FILTER(?entity = <https://example.com/data/1>)',
+        '  }',
         '}',
-        'GROUP BY ?entity',
       ]);
     });
 
@@ -143,11 +144,12 @@ describe('a SparqlQueryAdapter', (): void => {
       ).rejects.toThrow('Something bad happened');
       expect(select).toHaveBeenCalledTimes(1);
       expect(select.mock.calls[0][0].split('\n')).toEqual([
-        'SELECT (COUNT(?entity) AS ?count) WHERE {',
-        '  ?entity ?c1 ?c2.',
-        '  FILTER(?entity = <https://example.com/data/1>)',
+        'SELECT (COUNT(DISTINCT ?entity) AS ?count) WHERE {',
+        '  GRAPH ?entity {',
+        '    ?entity ?c1 ?c2.',
+        '    FILTER(?entity = <https://example.com/data/1>)',
+        '  }',
         '}',
-        'GROUP BY ?entity',
       ]);
     });
   });
@@ -339,6 +341,33 @@ describe('a SparqlQueryAdapter', (): void => {
             '@type': 'https://skl.standard.storage/File',
           },
         ]);
+        expect(select).toHaveBeenCalledTimes(1);
+        expect(select.mock.calls[0][0].split('\n')).toEqual([
+          'CONSTRUCT { ?subject ?predicate ?object. }',
+          'WHERE {',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
+          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/File>. } }',
+          '}',
+        ]);
+      });
+
+    it('returns a list of one entity if there is one result.',
+      async(): Promise<void> => {
+        response = [{
+          subject: data1,
+          predicate: rdfTypeNamedNode,
+          object: file,
+        }];
+        await expect(
+          adapter.findAll({
+            where: {
+              type: SKL.File,
+            },
+          }),
+        ).resolves.toEqual([{
+          '@id': 'https://example.com/data/1',
+          '@type': 'https://skl.standard.storage/File',
+        }]);
         expect(select).toHaveBeenCalledTimes(1);
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',

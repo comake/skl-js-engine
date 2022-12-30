@@ -29,7 +29,6 @@
     "skl:returnValueFrame": { "@type": "@json" },
     "skl:noun": { "@type": "@id" },
     "skl:verb": { "@type": "@id" },
-    "name": "skl:name",
     "skl:parameterMapping": { "@type": "@id" },
     "skl:returnValueMapping": { "@type": "@id" },
     "skl:operationMapping": { "@type": "@id" },
@@ -58,7 +57,7 @@
       "@id": "https://skl.standard.storage/integrations/Stubhub",
       "@type": "https://skl.standard.storage/Integration",
       "https://skl.standard.storage/description": "StubHub is the world's top destination for ticket buyers and resellers.",
-      "https://skl.standard.storage/name": "Stubhub"
+      "label": "Stubhub"
     },
     {
       "@id": "https://skl.standard.storage/data/StubhubAccount1SecurityCredentials",
@@ -70,7 +69,7 @@
     {
       "@id": "https://skl.standard.storage/getOauthTokens",
       "@type": "https://skl.standard.storage/OpenApiSecuritySchemeVerb",
-      "https://skl.standard.storage/name": "getOauthTokens",
+      "label": "getOauthTokens",
       "skl:parametersContext": {
         "account": {
           "@id": "https://skl.standard.storage/account",
@@ -110,7 +109,7 @@
       "@type": "https://skl.standard.storage/VerbIntegrationMapping",
       "integration": "https://skl.standard.storage/integrations/Stubhub",
       "verb": "https://skl.standard.storage/getOauthTokens",
-      "name": "getOauthTokensToStubhub",
+      "label": "getOauthTokensToStubhub",
       "skl:parameterMapping": {
         "@type": "rr:TriplesMap",
         "rml:logicalSource": {
@@ -199,7 +198,7 @@
     {
       "@id": "https://skl.standard.storage/getEvents",
       "@type": "https://skl.standard.storage/Verb",
-      "https://skl.standard.storage/name": "getEvents",
+      "label": "getEvents",
       "https://skl.standard.storage/parametersContext": {
         "city": {
           "@id": "https://skl.standard.storage/city",
