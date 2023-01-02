@@ -133,6 +133,7 @@ export class MemoryQueryAdapter implements QueryAdapter {
           gte: async(): Promise<boolean> => false,
           lt: async(): Promise<boolean> => false,
           lte: async(): Promise<boolean> => false,
+          inverse: async(): Promise<boolean> => false,
         },
       );
     }

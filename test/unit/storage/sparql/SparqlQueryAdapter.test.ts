@@ -52,13 +52,13 @@ describe('a SparqlQueryAdapter', (): void => {
           adapter.executeRawQuery([
             'CONSTRUCT { ?subject ?predicate ?object. }',
             'WHERE {',
-            '  GRAPH ?entity { ?subject ?predicate ?object. }',
             '  {',
             '    SELECT ?entity WHERE {',
             '      ?entity ?c1 ?c2.',
             '    }',
             '    LIMIT 1',
             '  }',
+            '  GRAPH ?entity { ?subject ?predicate ?object. }',
             '}',
           ].join('\n')),
         ).resolves.toEqual([]);
@@ -66,13 +66,13 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '  {',
           '    SELECT ?entity WHERE {',
           '      ?entity ?c1 ?c2.',
           '    }',
           '    LIMIT 1',
           '  }',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
       });
@@ -87,13 +87,13 @@ describe('a SparqlQueryAdapter', (): void => {
           adapter.executeRawQuery([
             'CONSTRUCT { ?subject ?predicate ?object. }',
             'WHERE {',
-            '  GRAPH ?entity { ?subject ?predicate ?object. }',
             '  {',
             '    SELECT ?entity WHERE {',
             '      ?entity ?c1 ?c2.',
             '    }',
             '    LIMIT 1',
             '  }',
+            '  GRAPH ?entity { ?subject ?predicate ?object. }',
             '}',
           ].join('\n')),
         ).resolves.toEqual({
@@ -104,13 +104,13 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '  {',
           '    SELECT ?entity WHERE {',
           '      ?entity ?c1 ?c2.',
           '    }',
           '    LIMIT 1',
           '  }',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
       });
@@ -168,7 +168,6 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '  {',
           '    SELECT ?entity WHERE {',
           '      ?entity ?c1 ?c2.',
@@ -176,6 +175,7 @@ describe('a SparqlQueryAdapter', (): void => {
           '    }',
           '    LIMIT 1',
           '  }',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
       });
@@ -201,7 +201,6 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '  {',
           '    SELECT ?entity WHERE {',
           '      ?entity ?c1 ?c2.',
@@ -209,6 +208,7 @@ describe('a SparqlQueryAdapter', (): void => {
           '    }',
           '    LIMIT 1',
           '  }',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
       });
@@ -226,7 +226,6 @@ describe('a SparqlQueryAdapter', (): void => {
       expect(select.mock.calls[0][0].split('\n')).toEqual([
         'CONSTRUCT { ?subject ?predicate ?object. }',
         'WHERE {',
-        '  GRAPH ?entity { ?subject ?predicate ?object. }',
         '  {',
         '    SELECT ?entity WHERE {',
         '      ?entity ?c1 ?c2.',
@@ -234,6 +233,7 @@ describe('a SparqlQueryAdapter', (): void => {
         '    }',
         '    LIMIT 1',
         '  }',
+        '  GRAPH ?entity { ?subject ?predicate ?object. }',
         '}',
       ]);
     });
@@ -249,7 +249,6 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '  {',
           '    SELECT ?entity WHERE {',
           '      ?entity ?c1 ?c2.',
@@ -257,6 +256,7 @@ describe('a SparqlQueryAdapter', (): void => {
           '    }',
           '    LIMIT 1',
           '  }',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
       });
@@ -278,7 +278,6 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '  {',
           '    SELECT ?entity WHERE {',
           '      ?entity ?c1 ?c2.',
@@ -286,6 +285,7 @@ describe('a SparqlQueryAdapter', (): void => {
           '    }',
           '    LIMIT 1',
           '  }',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
       });
@@ -305,8 +305,8 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/File>. } }',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
       });
@@ -345,8 +345,8 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/File>. } }',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
       });
@@ -372,8 +372,8 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/File>. } }',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
       });
@@ -389,8 +389,8 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/File>. } }',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
       });
@@ -425,8 +425,8 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/File>. } }',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
       });

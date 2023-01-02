@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/method-signature-style */
+import type { Frame } from 'jsonld/jsonld-spec';
 import type { Entity } from '../util/Types';
 import type { FindAllOptions, FindOneOptions, FindOptionsWhere } from './FindOptionsTypes';
 
@@ -10,7 +11,7 @@ export interface QueryAdapter {
   /**
    * Performs a raw query for data matching the query.
    */
-  executeRawQuery(query: string): Promise<any>;
+  executeRawQuery(query: string, frame?: Frame): Promise<any>;
   /**
    * Finds first entity by a given find options.
    * If entity was not found in the database - returns null.

@@ -116,10 +116,10 @@ describe('SKQL', (): void => {
     });
 
     it('delegates calls to query to the query adapter.', async(): Promise<void> => {
-      const querySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'executeRawQuery');
+      const executeQuerySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'executeRawQuery');
       await expect(skql.executeRawQuery('')).resolves.toEqual([]);
-      expect(querySpy).toHaveBeenCalledTimes(1);
-      expect(querySpy).toHaveBeenCalledWith('');
+      expect(executeQuerySpy).toHaveBeenCalledTimes(1);
+      expect(executeQuerySpy).toHaveBeenCalledWith('', undefined);
     });
 
     it('delegates calls to find to the query adapter.', async(): Promise<void> => {

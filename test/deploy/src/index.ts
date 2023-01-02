@@ -13,7 +13,7 @@ async function run(): Promise<void> {
   ];
   const env = { TICKETMASTER_APIKEY: process.env.TICKETMASTER_APIKEY! };
   const schema = await frameAndCombineSchemas(schemas, env);
-  const skql = new Skql({ schema });
+  const skql = new Skql({ type: 'memory', schema });
   const eventsCollection = await skql.do.getEvents({
     account: 'https://skl.standard.storage/data/TicketmasterAccount1',
     city: 'Atlanta',

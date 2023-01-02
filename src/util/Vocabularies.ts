@@ -89,7 +89,7 @@ export const XSD = createNamespace('http://www.w3.org/2001/XMLSchema#', [
   'int',
   'date',
   'time',
-  'datetime',
+  'dateTime',
 ]);
 
 export const RDF = createNamespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#', [

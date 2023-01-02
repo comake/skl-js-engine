@@ -1,5 +1,6 @@
 import DataFactory from '@rdfjs/data-model';
 import type { Quad, Literal } from '@rdfjs/types';
+import type { Frame } from 'jsonld/jsonld-spec';
 import SparqlClient from 'sparql-http-client';
 import type {
   Update,
@@ -33,12 +34,12 @@ export class SparqlQueryAdapter implements QueryAdapter {
     this.setTimestamps = options.setTimestamps ?? false;
   }
 
-  public async executeRawQuery(query: string): Promise<any> {
+  public async executeRawQuery(query: string, frame?: Frame): Promise<any> {
     const responseTriples = await this.executeSparqlConstructAndGetData(query);
     if (responseTriples.length === 0) {
       return [];
     }
-    const jsonld = await triplesToJsonld(responseTriples);
+    const jsonld = await triplesToJsonld(responseTriples, undefined, frame);
     return jsonld as any;
   }
 
@@ -50,7 +51,7 @@ export class SparqlQueryAdapter implements QueryAdapter {
     if (responseTriples.length === 0) {
       return null;
     }
-    const jsonld = await triplesToJsonld(responseTriples);
+    const jsonld = await triplesToJsonld(responseTriples, options?.relations);
     return jsonld as Entity;
   }
 
@@ -66,7 +67,7 @@ export class SparqlQueryAdapter implements QueryAdapter {
     if (responseTriples.length === 0) {
       return [];
     }
-    const jsonld = await triplesToJsonld(responseTriples);
+    const jsonld = await triplesToJsonld(responseTriples, options?.relations);
     if (Array.isArray(jsonld)) {
       return jsonld as Entity[];
     }

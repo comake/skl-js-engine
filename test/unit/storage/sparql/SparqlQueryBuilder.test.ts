@@ -5,6 +5,7 @@ import { Equal } from '../../../../src/storage/operator/Equal';
 import { GreaterThan } from '../../../../src/storage/operator/GreaterThan';
 import { GreaterThanOrEqual } from '../../../../src/storage/operator/GreaterThanOrEqual';
 import { In } from '../../../../src/storage/operator/In';
+import { Inverse } from '../../../../src/storage/operator/Inverse';
 import { LessThan } from '../../../../src/storage/operator/LessThan';
 import { LessThanOrEqual } from '../../../../src/storage/operator/LessThanOrEqual';
 import { Not } from '../../../../src/storage/operator/Not';
@@ -12,7 +13,6 @@ import { SparqlQueryBuilder } from '../../../../src/storage/sparql/SparqlQueryBu
 import {
   countVariable,
   entityVariable,
-  graphVariable,
   objectNode,
   predicateNode,
   rdfsSubClassOfNamedNode,
@@ -25,6 +25,12 @@ const c1 = DataFactory.variable('c1');
 const c2 = DataFactory.variable('c2');
 const c3 = DataFactory.variable('c3');
 const c4 = DataFactory.variable('c4');
+const c5 = DataFactory.variable('c5');
+const c6 = DataFactory.variable('c6');
+const c7 = DataFactory.variable('c7');
+const c8 = DataFactory.variable('c8');
+const c9 = DataFactory.variable('c9');
+const c10 = DataFactory.variable('c10');
 const predicate = DataFactory.namedNode('https://example.com/pred');
 const predicate2 = DataFactory.namedNode('https://example.com/pred2');
 const data1 = DataFactory.namedNode('https://example.com/data/1');
@@ -104,11 +110,6 @@ describe('A SparqlQueryBuilder', (): void => {
         template: graphPattern,
         where: [
           {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-          {
             type: 'group',
             patterns: [{
               type: 'query',
@@ -128,6 +129,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery()).toEqual(query);
@@ -140,11 +146,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -193,6 +194,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -213,11 +219,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -250,6 +251,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -266,11 +272,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -319,6 +320,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -338,11 +344,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -377,6 +378,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -405,11 +411,6 @@ describe('A SparqlQueryBuilder', (): void => {
         template: graphPattern,
         where: [
           {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-          {
             type: 'group',
             patterns: [{
               type: 'query',
@@ -433,6 +434,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -449,11 +455,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -483,6 +484,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -499,11 +505,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -536,6 +537,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -552,11 +558,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -600,6 +601,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -616,11 +622,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -659,6 +660,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -675,11 +681,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -712,6 +713,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -728,11 +734,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -768,6 +769,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -784,11 +790,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -821,6 +822,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -837,11 +843,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -874,6 +875,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -890,11 +896,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -950,6 +951,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -966,11 +972,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -1029,6 +1030,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -1045,11 +1051,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -1105,6 +1106,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -1121,11 +1127,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -1161,6 +1162,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -1177,11 +1183,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -1217,6 +1218,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -1233,11 +1239,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -1273,6 +1274,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -1289,11 +1295,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -1329,6 +1330,11 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -1345,11 +1351,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -1385,11 +1386,70 @@ describe('A SparqlQueryBuilder', (): void => {
               order: undefined,
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
         where: {
           'https://example.com/pred': LessThanOrEqual(1),
+        },
+      })).toEqual(query);
+    });
+
+    it('builds a query with an inverse operator.', (): void => {
+      const query = {
+        type: 'query',
+        queryType: 'CONSTRUCT',
+        prefixes: {},
+        template: graphPattern,
+        where: [
+          {
+            type: 'group',
+            patterns: [{
+              type: 'query',
+              prefixes: {},
+              queryType: 'SELECT',
+              variables: [ entityVariable ],
+              where: [{
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate: c1,
+                    object: c2,
+                  },
+                ],
+              }],
+            }],
+          },
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate: {
+                  type: 'path',
+                  pathType: '^',
+                  items: [ predicate ],
+                },
+                object: DataFactory.literal('1', XSD.integer),
+              },
+            ],
+          },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
+        ],
+      };
+      expect(builder.buildEntityQuery({
+        where: {
+          'https://example.com/pred': Inverse(1),
         },
       })).toEqual(query);
     });
@@ -1455,17 +1515,12 @@ describe('A SparqlQueryBuilder', (): void => {
         template: graphPattern,
         where: [
           {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-          {
             type: 'group',
             patterns: [{
               type: 'query',
               prefixes: {},
               queryType: 'SELECT',
-              variables: [ entityVariable, c3 ],
+              variables: [ entityVariable ],
               where: [
                 {
                   type: 'bgp',
@@ -1495,6 +1550,11 @@ describe('A SparqlQueryBuilder', (): void => {
               }],
             }],
           },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
+          },
         ],
       };
       expect(builder.buildEntityQuery({
@@ -1511,11 +1571,6 @@ describe('A SparqlQueryBuilder', (): void => {
         prefixes: {},
         template: graphPattern,
         where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -1540,6 +1595,11 @@ describe('A SparqlQueryBuilder', (): void => {
                 descending: true,
               }],
             }],
+          },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{ type: 'bgp', triples: graphPattern }],
           },
         ],
       };
@@ -1652,13 +1712,12 @@ describe('A SparqlQueryBuilder', (): void => {
         type: 'query',
         queryType: 'CONSTRUCT',
         prefixes: {},
-        template: graphPattern,
+        template: [
+          { subject: subjectNode, predicate: predicateNode, object: objectNode },
+          { subject: c5, predicate: c6, object: c7 },
+          { subject: c8, predicate: c9, object: c10 },
+        ],
         where: [
-          {
-            type: 'graph',
-            name: graphVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
           {
             type: 'group',
             patterns: [{
@@ -1677,21 +1736,18 @@ describe('A SparqlQueryBuilder', (): void => {
                 },
                 {
                   type: 'optional',
-                  patterns: [{
-                    type: 'bgp',
-                    triples: [
-                      {
-                        subject: entityVariable,
-                        predicate,
-                        object: c3,
-                      },
-                      {
-                        subject: c3,
-                        predicate: predicate2,
-                        object: c4,
-                      },
-                    ],
-                  }],
+                  patterns: [
+                    {
+                      triples: [
+                        {
+                          subject: entityVariable,
+                          predicate,
+                          object: c3,
+                        },
+                      ],
+                      type: 'bgp',
+                    },
+                  ],
                 },
               ],
               limit: undefined,
@@ -1700,34 +1756,71 @@ describe('A SparqlQueryBuilder', (): void => {
             }],
           },
           {
-            type: 'filter',
-            expression: {
-              type: 'operation',
-              operator: '||',
-              args: [
-                {
-                  type: 'operation',
-                  operator: '=',
-                  args: [ graphVariable, entityVariable ],
-                },
-                {
-                  type: 'operation',
-                  operator: '||',
-                  args: [
-                    {
-                      type: 'operation',
-                      operator: '=',
-                      args: [ graphVariable, c3 ],
-                    },
-                    {
-                      type: 'operation',
-                      operator: '=',
-                      args: [ graphVariable, c4 ],
-                    },
-                  ],
-                },
+            patterns: [
+              {
+                triples: [
+                  {
+                    object: c4,
+                    predicate: predicate2,
+                    subject: c3,
+                  },
+                ],
+                type: 'bgp',
+              },
+            ],
+            type: 'optional',
+          },
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{
+              type: 'bgp',
+              triples: [
+                { subject: subjectNode, predicate: predicateNode, object: objectNode },
               ],
-            },
+            }],
+          },
+          {
+            type: 'optional',
+            patterns: [
+              {
+                type: 'graph',
+                name: c3,
+                patterns: [
+                  {
+                    type: 'bgp',
+                    triples: [
+                      {
+                        subject: c5,
+                        predicate: c6,
+                        object: c7,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: 'optional',
+            patterns: [
+              {
+                type: 'graph',
+                name: c4,
+                patterns: [
+                  {
+                    type: 'bgp',
+                    triples: [
+                      {
+                        subject: c8,
+                        predicate: c9,
+                        object: c10,
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           },
         ],
       };

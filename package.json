@@ -1,6 +1,6 @@
 {
 	"name": "@comake/skql-js-engine",
-	"version": "0.11.4",
+	"version": "0.12.0",
 	"description": "Standard Knowledge Query Language Javascript Engine",
 	"keywords": [
 		"skl",

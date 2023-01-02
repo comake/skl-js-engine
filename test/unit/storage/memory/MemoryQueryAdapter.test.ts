@@ -5,6 +5,7 @@ import { Equal } from '../../../../src/storage/operator/Equal';
 import { GreaterThan } from '../../../../src/storage/operator/GreaterThan';
 import { GreaterThanOrEqual } from '../../../../src/storage/operator/GreaterThanOrEqual';
 import { In } from '../../../../src/storage/operator/In';
+import { Inverse } from '../../../../src/storage/operator/Inverse';
 import { LessThan } from '../../../../src/storage/operator/LessThan';
 import { LessThanOrEqual } from '../../../../src/storage/operator/LessThanOrEqual';
 import { Not } from '../../../../src/storage/operator/Not';
@@ -739,6 +740,24 @@ describe('a MemoryQueryAdapter', (): void => {
       await expect(adapter.findAll({
         where: {
           'https://skl.standard.storage/rating': LessThanOrEqual(3),
+        },
+      })).resolves.toEqual([]);
+    });
+
+    it('does not support the inverse operator.', async(): Promise<void> => {
+      schemas = [
+        {
+          '@id': 'https://skl.standard.storage/data/2',
+          '@type': 'https://skl.standard.storage/File',
+          'https://skl.standard.storage/rating': [
+            { '@value': '2', '@type': XSD.integer },
+          ],
+        },
+      ];
+      adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
+      await expect(adapter.findAll({
+        where: {
+          'https://skl.standard.storage/rating': Inverse(2),
         },
       })).resolves.toEqual([]);
     });

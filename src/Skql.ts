@@ -9,6 +9,7 @@ import type { ReferenceNodeObject } from '@comake/rmlmapper-js';
 import axios from 'axios';
 import type { AxiosError, AxiosResponse } from 'axios';
 import type { ContextDefinition, NodeObject } from 'jsonld';
+import type { Frame } from 'jsonld/jsonld-spec';
 import SHACLValidator from 'rdf-validate-shacl';
 import type ValidationReport from 'rdf-validate-shacl/src/validation-report';
 import { Mapper } from './mapping/Mapper';
@@ -74,8 +75,8 @@ export class Skql {
     this.do = new Proxy({} as VerbInterface, { get: getVerbHandler });
   }
 
-  public async executeRawQuery(query: string): Promise<any> {
-    return await this.adapter.executeRawQuery(query);
+  public async executeRawQuery(query: string, frame?: Frame): Promise<any> {
+    return await this.adapter.executeRawQuery(query, frame);
   }
 
   public async find(options?: FindOneOptions): Promise<Entity> {

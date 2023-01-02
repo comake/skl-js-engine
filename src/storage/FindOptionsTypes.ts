@@ -24,7 +24,7 @@ export type FindOptionsOrderValue = 'ASC' | 'DESC' | 'asc' | 'desc' | 1 | -1;
 
 export type FindOptionsOrder = Record<string, FindOptionsOrderValue>;
 
-export type FieldPrimitiveValue = boolean | number | string;
+export type FieldPrimitiveValue = boolean | number | string | Date;
 
 export type JsonValueObject = {
   '@value': FieldPrimitiveValue | JSONObject | JSONArray;

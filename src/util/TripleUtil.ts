@@ -3,7 +3,9 @@ import DataFactory from '@rdfjs/data-model';
 import type { Quad, Quad_Object, Quad_Subject, Literal } from '@rdfjs/types';
 import * as jsonld from 'jsonld';
 import type { NodeObject, ValueObject } from 'jsonld';
+import type { Frame } from 'jsonld/jsonld-spec';
 import type { PropertyPath } from 'sparqljs';
+import type { FindOptionsRelations } from '../storage/FindOptionsTypes';
 import type { OrArray } from './Types';
 import { RDF, XSD, RDFS, DCTERMS } from './Vocabularies';
 
@@ -13,7 +15,6 @@ export const subjectNode = DataFactory.variable('subject');
 export const predicateNode = DataFactory.variable('predicate');
 export const objectNode = DataFactory.variable('object');
 export const entityVariable = DataFactory.variable('entity');
-export const graphVariable = DataFactory.variable('graph');
 export const countVariable = DataFactory.variable('count');
 export const now = DataFactory.variable('now');
 export const created = DataFactory.namedNode(DCTERMS.created);
@@ -90,7 +91,18 @@ function toJsonLdSubject(object: Quad_Subject): string {
   return object.value;
 }
 
-export async function triplesToJsonld(triples: Quad[]): Promise<OrArray<NodeObject>> {
+function relationsToFrame(relations: FindOptionsRelations): Frame {
+  return Object.entries(relations).reduce((obj: NodeObject, [ field, value ]): NodeObject => ({
+    ...obj,
+    [field]: typeof value === 'boolean' ? {} : relationsToFrame(value),
+  }), {});
+}
+
+export async function triplesToJsonld(
+  triples: Quad[],
+  relations?: FindOptionsRelations,
+  frame?: Frame,
+): Promise<OrArray<NodeObject>> {
   const nodeIdOrder: string[] = [];
   const nodesById = triples.reduce((obj: Record<string, NodeObject>, triple): Record<string, NodeObject> => {
     const subject = toJsonLdSubject(triple.subject);
@@ -122,12 +134,16 @@ export async function triplesToJsonld(triples: Quad[]): Promise<OrArray<NodeObje
     return obj;
   }, {});
 
+  if (!frame) {
+    if (relations) {
+      frame = relationsToFrame(relations);
+    } else {
+      frame = { '@id': nodeIdOrder as any };
+    }
+  }
   const framed = await jsonld.frame(
     { '@graph': Object.values(nodesById) },
-    {
-      '@context': {},
-      '@id': nodeIdOrder as any,
-    },
+    frame,
   );
   if ('@graph' in framed) {
     return (framed['@graph'] as NodeObject[])
@@ -137,7 +153,7 @@ export async function triplesToJsonld(triples: Quad[]): Promise<OrArray<NodeObje
   return framed;
 }
 
-export function valueToLiteral(value: string | boolean | number): Literal {
+export function valueToLiteral(value: string | boolean | number | Date): Literal {
   if (typeof value === 'number') {
     if (Number.isInteger(value)) {
       return DataFactory.literal(value.toString(), XSD.integer);
@@ -146,6 +162,9 @@ export function valueToLiteral(value: string | boolean | number): Literal {
   }
   if (typeof value === 'boolean') {
     return DataFactory.literal(value.toString(), XSD.boolean);
+  }
+  if (value instanceof Date) {
+    return DataFactory.literal(value.toISOString(), XSD.dateTime);
   }
   return DataFactory.literal(value.toString());
 }
