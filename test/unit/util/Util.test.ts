@@ -2,11 +2,11 @@
 import { Quad, NamedNode } from 'n3';
 import {
   constructUri,
-  stringToBoolean,
-  stringToInteger,
   convertJsonLdToQuads,
   toJSON,
   ensureArray,
+  isUrl,
+  getValueIfDefined,
 } from '../../../src/util/Util';
 
 describe('Util', (): void => {
@@ -16,46 +16,18 @@ describe('Util', (): void => {
     });
   });
 
-  describe('#stringToBoolean', (): void => {
-    it('returns true if the value is the "true" string.', (): void => {
-      expect(stringToBoolean('true')).toBe(true);
-    });
-
-    it('returns false if the value is the "false" string.', (): void => {
-      expect(stringToBoolean('false')).toBe(false);
-    });
-
-    it('returns the value if the value is not the "true" or "false" string.', (): void => {
-      expect(stringToBoolean('abc')).toBe('abc');
-    });
-  });
-
-  describe('#stringToInteger', (): void => {
-    it('returns the value as an integer if it is a string encoded integer.', (): void => {
-      expect(stringToInteger('123')).toBe(123);
-      expect(stringToInteger('1')).toBe(1);
-    });
-
-    it('returns string if it is not a string encoded integer.', (): void => {
-      expect(stringToInteger('1.4')).toBe('1.4');
-      expect(stringToInteger('123.45')).toBe('123.45');
-      expect(stringToInteger('abc')).toBe('abc');
-      expect(stringToInteger('abc123')).toBe('abc123');
-    });
-  });
-
   describe('#convertJsonLdToQuads', (): void => {
     it('converts the input jsonLd to a store of quads.', async(): Promise<void> => {
       const jsonld = [{
         '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/nouns/File',
+        '@type': 'https://skl.standard.storage/File',
       }];
       const res = await convertJsonLdToQuads(jsonld);
       expect(res.size).toBe(1);
       expect(res.has(new Quad(
         new NamedNode('https://skl.standard.storage/data/123'),
         new NamedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
-        new NamedNode('https://skl.standard.storage/nouns/File'),
+        new NamedNode('https://skl.standard.storage/File'),
       ))).toBe(true);
     });
   });
@@ -64,40 +36,40 @@ describe('Util', (): void => {
     it('removes @context, @id, and @type keys from the jsonLd NodeObject.', (): void => {
       const jsonld = {
         '@context': {
-          name: 'https://skl.standard.storage/properties/name',
+          label: 'http://www.w3.org/2000/01/rdf-schema#label',
         },
         '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/nouns/File',
-        name: 'image.jpeg',
+        '@type': 'https://skl.standard.storage/File',
+        label: 'image.jpeg',
       };
       expect(toJSON(jsonld)).toEqual({
-        name: 'image.jpeg',
+        label: 'image.jpeg',
       });
     });
     it('removes @context, @id, and @type keys from all nested objects if convertBeyondFirstLevel is true.',
       (): void => {
         const jsonld = {
           '@context': {
-            name: 'https://skl.standard.storage/properties/name',
+            label: 'http://www.w3.org/2000/01/rdf-schema#label',
           },
           '@id': 'https://skl.standard.storage/data/123',
-          '@type': 'https://skl.standard.storage/nouns/File',
-          name: 'image.jpeg',
+          '@type': 'https://skl.standard.storage/File',
+          label: 'image.jpeg',
           subFileArr: [
             {
               '@id': 'https://skl.standard.storage/data/123',
-              '@type': 'https://skl.standard.storage/nouns/File',
+              '@type': 'https://skl.standard.storage/File',
               md5: 'abc123',
             },
           ],
           subFileObj: {
             '@id': 'https://skl.standard.storage/data/123',
-            '@type': 'https://skl.standard.storage/nouns/File',
+            '@type': 'https://skl.standard.storage/File',
             md5: 'abc123',
           },
         };
         expect(toJSON(jsonld, true)).toEqual({
-          name: 'image.jpeg',
+          label: 'image.jpeg',
           subFileArr: [
             { md5: 'abc123' },
           ],
@@ -120,5 +92,45 @@ describe('Util', (): void => {
       (): void => {
         expect(ensureArray('a')).toEqual([ 'a' ]);
       });
+  });
+
+  describe('#getValueIfDefined', (): void => {
+    it('returns the value at the @value key of the nodeObject if it\'s defined.', (): void => {
+      expect(getValueIfDefined({ '@value': { alpha: 1 }})).toEqual({ alpha: 1 });
+      expect(getValueIfDefined({ '@value': 1 })).toBe(1);
+      expect(getValueIfDefined({ '@value': false })).toBe(false);
+      expect(getValueIfDefined({})).toBeUndefined();
+    });
+
+    it('returns null if the nodeObject is not defined or null.', (): void => {
+      expect(getValueIfDefined(undefined)).toBeUndefined();
+      expect(getValueIfDefined(null)).toBeUndefined();
+    });
+
+    it('returns all values from an array of value objects.', (): void => {
+      expect(
+        getValueIfDefined([
+          { '@value': 1 },
+          { '@value': 2 },
+        ]),
+      ).toEqual([ 1, 2 ]);
+    });
+  });
+
+  describe('#isUrl', (): void => {
+    it('returns true for urls.', (): void => {
+      expect(isUrl('https://example.com#hashThing')).toBe(true);
+      expect(isUrl('http://example.org')).toBe(true);
+      expect(isUrl('ftp://user:password@host:21/URI?queryParameters')).toBe(true);
+    });
+
+    it('returns false for non urls.', (): void => {
+      expect(isUrl('example.com#hashThing')).toBe(false);
+      expect(isUrl('http://')).toBe(false);
+      expect(isUrl('/URI?queryParameters')).toBe(false);
+      expect(isUrl('https://example.com hashThing')).toBe(false);
+      expect(isUrl(1)).toBe(false);
+      expect(isUrl(true)).toBe(false);
+    });
   });
 });

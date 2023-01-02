@@ -21,120 +21,113 @@
     "shacl:minCount": { "@type": "xsd:integer" },
     "shacl:targetClass": { "@type": "@id" },
     "shacl:path": { "@type": "@id" },
-    "sklproperties": "https://skl.standard.storage/properties/",
-    "sklproperties:integration": { "@type": "@id" },
-    "sklproperties:account": { "@type": "@id" },
-    "sklproperties:openApiDescription": { "@type": "@json" },
-    "sklproperties:parametersContext": { "@type": "@json" },
-    "sklproperties:returnValueFrame": { "@type": "@json" },
-    "sklproperties:noun": { "@type": "@id" },
-    "sklproperties:verb": { "@type": "@id" },
-    "name": "sklproperties:name",
-    "sklproperties:parameterMapping": { "@type": "@id" },
-    "sklproperties:mapping": { "@type": "@id" },
-    "sklproperties:returnValueMapping": { "@type": "@id" },
-    "sklproperties:operationMapping": { "@type": "@id" },
-    "sklproperties:verbMapping": { "@type": "@id" },
-    "integration": { "@id": "sklproperties:integration", "@type": "@id" },
-    "verb": { "@id": "sklproperties:verb", "@type": "@id" },
+    "skl": "https://skl.standard.storage/",
+    "skl:integration": { "@type": "@id" },
+    "skl:account": { "@type": "@id" },
+    "skl:openApiDescription": { "@type": "@json" },
+    "skl:parametersContext": { "@type": "@json" },
+    "skl:returnValueFrame": { "@type": "@json" },
+    "skl:noun": { "@type": "@id" },
+    "skl:verb": { "@type": "@id" },
+    "skl:mapping": { "@type": "@id" },
+    "integration": { "@id": "skl:integration", "@type": "@id" },
+    "verb": { "@id": "skl:verb", "@type": "@id" },
     "rml:referenceFormulation": { "@type": "@id" },
     "rr:parentTriplesMap": { "@type": "@id" },
     "rr:predicate": { "@type": "@id" },
     "rr:object": { "@type": "@id" },
     "rr:termType": { "@type": "@id" },
     "rr:subject": { "@type": "@id" },
-    "sklproperties:invalidTokenErrorMatcher": { "@type": "@json" }
+    "skl:invalidTokenErrorMatcher": { "@type": "@json" }
   },
   "@graph": [
     {
-      "@id": "https://skl.standard.storage/verbs/divide",
-      "@type": "https://skl.standard.storage/nouns/NounMappedVerb",
-      "sklproperties:name": "divide",
-      "sklproperties:parametersContext": {
+      "@id": "https://skl.standard.storage/divide",
+      "@type": "https://skl.standard.storage/NounMappedVerb",
+      "label": "divide",
+      "skl:parametersContext": {
         "numerator": {
-          "@id": "https://skl.standard.storage/properties/numerator",
+          "@id": "https://skl.standard.storage/numerator",
           "@type": "@id"
         },
         "denominator": {
-          "@id": "https://skl.standard.storage/properties/denominator",
+          "@id": "https://skl.standard.storage/denominator",
           "@type": "@id"
         }
       },
-      "sklproperties:parameters": {
+      "skl:parameters": {
         "@type": "shacl:NodeShape",
-        "shacl:targetClass": "https://skl.standard.storage/nouns/Parameters",
+        "shacl:targetClass": "https://skl.standard.storage/Parameters",
         "shacl:property": [
           {
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
             "shacl:name": "numerator",
-            "shacl:path": "https://skl.standard.storage/properties/numerator"
+            "shacl:path": "https://skl.standard.storage/numerator"
           },
           {
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
             "shacl:name": "denominator",
-            "shacl:path": "https://skl.standard.storage/properties/denominator"
+            "shacl:path": "https://skl.standard.storage/denominator"
           }
         ]
       }
     },
     {
       "@id": "https://skl.standard.storage/data/87",
-      "@type": "https://skl.standard.storage/nouns/VerbNounMapping",
-      "sklproperties:verb": "https://skl.standard.storage/verbs/divide",
-      "sklproperties:noun": "https://skl.standard.storage/nouns/Equation",
-      "sklproperties:name": "getNameToFile",
-      "sklproperties:mapping": "https://skl.standard.storage/data/87/mapping/1"
-    },
-    {
-      "@id": "https://skl.standard.storage/data/87/mapping/1",
-      "@type": "rr:TriplesMap",
-      "rml:logicalSource": {
-        "@type": "rml:LogicalSource",
-        "rml:iterator": "$",
-        "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-        "rml:source": "input.json"
-      },
-      "rr:subject": "https://skl.standard.storage/mappingSubject",
-      "rr:predicateObjectMap": [
-        {
-          "@type": "rr:PredicateObjectMap",
-          "rr:objectMap": {
-            "@type": "rr:ObjectMap",
-            "rr:datatype": "http://www.w3.org/2001/XMLSchema#float",
-            "fnml:functionValue": {
-              "@type": "fnml:FunctionValue",
-              "rr:predicateObjectMap": [
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:object": "http://example.com/idlab/function/divide",
-                  "rr:predicate": "https://w3id.org/function/ontology#executes"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rml:reference": "numerator",
-                    "rr:datatype": "http://www.w3.org/2001/XMLSchema#float"
+      "@type": "https://skl.standard.storage/VerbNounMapping",
+      "skl:verb": "https://skl.standard.storage/divide",
+      "skl:noun": "https://skl.standard.storage/Equation",
+      "label": "getNameToFile",
+      "skl:mapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
+        },
+        "rr:subject": "https://skl.standard.storage/mappingSubject",
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rr:datatype": "http://www.w3.org/2001/XMLSchema#float",
+              "fnml:functionValue": {
+                "@type": "fnml:FunctionValue",
+                "rr:predicateObjectMap": [
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:object": "http://example.com/idlab/function/divide",
+                    "rr:predicate": "https://w3id.org/function/ontology#executes"
                   },
-                  "rr:predicate": "http://example.com/idlab/function/numerator"
-                },
-                {
-                  "@type": "rr:PredicateObjectMap",
-                  "rr:objectMap": {
-                    "@type": "rr:ObjectMap",
-                    "rml:reference": "denominator",
-                    "rr:datatype": "http://www.w3.org/2001/XMLSchema#float"
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "rml:reference": "numerator",
+                      "rr:datatype": "http://www.w3.org/2001/XMLSchema#float"
+                    },
+                    "rr:predicate": "http://example.com/idlab/function/numerator"
                   },
-                  "rr:predicate": "http://example.com/idlab/function/denominator"
-                }
-              ]
-            }
-          },
-          "rr:predicate": "sklproperties:answer"
-        }
-      ]
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "rml:reference": "denominator",
+                      "rr:datatype": "http://www.w3.org/2001/XMLSchema#float"
+                    },
+                    "rr:predicate": "http://example.com/idlab/function/denominator"
+                  }
+                ]
+              }
+            },
+            "rr:predicate": "skl:answer"
+          }
+        ]
+      }
     }
   ]
 }

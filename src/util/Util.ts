@@ -1,38 +1,23 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import * as jsonld from 'jsonld';
-import type { NodeObject } from 'jsonld';
+import type { NodeObject, ValueObject } from 'jsonld';
 import { Parser, Store } from 'n3';
-import type { SchemaNodeObject } from './Types';
+import type { EntityFieldSingularValue, EntityFieldValue } from './Types';
 
-export type JSONObject = Record<string, JSONValue>;
-
-export type JSONValue =
+export type JSONPrimitive =
   | string
   | number
   | boolean
+  | null;
+export type JSONObject = Record<string, JSONValue>;
+export interface JSONArray extends Array<JSONValue> {}
+
+export type JSONValue =
+  | JSONPrimitive
   | {[x: string]: JSONValue }
   | JSONValue[];
 
 export function constructUri(base: string, local: string): string {
   return `${base}${local}`;
-}
-
-export function stringToBoolean(value: string): boolean | string {
-  if (value === 'true') {
-    return true;
-  }
-  if (value === 'false') {
-    return false;
-  }
-  return value;
-}
-
-export function stringToInteger(value: string): number | string {
-  const i = Number.parseInt(value, 10);
-  if (i.toFixed(0) === value) {
-    return i;
-  }
-  return value;
 }
 
 export async function convertJsonLdToQuads(jsonldDoc: any): Promise<Store> {
@@ -66,10 +51,6 @@ export function toJSON(jsonLd: NodeObject, convertBeyondFirstLevel = true): JSON
   return jsonLd as JSONObject;
 }
 
-export function getValueOfFieldInNodeObject<T>(object: SchemaNodeObject, field: string): T {
-  return (object[field] as NodeObject)?.['@value'] as unknown as T;
-}
-
 export function ensureArray<T>(arrayable: T | T[]): T[] {
   if (arrayable !== null && arrayable !== undefined) {
     return Array.isArray(arrayable) ? arrayable : [ arrayable ];
@@ -77,9 +58,28 @@ export function ensureArray<T>(arrayable: T | T[]): T[] {
   return [];
 }
 
-export function asJsonLdJsonValue(value: JSONObject): NodeObject {
-  return {
-    '@type': '@json',
-    '@value': value,
-  } as NodeObject;
+export function getValueIfDefined<T>(fieldValue?: EntityFieldValue): T | undefined {
+  if (fieldValue && Array.isArray(fieldValue)) {
+    return fieldValue.map((valueItem): EntityFieldSingularValue =>
+      getValueIfDefined<EntityFieldSingularValue>(valueItem)!) as unknown as T;
+  }
+  if (fieldValue && typeof fieldValue === 'object') {
+    return (fieldValue as ValueObject)['@value'] as unknown as T;
+  }
+  if (fieldValue !== undefined && fieldValue !== null) {
+    return fieldValue as unknown as T;
+  }
+}
+
+export function isUrl(value: any): boolean {
+  if (typeof value !== 'string') {
+    return false;
+  }
+  try {
+    // eslint-disable-next-line no-new
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
 }

@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Skql } from '../../src/Skql';
+import { getValueIfDefined } from '../../src/util/Util';
 import { frameAndCombineSchemas } from '../util/Util';
 
 describe('An Skql engine with user supplied functions', (): void => {
   it('can execute mappings using the supplied functions.', async(): Promise<void> => {
-    const schemas = [
+    const schemaFiles = [
       './test/assets/schemas/divide-function.json',
     ];
-    const schema = await frameAndCombineSchemas(schemas);
+    const schemas = await frameAndCombineSchemas(schemaFiles);
     const functions = {
       'http://example.com/idlab/function/divide'(data: Record<string | number, any>): number {
         const numerator = Number.parseFloat(data['http://example.com/idlab/function/numerator']);
@@ -15,12 +16,12 @@ describe('An Skql engine with user supplied functions', (): void => {
         return numerator / denominator;
       },
     };
-    const skql = new Skql({ schema, functions });
+    const skql = new Skql({ type: 'memory', schemas, functions });
     const response = await skql.do.divide({
-      noun: 'https://skl.standard.storage/nouns/Equation',
+      noun: 'https://skl.standard.storage/Equation',
       numerator: 10,
       denominator: 5,
     });
-    expect(response['https://skl.standard.storage/properties/answer']).toBe(2);
+    expect(getValueIfDefined(response['https://skl.standard.storage/answer'])).toBe(2);
   });
 });

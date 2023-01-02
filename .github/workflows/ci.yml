@@ -63,6 +63,11 @@ jobs:
     env:
       TEST_DOCKER: true
       TICKETMASTER_APIKEY: ${{ secrets.TICKETMASTER_APIKEY }}
+    services:
+      blazegraph:
+        image: nawer/blazegraph:2.1.5
+        ports:
+          - 9999:9999
     timeout-minutes: 15
     steps:
       - name: Use Node.js ${{ matrix.node-version }}

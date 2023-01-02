@@ -36,7 +36,7 @@
             "@type": "rr:ObjectMap",
             "rml:reference": "field"
           },
-          "rr:predicate": "https://skl.standard.storage/properties/field"
+          "rr:predicate": "https://skl.standard.storage/field"
         }
       ],
       "rr:subjectMap": {
