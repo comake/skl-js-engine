@@ -7,13 +7,13 @@ import { Skql, SKL } from '@comake/skql-js-engine';
 import { frameAndCombineSchemas } from './Util';
 
 async function run(): Promise<void> {
-  const schemas = [
+  const schemaFiles = [
     './src/assets/core.json',
     './src/assets/get-ticketmaster-events.json',
   ];
   const env = { TICKETMASTER_APIKEY: process.env.TICKETMASTER_APIKEY! };
-  const schema = await frameAndCombineSchemas(schemas, env);
-  const skql = new Skql({ type: 'memory', schema });
+  const schemas = await frameAndCombineSchemas(schemaFiles, env);
+  const skql = new Skql({ type: 'memory', schemas });
   const eventsCollection = await skql.do.getEvents({
     account: 'https://skl.standard.storage/data/TicketmasterAccount1',
     city: 'Atlanta',
