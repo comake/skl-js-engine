@@ -1,4 +1,5 @@
 import type { ReferenceNodeObject } from '@comake/rmlmapper-js';
+import type { Frame } from 'jsonld/jsonld-spec';
 import { toJSValueFromDataType } from '../../util/TripleUtil';
 import type { Entity, EntityFieldValue, PossibleArrayFieldValues } from '../../util/Types';
 import type { JSONObject, JSONArray } from '../../util/Util';
@@ -14,7 +15,7 @@ import type {
   FieldPrimitiveValue,
   ValueObject,
 } from '../FindOptionsTypes';
-import type { QueryAdapter } from '../QueryAdapter';
+import type { EntityOrTArray, QuadOrObject, QueryAdapter } from '../QueryAdapter';
 import type { MemoryQueryAdapterOptions } from './MemoryQueryAdapterOptions';
 
 /**
@@ -34,8 +35,8 @@ export class MemoryQueryAdapter implements QueryAdapter {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async executeRawQuery(query: string): Promise<any> {
-    return [];
+  public async executeRawQuery<T extends QuadOrObject>(query: string, frame?: Frame): Promise<EntityOrTArray<T>> {
+    return [] as unknown as EntityOrTArray<T>;
   }
 
   public async find(options?: FindOneOptions): Promise<Entity | null> {

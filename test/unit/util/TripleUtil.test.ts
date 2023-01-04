@@ -1,12 +1,20 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import DataFactory from '@rdfjs/data-model';
 import type { Quad } from '@rdfjs/types';
-import { rdfTypeNamedNode, triplesToJsonld, valueToLiteral, toJSValueFromDataType } from '../../../src/util/TripleUtil';
+import type { Frame } from 'jsonld/jsonld-spec';
+import {
+  rdfTypeNamedNode,
+  triplesToJsonld,
+  valueToLiteral,
+  toJSValueFromDataType,
+  triplesToJsonldWithFrame,
+} from '../../../src/util/TripleUtil';
 import { RDF, SKL, XSD } from '../../../src/util/Vocabularies';
 
 const data1 = DataFactory.namedNode('https://example.com/data/1');
 const data2 = DataFactory.namedNode('https://example.com/data/2');
 const file = DataFactory.namedNode(SKL.File);
+const predicate = DataFactory.namedNode('https://example.com/pred');
 
 describe('TripleUtil', (): void => {
   describe('#toJSValueFromDataType', (): void => {
@@ -321,7 +329,6 @@ describe('TripleUtil', (): void => {
     });
 
     it('frames the results according to the relations field.', async(): Promise<void> => {
-      const predicate = DataFactory.namedNode('https://example.com/pred');
       const predicate2 = DataFactory.namedNode('https://example.com/pred2');
       const data3 = DataFactory.namedNode('https://example.com/data/3');
       const article = DataFactory.namedNode('https://example.com/Article');
@@ -368,6 +375,136 @@ describe('TripleUtil', (): void => {
             '@type': 'https://example.com/Article',
           },
         },
+      });
+    });
+  });
+
+  describe('#triplesToJsonldWithFrame', (): void => {
+    let triples: Quad[];
+    let frame: Frame;
+
+    it('returns a GraphObject with a framed entity.', async(): Promise<void> => {
+      const data3 = DataFactory.namedNode('https://example.com/data/3');
+      triples = [
+        {
+          subject: data1,
+          predicate: rdfTypeNamedNode,
+          object: file,
+        },
+        {
+          subject: data1,
+          predicate,
+          object: data3,
+        },
+        {
+          subject: data3,
+          predicate: rdfTypeNamedNode,
+          object: DataFactory.namedNode('https://example.com/Article'),
+        },
+      ] as Quad[];
+      frame = {
+        '@type': SKL.File,
+      };
+      await expect(triplesToJsonldWithFrame(triples, frame)).resolves.toEqual({
+        '@graph': [{
+          '@id': 'https://example.com/data/1',
+          '@type': SKL.File,
+          'https://example.com/pred': {
+            '@id': 'https://example.com/data/3',
+            '@type': 'https://example.com/Article',
+          },
+        }],
+      });
+    });
+
+    it('returns a GraphObject with multiple framed entities.', async(): Promise<void> => {
+      const data3 = DataFactory.namedNode('https://example.com/data/3');
+      triples = [
+        {
+          subject: data1,
+          predicate: rdfTypeNamedNode,
+          object: file,
+        },
+        {
+          subject: data2,
+          predicate: rdfTypeNamedNode,
+          object: file,
+        },
+        {
+          subject: data1,
+          predicate,
+          object: data3,
+        },
+        {
+          subject: data3,
+          predicate: rdfTypeNamedNode,
+          object: DataFactory.namedNode('https://example.com/Article'),
+        },
+      ] as Quad[];
+      frame = {
+        '@type': SKL.File,
+      };
+      await expect(triplesToJsonldWithFrame(triples, frame)).resolves.toEqual({
+        '@graph': [
+          {
+            '@id': 'https://example.com/data/1',
+            '@type': SKL.File,
+            'https://example.com/pred': {
+              '@id': 'https://example.com/data/3',
+              '@type': 'https://example.com/Article',
+            },
+          },
+          {
+            '@id': 'https://example.com/data/2',
+            '@type': SKL.File,
+          },
+        ],
+      });
+    });
+
+    it('returns a GraphObject with a context.', async(): Promise<void> => {
+      const data3 = DataFactory.namedNode('https://example.com/data/3');
+      triples = [
+        {
+          subject: data1,
+          predicate: rdfTypeNamedNode,
+          object: file,
+        },
+        {
+          subject: data1,
+          predicate,
+          object: data3,
+        },
+        {
+          subject: data3,
+          predicate: rdfTypeNamedNode,
+          object: DataFactory.namedNode('https://example.com/Article'),
+        },
+      ] as Quad[];
+      frame = {
+        '@context': {
+          pred: {
+            '@id': 'https://example.com/pred',
+          },
+        },
+        '@type': SKL.File,
+      };
+      await expect(triplesToJsonldWithFrame(triples, frame)).resolves.toEqual({
+        '@context': {
+          pred: {
+            '@id': 'https://example.com/pred',
+          },
+        },
+        '@graph': [
+          {
+            '@id': 'https://example.com/data/1',
+            '@type': SKL.File,
+            pred: {
+              '@id': 'https://example.com/data/3',
+              '@type': 'https://example.com/Article',
+            },
+          },
+        ],
       });
     });
   });

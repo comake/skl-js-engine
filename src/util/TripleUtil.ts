@@ -2,7 +2,7 @@
 import DataFactory from '@rdfjs/data-model';
 import type { Quad, Quad_Object, Quad_Subject, Literal } from '@rdfjs/types';
 import * as jsonld from 'jsonld';
-import type { NodeObject, ValueObject } from 'jsonld';
+import type { GraphObject, NodeObject, ValueObject } from 'jsonld';
 import type { Frame } from 'jsonld/jsonld-spec';
 import type { PropertyPath } from 'sparqljs';
 import type { FindOptionsRelations } from '../storage/FindOptionsTypes';
@@ -35,7 +35,7 @@ export const allTypesAndSuperTypesPath: PropertyPath = {
   ],
 };
 
-export function toJSValueFromDataType(value: string, dataType: string): any {
+export function toJSValueFromDataType(value: string, dataType: string): number | boolean | string {
   switch (dataType) {
     case XSD.int:
     case XSD.positiveInteger:
@@ -98,11 +98,10 @@ function relationsToFrame(relations: FindOptionsRelations): Frame {
   }), {});
 }
 
-export async function triplesToJsonld(
-  triples: Quad[],
-  relations?: FindOptionsRelations,
-  frame?: Frame,
-): Promise<OrArray<NodeObject>> {
+function triplesToNodes(triples: Quad[]): {
+  nodesById: Record<string, NodeObject>;
+  nodeIdOrder: string[];
+} {
   const nodeIdOrder: string[] = [];
   const nodesById = triples.reduce((obj: Record<string, NodeObject>, triple): Record<string, NodeObject> => {
     const subject = toJsonLdSubject(triple.subject);
@@ -133,24 +132,75 @@ export async function triplesToJsonld(
     }
     return obj;
   }, {});
+  return { nodesById, nodeIdOrder };
+}
 
+async function frameWithRelationsOrNonBlankNodes(
+  nodesById: Record<string, NodeObject>,
+  relations?: FindOptionsRelations,
+  frame?: Frame,
+): Promise<NodeObject> {
+  let appliedFrame: Frame;
   if (!frame) {
     if (relations) {
-      frame = relationsToFrame(relations);
+      appliedFrame = relationsToFrame(relations);
     } else {
-      frame = { '@id': nodeIdOrder as any };
+      const nonBlankNodes = Object.keys(nodesById)
+        .filter((nodeId: string): boolean => !nodeId.startsWith(BLANK_NODE_PREFIX));
+      appliedFrame = { '@id': nonBlankNodes as any };
     }
+  } else {
+    appliedFrame = frame;
   }
-  const framed = await jsonld.frame(
+  return await jsonld.frame(
     { '@graph': Object.values(nodesById) },
-    frame,
+    appliedFrame,
   );
+}
+
+function sortNodesByOrder(nodes: NodeObject[], nodeIdOrder: string[]): NodeObject[] {
+  return nodes
+    .sort((aNode: NodeObject, bNode: NodeObject): number =>
+      nodeIdOrder.indexOf(aNode['@id']!) - nodeIdOrder.indexOf(bNode['@id']!));
+}
+
+function sortGraphOfNodeObject(graphObject: GraphObject, nodeIdOrder: string[]): GraphObject {
+  return {
+    ...graphObject,
+    '@graph': sortNodesByOrder(graphObject['@graph'] as NodeObject[], nodeIdOrder),
+  };
+}
+
+export async function triplesToJsonld(
+  triples: Quad[],
+  relations?: FindOptionsRelations,
+): Promise<OrArray<NodeObject>> {
+  const { nodeIdOrder, nodesById } = triplesToNodes(triples);
+  const framed = await frameWithRelationsOrNonBlankNodes(nodesById, relations);
   if ('@graph' in framed) {
-    return (framed['@graph'] as NodeObject[])
-      .sort((aNode, bNode): number =>
-        nodeIdOrder.indexOf(aNode['@id']!) - nodeIdOrder.indexOf(bNode['@id']!));
+    return sortNodesByOrder(framed['@graph'] as NodeObject[], nodeIdOrder);
   }
   return framed;
+}
+
+export async function triplesToJsonldWithFrame(
+  triples: Quad[],
+  frame?: Frame,
+  relations?: FindOptionsRelations,
+): Promise<GraphObject> {
+  const { nodeIdOrder, nodesById } = triplesToNodes(triples);
+  const framed = await frameWithRelationsOrNonBlankNodes(nodesById, relations, frame);
+  if ('@graph' in framed) {
+    return sortGraphOfNodeObject(framed as GraphObject, nodeIdOrder);
+  }
+  const { '@context': context, ...framedWithoutContext } = framed;
+  const graphObject: GraphObject = {
+    '@graph': [ framedWithoutContext as NodeObject ],
+  };
+  if (context) {
+    graphObject['@context'] = context;
+  }
+  return graphObject;
 }
 
 export function valueToLiteral(value: string | boolean | number | Date): Literal {
