@@ -1,7 +1,14 @@
 /* eslint-disable @typescript-eslint/method-signature-style */
+import type { Quad } from '@rdfjs/types';
+import type { GraphObject } from 'jsonld';
 import type { Frame } from 'jsonld/jsonld-spec';
 import type { Entity } from '../util/Types';
 import type { FindAllOptions, FindOneOptions, FindOptionsWhere } from './FindOptionsTypes';
+
+export type EntityOrTArray<T extends Quad | Record<string, number | boolean | string>> = T extends Quad
+  ? Entity[] | GraphObject
+  : T[];
+export type QuadOrObject = Quad | Record<string, number | boolean | string>;
 
 /**
  * Adapts SKQL CRUD operations to a specific persistence layer.
@@ -11,7 +18,7 @@ export interface QueryAdapter {
   /**
    * Performs a raw query for data matching the query.
    */
-  executeRawQuery(query: string, frame?: Frame): Promise<any>;
+  executeRawQuery<T extends QuadOrObject>(query: string, frame?: Frame): Promise<EntityOrTArray<T>>;
   /**
    * Finds first entity by a given find options.
    * If entity was not found in the database - returns null.

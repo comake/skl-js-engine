@@ -1,5 +1,4 @@
-import DataFactory from '@rdfjs/data-model';
-import type { Quad, Literal } from '@rdfjs/types';
+import type { Quad, Literal, NamedNode } from '@rdfjs/types';
 import type { Frame } from 'jsonld/jsonld-spec';
 import SparqlClient from 'sparql-http-client';
 import type {
@@ -9,14 +8,17 @@ import type {
   SelectQuery,
 } from 'sparqljs';
 import { Generator } from 'sparqljs';
-import { triplesToJsonld } from '../../util/TripleUtil';
+import { toJSValueFromDataType, triplesToJsonld, triplesToJsonldWithFrame } from '../../util/TripleUtil';
 import type { Entity } from '../../util/Types';
 import type { FindOneOptions, FindAllOptions, FindOptionsWhere } from '../FindOptionsTypes';
-import type { QueryAdapter } from '../QueryAdapter';
+import type { QueryAdapter, EntityOrTArray, QuadOrObject } from '../QueryAdapter';
 import type { SparqlQueryAdapterOptions } from './SparqlQueryAdapterOptions';
 import { SparqlQueryBuilder } from './SparqlQueryBuilder';
 import { SparqlUpdateBuilder } from './SparqlUpdateBuilder';
 
+export type QuadOrVariableQueryResult<T extends QuadOrObject> = T extends Quad
+  ? Quad
+  : Record<keyof T, NamedNode | Literal>;
 /**
  * A {@link QueryAdapter} that stores data in a database through a sparql endpoint.
  */
@@ -34,20 +36,32 @@ export class SparqlQueryAdapter implements QueryAdapter {
     this.setTimestamps = options.setTimestamps ?? false;
   }
 
-  public async executeRawQuery(query: string, frame?: Frame): Promise<any> {
-    const responseTriples = await this.executeSparqlConstructAndGetData(query);
-    if (responseTriples.length === 0) {
-      return [];
+  public async executeRawQuery<T extends QuadOrObject>(
+    query: string,
+    frame?: Frame,
+  ): Promise<EntityOrTArray<T>> {
+    const response = await this.executeSparqlSelectAndGetData<QuadOrVariableQueryResult<T>>(query);
+    if (response.length === 0) {
+      return [] as unknown as EntityOrTArray<T>;
     }
-    const jsonld = await triplesToJsonld(responseTriples, undefined, frame);
-    return jsonld as any;
+    if (response[0].subject && response[0].predicate && response[0].object) {
+      return await triplesToJsonldWithFrame(response as Quad[], frame) as EntityOrTArray<T>;
+    }
+    return (response as Record<keyof T, NamedNode | Literal>[])
+      .map((result): Record<string, number | boolean | string> =>
+        Object.entries(result).reduce((obj, [ key, value ]): Record<string, number | boolean | string> => ({
+          ...obj,
+          [key]: value.termType === 'Literal'
+            ? toJSValueFromDataType(value.value, value.datatype?.value)
+            : value.value,
+        }), {})) as EntityOrTArray<T>;
   }
 
   public async find(options?: FindOneOptions): Promise<Entity | null> {
     const queryBuilder = new SparqlQueryBuilder();
     const query = queryBuilder.buildEntityQuery({ ...options, limit: 1 });
     const generatedQuery = this.sparqlGenerator.stringify(query);
-    const responseTriples = await this.executeSparqlConstructAndGetData(generatedQuery);
+    const responseTriples = await this.executeSparqlSelectAndGetData(generatedQuery);
     if (responseTriples.length === 0) {
       return null;
     }
@@ -63,7 +77,7 @@ export class SparqlQueryAdapter implements QueryAdapter {
     const queryBuilder = new SparqlQueryBuilder();
     const query = queryBuilder.buildEntityQuery(options);
     const generatedQuery = this.sparqlGenerator.stringify(query);
-    const responseTriples = await this.executeSparqlConstructAndGetData(generatedQuery);
+    const responseTriples = await this.executeSparqlSelectAndGetData(generatedQuery);
     if (responseTriples.length === 0) {
       return [];
     }
@@ -114,12 +128,14 @@ export class SparqlQueryAdapter implements QueryAdapter {
     await this.executeSparqlUpdate(query);
   }
 
-  private async executeSparqlConstructAndGetData(query: string): Promise<Quad[]> {
+  private async executeSparqlSelectAndGetData<T extends Quad | Record<string, NamedNode | Literal> = Quad>(
+    query: string,
+  ): Promise<T[]> {
     const stream = await this.sparqlClient.query.select(query);
     return new Promise((resolve, reject): void => {
-      const data: Quad[] = [];
+      const data: T[] = [];
       stream.on('data', (row): void => {
-        data.push(DataFactory.triple(row.subject, row.predicate, row.object));
+        data.push(row);
       });
 
       stream.on('end', (): void => {

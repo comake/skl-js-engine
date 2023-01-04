@@ -4,7 +4,7 @@ import DataFactory from '@rdfjs/data-model';
 import SparqlClient from 'sparql-http-client';
 import { SparqlQueryAdapter } from '../../../../src/storage/sparql/SparqlQueryAdapter';
 import { rdfTypeNamedNode } from '../../../../src/util/TripleUtil';
-import { SKL } from '../../../../src/util/Vocabularies';
+import { SKL, XSD } from '../../../../src/util/Vocabularies';
 import { streamFrom } from '../../../util/Util';
 
 const endpointUrl = 'https://example.com/sparql';
@@ -97,8 +97,10 @@ describe('a SparqlQueryAdapter', (): void => {
             '}',
           ].join('\n')),
         ).resolves.toEqual({
-          '@id': 'https://example.com/data/1',
-          '@type': 'https://skl.standard.storage/File',
+          '@graph': [{
+            '@id': 'https://example.com/data/1',
+            '@type': 'https://skl.standard.storage/File',
+          }],
         });
         expect(select).toHaveBeenCalledTimes(1);
         expect(select.mock.calls[0][0].split('\n')).toEqual([
@@ -114,6 +116,32 @@ describe('a SparqlQueryAdapter', (): void => {
           '}',
         ]);
       });
+
+    it('executes a variable selection and returns an array of values.', async(): Promise<void> => {
+      response = [{
+        modifiedAt: DataFactory.literal('2022-10-10T00:00:00.000Z', XSD.dateTime),
+        related: DataFactory.namedNode('https://example.com/data/1'),
+      }];
+      await expect(
+        adapter.executeRawQuery([
+          'SELECT ?modifiedAt ?related',
+          'WHERE {',
+          '  {',
+          '    SELECT ?modifiedAt ?related WHERE {',
+          '     ?entity <http://purl.org/dc/terms/modified> ?modifiedAt',
+          '     ?entity <https://example.com/related> ?related',
+          '    }',
+          '    LIMIT 1',
+          '  }',
+          '}',
+        ].join('\n')),
+      ).resolves.toEqual([
+        {
+          modifiedAt: '2022-10-10T00:00:00.000Z',
+          related: 'https://example.com/data/1',
+        },
+      ]);
+    });
   });
 
   describe('count', (): void => {

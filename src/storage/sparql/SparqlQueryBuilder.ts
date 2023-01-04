@@ -143,6 +143,7 @@ export class SparqlQueryBuilder {
       options?.limit,
       options?.offset,
     );
+    // TODO: If there are orders and not a limit of 1 we should execute the select query first?
     return this.sparqlConstruct(
       entitySelectQuery,
       selectQueryData.graphWhere,
@@ -250,7 +251,7 @@ export class SparqlQueryBuilder {
     let triples: Triple[];
     let where: Pattern[] = [];
     if (select) {
-      // TODO fix when select and relations are used.
+      // TODO: fix when select and relations are used.
       triples = this.createSelectPattern(select, entityVariable);
       where = [
         this.sparqlOptionalSelectGraph(entityVariable, triples),

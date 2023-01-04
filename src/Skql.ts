@@ -6,6 +6,7 @@ import type {
 } from '@comake/openapi-operation-executor';
 import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
 import type { ReferenceNodeObject } from '@comake/rmlmapper-js';
+import type { Quad } from '@rdfjs/types';
 import axios from 'axios';
 import type { AxiosError, AxiosResponse } from 'axios';
 import type { ContextDefinition, NodeObject } from 'jsonld';
@@ -16,7 +17,7 @@ import { Mapper } from './mapping/Mapper';
 import type { FindAllOptions, FindOneOptions, FindOptionsWhere } from './storage/FindOptionsTypes';
 import { MemoryQueryAdapter } from './storage/memory/MemoryQueryAdapter';
 import type { MemoryQueryAdapterOptions } from './storage/memory/MemoryQueryAdapterOptions';
-import type { QueryAdapter } from './storage/QueryAdapter';
+import type { EntityOrTArray, QuadOrObject, QueryAdapter } from './storage/QueryAdapter';
 import { SparqlQueryAdapter } from './storage/sparql/SparqlQueryAdapter';
 import type { SparqlQueryAdapterOptions } from './storage/sparql/SparqlQueryAdapterOptions';
 import type { OrArray, Entity } from './util/Types';
@@ -75,8 +76,11 @@ export class Skql {
     this.do = new Proxy({} as VerbInterface, { get: getVerbHandler });
   }
 
-  public async executeRawQuery(query: string, frame?: Frame): Promise<any> {
-    return await this.adapter.executeRawQuery(query, frame);
+  public async executeRawQuery<T extends QuadOrObject = Quad>(
+    query: string,
+    frame?: Frame,
+  ): Promise<EntityOrTArray<T>> {
+    return await this.adapter.executeRawQuery<T>(query, frame);
   }
 
   public async find(options?: FindOneOptions): Promise<Entity> {
