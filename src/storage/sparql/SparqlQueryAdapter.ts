@@ -8,9 +8,21 @@ import type {
   SparqlGenerator,
   AskQuery,
   SelectQuery,
+  Pattern,
+  Variable,
+  GraphPattern,
+  IriTerm,
+  Ordering,
+  GroupPattern,
 } from 'sparqljs';
 import { Generator } from 'sparqljs';
-import { toJSValueFromDataType, triplesToJsonld, triplesToJsonldWithFrame } from '../../util/TripleUtil';
+import {
+  countVariable,
+  entityVariable,
+  toJSValueFromDataType,
+  triplesToJsonld,
+  triplesToJsonldWithFrame,
+} from '../../util/TripleUtil';
 import type { Entity } from '../../util/Types';
 import type { FindOneOptions, FindAllOptions, FindOptionsWhere } from '../FindOptionsTypes';
 import type { QueryAdapter, RawQueryResult } from '../QueryAdapter';
@@ -62,7 +74,25 @@ export class SparqlQueryAdapter implements QueryAdapter {
 
   public async find(options?: FindOneOptions): Promise<Entity | null> {
     const queryBuilder = new SparqlQueryBuilder();
-    const query = queryBuilder.buildEntityQuery({ ...options, limit: 1 });
+    const selectQueryData = queryBuilder.buildPatternsFromQueryOptions(
+      entityVariable,
+      options?.where,
+      options?.order,
+      options?.relations,
+    );
+    const entitySelectQuery = this.sparqlSelect(
+      [ entityVariable, ...selectQueryData.variables ],
+      selectQueryData.where,
+      selectQueryData.orders,
+      1,
+    );
+    const entitySelectGroupQuery = this.sparqlSelectGroup([ entitySelectQuery ]);
+    selectQueryData.graphWhere.unshift(entitySelectGroupQuery);
+    const query = queryBuilder.buildConstructFromEntitySelectQuery(
+      selectQueryData.graphWhere,
+      selectQueryData.variables,
+      options?.select,
+    );
     const generatedQuery = this.sparqlGenerator.stringify(query);
     const responseTriples = await this.executeSparqlSelectAndGetData(generatedQuery);
     if (responseTriples.length === 0) {
@@ -72,23 +102,99 @@ export class SparqlQueryAdapter implements QueryAdapter {
     return jsonld as Entity;
   }
 
+  private sparqlSelect(
+    variables: Variable[],
+    where: Pattern[],
+    order: Ordering[],
+    limit?: number,
+    offset?: number,
+  ): SelectQuery {
+    return {
+      type: 'query',
+      queryType: 'SELECT',
+      variables,
+      where,
+      order: order.length > 0 ? order : undefined,
+      limit,
+      offset,
+      prefixes: {},
+    };
+  }
+
   public async findBy(where: FindOptionsWhere): Promise<Entity | null> {
     return this.find({ where });
   }
 
   public async findAll(options?: FindAllOptions): Promise<Entity[]> {
     const queryBuilder = new SparqlQueryBuilder();
-    const query = queryBuilder.buildEntityQuery(options);
+    const selectQueryData = queryBuilder.buildPatternsFromQueryOptions(
+      entityVariable,
+      options?.where,
+      options?.order,
+      options?.relations,
+    );
+    const entitySelectVariables = [ entityVariable, ...selectQueryData.variables ];
+    const entitySelectQuery = this.sparqlSelect(
+      entitySelectVariables,
+      selectQueryData.where,
+      selectQueryData.orders,
+      options?.limit,
+      options?.offset,
+    );
+
+    let orderedEntityVariableValues: string[] | undefined;
+    if (selectQueryData.orders.length > 0 && options?.limit !== 1) {
+      // We need to execute the entity select query here first to get ordered results.
+      const generatedEntitySelectQuery = this.sparqlGenerator.stringify(entitySelectQuery);
+      const entitySelectResponse =
+        await this.executeSparqlSelectAndGetData<SelectVariableQueryResult<any>>(generatedEntitySelectQuery);
+      const valuesByVariable = this.groupByKey(entitySelectResponse);
+      orderedEntityVariableValues = (valuesByVariable[entityVariable.value] as NamedNode[])
+        .map((namedNode: NamedNode): string => namedNode.value);
+      const variableValueFilter = queryBuilder.buildInFilterForVariables(valuesByVariable);
+      selectQueryData.graphWhere.push(variableValueFilter);
+    } else {
+      const entitySelectGroupQuery = this.sparqlSelectGroup([ entitySelectQuery ]);
+      selectQueryData.graphWhere.unshift(entitySelectGroupQuery);
+    }
+    const query = queryBuilder.buildConstructFromEntitySelectQuery(
+      selectQueryData.graphWhere,
+      selectQueryData.variables,
+      options?.select,
+    );
     const generatedQuery = this.sparqlGenerator.stringify(query);
     const responseTriples = await this.executeSparqlSelectAndGetData(generatedQuery);
     if (responseTriples.length === 0) {
       return [];
     }
-    const jsonld = await triplesToJsonld(responseTriples, options?.relations);
+    const jsonld = await triplesToJsonld(responseTriples, options?.relations, orderedEntityVariableValues);
     if (Array.isArray(jsonld)) {
       return jsonld as Entity[];
     }
     return [ jsonld ] as Entity[];
+  }
+
+  private groupByKey(
+    entitySelectResponse: SelectVariableQueryResult<any>[],
+  ): Record<string, (NamedNode | Literal)[]> {
+    return entitySelectResponse
+      .reduce((obj: Record<string, (NamedNode | Literal)[]>, result): Record<string, (NamedNode | Literal)[]> => {
+        for (const [ key, value ] of Object.entries(result)) {
+          if (!(key in obj)) {
+            obj[key] = [ value ];
+          } else {
+            obj[key].push(value);
+          }
+        }
+        return obj;
+      }, {});
+  }
+
+  private sparqlSelectGroup(patterns: Pattern[]): GroupPattern {
+    return {
+      type: 'group',
+      patterns,
+    };
   }
 
   public async findAllBy(where: FindOptionsWhere): Promise<Entity[]> {
@@ -97,14 +203,54 @@ export class SparqlQueryAdapter implements QueryAdapter {
 
   public async exists(where: FindOptionsWhere): Promise<boolean> {
     const queryBuilder = new SparqlQueryBuilder();
-    const query = queryBuilder.buildEntityExistQuery(where);
+    const selectQueryData = queryBuilder.buildPatternsFromQueryOptions(entityVariable, where);
+    const query = this.sparqlAsk(selectQueryData.where);
     return await this.executeAskQueryAndGetResponse(query);
+  }
+
+  private sparqlAsk(where: Pattern[]): AskQuery {
+    return {
+      type: 'query',
+      queryType: 'ASK',
+      where,
+      prefixes: {},
+    };
   }
 
   public async count(where?: FindOptionsWhere): Promise<number> {
     const queryBuilder = new SparqlQueryBuilder();
-    const query = queryBuilder.buildEntityCountQuery(where);
+    const selectQueryData = queryBuilder.buildPatternsFromQueryOptions(entityVariable, where);
+    const query = this.sparqlCountSelect(selectQueryData.where, selectQueryData.graphWhere);
     return await this.executeSelectCountAndGetResponse(query);
+  }
+
+  private sparqlCountSelect(where: Pattern[], graphWhere: Pattern[]): SelectQuery {
+    return {
+      type: 'query',
+      queryType: 'SELECT',
+      variables: [{
+        expression: {
+          type: 'aggregate',
+          aggregation: 'count',
+          distinct: true,
+          expression: entityVariable,
+        },
+        variable: countVariable,
+      }],
+      where: [
+        this.sparqlSelectGraph(entityVariable, where),
+        ...graphWhere,
+      ],
+      prefixes: {},
+    };
+  }
+
+  private sparqlSelectGraph(name: Variable | NamedNode, patterns: Pattern[]): GraphPattern {
+    return {
+      type: 'graph',
+      name: name as IriTerm,
+      patterns,
+    };
   }
 
   public async save(entity: Entity): Promise<Entity>;
