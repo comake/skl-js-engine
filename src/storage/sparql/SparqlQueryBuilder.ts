@@ -2,7 +2,6 @@
 import DataFactory from '@rdfjs/data-model';
 import type { Variable, NamedNode, Term, Literal } from '@rdfjs/types';
 import type {
-  SelectQuery,
   FilterPattern,
   Pattern,
   IriTerm,
@@ -13,7 +12,6 @@ import type {
   GroupPattern,
   GraphPattern,
   Ordering,
-  AskQuery,
   OptionalPattern,
   BgpPattern,
   PropertyPath,
@@ -22,7 +20,6 @@ import {
   allTypesAndSuperTypesPath,
   entityVariable,
   valueToLiteral,
-  countVariable,
   subjectNode,
   predicateNode,
   objectNode,
@@ -33,7 +30,6 @@ import { RDF } from '../../util/Vocabularies';
 import { FindOperator } from '../FindOperator';
 import type {
   FieldPrimitiveValue,
-  FindAllOptions,
   FindOptionsOrder,
   FindOptionsOrderValue,
   FindOptionsRelations,
@@ -89,89 +85,21 @@ export class SparqlQueryBuilder {
     this.variableGenerator = new VariableGenerator();
   }
 
-  public buildEntityCountQuery(where?: FindOptionsWhere): SelectQuery {
-    const selectQueryData = this.buildPatternsFromQueryData(entityVariable, where);
-    return this.sparqlCountSelect(selectQueryData.where, selectQueryData.graphWhere);
-  }
-
-  private sparqlCountSelect(where: Pattern[], graphWhere: Pattern[]): SelectQuery {
-    return {
-      type: 'query',
-      queryType: 'SELECT',
-      variables: [{
-        expression: {
-          type: 'aggregate',
-          aggregation: 'count',
-          distinct: true,
-          expression: entityVariable,
-        },
-        variable: countVariable,
-      }],
-      where: [
-        this.sparqlSelectGraph(entityVariable, where),
-        ...graphWhere,
-      ],
-      prefixes: {},
-    };
-  }
-
-  public buildEntityExistQuery(where: FindOptionsWhere): AskQuery {
-    const selectQueryData = this.buildPatternsFromQueryData(entityVariable, where);
-    return this.sparqlAsk(selectQueryData.where);
-  }
-
-  private sparqlAsk(where: Pattern[]): AskQuery {
-    return {
-      type: 'query',
-      queryType: 'ASK',
-      where,
-      prefixes: {},
-    };
-  }
-
-  public buildEntityQuery(options?: FindAllOptions): ConstructQuery {
-    const selectQueryData = this.buildPatternsFromQueryData(
-      entityVariable,
-      options?.where,
-      options?.order,
-      options?.relations,
-    );
-    const entitySelectQuery = this.sparqlSelect(
-      [ entityVariable, ...selectQueryData.variables ],
-      selectQueryData.where,
-      selectQueryData.orders,
-      options?.limit,
-      options?.offset,
-    );
-    // TODO: If there are orders and not a limit of 1 we should execute the select query first?
-    return this.sparqlConstruct(
-      entitySelectQuery,
-      selectQueryData.graphWhere,
-      selectQueryData.variables,
-      options?.select,
+  public buildInFilterForVariables(valuesByVariable: Record<string, (NamedNode | Literal)[]>): FilterPattern {
+    return this.filterPatternFromFilters(
+      Object.entries(valuesByVariable).map(([ variableName, values ]): OperationExpression =>
+        this.buildInOperation(
+          DataFactory.variable(variableName),
+          values,
+        )),
     );
   }
 
-  private sparqlSelect(
-    variables: Variable[],
-    where: Pattern[],
-    order: Ordering[],
-    limit?: number,
-    offset?: number,
-  ): SelectQuery {
-    return {
-      type: 'query',
-      queryType: 'SELECT',
-      variables,
-      where,
-      order: order.length > 0 ? order : undefined,
-      limit,
-      offset,
-      prefixes: {},
-    };
+  private filterWithExpression(expression: Expression): FilterPattern {
+    return { type: 'filter', expression };
   }
 
-  private buildPatternsFromQueryData(
+  public buildPatternsFromQueryOptions(
     subject: Variable,
     where?: FindOptionsWhere,
     order?: FindOptionsOrder,
@@ -216,19 +144,13 @@ export class SparqlQueryBuilder {
 
   private filterPatternFromFilters(filters: Expression[]): FilterPattern {
     if (filters.length > 1) {
-      return {
-        type: 'filter',
-        expression: {
-          type: 'operation',
-          operator: '&&',
-          args: filters,
-        },
-      };
+      return this.filterWithExpression({
+        type: 'operation',
+        operator: '&&',
+        args: filters,
+      });
     }
-    return {
-      type: 'filter',
-      expression: filters[0],
-    };
+    return this.filterWithExpression(filters[0]);
   }
 
   private sparqlOptionalWithTriples(triples: Triple[]): OptionalPattern {
@@ -242,8 +164,7 @@ export class SparqlQueryBuilder {
     return { type: 'bgp', triples };
   }
 
-  private sparqlConstruct(
-    graphSelectionQuery: SelectQuery,
+  public buildConstructFromEntitySelectQuery(
     graphWhere: Pattern[],
     graphSelectVariables: Variable[],
     select?: FindOptionsSelect,
@@ -255,18 +176,15 @@ export class SparqlQueryBuilder {
       triples = this.createSelectPattern(select, entityVariable);
       where = [
         this.sparqlOptionalSelectGraph(entityVariable, triples),
-        this.sparqlSelectGroup([ graphSelectionQuery ]),
         ...graphWhere ];
     } else {
-      const graphSelectsAndTriplePatterns =
-        this.createGraphSelectsAndTriplePatterns(graphSelectVariables);
+      const graphSelectsAndTriplePatterns = this.createGraphSelectsAndTriplePatterns(graphSelectVariables);
       const entityGraphTriple = { subject: subjectNode, predicate: predicateNode, object: objectNode };
       triples = [
         entityGraphTriple,
         ...graphSelectsAndTriplePatterns.triples,
       ];
       where = [
-        this.sparqlSelectGroup([ graphSelectionQuery ]),
         ...graphWhere,
         this.sparqlSelectGraph(
           entityVariable,
@@ -348,13 +266,6 @@ export class SparqlQueryBuilder {
           triples,
         }],
       }],
-    };
-  }
-
-  private sparqlSelectGroup(patterns: Pattern[]): GroupPattern {
-    return {
-      type: 'group',
-      patterns,
     };
   }
 
@@ -704,12 +615,11 @@ export class SparqlQueryBuilder {
       } catch {
         throw new Error(`Unsupported Not sub operator "${rightSide.operator}"`);
       }
-      filterExpression = { type: 'filter', expression };
+      filterExpression = this.filterWithExpression(expression);
     } else {
-      filterExpression = {
-        type: 'filter',
-        expression: this.buildEqualOperation(leftSide, rightSide as Expression),
-      };
+      filterExpression = this.filterWithExpression(
+        this.buildEqualOperation(leftSide, rightSide as Expression),
+      );
     }
     return {
       type: 'operation',

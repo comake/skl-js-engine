@@ -424,6 +424,56 @@ describe('a SparqlQueryAdapter', (): void => {
           '}',
         ]);
       });
+
+    it('executes an entity selection query then queries for entities if there is an order and a limit greater than 1.',
+      async(): Promise<void> => {
+        select.mockImplementationOnce(
+          async(): Promise<Readable> => streamFrom([{ entity: data1 }, { entity: data2 }]),
+        );
+        response = [
+          {
+            subject: data1,
+            predicate: rdfTypeNamedNode,
+            object: file,
+          },
+          {
+            subject: data2,
+            predicate: rdfTypeNamedNode,
+            object: file,
+          },
+        ];
+        await expect(
+          adapter.findAll({
+            order: {
+              'https://example.com/pred': 'asc',
+            },
+          }),
+        ).resolves.toEqual([
+          {
+            '@id': 'https://example.com/data/1',
+            '@type': 'https://skl.standard.storage/File',
+          },
+          {
+            '@id': 'https://example.com/data/2',
+            '@type': 'https://skl.standard.storage/File',
+          },
+        ]);
+        expect(select).toHaveBeenCalledTimes(2);
+        expect(select.mock.calls[0][0].split('\n')).toEqual([
+          'SELECT ?entity WHERE {',
+          '  ?entity ?c1 ?c2.',
+          '  OPTIONAL { ?entity <https://example.com/pred> ?c3. }',
+          '}',
+          'ORDER BY (?c3)',
+        ]);
+        expect(select.mock.calls[1][0].split('\n')).toEqual([
+          'CONSTRUCT { ?subject ?predicate ?object. }',
+          'WHERE {',
+          '  FILTER(?entity IN(<https://example.com/data/1>, <https://example.com/data/2>))',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
+          '}',
+        ]);
+      });
   });
 
   describe('findAllBy', (): void => {

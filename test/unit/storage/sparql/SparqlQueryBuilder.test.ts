@@ -11,7 +11,6 @@ import { LessThanOrEqual } from '../../../../src/storage/operator/LessThanOrEqua
 import { Not } from '../../../../src/storage/operator/Not';
 import { SparqlQueryBuilder } from '../../../../src/storage/sparql/SparqlQueryBuilder';
 import {
-  countVariable,
   entityVariable,
   objectNode,
   predicateNode,
@@ -25,19 +24,12 @@ const c1 = DataFactory.variable('c1');
 const c2 = DataFactory.variable('c2');
 const c3 = DataFactory.variable('c3');
 const c4 = DataFactory.variable('c4');
-const c5 = DataFactory.variable('c5');
-const c6 = DataFactory.variable('c6');
-const c7 = DataFactory.variable('c7');
-const c8 = DataFactory.variable('c8');
-const c9 = DataFactory.variable('c9');
-const c10 = DataFactory.variable('c10');
 const predicate = DataFactory.namedNode('https://example.com/pred');
 const predicate2 = DataFactory.namedNode('https://example.com/pred2');
 const data1 = DataFactory.namedNode('https://example.com/data/1');
 const data2 = DataFactory.namedNode('https://example.com/data/2');
 const file = DataFactory.namedNode(SKL.File);
 const event = DataFactory.namedNode(SKL.Event);
-const graphPattern = [{ subject: subjectNode, predicate: predicateNode, object: objectNode }];
 
 describe('A SparqlQueryBuilder', (): void => {
   let builder: SparqlQueryBuilder;
@@ -46,347 +38,185 @@ describe('A SparqlQueryBuilder', (): void => {
     builder = new SparqlQueryBuilder();
   });
 
-  describe('exists query', (): void => {
-    it('builds an ask query.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'ASK',
-        prefixes: {},
+  describe('#buildInFilterForVariables', (): void => {
+    it('builds an and expression between multiple in expressions.', (): void => {
+      expect(builder.buildInFilterForVariables({
+        entity: [
+          DataFactory.namedNode('https://example.com/data/1'),
+          DataFactory.namedNode('https://example.com/data/2'),
+        ],
+      })).toEqual({
+        type: 'filter',
+        expression: {
+          type: 'operation',
+          operator: 'in',
+          args: [
+            DataFactory.variable('entity'),
+            [
+              DataFactory.namedNode('https://example.com/data/1'),
+              DataFactory.namedNode('https://example.com/data/2'),
+            ],
+          ],
+        },
+      });
+    });
+  });
+
+  describe('#buildPatternsFromQueryOptions', (): void => {
+    it('builds a query without any options.', (): void => {
+      expect(builder.buildPatternsFromQueryOptions(entityVariable)).toEqual({
+        variables: [],
         where: [{
           type: 'bgp',
           triples: [{
             subject: entityVariable,
-            predicate,
-            object: DataFactory.literal('1', XSD.integer),
+            predicate: c1,
+            object: c2,
           }],
         }],
-      };
-      expect(builder.buildEntityExistQuery({
-        'https://example.com/pred': 1,
-      })).toEqual(query);
-    });
-  });
-
-  describe('count query', (): void => {
-    it('builds a select count query.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'SELECT',
-        prefixes: {},
-        variables: [{
-          expression: {
-            type: 'aggregate',
-            aggregation: 'count',
-            distinct: true,
-            expression: entityVariable,
-          },
-          variable: countVariable,
-        }],
-        where: [{
-          type: 'graph',
-          name: entityVariable,
-          patterns: [{
-            type: 'bgp',
-            triples: [{
-              subject: entityVariable,
-              predicate,
-              object: DataFactory.literal('1', XSD.integer),
-            }],
-          }],
-        }],
-      };
-      expect(builder.buildEntityCountQuery({
-        'https://example.com/pred': 1,
-      })).toEqual(query);
-    });
-  });
-
-  describe('entity query', (): void => {
-    it('builds a query without any options.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [{
-                type: 'bgp',
-                triples: [{
-                  subject: entityVariable,
-                  predicate: c1,
-                  object: c2,
-                }],
-              }],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery()).toEqual(query);
+        orders: [],
+        graphWhere: [],
+      });
     });
 
-    it('builds a query with where, limit, and offset options.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate: {
-                        type: 'path',
-                        pathType: '/',
-                        items: [
-                          rdfTypeNamedNode,
-                          {
-                            type: 'path',
-                            pathType: '*',
-                            items: [ rdfsSubClassOfNamedNode ],
-                          },
-                        ],
-                      },
-                      object: file,
-                    },
-                    {
-                      subject: entityVariable,
-                      predicate,
-                      object: DataFactory.literal('1', XSD.integer),
-                    },
-                  ],
-                },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: '=',
-                    args: [ entityVariable, data1 ],
-                  },
-                },
-              ],
-              limit: 5,
-              offset: 5,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
+    it('builds a query with where options.', (): void => {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
           id: 'https://example.com/data/1',
           type: SKL.File,
           'https://example.com/pred': 1,
         },
-        limit: 5,
-        offset: 5,
-      })).toEqual(query);
-    });
-
-    it('builds a query with one filter and no triple patterns.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
+      )).toEqual({
+        variables: [],
         where: [
           {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate: {
+                  type: 'path',
+                  pathType: '/',
+                  items: [
+                    rdfTypeNamedNode,
                     {
-                      subject: entityVariable,
-                      predicate: c1,
-                      object: c2,
+                      type: 'path',
+                      pathType: '*',
+                      items: [ rdfsSubClassOfNamedNode ],
                     },
                   ],
                 },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: '=',
-                    args: [ entityVariable, data1 ],
-                  },
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
+                object: file,
+              },
+              {
+                subject: entityVariable,
+                predicate,
+                object: DataFactory.literal('1', XSD.integer),
+              },
+            ],
           },
           {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: '=',
+              args: [ entityVariable, data1 ],
+            },
           },
         ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
-          id: 'https://example.com/data/1',
-        },
-      })).toEqual(query);
+        orders: [],
+        graphWhere: [],
+      });
+    });
+
+    it('builds a query with one where filter and no triple patterns.', (): void => {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        { id: 'https://example.com/data/1' },
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate: c1,
+                object: c2,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: '=',
+              args: [ entityVariable, data1 ],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
     });
 
     it('builds a query with more than one filter.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate: DataFactory.namedNode('https://example.com/nested'),
-                      object: c1,
-                    },
-                    {
-                      subject: c1,
-                      predicate: c2,
-                      object: c3,
-                    },
-                  ],
-                },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: '&&',
-                    args: [
-                      {
-                        type: 'operation',
-                        operator: '=',
-                        args: [ entityVariable, data1 ],
-                      },
-                      {
-                        type: 'operation',
-                        operator: '=',
-                        args: [ c1, data2 ],
-                      },
-                    ],
-                  },
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
           id: 'https://example.com/data/1',
           'https://example.com/nested': {
             id: 'https://example.com/data/2',
           },
         },
-      })).toEqual(query);
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate: DataFactory.namedNode('https://example.com/nested'),
+                object: c1,
+              },
+              {
+                subject: c1,
+                predicate: c2,
+                object: c3,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: '&&',
+              args: [
+                {
+                  type: 'operation',
+                  operator: '=',
+                  args: [ entityVariable, data1 ],
+                },
+                {
+                  type: 'operation',
+                  operator: '=',
+                  args: [ c1, data2 ],
+                },
+              ],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
     });
 
     it('builds a query with a literal value filter.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate,
-                      object: DataFactory.literal('{"alpha":1}', RDF.JSON),
-                    },
-                    {
-                      subject: entityVariable,
-                      predicate: predicate2,
-                      object: DataFactory.literal('false', XSD.boolean),
-                    },
-                    {
-                      subject: entityVariable,
-                      predicate: DataFactory.namedNode('https://example.com/pred3'),
-                      object: DataFactory.literal('hello', 'en'),
-                    },
-                  ],
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
           'https://example.com/pred': {
             '@value': { alpha: 1 },
             '@type': '@json',
@@ -400,1032 +230,712 @@ describe('A SparqlQueryBuilder', (): void => {
             '@language': 'en',
           },
         },
-      })).toEqual(query);
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate,
+                object: DataFactory.literal('{"alpha":1}', RDF.JSON),
+              },
+              {
+                subject: entityVariable,
+                predicate: predicate2,
+                object: DataFactory.literal('false', XSD.boolean),
+              },
+              {
+                subject: entityVariable,
+                predicate: DataFactory.namedNode('https://example.com/pred3'),
+                object: DataFactory.literal('hello', 'en'),
+              },
+            ],
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
     });
 
     it('builds a query with a NamedNode filter.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate,
-                      object: DataFactory.namedNode('https://example.com/object'),
-                    },
-                  ],
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
           'https://example.com/pred': 'https://example.com/object',
         },
-      })).toEqual(query);
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate,
+                object: DataFactory.namedNode('https://example.com/object'),
+              },
+            ],
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
     });
 
     it('builds a query with an array valued filter.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate,
-                      object: DataFactory.literal('1', XSD.integer),
-                    },
-                    {
-                      subject: entityVariable,
-                      predicate,
-                      object: DataFactory.literal('2', XSD.integer),
-                    },
-                  ],
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
           'https://example.com/pred': [ 1, 2 ],
         },
-      })).toEqual(query);
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate,
+                object: DataFactory.literal('1', XSD.integer),
+              },
+              {
+                subject: entityVariable,
+                predicate,
+                object: DataFactory.literal('2', XSD.integer),
+              },
+            ],
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
     });
 
     it('builds a query with an in operator on the id field.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate: c1,
-                      object: c2,
-                    },
-                  ],
-                },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: 'in',
-                    args: [ entityVariable, [ data1 ]],
-                  },
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
           id: In([ 'https://example.com/data/1' ]),
         },
-      })).toEqual(query);
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate: c1,
+                object: c2,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: 'in',
+              args: [ entityVariable, [ data1 ]],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
     });
 
     it('builds a query with an in operator on the type field.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
+          type: In([ SKL.File, SKL.Event ]),
+        },
+      )).toEqual({
+        variables: [],
         where: [
           {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate: {
+                  type: 'path',
+                  pathType: '/',
+                  items: [
+                    rdfTypeNamedNode,
                     {
-                      subject: entityVariable,
-                      predicate: {
-                        type: 'path',
-                        pathType: '/',
-                        items: [
-                          rdfTypeNamedNode,
-                          {
-                            type: 'path',
-                            pathType: '*',
-                            items: [ rdfsSubClassOfNamedNode ],
-                          },
-                        ],
-                      },
-                      object: c1,
+                      type: 'path',
+                      pathType: '*',
+                      items: [ rdfsSubClassOfNamedNode ],
                     },
                   ],
                 },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: 'in',
-                    args: [ c1, [ file, event ]],
-                  },
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
+                object: c1,
+              },
+            ],
           },
           {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: 'in',
+              args: [ c1, [ file, event ]],
+            },
           },
         ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
-          type: In([ SKL.File, SKL.Event ]),
-        },
-      })).toEqual(query);
+        orders: [],
+        graphWhere: [],
+      });
     });
 
     it('builds a query with an in operator on a non id field.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate,
-                      object: c1,
-                    },
-                  ],
-                },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: 'in',
-                    args: [
-                      c1,
-                      [
-                        DataFactory.literal('1', XSD.integer),
-                        DataFactory.literal('2', XSD.integer),
-                      ],
-                    ],
-                  },
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
           'https://example.com/pred': In([ 1, 2 ]),
         },
-      })).toEqual(query);
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate,
+                object: c1,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: 'in',
+              args: [
+                c1,
+                [
+                  DataFactory.literal('1', XSD.integer),
+                  DataFactory.literal('2', XSD.integer),
+                ],
+              ],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
     });
 
     it('builds a query with a not operator on the id field.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate: c1,
-                      object: c2,
-                    },
-                  ],
-                },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: '!=',
-                    args: [ entityVariable, data1 ],
-                  },
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
           id: Not('https://example.com/data/1'),
         },
-      })).toEqual(query);
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate: c1,
+                object: c2,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: '!=',
+              args: [ entityVariable, data1 ],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
     });
 
     it('builds a query with a nested not in operator on the id field.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate: c1,
-                      object: c2,
-                    },
-                  ],
-                },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: 'notin',
-                    args: [
-                      entityVariable,
-                      [ data1, data2 ],
-                    ],
-                  },
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
           id: Not(In([ 'https://example.com/data/1', 'https://example.com/data/2' ])),
         },
-      })).toEqual(query);
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate: c1,
+                object: c2,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: 'notin',
+              args: [
+                entityVariable,
+                [ data1, data2 ],
+              ],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
     });
 
     it('builds a query with a nested not equal operator on the id field.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate: c1,
-                      object: c2,
-                    },
-                  ],
-                },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: '!=',
-                    args: [ entityVariable, data1 ],
-                  },
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
           id: Not(Equal('https://example.com/data/1')),
         },
-      })).toEqual(query);
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate: c1,
+                object: c2,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: '!=',
+              args: [ entityVariable, data1 ],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
     });
 
     it('builds a query with an equal operator on the id field.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate: c1,
-                      object: c2,
-                    },
-                  ],
-                },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: '=',
-                    args: [ entityVariable, data1 ],
-                  },
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
           id: Equal('https://example.com/data/1'),
         },
-      })).toEqual(query);
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate: c1,
+                object: c2,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: '=',
+              args: [ entityVariable, data1 ],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
     });
 
     it('builds a query with a not operator on a non id field.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate,
-                      object: c1,
-                    },
-                  ],
-                },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: 'notexists',
-                    args: [{
-                      type: 'group',
-                      patterns: [
-                        {
-                          type: 'bgp',
-                          triples: [{
-                            subject: entityVariable,
-                            predicate,
-                            object: c1,
-                          }],
-                        },
-                        {
-                          type: 'filter',
-                          expression: {
-                            type: 'operation',
-                            operator: '=',
-                            args: [
-                              c1,
-                              DataFactory.literal('1', XSD.integer),
-                            ],
-                          },
-                        },
-                      ],
-                    }],
-                  },
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
           'https://example.com/pred': Not(1),
         },
-      })).toEqual(query);
-    });
-
-    it('builds a query with a nested not in operator on a non id field.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
+      )).toEqual({
+        variables: [],
         where: [
           {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate,
-                      object: c1,
-                    },
-                  ],
-                },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: 'notexists',
-                    args: [{
-                      type: 'group',
-                      patterns: [
-                        {
-                          type: 'bgp',
-                          triples: [{
-                            subject: entityVariable,
-                            predicate,
-                            object: c1,
-                          }],
-                        },
-                        {
-                          type: 'filter',
-                          expression: {
-                            type: 'operation',
-                            operator: 'in',
-                            args: [
-                              c1,
-                              [
-                                DataFactory.literal('1', XSD.integer),
-                                DataFactory.literal('2', XSD.integer),
-                              ],
-                            ],
-                          },
-                        },
-                      ],
-                    }],
-                  },
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate,
+                object: c1,
+              },
+            ],
           },
           {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
-          'https://example.com/pred': Not(In([ 1, 2 ])),
-        },
-      })).toEqual(query);
-    });
-
-    it('builds a query with a nested not equal operator on a non id field.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate,
-                      object: c1,
-                    },
-                  ],
-                },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: 'notexists',
-                    args: [{
-                      type: 'group',
-                      patterns: [
-                        {
-                          type: 'bgp',
-                          triples: [{
-                            subject: entityVariable,
-                            predicate,
-                            object: c1,
-                          }],
-                        },
-                        {
-                          type: 'filter',
-                          expression: {
-                            type: 'operation',
-                            operator: '=',
-                            args: [
-                              c1,
-                              DataFactory.literal('1', XSD.integer),
-                            ],
-                          },
-                        },
-                      ],
-                    }],
-                  },
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
-          'https://example.com/pred': Not(Equal(1)),
-        },
-      })).toEqual(query);
-    });
-
-    it('builds a query with an equal operator on a non id field.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate,
-                      object: c1,
-                    },
-                  ],
-                },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: '=',
-                    args: [
-                      c1,
-                      DataFactory.literal('1', XSD.integer),
-                    ],
-                  },
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
-          'https://example.com/pred': Equal(1),
-        },
-      })).toEqual(query);
-    });
-
-    it('builds a query with a gt operator.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate,
-                      object: c1,
-                    },
-                  ],
-                },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: '>',
-                    args: [
-                      c1,
-                      DataFactory.literal('1', XSD.integer),
-                    ],
-                  },
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
-          'https://example.com/pred': GreaterThan(1),
-        },
-      })).toEqual(query);
-    });
-
-    it('builds a query with a gte operator.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate,
-                      object: c1,
-                    },
-                  ],
-                },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: '>=',
-                    args: [
-                      c1,
-                      DataFactory.literal('1', XSD.integer),
-                    ],
-                  },
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
-          'https://example.com/pred': GreaterThanOrEqual(1),
-        },
-      })).toEqual(query);
-    });
-
-    it('builds a query with a lt operator.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate,
-                      object: c1,
-                    },
-                  ],
-                },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: '<',
-                    args: [
-                      c1,
-                      DataFactory.literal('1', XSD.integer),
-                    ],
-                  },
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
-          'https://example.com/pred': LessThan(1),
-        },
-      })).toEqual(query);
-    });
-
-    it('builds a query with a lte operator.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [
-                    {
-                      subject: entityVariable,
-                      predicate,
-                      object: c1,
-                    },
-                  ],
-                },
-                {
-                  type: 'filter',
-                  expression: {
-                    type: 'operation',
-                    operator: '<=',
-                    args: [
-                      c1,
-                      DataFactory.literal('1', XSD.integer),
-                    ],
-                  },
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
-          'https://example.com/pred': LessThanOrEqual(1),
-        },
-      })).toEqual(query);
-    });
-
-    it('builds a query with an inverse operator.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [{
-                type: 'bgp',
-                triples: [
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: 'notexists',
+              args: [{
+                type: 'group',
+                patterns: [
                   {
-                    subject: entityVariable,
-                    predicate: c1,
-                    object: c2,
+                    type: 'bgp',
+                    triples: [{
+                      subject: entityVariable,
+                      predicate,
+                      object: c1,
+                    }],
+                  },
+                  {
+                    type: 'filter',
+                    expression: {
+                      type: 'operation',
+                      operator: '=',
+                      args: [
+                        c1,
+                        DataFactory.literal('1', XSD.integer),
+                      ],
+                    },
                   },
                 ],
               }],
-            }],
+            },
           },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
+    });
+
+    it('builds a query with a nested not in operator on a non id field.', (): void => {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
+          'https://example.com/pred': Not(In([ 1, 2 ])),
+        },
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate,
+                object: c1,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: 'notexists',
+              args: [{
+                type: 'group',
+                patterns: [
+                  {
+                    type: 'bgp',
+                    triples: [{
+                      subject: entityVariable,
+                      predicate,
+                      object: c1,
+                    }],
+                  },
+                  {
+                    type: 'filter',
+                    expression: {
+                      type: 'operation',
+                      operator: 'in',
+                      args: [
+                        c1,
+                        [
+                          DataFactory.literal('1', XSD.integer),
+                          DataFactory.literal('2', XSD.integer),
+                        ],
+                      ],
+                    },
+                  },
+                ],
+              }],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
+    });
+
+    it('builds a query with a nested not equal operator on a non id field.', (): void => {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
+          'https://example.com/pred': Not(Equal(1)),
+        },
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate,
+                object: c1,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: 'notexists',
+              args: [{
+                type: 'group',
+                patterns: [
+                  {
+                    type: 'bgp',
+                    triples: [{
+                      subject: entityVariable,
+                      predicate,
+                      object: c1,
+                    }],
+                  },
+                  {
+                    type: 'filter',
+                    expression: {
+                      type: 'operation',
+                      operator: '=',
+                      args: [
+                        c1,
+                        DataFactory.literal('1', XSD.integer),
+                      ],
+                    },
+                  },
+                ],
+              }],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
+    });
+
+    it('builds a query with an equal operator on a non id field.', (): void => {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
+          'https://example.com/pred': Equal(1),
+        },
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate,
+                object: c1,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: '=',
+              args: [
+                c1,
+                DataFactory.literal('1', XSD.integer),
+              ],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
+    });
+
+    it('builds a query with a gt operator.', (): void => {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
+          'https://example.com/pred': GreaterThan(1),
+        },
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate,
+                object: c1,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: '>',
+              args: [
+                c1,
+                DataFactory.literal('1', XSD.integer),
+              ],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
+    });
+
+    it('builds a query with a gte operator.', (): void => {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
+          'https://example.com/pred': GreaterThanOrEqual(1),
+        },
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate,
+                object: c1,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: '>=',
+              args: [
+                c1,
+                DataFactory.literal('1', XSD.integer),
+              ],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
+    });
+
+    it('builds a query with a lt operator.', (): void => {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
+          'https://example.com/pred': LessThan(1),
+        },
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate,
+                object: c1,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: '<',
+              args: [
+                c1,
+                DataFactory.literal('1', XSD.integer),
+              ],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
+    });
+
+    it('builds a query with a lte operator.', (): void => {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
+          'https://example.com/pred': LessThanOrEqual(1),
+        },
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate,
+                object: c1,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: '<=',
+              args: [
+                c1,
+                DataFactory.literal('1', XSD.integer),
+              ],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
+    });
+
+    it('builds a query with an inverse operator.', (): void => {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
+          'https://example.com/pred': Inverse(1),
+        },
+      )).toEqual({
+        variables: [],
+        where: [{
+          type: 'bgp',
+          triples: [
+            {
+              subject: entityVariable,
+              predicate: c1,
+              object: c2,
+            },
+          ],
+        }],
+        orders: [],
+        graphWhere: [
           {
             type: 'bgp',
             triples: [
@@ -1440,321 +950,169 @@ describe('A SparqlQueryBuilder', (): void => {
               },
             ],
           },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
         ],
-      };
-      expect(builder.buildEntityQuery({
-        where: {
-          'https://example.com/pred': Inverse(1),
-        },
-      })).toEqual(query);
+      });
     });
 
     it('throws an error if there is an unsupported operation on a non id field.', (): void => {
       expect((): void => {
-        builder.buildEntityQuery({
-          where: {
+        builder.buildPatternsFromQueryOptions(
+          entityVariable,
+          {
             'https://example.com/pred': {
               type: 'operator',
               operator: 'and',
             },
           },
-        });
+        );
       }).toThrow('Unsupported operator "and"');
     });
 
     it('throws an error if there is an unsupported operation on the id field.', (): void => {
       expect((): void => {
-        builder.buildEntityQuery({
-          where: {
+        builder.buildPatternsFromQueryOptions(
+          entityVariable,
+          {
             id: {
               type: 'operator',
               operator: 'and' as any,
             } as FindOperator<string>,
           },
-        });
+        );
       }).toThrow('Unsupported operator "and"');
     });
 
     it('throws an error if there is an unsupported operation as an argument to a Not operator.', (): void => {
       expect((): void => {
-        builder.buildEntityQuery({
-          where: {
+        builder.buildPatternsFromQueryOptions(
+          entityVariable,
+          {
             'https://example.com/pred': Not({
               type: 'operator',
               operator: 'and',
             }),
           },
-        });
+        );
       }).toThrow('Unsupported Not sub operator "and"');
     });
 
     it('throws an error if there is an unsupported operation as an argument to a Not operator on the id field.',
       (): void => {
         expect((): void => {
-          builder.buildEntityQuery({
-            where: {
+          builder.buildPatternsFromQueryOptions(
+            entityVariable,
+            {
               id: Not({
                 type: 'operator',
                 operator: 'and',
               }) as unknown as FindOperator<string>,
             },
-          });
+          );
         }).toThrow('Unsupported Not sub operator "and"');
       });
 
     it('builds a query with a with an order.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        undefined,
+        {
+          'https://example.com/pred': 'desc',
+        },
+      )).toEqual({
+        variables: [],
         where: [
           {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [{
-                    subject: entityVariable,
-                    predicate: c1,
-                    object: c2,
-                  }],
-                },
-                {
-                  type: 'optional',
-                  patterns: [{
-                    type: 'bgp',
-                    triples: [{
-                      subject: entityVariable,
-                      predicate,
-                      object: c3,
-                    }],
-                  }],
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: [{
-                expression: c3,
-                descending: true,
-              }],
+            type: 'bgp',
+            triples: [{
+              subject: entityVariable,
+              predicate: c1,
+              object: c2,
             }],
           },
           {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
+            type: 'optional',
+            patterns: [{
+              type: 'bgp',
+              triples: [{
+                subject: entityVariable,
+                predicate,
+                object: c3,
+              }],
+            }],
           },
         ],
-      };
-      expect(builder.buildEntityQuery({
-        order: {
-          'https://example.com/pred': 'desc',
-        },
-      })).toEqual(query);
+        orders: [{
+          expression: c3,
+          descending: true,
+        }],
+        graphWhere: [],
+      });
     });
 
     it('builds a query with a with an order on id.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: graphPattern,
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        undefined,
+        { id: 'desc' },
+      )).toEqual({
+        variables: [],
         where: [
           {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [{
-                    subject: entityVariable,
-                    predicate: c1,
-                    object: c2,
-                  }],
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: [{
-                expression: entityVariable,
-                descending: true,
-              }],
+            type: 'bgp',
+            triples: [{
+              subject: entityVariable,
+              predicate: c1,
+              object: c2,
             }],
           },
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{ type: 'bgp', triples: graphPattern }],
-          },
         ],
-      };
-      expect(builder.buildEntityQuery({
-        order: { id: 'desc' },
-      })).toEqual(query);
+        orders: [{
+          expression: entityVariable,
+          descending: true,
+        }],
+        graphWhere: [],
+      });
     });
 
-    it('builds a query with a nested select clause.', (): void => {
-      const selectPattern = [
-        { subject: entityVariable, predicate, object: c3 },
-        { subject: c3, predicate: predicate2, object: c4 },
-      ];
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: selectPattern,
-        where: [
-          {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{
-              type: 'optional',
-              patterns: [{ type: 'bgp', triples: selectPattern }],
-            }],
-          },
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [{
-                type: 'bgp',
-                triples: [{
-                  subject: entityVariable,
-                  predicate: c1,
-                  object: c2,
-                }],
-              }],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        select: {
+    it('builds a query with selected relations.', (): void => {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        undefined,
+        undefined,
+        {
           'https://example.com/pred': {
             'https://example.com/pred2': true,
           },
         },
-      })).toEqual(query);
-    });
-
-    it('builds a query with an array of selections.', (): void => {
-      const selectPattern = [
-        { subject: entityVariable, predicate, object: c3 },
-        { subject: entityVariable, predicate: predicate2, object: c4 },
-      ];
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: selectPattern,
+      )).toEqual({
+        variables: [ c3, c4 ],
         where: [
           {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{
-              type: 'optional',
-              patterns: [{ type: 'bgp', triples: selectPattern }],
+            type: 'bgp',
+            triples: [{
+              subject: entityVariable,
+              predicate: c1,
+              object: c2,
             }],
           },
           {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable ],
-              where: [{
-                type: 'bgp',
-                triples: [{
-                  subject: entityVariable,
-                  predicate: c1,
-                  object: c2,
-                }],
-              }],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
-          },
-        ],
-      };
-      expect(builder.buildEntityQuery({
-        select: [
-          'https://example.com/pred',
-          'https://example.com/pred2',
-        ],
-      })).toEqual(query);
-    });
-
-    it('builds a query with selected relations.', (): void => {
-      const query = {
-        type: 'query',
-        queryType: 'CONSTRUCT',
-        prefixes: {},
-        template: [
-          { subject: subjectNode, predicate: predicateNode, object: objectNode },
-          { subject: c5, predicate: c6, object: c7 },
-          { subject: c8, predicate: c9, object: c10 },
-        ],
-        where: [
-          {
-            type: 'group',
-            patterns: [{
-              type: 'query',
-              prefixes: {},
-              queryType: 'SELECT',
-              variables: [ entityVariable, c3, c4 ],
-              where: [
-                {
-                  type: 'bgp',
-                  triples: [{
+            type: 'optional',
+            patterns: [
+              {
+                triples: [
+                  {
                     subject: entityVariable,
-                    predicate: c1,
-                    object: c2,
-                  }],
-                },
-                {
-                  type: 'optional',
-                  patterns: [
-                    {
-                      triples: [
-                        {
-                          subject: entityVariable,
-                          predicate,
-                          object: c3,
-                        },
-                      ],
-                      type: 'bgp',
-                    },
-                  ],
-                },
-              ],
-              limit: undefined,
-              offset: undefined,
-              order: undefined,
-            }],
+                    predicate,
+                    object: c3,
+                  },
+                ],
+                type: 'bgp',
+              },
+            ],
           },
+        ],
+        orders: [],
+        graphWhere: [
           {
             patterns: [
               {
@@ -1770,67 +1128,109 @@ describe('A SparqlQueryBuilder', (): void => {
             ],
             type: 'optional',
           },
+        ],
+      });
+    });
+  });
+
+  describe('#buildConstructFromEntitySelectQuery', (): void => {
+    it('builds a construct query without a select clause.', (): void => {
+      const foo = DataFactory.variable('foo');
+      const selectPattern = [
+        { subject: subjectNode, predicate: predicateNode, object: objectNode },
+        { subject: c1, predicate: c2, object: c3 },
+      ];
+      expect(builder.buildConstructFromEntitySelectQuery(
+        [],
+        [ foo ],
+      )).toEqual({
+        type: 'query',
+        prefixes: {},
+        queryType: 'CONSTRUCT',
+        template: selectPattern,
+        where: [
           {
             type: 'graph',
             name: entityVariable,
             patterns: [{
               type: 'bgp',
-              triples: [
-                { subject: subjectNode, predicate: predicateNode, object: objectNode },
-              ],
+              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
             }],
           },
           {
             type: 'optional',
-            patterns: [
-              {
-                type: 'graph',
-                name: c3,
-                patterns: [
-                  {
-                    type: 'bgp',
-                    triples: [
-                      {
-                        subject: c5,
-                        predicate: c6,
-                        object: c7,
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: 'optional',
-            patterns: [
-              {
-                type: 'graph',
-                name: c4,
-                patterns: [
-                  {
-                    type: 'bgp',
-                    triples: [
-                      {
-                        subject: c8,
-                        predicate: c9,
-                        object: c10,
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
+            patterns: [{
+              type: 'graph',
+              name: foo,
+              patterns: [{
+                type: 'bgp',
+                triples: [{ subject: c1, predicate: c2, object: c3 }],
+              }],
+            }],
           },
         ],
-      };
-      expect(builder.buildEntityQuery({
-        relations: {
+      });
+    });
+
+    it('builds a construct query with a select clause.', (): void => {
+      const selectPattern = [
+        { subject: entityVariable, predicate, object: c1 },
+        { subject: c1, predicate: predicate2, object: c2 },
+      ];
+      expect(builder.buildConstructFromEntitySelectQuery(
+        [],
+        [],
+        {
           'https://example.com/pred': {
             'https://example.com/pred2': true,
           },
         },
-      })).toEqual(query);
+      )).toEqual({
+        type: 'query',
+        prefixes: {},
+        queryType: 'CONSTRUCT',
+        template: selectPattern,
+        where: [
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{
+              type: 'optional',
+              patterns: [{ type: 'bgp', triples: selectPattern }],
+            }],
+          },
+        ],
+      });
+    });
+
+    it('builds a query with an array of selections.', (): void => {
+      const selectPattern = [
+        { subject: entityVariable, predicate, object: c1 },
+        { subject: entityVariable, predicate: predicate2, object: c2 },
+      ];
+      expect(builder.buildConstructFromEntitySelectQuery(
+        [],
+        [],
+        [
+          'https://example.com/pred',
+          'https://example.com/pred2',
+        ],
+      )).toEqual({
+        type: 'query',
+        prefixes: {},
+        queryType: 'CONSTRUCT',
+        template: selectPattern,
+        where: [
+          {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{
+              type: 'optional',
+              patterns: [{ type: 'bgp', triples: selectPattern }],
+            }],
+          },
+        ],
+      });
     });
   });
 });
