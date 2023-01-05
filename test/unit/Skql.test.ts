@@ -115,11 +115,18 @@ describe('SKQL', (): void => {
       jest.restoreAllMocks();
     });
 
-    it('delegates calls to query to the query adapter.', async(): Promise<void> => {
-      const executeQuerySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'executeRawQuery');
+    it('delegates calls to executeRawQuery to the query adapter.', async(): Promise<void> => {
+      const executeRawQuerySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'executeRawQuery');
       await expect(skql.executeRawQuery('')).resolves.toEqual([]);
-      expect(executeQuerySpy).toHaveBeenCalledTimes(1);
-      expect(executeQuerySpy).toHaveBeenCalledWith('', undefined);
+      expect(executeRawQuerySpy).toHaveBeenCalledTimes(1);
+      expect(executeRawQuerySpy).toHaveBeenCalledWith('');
+    });
+
+    it('delegates calls to executeRawEntityQuery to the query adapter.', async(): Promise<void> => {
+      const executeRawEntityQuerySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'executeRawEntityQuery');
+      await expect(skql.executeRawEntityQuery('', {})).resolves.toEqual({ '@graph': []});
+      expect(executeRawEntityQuerySpy).toHaveBeenCalledTimes(1);
+      expect(executeRawEntityQuerySpy).toHaveBeenCalledWith('', {});
     });
 
     it('delegates calls to find to the query adapter.', async(): Promise<void> => {

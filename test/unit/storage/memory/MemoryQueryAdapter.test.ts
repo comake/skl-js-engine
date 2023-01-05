@@ -21,7 +21,7 @@ describe('a MemoryQueryAdapter', (): void => {
   });
 
   describe('executeRawQuery', (): void => {
-    it('is not supported.', async(): Promise<void> => {
+    it('is not supported and returns an empty array.', async(): Promise<void> => {
       schemas = [{
         '@id': 'https://skl.standard.storage/data/123',
         '@type': 'https://skl.standard.storage/File',
@@ -30,6 +30,19 @@ describe('a MemoryQueryAdapter', (): void => {
       await expect(
         adapter.executeRawQuery(''),
       ).resolves.toEqual([]);
+    });
+  });
+
+  describe('executeRawEntityQuery', (): void => {
+    it('is not supported and returns an empty GraphObject.', async(): Promise<void> => {
+      schemas = [{
+        '@id': 'https://skl.standard.storage/data/123',
+        '@type': 'https://skl.standard.storage/File',
+      }];
+      adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
+      await expect(
+        adapter.executeRawEntityQuery('', {}),
+      ).resolves.toEqual({ '@graph': []});
     });
   });
 

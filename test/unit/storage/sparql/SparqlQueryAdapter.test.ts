@@ -46,10 +46,55 @@ describe('a SparqlQueryAdapter', (): void => {
   });
 
   describe('executeRawQuery', (): void => {
-    it('executes a sparql construct query and returns an empty array if no triples are found.',
+    it('executes a variable selection and returns an empty array if there are no results.', async(): Promise<void> => {
+      await expect(
+        adapter.executeRawQuery([
+          'SELECT ?modifiedAt ?related',
+          'WHERE {',
+          '  {',
+          '    SELECT ?modifiedAt ?related WHERE {',
+          '     ?entity <http://purl.org/dc/terms/modified> ?modifiedAt',
+          '     ?entity <https://example.com/related> ?related',
+          '    }',
+          '    LIMIT 1',
+          '  }',
+          '}',
+        ].join('\n')),
+      ).resolves.toEqual([]);
+    });
+
+    it('executes a variable selection and returns an array of values.', async(): Promise<void> => {
+      response = [{
+        modifiedAt: DataFactory.literal('2022-10-10T00:00:00.000Z', XSD.dateTime),
+        related: DataFactory.namedNode('https://example.com/data/1'),
+      }];
+      await expect(
+        adapter.executeRawQuery([
+          'SELECT ?modifiedAt ?related',
+          'WHERE {',
+          '  {',
+          '    SELECT ?modifiedAt ?related WHERE {',
+          '     ?entity <http://purl.org/dc/terms/modified> ?modifiedAt',
+          '     ?entity <https://example.com/related> ?related',
+          '    }',
+          '    LIMIT 1',
+          '  }',
+          '}',
+        ].join('\n')),
+      ).resolves.toEqual([
+        {
+          modifiedAt: '2022-10-10T00:00:00.000Z',
+          related: 'https://example.com/data/1',
+        },
+      ]);
+    });
+  });
+
+  describe('executeRawEntityQuery', (): void => {
+    it('executes a sparql construct query and returns an empty GraphObject if no triples are found.',
       async(): Promise<void> => {
         await expect(
-          adapter.executeRawQuery([
+          adapter.executeRawEntityQuery([
             'CONSTRUCT { ?subject ?predicate ?object. }',
             'WHERE {',
             '  {',
@@ -61,7 +106,7 @@ describe('a SparqlQueryAdapter', (): void => {
             '  GRAPH ?entity { ?subject ?predicate ?object. }',
             '}',
           ].join('\n')),
-        ).resolves.toEqual([]);
+        ).resolves.toEqual({ '@graph': []});
         expect(select).toHaveBeenCalledTimes(1);
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
@@ -76,7 +121,7 @@ describe('a SparqlQueryAdapter', (): void => {
           '}',
         ]);
       });
-    it('executes a sparql construct query and returns an array of nodes.',
+    it('executes a sparql construct query and returns GraphObject with an array of Entities.',
       async(): Promise<void> => {
         response = [{
           subject: data1,
@@ -84,7 +129,7 @@ describe('a SparqlQueryAdapter', (): void => {
           object: file,
         }];
         await expect(
-          adapter.executeRawQuery([
+          adapter.executeRawEntityQuery([
             'CONSTRUCT { ?subject ?predicate ?object. }',
             'WHERE {',
             '  {',
@@ -116,32 +161,6 @@ describe('a SparqlQueryAdapter', (): void => {
           '}',
         ]);
       });
-
-    it('executes a variable selection and returns an array of values.', async(): Promise<void> => {
-      response = [{
-        modifiedAt: DataFactory.literal('2022-10-10T00:00:00.000Z', XSD.dateTime),
-        related: DataFactory.namedNode('https://example.com/data/1'),
-      }];
-      await expect(
-        adapter.executeRawQuery([
-          'SELECT ?modifiedAt ?related',
-          'WHERE {',
-          '  {',
-          '    SELECT ?modifiedAt ?related WHERE {',
-          '     ?entity <http://purl.org/dc/terms/modified> ?modifiedAt',
-          '     ?entity <https://example.com/related> ?related',
-          '    }',
-          '    LIMIT 1',
-          '  }',
-          '}',
-        ].join('\n')),
-      ).resolves.toEqual([
-        {
-          modifiedAt: '2022-10-10T00:00:00.000Z',
-          related: 'https://example.com/data/1',
-        },
-      ]);
-    });
   });
 
   describe('count', (): void => {
