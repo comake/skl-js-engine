@@ -1,4 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { ReferenceNodeObject } from '@comake/rmlmapper-js';
+import type { GraphObject } from 'jsonld';
 import type { Frame } from 'jsonld/jsonld-spec';
 import { toJSValueFromDataType } from '../../util/TripleUtil';
 import type { Entity, EntityFieldValue, PossibleArrayFieldValues } from '../../util/Types';
@@ -15,7 +18,7 @@ import type {
   FieldPrimitiveValue,
   ValueObject,
 } from '../FindOptionsTypes';
-import type { EntityOrTArray, QuadOrObject, QueryAdapter } from '../QueryAdapter';
+import type { QueryAdapter, RawQueryResult } from '../QueryAdapter';
 import type { MemoryQueryAdapterOptions } from './MemoryQueryAdapterOptions';
 
 /**
@@ -34,9 +37,14 @@ export class MemoryQueryAdapter implements QueryAdapter {
     this.setTimestamps = options.setTimestamps ?? false;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async executeRawQuery<T extends QuadOrObject>(query: string, frame?: Frame): Promise<EntityOrTArray<T>> {
-    return [] as unknown as EntityOrTArray<T>;
+  public async executeRawQuery<T extends RawQueryResult>(query: string): Promise<T[]> {
+    return [] as T[];
+  }
+
+  public async executeRawEntityQuery(query: string, frame?: Frame): Promise<GraphObject> {
+    return {
+      '@graph': [],
+    };
   }
 
   public async find(options?: FindOneOptions): Promise<Entity | null> {
@@ -256,7 +264,6 @@ export class MemoryQueryAdapter implements QueryAdapter {
     return res !== null;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async count(where?: FindOptionsWhere): Promise<number> {
     return 0;
   }
