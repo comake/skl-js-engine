@@ -13,7 +13,7 @@ describeIf('docker', 'An Skql engine backed by a memory query adapter', (): void
     const env = { TICKETMASTER_APIKEY: process.env.TICKETMASTER_APIKEY! };
     const schemas = await frameAndCombineSchemas(schemaFiles, env);
     const skql = new Skql({ type: 'memory', schemas });
-    const eventsCollection = await skql.do.getEvents({
+    const eventsCollection = await skql.verb.getEvents({
       account: 'https://skl.standard.storage/data/TicketmasterAccount1',
       city: 'Atlanta',
       pageSize: 20,

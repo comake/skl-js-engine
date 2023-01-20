@@ -17,7 +17,7 @@ describe('An Skql engine with user supplied functions', (): void => {
       },
     };
     const skql = new Skql({ type: 'memory', schemas, functions });
-    const response = await skql.do.divide({
+    const response = await skql.verb.divide({
       noun: 'https://skl.standard.storage/Equation',
       numerator: 10,
       denominator: 5,

@@ -324,7 +324,7 @@ describe('SKQL', (): void => {
 
     it('can execute an OpenApiOperationVerb.', async(): Promise<void> => {
       const skql = new Skql({ type: 'memory', schemas });
-      const response = await skql.do.getFile({ account, id: '12345' });
+      const response = await skql.verb.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
@@ -344,7 +344,7 @@ describe('SKQL', (): void => {
           return schemaItem;
         });
         const skql = new Skql({ type: 'memory', schemas });
-        const response = await skql.do.getFile({ account, id: '12345' });
+        const response = await skql.verb.getFile({ account, id: '12345' });
         expect(response).toEqual({ data: mockDropboxFile });
         expect(executeOperation).toHaveBeenCalledTimes(1);
         expect(executeOperation).toHaveBeenCalledWith(
@@ -357,7 +357,7 @@ describe('SKQL', (): void => {
     it('errors if the executed verb is not defined.', async(): Promise<void> => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://skl.standard.storage/getFile');
       const skql = new Skql({ type: 'memory', schemas });
-      await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow(
+      await expect(skql.verb.getFile({ account, id: '12345' })).rejects.toThrow(
         'Failed to find the verb getFile in the schema',
       );
       expect(executeOperation).toHaveBeenCalledTimes(0);
@@ -365,7 +365,7 @@ describe('SKQL', (): void => {
 
     it('errors if the parameters do not conform to the verb parameter schema.', async(): Promise<void> => {
       const skql = new Skql({ type: 'memory', schemas });
-      await expect(skql.do.getFile({ account, ids: [ '12345' ]})).rejects.toThrow(
+      await expect(skql.verb.getFile({ account, ids: [ '12345' ]})).rejects.toThrow(
         'getFile parameters do not conform to the schema',
       );
       expect(executeOperation).toHaveBeenCalledTimes(0);
@@ -378,7 +378,7 @@ describe('SKQL', (): void => {
         }
       });
       const skql = new Skql({ type: 'memory', schemas });
-      await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow(
+      await expect(skql.verb.getFile({ account, id: '12345' })).rejects.toThrow(
         'Return value https://skl.standard.storage/data/abc123 does not conform to the schema',
       );
       expect(executeOperation).toHaveBeenCalledTimes(1);
@@ -392,7 +392,7 @@ describe('SKQL', (): void => {
     it('errors if no mapping for the verb and the integration is in the schema.', async(): Promise<void> => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://skl.standard.storage/data/4');
       const skql = new Skql({ type: 'memory', schemas });
-      await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow([
+      await expect(skql.verb.getFile({ account, id: '12345' })).rejects.toThrow([
         'No schema found with fields matching',
         '{"type":"https://skl.standard.storage/VerbIntegrationMapping","https://skl.standard.storage/verb":"https://skl.standard.storage/getFile","https://skl.standard.storage/integration":"https://skl.standard.storage/integrations/Dropbox"}',
       ].join(' '));
@@ -402,7 +402,7 @@ describe('SKQL', (): void => {
     it('errors if no open api description for the integration is in the schema.', async(): Promise<void> => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://skl.standard.storage/data/DropboxOpenApiDescription');
       const skql = new Skql({ type: 'memory', schemas });
-      await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow([
+      await expect(skql.verb.getFile({ account, id: '12345' })).rejects.toThrow([
         'No schema found with fields matching',
         '{"type":"https://skl.standard.storage/OpenApiDescription","https://skl.standard.storage/integration":"https://skl.standard.storage/integrations/Dropbox"}',
       ].join(' '));
@@ -414,7 +414,7 @@ describe('SKQL', (): void => {
     async(): Promise<void> => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://skl.standard.storage/data/DropboxAccount1SecurityCredentials');
       const skql = new Skql({ type: 'memory', schemas });
-      const response = await skql.do.getFile({ account, id: '12345' });
+      const response = await skql.verb.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
@@ -449,7 +449,7 @@ describe('SKQL', (): void => {
       });
 
       const skql = new Skql({ type: 'memory', schemas });
-      const response = await skql.do.getFile({ account, id: '12345' });
+      const response = await skql.verb.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
@@ -468,7 +468,7 @@ describe('SKQL', (): void => {
       });
 
       const skql = new Skql({ type: 'memory', schemas });
-      await expect(skql.do.getFile({ account, id: '12345' }))
+      await expect(skql.verb.getFile({ account, id: '12345' }))
         .rejects.toThrow('returnTypeSchema is not properly formatted.');
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
@@ -489,7 +489,7 @@ describe('SKQL', (): void => {
         },
       });
       const skql = new Skql({ type: 'memory', schemas });
-      const response = await skql.do.getFile({ account, id: '12345' });
+      const response = await skql.verb.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(2);
       expect(executeOperation).toHaveBeenNthCalledWith(
@@ -534,7 +534,7 @@ describe('SKQL', (): void => {
         },
       });
       const skql = new Skql({ type: 'memory', schemas });
-      const response = await skql.do.getFile({ account, id: '12345' });
+      const response = await skql.verb.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(2);
       expect(executeOperation).toHaveBeenNthCalledWith(
@@ -564,7 +564,7 @@ describe('SKQL', (): void => {
         new AxiosError('Internal Server Error', undefined, undefined, { status: 500 }),
       );
       const skql = new Skql({ type: 'memory', schemas });
-      await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow('Internal Server Error');
+      await expect(skql.verb.getFile({ account, id: '12345' })).rejects.toThrow('Internal Server Error');
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenNthCalledWith(
         1,
@@ -593,7 +593,7 @@ describe('SKQL', (): void => {
 
     it('can execute an OpenApiSecuritySchemeVerb that maps to the authorizationUrl stage.', async(): Promise<void> => {
       const skql = new Skql({ type: 'memory', schemas });
-      await expect(skql.do.authorizeWithPkceOauth({ account })).resolves.toEqual({
+      await expect(skql.verb.authorizeWithPkceOauth({ account })).resolves.toEqual({
         '@type': '@json',
         '@value': response,
       });
@@ -610,8 +610,8 @@ describe('SKQL', (): void => {
     it('errors if the executed verb is not defined.', async(): Promise<void> => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://skl.standard.storage/getFile');
       const skql = new Skql({ type: 'memory', schemas });
-      await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow(Error);
-      await expect(skql.do.getFile({ account, id: '12345' })).rejects.toThrow(
+      await expect(skql.verb.getFile({ account, id: '12345' })).rejects.toThrow(Error);
+      await expect(skql.verb.getFile({ account, id: '12345' })).rejects.toThrow(
         'Failed to find the verb getFile in the schema',
       );
     });
@@ -621,7 +621,7 @@ describe('SKQL', (): void => {
       executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
       const skql = new Skql({ type: 'memory', schemas });
-      const res = await skql.do.getOauthTokens({ account, codeVerifier: 'something', code: 'dummy_code' });
+      const res = await skql.verb.getOauthTokens({ account, codeVerifier: 'something', code: 'dummy_code' });
       expect(res[SKL.accessToken]).toBe('abc123');
       expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
       expect(executeSecuritySchemeStage).toHaveBeenCalledWith(
@@ -646,7 +646,7 @@ describe('SKQL', (): void => {
       executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
       const skql = new Skql({ type: 'memory', schemas });
-      const res = await skql.do.authorizeWithPkceOauth({ account });
+      const res = await skql.verb.authorizeWithPkceOauth({ account });
       expect(res[SKL.accessToken]).toBeUndefined();
       expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
       expect(executeSecuritySchemeStage).toHaveBeenCalledWith(
@@ -668,7 +668,7 @@ describe('SKQL', (): void => {
         executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
         (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
         const skql = new Skql({ type: 'memory', schemas });
-        const res = await skql.do.getOauthTokens({ account: 'https://skl.standard.storage/data/StubhubAccount1' });
+        const res = await skql.verb.getOauthTokens({ account: 'https://skl.standard.storage/data/StubhubAccount1' });
         expect(res[SKL.accessToken]).toBe('abc123');
         expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
         expect(executeSecuritySchemeStage).toHaveBeenCalledWith(
@@ -697,7 +697,7 @@ describe('SKQL', (): void => {
 
     it('can execute a NounMappedVerb.', async(): Promise<void> => {
       const skql = new Skql({ type: 'memory', schemas });
-      const response = await skql.do.sync({
+      const response = await skql.verb.sync({
         noun: 'https://skl.standard.storage/File',
         account,
         id: '12345',
@@ -707,7 +707,7 @@ describe('SKQL', (): void => {
 
     it('can execute a NounMappedVerb with only a mapping.', async(): Promise<void> => {
       const skql = new Skql({ type: 'memory', schemas });
-      const response = await skql.do.getName({
+      const response = await skql.verb.getName({
         noun: 'https://skl.standard.storage/File',
         entity: { [RDFS.label]: 'final.jpg', [SKL.sourceId]: 12345 },
       });
@@ -726,7 +726,7 @@ describe('SKQL', (): void => {
         './test/assets/schemas/json-file-data-source.json',
       ]);
       const skql = new Skql({ type: 'memory', schemas });
-      const response = await skql.do.getFile({
+      const response = await skql.verb.getFile({
         account: 'https://skl.standard.storage/data/JsonSourceAccount1',
         id: '12345',
       });
@@ -761,7 +761,7 @@ describe('SKQL', (): void => {
           }`,
         },
       });
-      const response = await skql.do.getFile({
+      const response = await skql.verb.getFile({
         account: 'https://skl.standard.storage/data/JsonSourceAccount1',
         id: '12345',
       });
@@ -778,7 +778,7 @@ describe('SKQL', (): void => {
         './test/assets/schemas/json-source-data-source.json',
       ]);
       const skql = new Skql({ type: 'memory', schemas, inputFiles: {}});
-      await expect(skql.do.getFile({
+      await expect(skql.verb.getFile({
         account: 'https://skl.standard.storage/data/JsonSourceAccount1',
         id: '12345',
       }))
@@ -798,7 +798,7 @@ describe('SKQL', (): void => {
         return schemaItem;
       });
       const skql = new Skql({ type: 'memory', schemas });
-      await expect(skql.do.getFile({
+      await expect(skql.verb.getFile({
         account: 'https://skl.standard.storage/data/JsonSourceAccount1',
         id: '12345',
       }))
@@ -808,7 +808,7 @@ describe('SKQL', (): void => {
 
   it('throws an error when a noun or account is not supplied with the Verb.', async(): Promise<void> => {
     const skql = new Skql({ type: 'memory', schemas });
-    await expect(skql.do.getName({ entity: { [RDFS.label]: 'final.jpg' }}))
+    await expect(skql.verb.getName({ entity: { [RDFS.label]: 'final.jpg' }}))
       .rejects.toThrow('Verb parameters must include either a noun or an account.');
   });
 
@@ -833,7 +833,7 @@ describe('SKQL', (): void => {
       return schemaItem;
     });
     const skql = new Skql({ type: 'memory', schemas });
-    await expect(skql.do.getFile({ account, id: '12345' }))
+    await expect(skql.verb.getFile({ account, id: '12345' }))
       .rejects.toThrow('Operation not supported.');
   });
 });

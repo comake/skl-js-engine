@@ -35,7 +35,7 @@ describeIf('docker', 'An Skql engine backed by a sparql query adapter', (): void
   });
 
   it('can get events from ticketmaster.', async(): Promise<void> => {
-    const eventsCollection = await skql.do.getEvents({
+    const eventsCollection = await skql.verb.getEvents({
       account: 'https://skl.standard.storage/data/TicketmasterAccount1',
       city: 'Atlanta',
       pageSize: 20,

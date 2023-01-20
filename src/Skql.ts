@@ -51,7 +51,7 @@ export class Skql {
   private readonly mapper: Mapper;
   private readonly adapter: QueryAdapter;
   private readonly inputFiles?: Record<string, string>;
-  public do: VerbInterface;
+  public readonly verb: VerbInterface;
 
   public constructor(options: SkqlOptions) {
     switch (options.type) {
@@ -72,7 +72,7 @@ export class Skql {
     const getVerbHandler = (getTarget: VerbInterface, property: string): VerbHandler =>
       async(verbArgs: JSONObject): Promise<NodeObject> =>
         this.handleVerb(property, verbArgs);
-    this.do = new Proxy({} as VerbInterface, { get: getVerbHandler });
+    this.verb = new Proxy({} as VerbInterface, { get: getVerbHandler });
   }
 
   public async executeRawQuery<T extends RawQueryResult>(query: string): Promise<T[]> {
