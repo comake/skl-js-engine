@@ -17,10 +17,6 @@
     "owl": "http://www.w3.org/2002/07/owl#",
     "skos": "http://www.w3.org/2004/02/skos/core#",
     "skl": "https://skl.standard.storage/",
-    "parameterMapping": {
-      "@id": "skl:parameterMapping",
-      "@type": "@id"
-    },
     "returnValueMapping": {
       "@id": "skl:returnValueMapping",
       "@type": "@id"
@@ -44,7 +40,8 @@
     "rr:termType": { "@type": "@id" },
     "https://skl.standard.storage/data": {
       "@type": "@json"
-    }
+    },
+    "example": "https://example.com/"
   },
   "@graph": [
     {
@@ -100,7 +97,10 @@
             "rr:predicate": "skl:dataSource"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/mappingSubject"
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
       },
       "returnValueMapping": {
         "@type": "rr:TriplesMap",

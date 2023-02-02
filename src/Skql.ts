@@ -45,8 +45,6 @@ export interface OperationResponse {
   data: JSONObject;
 }
 
-const DEFAULT_MAPPING_FRAME = { '@id': SKL.mappingSubject };
-
 export class Skql {
   private readonly mapper: Mapper;
   private readonly adapter: QueryAdapter;
@@ -143,20 +141,20 @@ export class Skql {
     frame?: Record<string, any>,
   ): Promise<NodeObject> {
     const nonReferenceMappings = await this.resolveMappingReferences(mapping);
-    return await this.mapper.apply(args, nonReferenceMappings, frame ?? DEFAULT_MAPPING_FRAME);
+    return await this.mapper.apply(args, nonReferenceMappings, frame ?? {});
   }
 
   public async performMappingAndConvertToJSON(
     args: JSONObject,
     mapping: OrArray<NodeObject>,
-    convertToJsonDeep = true,
     frame?: Record<string, any>,
+    convertToJsonDeep = true,
   ): Promise<JSONObject> {
     const nonReferenceMappings = await this.resolveMappingReferences(mapping);
-    const jsonLd = await this.mapper.applyAndFrameSklProperties(
+    const jsonLd = await this.mapper.apply(
       args,
       nonReferenceMappings,
-      frame ?? DEFAULT_MAPPING_FRAME,
+      frame ?? {},
     );
     return toJSON(jsonLd, convertToJsonDeep);
   }
@@ -278,6 +276,7 @@ export class Skql {
       return await this.performMappingAndConvertToJSON(
         args,
         mapping[SKL.parameterMapping] as OrArray<NodeObject>,
+        getValueIfDefined(mapping[SKL.parameterMappingFrame]),
         convertToJsonDeep,
       );
     }
@@ -315,10 +314,10 @@ export class Skql {
 
   private async handleNounMappingVerb(verb: Entity, args: JSONObject): Promise<NodeObject> {
     const mapping = await this.findVerbNounMapping(verb['@id'], args.noun as string);
-    if (mapping[SKL.mapping]) {
+    if (mapping[SKL.returnValueMapping]) {
       return await this.performMapping(
         args,
-        mapping[SKL.mapping] as OrArray<NodeObject>,
+        mapping[SKL.returnValueMapping] as OrArray<NodeObject>,
         {
           ...getValueIfDefined<JSONObject>(verb[SKL.returnValueFrame]),
           ...getValueIfDefined<JSONObject>(mapping[SKL.returnValueFrame]),

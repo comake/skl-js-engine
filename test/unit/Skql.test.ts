@@ -282,10 +282,24 @@ describe('SKQL', (): void => {
       skql = new Skql({ type: 'memory', schemas });
     });
 
-    it('maps data.', async(): Promise<void> => {
+    it('maps data and converts it to json without a frame.', async(): Promise<void> => {
       const data = { field: 'abc123' };
       const mapping = await expandJsonLd(simpleMapping);
       const response = await skql.performMappingAndConvertToJSON(data, mapping as NodeObject);
+      expect(response).toEqual({
+        'https://example.com/field': 'abc123',
+      });
+    });
+
+    it('maps data and converts it to json with a frame.', async(): Promise<void> => {
+      const data = { field: 'abc123' };
+      const frame = {
+        '@context': {
+          field: 'https://example.com/field',
+        },
+      };
+      const mapping = await expandJsonLd(simpleMapping);
+      const response = await skql.performMappingAndConvertToJSON(data, mapping as NodeObject, frame);
       expect(response).toEqual({
         field: 'abc123',
       });
@@ -293,11 +307,18 @@ describe('SKQL', (): void => {
 
     it('maps data without converting it to json.', async(): Promise<void> => {
       const data = { field: 'abc123' };
+      const frame = {
+        '@context': {
+          field: 'https://example.com/field',
+        },
+      };
       const mapping = await expandJsonLd(simpleMapping);
-      const response = await skql.performMapping(data, mapping as NodeObject);
+      const response = await skql.performMapping(data, mapping as NodeObject, frame);
       expect(response).toEqual({
-        '@id': 'https://skl.standard.storage/mappingSubject',
-        'https://skl.standard.storage/field': 'abc123',
+        '@context': {
+          field: 'https://example.com/field',
+        },
+        field: 'abc123',
       });
     });
   });
@@ -712,7 +733,6 @@ describe('SKQL', (): void => {
         entity: { [RDFS.label]: 'final.jpg', [SKL.sourceId]: 12345 },
       });
       expect(response).toEqual({
-        '@id': 'https://skl.standard.storage/mappingSubject',
         [RDFS.label]: 'final.jpg',
       });
     });

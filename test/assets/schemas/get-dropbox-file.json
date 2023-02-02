@@ -29,7 +29,7 @@
     "skl:noun": { "@type": "@id" },
     "skl:verb": { "@type": "@id" },
     "skl:parameterMapping": { "@type": "@id" },
-    "skl:mapping": { "@type": "@id" },
+    "skl:parameterMappingFrame": { "@type": "@json" },
     "skl:returnValueMapping": { "@type": "@id" },
     "skl:operationMapping": { "@type": "@id" },
     "skl:verbMapping": { "@type": "@id" },
@@ -41,7 +41,8 @@
     "rr:object": { "@type": "@id" },
     "rr:termType": { "@type": "@id" },
     "rr:subject": { "@type": "@id" },
-    "skl:invalidTokenErrorMatcher": { "@type": "@json" }
+    "skl:invalidTokenErrorMatcher": { "@type": "@json" },
+    "example": "https://example.com/"
   },
   "@graph": [
     {
@@ -107,7 +108,10 @@
             "rr:predicate": "skl:operationId"
           }
         ],
-        "rr:subject":  "https://skl.standard.storage/mappingSubject"
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
       },
       "skl:parameterMapping": {
         "@type": "rr:TriplesMap",
@@ -120,7 +124,7 @@
         "rr:predicateObjectMap": [
           {
             "@type": "rr:PredicateObjectMap",
-            "rr:predicate": "skl:path",
+            "rr:predicate": "example:path",
             "rr:objectMap": {
               "@type": "rr:ObjectMap",
               "fnml:functionValue": {
@@ -160,7 +164,15 @@
             }
           }
         ],
-        "rr:subject": "https://skl.standard.storage/mappingSubject"
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
+      },
+      "skl:parameterMappingFrame": {
+        "@context": {
+          "path": "https://example.com/path"
+        }
       },
       "skl:returnValueMapping": {
         "@type": "rr:TriplesMap",
@@ -569,37 +581,10 @@
             "rr:predicate": "skl:verb"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/mappingSubject"
-      },
-      "skl:parameterMapping": {
-        "@type": "rr:TriplesMap",
-        "rml:logicalSource": {
-          "@type": "rml:LogicalSource",
-          "rml:iterator": "$",
-          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-          "rml:source": "input.json"
-        },
-        "rr:subject": "https://skl.standard.storage/mappingSubject",
-        "rr:predicateObjectMap": [
-          {
-            "@type": "rr:PredicateObjectMap",
-            "rr:objectMap": {
-              "@type": "rr:ObjectMap",
-              "rml:reference": "account",
-              "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
-            },
-            "rr:predicate": "skl:account"
-          },
-          {
-            "@type": "rr:PredicateObjectMap",
-            "rr:objectMap": {
-              "@type": "rr:ObjectMap",
-              "rml:reference": "id",
-              "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
-            },
-            "rr:predicate": "skl:id"
-          }
-        ]
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
       }
     },
     {
@@ -641,7 +626,7 @@
       "skl:verb": "https://skl.standard.storage/getName",
       "skl:noun": "https://skl.standard.storage/File",
       "label": "getNameToFile",
-      "skl:mapping": {
+      "skl:returnValueMapping": {
         "@type": "rr:TriplesMap",
         "rml:logicalSource": {
           "@type": "rml:LogicalSource",
@@ -649,7 +634,10 @@
           "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
           "rml:source": "input.json"
         },
-        "rr:subject": "https://skl.standard.storage/mappingSubject",
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        },
         "rr:predicateObjectMap": [
           {
             "@type": "rr:PredicateObjectMap",
@@ -728,7 +716,10 @@
             "rr:predicate": "skl:stage"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/mappingSubject"
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
       }
     },
     {
@@ -813,7 +804,7 @@
               "@type": "rr:ObjectMap",
               "rml:reference": "codeVerifier"
             },
-            "rr:predicate": "skl:code_verifier"
+            "rr:predicate": "example:code_verifier"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -821,7 +812,7 @@
               "@type": "rr:ObjectMap",
               "rml:reference": "code"
             },
-            "rr:predicate": "skl:code"
+            "rr:predicate": "example:code"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -829,7 +820,7 @@
               "@type": "rr:ObjectMap",
               "rml:reference": "refreshToken"
             },
-            "rr:predicate": "skl:refresh_token"
+            "rr:predicate": "example:refresh_token"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -887,10 +878,21 @@
                 ]
               }
             },
-            "rr:predicate": "skl:grant_type"
+            "rr:predicate": "example:grant_type"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/mappingSubject"
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
+      },
+      "skl:parameterMappingFrame": {
+        "@context": {
+          "code_verifier": "https://example.com/code_verifier", 
+          "code": "https://example.com/code", 
+          "refresh_token": "https://example.com/refresh_token", 
+          "grant_type": "https://example.com/grant_type"
+        }
       },
       "skl:operationMapping": {
         "@type": "rr:TriplesMap",
@@ -926,7 +928,10 @@
             "rr:predicate": "skl:stage"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/mappingSubject"
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
       },
       "skl:returnValueMapping": {
         "@type": "rr:TriplesMap",

@@ -30,6 +30,7 @@
     "skl:noun": { "@type": "@id" },
     "skl:verb": { "@type": "@id" },
     "skl:parameterMapping": { "@type": "@id" },
+    "skl:parameterMappingFrame": { "@type": "@json" },
     "skl:returnValueMapping": { "@type": "@id" },
     "skl:operationMapping": { "@type": "@id" },
     "skl:verbMapping": { "@type": "@id" },
@@ -40,7 +41,8 @@
     "rr:predicate": { "@type": "@id" },
     "rr:object": { "@type": "@id" },
     "rr:termType": { "@type": "@id" },
-    "rr:subject": { "@type": "@id" }
+    "rr:subject": { "@type": "@id" },
+    "example": "https://example.com/"
   },
   "@graph": [
     {
@@ -125,7 +127,7 @@
               "@type": "rr:ObjectMap",
               "rr:constant": "read:events"
             },
-            "rr:predicate": "skl:scope"
+            "rr:predicate": "example:scope"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -133,10 +135,19 @@
               "@type": "rr:ObjectMap",
               "rr:constant": "client_credentials"
             },
-            "rr:predicate": "skl:grant_type"
+            "rr:predicate": "example:grant_type"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/mappingSubject"
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
+      },
+      "skl:parameterMappingFrame": {
+        "@context": {
+          "scope": "https://example.com/scope",
+          "grant_type": "https://example.com/grant_type"
+        }
       },
       "skl:operationMapping": {
         "@type": "rr:TriplesMap",
@@ -172,7 +183,10 @@
             "rr:predicate": "skl:stage"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/mappingSubject"
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
       },
       "skl:returnValueMapping": {
         "@type": "rr:TriplesMap",
@@ -298,7 +312,10 @@
             "rr:predicate": "skl:operationId"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/mappingSubject"
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
       },
       "skl:parameterMapping": {
         "@type": "rr:TriplesMap",
@@ -316,7 +333,7 @@
               "rml:reference": "page",
               "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
             },
-            "rr:predicate": "skl:page"
+            "rr:predicate": "event:page"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -325,7 +342,7 @@
               "rml:reference": "pageSize",
               "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
             },
-            "rr:predicate": "skl:page_size"
+            "rr:predicate": "event:page_size"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -333,7 +350,7 @@
               "@type": "rr:ObjectMap",
               "rml:reference": "city"           
             },
-            "rr:predicate": "skl:q"
+            "rr:predicate": "event:q"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -341,10 +358,21 @@
               "@type": "rr:ObjectMap",
               "rr:constant": "start_date"           
             },
-            "rr:predicate": "skl:sort"
+            "rr:predicate": "event:sort"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/mappingSubject"
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
+      },
+      "skl:parameterMappingFrame": {
+        "@context": {
+          "page": "https://example.com/page", 
+          "page_size": "https://example.com/page_size", 
+          "q": "https://example.com/q", 
+          "sort": "https://example.com/sort"
+        }
       },
       "skl:returnValueMapping": [
         {
