@@ -38,7 +38,8 @@
     "rr:object": { "@type": "@id" },
     "rr:termType": { "@type": "@id" },
     "rr:subject": { "@type": "@id" },
-    "skl:invalidTokenErrorMatcher": { "@type": "@json" }
+    "skl:invalidTokenErrorMatcher": { "@type": "@json" },
+    "example": "https://example.com/"
   },
   "@graph": [
     {
@@ -47,11 +48,11 @@
       "label": "divide",
       "skl:parametersContext": {
         "numerator": {
-          "@id": "https://skl.standard.storage/numerator",
+          "@id": "example:numerator",
           "@type": "@id"
         },
         "denominator": {
-          "@id": "https://skl.standard.storage/denominator",
+          "@id": "example:denominator",
           "@type": "@id"
         }
       },
@@ -63,13 +64,13 @@
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
             "shacl:name": "numerator",
-            "shacl:path": "https://skl.standard.storage/numerator"
+            "shacl:path": "example:numerator"
           },
           {
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
             "shacl:name": "denominator",
-            "shacl:path": "https://skl.standard.storage/denominator"
+            "shacl:path": "example:denominator"
           }
         ]
       }
@@ -88,7 +89,10 @@
           "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
           "rml:source": "input.json"
         },
-        "rr:subject": "https://skl.standard.storage/mappingSubject",
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        },
         "rr:predicateObjectMap": [
           {
             "@type": "rr:PredicateObjectMap",
@@ -124,7 +128,7 @@
                 ]
               }
             },
-            "rr:predicate": "skl:answer"
+            "rr:predicate": "example:answer"
           }
         ]
       }

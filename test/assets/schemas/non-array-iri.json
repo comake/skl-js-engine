@@ -19,7 +19,7 @@
     "rr:predicate": { "@type": "@id" },
     "rr:object": { "@type": "@id" },
     "rr:termType": { "@type": "@id" },
-    "skl": "https://skl.standard.storage/"
+    "example": "https://example.com/"
   },
   "@graph": [
     {
@@ -39,12 +39,12 @@
             "rr:termType": "rr:IRI",
             "rr:constant": "https://skl.standard.storage/integrations/Dropbox"
           },
-          "rr:predicate": "skl:integration"
+          "rr:predicate": "example:integration"
         }
       ],
       "rr:subjectMap": {
         "@type": "rr:SubjectMap",
-        "rr:template": "https://skl.standard.storage/mappingSubject"
+        "rr:template": "https://example.com/mappingSubject"
       }
     }
   ]

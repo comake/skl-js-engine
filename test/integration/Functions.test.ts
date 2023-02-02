@@ -22,6 +22,6 @@ describe('An Skql engine with user supplied functions', (): void => {
       numerator: 10,
       denominator: 5,
     });
-    expect(getValueIfDefined(response['https://skl.standard.storage/answer'])).toBe(2);
+    expect(getValueIfDefined(response['https://example.com/answer'])).toBe(2);
   });
 });

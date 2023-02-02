@@ -25,6 +25,10 @@
       "@id": "skl:parameterMapping",
       "@type": "@id"
     },
+    "parameterMappingFrame": {
+      "@id": "skl:parameterMappingFrame",
+      "@type": "@json"
+    },
     "returnValueMapping": {
       "@id": "skl:returnValueMapping",
       "@type": "@id"
@@ -40,7 +44,10 @@
     "rr:predicate": { "@type": "@id" },
     "rr:object": { "@type": "@id" },
     "rr:subject": { "@type": "@id" },
-    "rr:class": { "@type": "@id" }
+    "rr:class": { "@type": "@id" },
+    "rr:termType": { "@type": "@id" },
+    "example": "https://example.com/"
+
   },
   "@graph": [
     {
@@ -169,7 +176,10 @@
             "rr:predicate": "skl:operationId"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/mappingSubject"
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
       },
       "parameterMapping": {
         "@type": "rr:TriplesMap",
@@ -187,7 +197,7 @@
               "rml:reference": "page",
               "rr:datatype": "http://www.w3.org/2001/XMLSchema#integer"
             },
-            "rr:predicate": "skl:page"
+            "rr:predicate": "example:page"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -196,7 +206,7 @@
               "rml:reference": "pageSize",
               "rr:datatype": "http://www.w3.org/2001/XMLSchema#integer"
             },
-            "rr:predicate": "skl:size"
+            "rr:predicate": "example:size"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -204,7 +214,7 @@
               "@type": "rr:ObjectMap",
               "rml:reference": "city"
             },
-            "rr:predicate": "skl:city"
+            "rr:predicate": "example:city"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -213,7 +223,7 @@
               "rml:reference": "startAfterDate",
               "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
             },
-            "rr:predicate": "skl:startDateTime"
+            "rr:predicate": "example:startDateTime"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -222,10 +232,22 @@
               "rml:reference": "startBeforeDate",
               "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
             },
-            "rr:predicate": "skl:endDateTime"
+            "rr:predicate": "example:endDateTime"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/mappingSubject"
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
+      },
+      "parameterMappingFrame": {
+        "@context": {
+          "page": "http://example.com/page",
+          "size": "http://example.com/size",
+          "city": "http://example.com/city",
+          "startDateTime": "http://example.com/startDateTime",
+          "endDateTime": "http://example.com/endDateTime"
+        }
       },
       "returnValueMapping": [
         {
