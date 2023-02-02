@@ -314,10 +314,10 @@ export class Skql {
 
   private async handleNounMappingVerb(verb: Entity, args: JSONObject): Promise<NodeObject> {
     const mapping = await this.findVerbNounMapping(verb['@id'], args.noun as string);
-    if (mapping[SKL.mapping]) {
+    if (mapping[SKL.returnValueMapping]) {
       return await this.performMapping(
         args,
-        mapping[SKL.mapping] as OrArray<NodeObject>,
+        mapping[SKL.returnValueMapping] as OrArray<NodeObject>,
         {
           ...getValueIfDefined<JSONObject>(verb[SKL.returnValueFrame]),
           ...getValueIfDefined<JSONObject>(mapping[SKL.returnValueFrame]),

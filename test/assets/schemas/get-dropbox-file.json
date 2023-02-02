@@ -30,7 +30,6 @@
     "skl:verb": { "@type": "@id" },
     "skl:parameterMapping": { "@type": "@id" },
     "skl:parameterMappingFrame": { "@type": "@json" },
-    "skl:mapping": { "@type": "@id" },
     "skl:returnValueMapping": { "@type": "@id" },
     "skl:operationMapping": { "@type": "@id" },
     "skl:verbMapping": { "@type": "@id" },
@@ -627,7 +626,7 @@
       "skl:verb": "https://skl.standard.storage/getName",
       "skl:noun": "https://skl.standard.storage/File",
       "label": "getNameToFile",
-      "skl:mapping": {
+      "skl:returnValueMapping": {
         "@type": "rr:TriplesMap",
         "rml:logicalSource": {
           "@type": "rml:LogicalSource",

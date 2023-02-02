@@ -29,7 +29,7 @@
     "skl:returnValueFrame": { "@type": "@json" },
     "skl:noun": { "@type": "@id" },
     "skl:verb": { "@type": "@id" },
-    "skl:mapping": { "@type": "@id" },
+    "skl:returnValueMapping": { "@type": "@id" },
     "integration": { "@id": "skl:integration", "@type": "@id" },
     "verb": { "@id": "skl:verb", "@type": "@id" },
     "rml:referenceFormulation": { "@type": "@id" },
@@ -81,7 +81,7 @@
       "skl:verb": "https://skl.standard.storage/divide",
       "skl:noun": "https://skl.standard.storage/Equation",
       "label": "getNameToFile",
-      "skl:mapping": {
+      "skl:returnValueMapping": {
         "@type": "rr:TriplesMap",
         "rml:logicalSource": {
           "@type": "rml:LogicalSource",
