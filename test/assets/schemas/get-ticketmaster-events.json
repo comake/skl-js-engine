@@ -242,11 +242,17 @@
       },
       "parameterMappingFrame": {
         "@context": {
-          "page": "http://example.com/page",
-          "size": "http://example.com/size",
-          "city": "http://example.com/city",
-          "startDateTime": "http://example.com/startDateTime",
-          "endDateTime": "http://example.com/endDateTime"
+          "page": {
+            "@id": "https://example.com/page",
+            "@type": "http://www.w3.org/2001/XMLSchema#integer"
+          },
+          "size": {
+            "@id": "https://example.com/size",
+            "@type": "http://www.w3.org/2001/XMLSchema#integer"
+          },
+          "city": "https://example.com/city",
+          "startDateTime": "https://example.com/startDateTime",
+          "endDateTime": "https://example.com/endDateTime"
         }
       },
       "returnValueMapping": [

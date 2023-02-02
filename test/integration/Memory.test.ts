@@ -1,8 +1,22 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import type { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
 import type { NodeObject } from 'jsonld';
 import { Skql } from '../../src/Skql';
 import { SCHEMA, SKL } from '../../src/util/Vocabularies';
 import { describeIf, frameAndCombineSchemas } from '../util/Util';
+
+let executeOperationSpy: any;
+jest.mock('@comake/openapi-operation-executor', (): any => {
+  const real = jest.requireActual('@comake/openapi-operation-executor');
+  return {
+    ...real,
+    OpenApiOperationExecutor: jest.fn().mockImplementation((): OpenApiOperationExecutor => {
+      const realExecutor = new real.OpenApiOperationExecutor();
+      executeOperationSpy = jest.spyOn(realExecutor, 'executeOperation');
+      return realExecutor;
+    }),
+  };
+});
 
 describeIf('docker', 'An Skql engine backed by a memory query adapter', (): void => {
   it('can get events from ticketmaster.', async(): Promise<void> => {
@@ -18,6 +32,17 @@ describeIf('docker', 'An Skql engine backed by a memory query adapter', (): void
       city: 'Atlanta',
       pageSize: 20,
     });
+    expect(executeOperationSpy).toHaveBeenCalledTimes(1);
+    expect(executeOperationSpy).toHaveBeenCalledWith(
+      'SearchEvents',
+      expect.objectContaining({
+        apiKey: process.env.TICKETMASTER_APIKEY,
+      }),
+      {
+        city: 'Atlanta',
+        size: 20,
+      },
+    );
     expect(eventsCollection[SKL.records]).toBeInstanceOf(Array);
     expect((eventsCollection[SKL.records] as NodeObject[])[0]['@type']).toBe(SCHEMA.Event);
   });
