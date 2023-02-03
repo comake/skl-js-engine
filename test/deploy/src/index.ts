@@ -3,7 +3,7 @@
 no-console,
 @typescript-eslint/naming-convention,
 no-process-env */
-import { Skql, SKL } from '@comake/skql-js-engine';
+import { SKLEngine, SKL } from '@comake/skl-js-engine';
 import { frameAndCombineSchemas } from './Util';
 
 async function run(): Promise<void> {
@@ -13,9 +13,9 @@ async function run(): Promise<void> {
   ];
   const env = { TICKETMASTER_APIKEY: process.env.TICKETMASTER_APIKEY! };
   const schemas = await frameAndCombineSchemas(schemaFiles, env);
-  const skql = new Skql({ type: 'memory', schemas });
-  const eventsCollection = await skql.verb.getEvents({
-    account: 'https://skl.standard.storage/data/TicketmasterAccount1',
+  const engine = new SKLEngine({ type: 'memory', schemas });
+  const eventsCollection = await engine.verb.getEvents({
+    account: 'https://example.com/data/TicketmasterAccount1',
     city: 'Atlanta',
     pageSize: 20,
   });

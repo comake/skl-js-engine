@@ -15,13 +15,15 @@
     "rml": "http://semweb.mmlab.be/ns/rml#",
     "owl": "http://www.w3.org/2002/07/owl#",
     "skos": "http://www.w3.org/2004/02/skos/core#",
+    "dcterms": "http://purl.org/dc/elements/1.1/",
+    "description": "dcterms:description",
     "shacl:class": { "@type": "@id" },
     "shacl:datatype": { "@type": "@id" },
     "shacl:maxCount": { "@type": "xsd:integer" },
     "shacl:minCount": { "@type": "xsd:integer" },
     "shacl:targetClass": { "@type": "@id" },
     "shacl:path": { "@type": "@id" },
-    "skl": "https://skl.standard.storage/",
+    "skl": "https://standardknowledge.com/ontologies/core/",
     "skl:integration": { "@type": "@id" },
     "skl:account": { "@type": "@id" },
     "skl:openApiDescription": { "@type": "@json" },
@@ -30,6 +32,7 @@
     "skl:noun": { "@type": "@id" },
     "skl:verb": { "@type": "@id" },
     "skl:parameterMapping": { "@type": "@id" },
+    "skl:parameterMappingFrame": { "@type": "@json" },
     "skl:returnValueMapping": { "@type": "@id" },
     "skl:operationMapping": { "@type": "@id" },
     "skl:verbMapping": { "@type": "@id" },
@@ -40,51 +43,52 @@
     "rr:predicate": { "@type": "@id" },
     "rr:object": { "@type": "@id" },
     "rr:termType": { "@type": "@id" },
-    "rr:subject": { "@type": "@id" }
+    "rr:subject": { "@type": "@id" },
+    "example": "https://example.com/"
   },
   "@graph": [
     {
       "@id": "schema:Event",
       "@type": ["owl:Class", "shacl:NodeShape"],
-      "rdfs:subClassOf": "https://skl.standard.storage/Noun"
+      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Noun"
     },
     {
-      "@id": "https://skl.standard.storage/data/StubhubAccount1",
-      "@type": "https://skl.standard.storage/Account",
-      "skl:integration": "https://skl.standard.storage/integrations/Stubhub"
+      "@id": "https://example.com/data/StubhubAccount1",
+      "@type": "https://standardknowledge.com/ontologies/core/Account",
+      "skl:integration": "https://example.com/integrations/Stubhub"
     },
     {
-      "@id": "https://skl.standard.storage/integrations/Stubhub",
-      "@type": "https://skl.standard.storage/Integration",
-      "https://skl.standard.storage/description": "StubHub is the world's top destination for ticket buyers and resellers.",
+      "@id": "https://example.com/integrations/Stubhub",
+      "@type": "https://standardknowledge.com/ontologies/core/Integration",
+      "description": "StubHub is the world's top destination for ticket buyers and resellers.",
       "label": "Stubhub"
     },
     {
-      "@id": "https://skl.standard.storage/data/StubhubAccount1SecurityCredentials",
-      "@type": "https://skl.standard.storage/SecurityCredentials",
-      "https://skl.standard.storage/clientId": "adlerfaulkner",
-      "https://skl.standard.storage/clientSecret": "abc123",
-      "https://skl.standard.storage/account": "https://skl.standard.storage/data/StubhubAccount1"
+      "@id": "https://example.com/data/StubhubAccount1SecurityCredentials",
+      "@type": "https://standardknowledge.com/ontologies/core/SecurityCredentials",
+      "https://standardknowledge.com/ontologies/core/clientId": "adlerfaulkner",
+      "https://standardknowledge.com/ontologies/core/clientSecret": "abc123",
+      "https://standardknowledge.com/ontologies/core/account": "https://example.com/data/StubhubAccount1"
     },
     {
-      "@id": "https://skl.standard.storage/getOauthTokens",
-      "@type": "https://skl.standard.storage/OpenApiSecuritySchemeVerb",
+      "@id": "https://example.com/getOauthTokens",
+      "@type": "https://standardknowledge.com/ontologies/core/OpenApiSecuritySchemeVerb",
       "label": "getOauthTokens",
       "skl:parametersContext": {
         "account": {
-          "@id": "https://skl.standard.storage/account",
+          "@id": "https://standardknowledge.com/ontologies/core/account",
           "@type": "@id"
         }
       },
       "skl:parameters": {
         "@type": "shacl:NodeShape",
-        "shacl:targetClass": "https://skl.standard.storage/Parameters",
+        "shacl:targetClass": "https://standardknowledge.com/ontologies/core/Parameters",
         "shacl:property": [
           {
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
             "shacl:name": "account",
-            "shacl:path": "https://skl.standard.storage/account"
+            "shacl:path": "https://standardknowledge.com/ontologies/core/account"
           }
         ]
       },
@@ -96,19 +100,19 @@
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
             "shacl:name": "accessToken",
-            "shacl:path": "https://skl.standard.storage/accessToken"
+            "shacl:path": "https://standardknowledge.com/ontologies/core/accessToken"
           }
         ]
       },
       "skl:returnValueFrame": {
-        "@id": "https://skl.standard.storage/getOauthTokensReturnValueSubject"
+        "@id": "https://example.com/getOauthTokensReturnValueSubject"
       }
     },
     {
-      "@id": "https://skl.standard.storage/data/45",
-      "@type": "https://skl.standard.storage/VerbIntegrationMapping",
-      "integration": "https://skl.standard.storage/integrations/Stubhub",
-      "verb": "https://skl.standard.storage/getOauthTokens",
+      "@id": "https://example.com/data/45",
+      "@type": "https://standardknowledge.com/ontologies/core/VerbIntegrationMapping",
+      "integration": "https://example.com/integrations/Stubhub",
+      "verb": "https://example.com/getOauthTokens",
       "label": "getOauthTokensToStubhub",
       "skl:parameterMapping": {
         "@type": "rr:TriplesMap",
@@ -125,7 +129,7 @@
               "@type": "rr:ObjectMap",
               "rr:constant": "read:events"
             },
-            "rr:predicate": "skl:scope"
+            "rr:predicate": "example:scope"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -133,10 +137,19 @@
               "@type": "rr:ObjectMap",
               "rr:constant": "client_credentials"
             },
-            "rr:predicate": "skl:grant_type"
+            "rr:predicate": "example:grant_type"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/mappingSubject"
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
+      },
+      "skl:parameterMappingFrame": {
+        "@context": {
+          "scope": "https://example.com/scope",
+          "grant_type": "https://example.com/grant_type"
+        }
       },
       "skl:operationMapping": {
         "@type": "rr:TriplesMap",
@@ -172,7 +185,10 @@
             "rr:predicate": "skl:stage"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/mappingSubject"
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
       },
       "skl:returnValueMapping": {
         "@type": "rr:TriplesMap",
@@ -192,93 +208,93 @@
             "rr:predicate": "skl:accessToken"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/getOauthTokensReturnValueSubject"
+        "rr:subject": "https://example.com/getOauthTokensReturnValueSubject"
       }
     },
     {
-      "@id": "https://skl.standard.storage/getEvents",
-      "@type": "https://skl.standard.storage/Verb",
+      "@id": "https://example.com/getEvents",
+      "@type": "https://standardknowledge.com/ontologies/core/Verb",
       "label": "getEvents",
-      "https://skl.standard.storage/parametersContext": {
+      "https://standardknowledge.com/ontologies/core/parametersContext": {
         "city": {
-          "@id": "https://skl.standard.storage/city",
+          "@id": "https://example.comcity",
           "@type": "http://www.w3.org/2001/XMLSchema#string"
         },
         "startAfterdate": {
-          "@id": "https://skl.standard.storage/date",
+          "@id": "https://example.comdate",
           "@type": "http://www.w3.org/2001/XMLSchema#string"
         },
         "startBeforedate": {
-          "@id": "https://skl.standard.storage/date",
+          "@id": "https://example.comdate",
           "@type": "http://www.w3.org/2001/XMLSchema#string"
         },
         "page": {
-          "@id": "https://skl.standard.storage/page",
+          "@id": "https://example.compage",
           "@type": "http://www.w3.org/2001/XMLSchema#integer"
         },
         "pageSize": {
-          "@id": "https://skl.standard.storage/pageSize",
+          "@id": "https://example.compageSize",
           "@type": "http://www.w3.org/2001/XMLSchema#integer"
         },
         "account": {
-          "@id": "https://skl.standard.storage/account",
+          "@id": "https://standardknowledge.com/ontologies/core/account",
           "@type": "@id"
         }
       },
-      "https://skl.standard.storage/parameters": {
+      "https://standardknowledge.com/ontologies/core/parameters": {
         "@type": "shacl:NodeShape",
-        "shacl:targetClass": "https://skl.standard.storage/Parameters",
+        "shacl:targetClass": "https://standardknowledge.com/ontologies/core/Parameters",
         "shacl:property": [
           {
             "shacl:datatype": "xsd:string",
             "shacl:maxCount": 1,
             "shacl:name": "city",
-            "shacl:path": "https://skl.standard.storage/city"
+            "shacl:path": "https://example.comcity"
           },
           {
             "shacl:datatype": "xsd:string",
             "shacl:maxCount": 1,
             "shacl:name": "startAfterDate",
-            "shacl:path": "https://skl.standard.storage/startAfterDate"
+            "shacl:path": "https://example.comstartAfterDate"
           },
           {
             "shacl:datatype": "xsd:string",
             "shacl:maxCount": 1,
             "shacl:name": "startBeforeDate",
-            "shacl:path": "https://skl.standard.storage/startBeforeDate"
+            "shacl:path": "https://example.comstartBeforeDate"
           },
           {
             "shacl:datatype": "xsd:integer",
             "shacl:maxCount": 1,
             "shacl:name": "page",
-            "shacl:path": "https://skl.standard.storage/page"
+            "shacl:path": "https://example.compage"
           },
           {
             "shacl:datatype": "xsd:integer",
             "shacl:maxCount": 1,
             "shacl:name": "pageSize",
-            "shacl:path": "https://skl.standard.storage/pageSize"
+            "shacl:path": "https://example.compageSize"
           },
           {
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
             "shacl:name": "account",
-            "shacl:path": "https://skl.standard.storage/account"
+            "shacl:path": "https://standardknowledge.com/ontologies/core/account"
           }
         ]
       },
-      "https://skl.standard.storage/returnValue": {
-        "@id": "https://skl.standard.storage/TokenPaginatedCollection"
+      "https://standardknowledge.com/ontologies/core/returnValue": {
+        "@id": "https://standardknowledge.com/ontologies/core/TokenPaginatedCollection"
       },
-      "https://skl.standard.storage/returnValueFrame": {
-        "@type": "https://skl.standard.storage/TokenPaginatedCollection"
+      "https://standardknowledge.com/ontologies/core/returnValueFrame": {
+        "@type": "https://standardknowledge.com/ontologies/core/TokenPaginatedCollection"
       }
     },
     {
-      "@id": "https://skl.standard.storage/data/7",
-      "@type": "https://skl.standard.storage/VerbIntegrationMapping",
-      "integration": "https://skl.standard.storage/integrations/Stubhub",
-      "verb": "https://skl.standard.storage/getEvents",
+      "@id": "https://example.com/data/7",
+      "@type": "https://standardknowledge.com/ontologies/core/VerbIntegrationMapping",
+      "integration": "https://example.com/integrations/Stubhub",
+      "verb": "https://example.com/getEvents",
       "name": "getEventsToStubhub",
       "skl:operationMapping": {
         "@type": "rr:TriplesMap",
@@ -298,7 +314,10 @@
             "rr:predicate": "skl:operationId"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/mappingSubject"
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
       },
       "skl:parameterMapping": {
         "@type": "rr:TriplesMap",
@@ -316,7 +335,7 @@
               "rml:reference": "page",
               "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
             },
-            "rr:predicate": "skl:page"
+            "rr:predicate": "event:page"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -325,7 +344,7 @@
               "rml:reference": "pageSize",
               "rr:datatype": "http://www.w3.org/2001/XMLSchema#string"
             },
-            "rr:predicate": "skl:page_size"
+            "rr:predicate": "event:page_size"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -333,7 +352,7 @@
               "@type": "rr:ObjectMap",
               "rml:reference": "city"           
             },
-            "rr:predicate": "skl:q"
+            "rr:predicate": "event:q"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -341,10 +360,21 @@
               "@type": "rr:ObjectMap",
               "rr:constant": "start_date"           
             },
-            "rr:predicate": "skl:sort"
+            "rr:predicate": "event:sort"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/mappingSubject"
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
+      },
+      "skl:parameterMappingFrame": {
+        "@context": {
+          "page": "https://example.com/page", 
+          "page_size": "https://example.com/page_size", 
+          "q": "https://example.com/q", 
+          "sort": "https://example.com/sort"
+        }
       },
       "skl:returnValueMapping": [
         {
@@ -382,7 +412,7 @@
                       "rr:objectMap": {
                         "@type": "rr:ObjectMap",
                         "rr:termType": "rr:IRI",
-                        "rr:constant": "https://skl.standard.storage/integrations/Stubhub"
+                        "rr:constant": "https://example.com/integrations/Stubhub"
                       },
                       "rr:predicate": "skl:integration"
                     },
@@ -430,7 +460,7 @@
                       "@type": "rr:PredicateObjectMap",
                       "rr:objectMap": {
                         "@type": "rr:ObjectMap",
-                        "rr:template": "https://localevents.standard.storage/data/stubhub/venues/{['_embedded'].venue.id}"
+                        "rr:template": "https://example.com/data/stubhub/venues/{['_embedded'].venue.id}"
                       },
                       "rr:predicate": "schema:location"
                     },
@@ -669,7 +699,7 @@
                   ],
                   "rr:subjectMap": {
                     "@type": "rr:SubjectMap",
-                    "rr:template": "https://localevents.standard.storage/data/stubhub/events/{id}",
+                    "rr:template": "https://example.com/data/stubhub/events/{id}",
                     "rr:class": "schema:Event"
                   }
                 }
@@ -702,7 +732,7 @@
                       "rr:objectMap": {
                         "@type": "rr:ObjectMap",
                         "rr:termType": "rr:IRI",
-                        "rr:constant": "https://skl.standard.storage/integrations/Stubhub"
+                        "rr:constant": "https://example.com/integrations/Stubhub"
                       },
                       "rr:predicate": "skl:integration"
                     },
@@ -757,7 +787,7 @@
                   ],
                   "rr:subjectMap": {
                     "@type": "rr:SubjectMap",
-                    "rr:template": "https://localevents.standard.storage/data/stubhub/venues/{id}",
+                    "rr:template": "https://example.com/data/stubhub/venues/{id}",
                     "rr:class": "schema:PostalAddress"
                   }
                 }
@@ -863,14 +893,14 @@
           ],
           "rr:subjectMap": {
             "@type": "rr:SubjectMap",
-            "rr:template": "https://skl.standard.storage/mappingSubject",
-            "rr:class": "https://skl.standard.storage/PaginatedCollection"
+            "rr:termType": "rr:BlankNode",
+            "rr:class": "https://standardknowledge.com/ontologies/core/PaginatedCollection"
           }
         }
       ],
       "returnValueFrame": {
-        "@type": "https://skl.standard.storage/PaginatedCollection",
-        "https://skl.standard.storage/records": {
+        "@type": "https://standardknowledge.com/ontologies/core/PaginatedCollection",
+         "https://standardknowledge.com/ontologies/core/records": {
           "https://schema.org/location": {
             "@embed": "@never"
           }
@@ -878,10 +908,10 @@
       }
     },
     {
-      "@id": "https://skl.standard.storage/data/StubhubOpenApiDescription",
-      "@type": "https://skl.standard.storage/OpenApiDescription",
-      "https://skl.standard.storage/integration": "https://skl.standard.storage/integrations/Stubhub",
-      "https://skl.standard.storage/openApiDescription": {
+      "@id": "https://example.com/data/StubhubOpenApiDescription",
+      "@type": "https://standardknowledge.com/ontologies/core/OpenApiDescription",
+       "https://standardknowledge.com/ontologies/core/integration": "https://example.com/integrations/Stubhub",
+       "https://standardknowledge.com/ontologies/core/openApiDescription": {
         "openapi": "3.0.0",
         "info": {
           "title": "StubHub Catalog API",

@@ -23,8 +23,8 @@ describe('a MemoryQueryAdapter', (): void => {
   describe('executeRawQuery', (): void => {
     it('is not supported and returns an empty array.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
@@ -36,8 +36,8 @@ describe('a MemoryQueryAdapter', (): void => {
   describe('executeRawEntityQuery', (): void => {
     it('is not supported and returns an empty GraphObject.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
@@ -49,14 +49,14 @@ describe('a MemoryQueryAdapter', (): void => {
   describe('find', (): void => {
     it('returns a schema by id.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
         adapter.find({
           where: {
-            id: 'https://skl.standard.storage/data/123',
+            id: 'https://example.com/data/123',
           },
         }),
       ).resolves.toEqual(schemas[0]);
@@ -64,14 +64,14 @@ describe('a MemoryQueryAdapter', (): void => {
 
     it('returns null if not all query fields match.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
         adapter.find({
           where: {
-            id: 'https://skl.standard.storage/data/123',
+            id: 'https://example.com/data/123',
             [RDFS.label]: 'image.jpeg',
           },
         }),
@@ -80,8 +80,8 @@ describe('a MemoryQueryAdapter', (): void => {
 
     it('returns a schema matching all the query fields.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
         [RDFS.label]: 'image.jpeg',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
@@ -97,15 +97,15 @@ describe('a MemoryQueryAdapter', (): void => {
     it('returns a schema matching an array valued query field.', async(): Promise<void> => {
       schemas = [
         {
-          '@id': 'https://skl.standard.storage/data/123',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/123',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
           [RDFS.label]: 'image.jpeg',
         },
         {
-          '@id': 'https://skl.standard.storage/data/124',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/124',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
           [RDFS.label]: 'image.jpeg',
-          'https://skl.standard.storage/rating': [
+          'https://example.com/rating': [
             { '@value': '1', '@type': XSD.integer },
             { '@value': '2', '@type': XSD.integer },
             { '@value': '3', '@type': XSD.integer },
@@ -116,7 +116,7 @@ describe('a MemoryQueryAdapter', (): void => {
       await expect(
         adapter.find({
           where: {
-            'https://skl.standard.storage/rating': [ 1, 2 ],
+            'https://example.com/rating': [ 1, 2 ],
           },
         }),
       ).resolves.toEqual(schemas[1]);
@@ -124,15 +124,15 @@ describe('a MemoryQueryAdapter', (): void => {
 
     it('returns a schema matching an IRI query field.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
-        [SKL.integration]: { '@id': 'https://skl.standard.storage/data/BoxIntegration' },
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
+        [SKL.integration]: { '@id': 'https://example.com/data/BoxIntegration' },
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
         adapter.find({
           where: {
-            [SKL.integration]: 'https://skl.standard.storage/data/BoxIntegration',
+            [SKL.integration]: 'https://example.com/data/BoxIntegration',
           },
         }),
       ).resolves.toEqual(schemas[0]);
@@ -140,8 +140,8 @@ describe('a MemoryQueryAdapter', (): void => {
 
     it('returns the first entity if no where clause is provided.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(adapter.find()).resolves.toEqual(schemas[0]);
@@ -155,13 +155,13 @@ describe('a MemoryQueryAdapter', (): void => {
     it('returns entities matching a nested where clause.', async(): Promise<void> => {
       schemas = [
         {
-          '@id': 'https://skl.standard.storage/data/123',
-          '@type': 'https://skl.standard.storage/File',
-          [SKL.integration]: { '@id': 'https://skl.standard.storage/data/BoxIntegration' },
+          '@id': 'https://example.com/data/123',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
+          [SKL.integration]: { '@id': 'https://example.com/data/BoxIntegration' },
         },
         {
-          '@id': 'https://skl.standard.storage/data/BoxIntegration',
-          '@type': 'https://skl.standard.storage/Integration',
+          '@id': 'https://example.com/data/BoxIntegration',
+          '@type': 'https://standardknowledge.com/ontologies/core/Integration',
           [RDFS.label]: 'Box',
         },
       ];
@@ -169,7 +169,7 @@ describe('a MemoryQueryAdapter', (): void => {
       await expect(
         adapter.find({
           where: {
-            '@type': 'https://skl.standard.storage/File',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
             [SKL.integration]: {
               [RDFS.label]: 'Box',
             },
@@ -182,15 +182,15 @@ describe('a MemoryQueryAdapter', (): void => {
       async(): Promise<void> => {
         schemas = [
           {
-            '@id': 'https://skl.standard.storage/data/123',
-            '@type': 'https://skl.standard.storage/File',
-            [SKL.integration]: { '@id': 'https://skl.standard.storage/data/BoxIntegration' },
+            '@id': 'https://example.com/data/123',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
+            [SKL.integration]: { '@id': 'https://example.com/data/BoxIntegration' },
           },
           {
-            '@id': 'https://skl.standard.storage/data/BoxIntegration',
-            '@type': 'https://skl.standard.storage/Integration',
+            '@id': 'https://example.com/data/BoxIntegration',
+            '@type': 'https://standardknowledge.com/ontologies/core/Integration',
             [RDFS.label]: 'Box',
-            'https://skl.standard.storage/rating': [
+            'https://example.com/rating': [
               { '@value': '1', '@type': XSD.integer },
               { '@value': '2', '@type': XSD.integer },
               { '@value': '3', '@type': XSD.integer },
@@ -201,9 +201,9 @@ describe('a MemoryQueryAdapter', (): void => {
         await expect(
           adapter.find({
             where: {
-              '@type': 'https://skl.standard.storage/File',
+              '@type': 'https://standardknowledge.com/ontologies/core/File',
               [SKL.integration]: {
-                'https://skl.standard.storage/rating': 1,
+                'https://example.com/rating': 1,
               },
             },
           }),
@@ -214,16 +214,16 @@ describe('a MemoryQueryAdapter', (): void => {
       async(): Promise<void> => {
         schemas = [
           {
-            '@id': 'https://skl.standard.storage/data/123',
-            '@type': 'https://skl.standard.storage/File',
+            '@id': 'https://example.com/data/123',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
             [SKL.integration]: [
-              { '@id': 'https://skl.standard.storage/data/BoxIntegration' },
-              { '@id': 'https://skl.standard.storage/data/GoogleDriveIntegration' },
+              { '@id': 'https://example.com/data/BoxIntegration' },
+              { '@id': 'https://example.com/data/GoogleDriveIntegration' },
             ],
           },
           {
-            '@id': 'https://skl.standard.storage/data/BoxIntegration',
-            '@type': 'https://skl.standard.storage/Integration',
+            '@id': 'https://example.com/data/BoxIntegration',
+            '@type': 'https://standardknowledge.com/ontologies/core/Integration',
             [RDFS.label]: 'Box',
           },
         ];
@@ -231,7 +231,7 @@ describe('a MemoryQueryAdapter', (): void => {
         await expect(
           adapter.find({
             where: {
-              '@type': 'https://skl.standard.storage/File',
+              '@type': 'https://standardknowledge.com/ontologies/core/File',
               [SKL.integration]: {
                 [RDFS.label]: 'Box',
               },
@@ -244,16 +244,16 @@ describe('a MemoryQueryAdapter', (): void => {
       async(): Promise<void> => {
         schemas = [
           {
-            '@id': 'https://skl.standard.storage/data/123',
-            '@type': 'https://skl.standard.storage/File',
+            '@id': 'https://example.com/data/123',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
             [SKL.integration]: [
-              { '@id': 'https://skl.standard.storage/data/BoxIntegration' },
-              { '@id': 'https://skl.standard.storage/data/GoogleDriveIntegration' },
+              { '@id': 'https://example.com/data/BoxIntegration' },
+              { '@id': 'https://example.com/data/GoogleDriveIntegration' },
             ],
           },
           {
-            '@id': 'https://skl.standard.storage/data/BoxIntegration',
-            '@type': 'https://skl.standard.storage/Integration',
+            '@id': 'https://example.com/data/BoxIntegration',
+            '@type': 'https://standardknowledge.com/ontologies/core/Integration',
             [RDFS.label]: 'Box',
           },
         ];
@@ -261,7 +261,7 @@ describe('a MemoryQueryAdapter', (): void => {
         await expect(
           adapter.find({
             where: {
-              '@type': 'https://skl.standard.storage/File',
+              '@type': 'https://standardknowledge.com/ontologies/core/File',
               [SKL.integration]: {
                 [RDFS.label]: 'Dropbox',
               },
@@ -273,8 +273,8 @@ describe('a MemoryQueryAdapter', (): void => {
     it('returns entities with a literal value when filtering with an object field value.',
       async(): Promise<void> => {
         schemas = [{
-          '@id': 'https://skl.standard.storage/data/123',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/123',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
           [RDFS.label]: 'image.jpeg',
         }];
         adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
@@ -306,8 +306,8 @@ describe('a MemoryQueryAdapter', (): void => {
     it('does not return entities if the where field includes an object for a field which is not an object.',
       async(): Promise<void> => {
         schemas = [{
-          '@id': 'https://skl.standard.storage/data/123',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/123',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
           [RDFS.label]: 'image.jpeg',
         }];
         adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
@@ -323,20 +323,20 @@ describe('a MemoryQueryAdapter', (): void => {
     it('returns entities with a nested blank node matching a nested object query.',
       async(): Promise<void> => {
         schemas = [{
-          '@id': 'https://skl.standard.storage/data/123',
-          '@type': 'https://skl.standard.storage/File',
-          'https://skl.standard.storage/createdAt': {
+          '@id': 'https://example.com/data/123',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
+          'https://example.com/createdAt': {
             '@id': '_:b',
-            '@type': 'https://skl.standard.storage/DateTime',
-            'https://skl.standard.storage/localTime': '2022-12-02T17:57:04',
+            '@type': 'https://standardknowledge.com/ontologies/core/DateTime',
+            'https://example.com/localTime': '2022-12-02T17:57:04',
           },
         }];
         adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
         await expect(
           adapter.find({
             where: {
-              'https://skl.standard.storage/createdAt': {
-                'https://skl.standard.storage/localTime': '2022-12-02T17:57:04',
+              'https://example.com/createdAt': {
+                'https://example.com/localTime': '2022-12-02T17:57:04',
               },
             },
           }),
@@ -347,26 +347,26 @@ describe('a MemoryQueryAdapter', (): void => {
   describe('findBy', (): void => {
     it('returns a schema by id.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
         adapter.findBy({
-          id: 'https://skl.standard.storage/data/123',
+          id: 'https://example.com/data/123',
         }),
       ).resolves.toEqual(schemas[0]);
     });
 
     it('returns null if not all query fields match.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
         adapter.findBy({
-          id: 'https://skl.standard.storage/data/123',
+          id: 'https://example.com/data/123',
           [RDFS.label]: 'image.jpeg',
         }),
       ).resolves.toBeNull();
@@ -374,8 +374,8 @@ describe('a MemoryQueryAdapter', (): void => {
 
     it('returns a schema matching all the query fields.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
         [RDFS.label]: 'image.jpeg',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
@@ -388,14 +388,14 @@ describe('a MemoryQueryAdapter', (): void => {
 
     it('returns a schema matching an IRI query field.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
-        [SKL.integration]: { '@id': 'https://skl.standard.storage/data/BoxIntegration' },
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
+        [SKL.integration]: { '@id': 'https://example.com/data/BoxIntegration' },
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
         adapter.findBy({
-          [SKL.integration]: 'https://skl.standard.storage/data/BoxIntegration',
+          [SKL.integration]: 'https://example.com/data/BoxIntegration',
         }),
       ).resolves.toEqual(schemas[0]);
     });
@@ -404,14 +404,14 @@ describe('a MemoryQueryAdapter', (): void => {
   describe('findAll', (): void => {
     it('returns an array of one schema by id.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
         adapter.findAll({
           where: {
-            id: 'https://skl.standard.storage/data/123',
+            id: 'https://example.com/data/123',
           },
         }),
       ).resolves.toEqual([ schemas[0] ]);
@@ -419,14 +419,14 @@ describe('a MemoryQueryAdapter', (): void => {
 
     it('returns an empty array if no schema matches the id field.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
         adapter.findAll({
           where: {
-            id: 'https://skl.standard.storage/data/127',
+            id: 'https://example.com/data/127',
           },
         }),
       ).resolves.toEqual([]);
@@ -435,19 +435,19 @@ describe('a MemoryQueryAdapter', (): void => {
     it('returns an array of schema matching all the query fields.', async(): Promise<void> => {
       schemas = [
         {
-          '@id': 'https://skl.standard.storage/data/123',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/123',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
         },
         {
-          '@id': 'https://skl.standard.storage/data/124',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/124',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
         },
       ];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
         adapter.findAll({
           where: {
-            type: 'https://skl.standard.storage/File',
+            type: 'https://standardknowledge.com/ontologies/core/File',
           },
         }),
       ).resolves.toEqual([ schemas[0], schemas[1] ]);
@@ -457,25 +457,25 @@ describe('a MemoryQueryAdapter', (): void => {
       async(): Promise<void> => {
         schemas = [
           {
-            '@id': 'https://skl.standard.storage/data/123',
-            '@type': 'https://skl.standard.storage/File',
+            '@id': 'https://example.com/data/123',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
           },
           {
-            '@id': 'https://skl.standard.storage/data/124',
-            '@type': 'https://skl.standard.storage/Article',
+            '@id': 'https://example.com/data/124',
+            '@type': 'https://standardknowledge.com/ontologies/core/Article',
           },
           {
-            '@id': 'https://skl.standard.storage/File',
+            '@id': 'https://standardknowledge.com/ontologies/core/File',
             '@type': OWL.class,
             [RDFS.subClassOf]: [
-              { '@id': 'https://skl.standard.storage/Noun' },
+              { '@id': 'https://standardknowledge.com/ontologies/core/Noun' },
             ],
           },
           {
-            '@id': 'https://skl.standard.storage/Article',
+            '@id': 'https://standardknowledge.com/ontologies/core/Article',
             '@type': OWL.class,
             [RDFS.subClassOf]: [
-              { '@id': 'https://skl.standard.storage/Noun' },
+              { '@id': 'https://standardknowledge.com/ontologies/core/Noun' },
             ],
           },
         ];
@@ -483,7 +483,7 @@ describe('a MemoryQueryAdapter', (): void => {
         await expect(
           adapter.findAll({
             where: {
-              type: 'https://skl.standard.storage/Noun',
+              type: 'https://standardknowledge.com/ontologies/core/Noun',
             },
           }),
         ).resolves.toEqual([ schemas[0], schemas[1] ]);
@@ -491,8 +491,8 @@ describe('a MemoryQueryAdapter', (): void => {
 
     it('returns the all entities if no where clause is provided.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(adapter.findAll()).resolves.toEqual(schemas);
@@ -502,12 +502,12 @@ describe('a MemoryQueryAdapter', (): void => {
       async(): Promise<void> => {
         schemas = [
           {
-            '@id': 'https://skl.standard.storage/data/123',
-            '@type': 'https://skl.standard.storage/File',
+            '@id': 'https://example.com/data/123',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
           },
           {
-            '@id': 'https://skl.standard.storage/data/124',
-            '@type': 'https://skl.standard.storage/File',
+            '@id': 'https://example.com/data/124',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
           },
         ];
         adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
@@ -523,12 +523,12 @@ describe('a MemoryQueryAdapter', (): void => {
       async(): Promise<void> => {
         schemas = [
           {
-            '@id': 'https://skl.standard.storage/data/123',
-            '@type': 'https://skl.standard.storage/File',
+            '@id': 'https://example.com/data/123',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
           },
           {
-            '@id': 'https://skl.standard.storage/data/124',
-            '@type': 'https://skl.standard.storage/File',
+            '@id': 'https://example.com/data/124',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
           },
         ];
         adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
@@ -544,16 +544,16 @@ describe('a MemoryQueryAdapter', (): void => {
       async(): Promise<void> => {
         schemas = [
           {
-            '@id': 'https://skl.standard.storage/data/123',
-            '@type': 'https://skl.standard.storage/File',
+            '@id': 'https://example.com/data/123',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
           },
           {
-            '@id': 'https://skl.standard.storage/data/124',
-            '@type': 'https://skl.standard.storage/File',
+            '@id': 'https://example.com/data/124',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
           },
           {
-            '@id': 'https://skl.standard.storage/data/125',
-            '@type': 'https://skl.standard.storage/File',
+            '@id': 'https://example.com/data/125',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
           },
         ];
         adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
@@ -569,12 +569,12 @@ describe('a MemoryQueryAdapter', (): void => {
     it('returns entities matching an in operator.', async(): Promise<void> => {
       schemas = [
         {
-          '@id': 'https://skl.standard.storage/data/1',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/1',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
         },
         {
-          '@id': 'https://skl.standard.storage/data/2',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/2',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
           [RDFS.label]: 'image.jpeg',
         },
       ];
@@ -589,12 +589,12 @@ describe('a MemoryQueryAdapter', (): void => {
     it('returns entities matching a not operator.', async(): Promise<void> => {
       schemas = [
         {
-          '@id': 'https://skl.standard.storage/data/1',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/1',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
         },
         {
-          '@id': 'https://skl.standard.storage/data/2',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/2',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
           [RDFS.label]: 'image.jpeg',
         },
       ];
@@ -609,12 +609,12 @@ describe('a MemoryQueryAdapter', (): void => {
     it('returns entities matching a nested not in operator.', async(): Promise<void> => {
       schemas = [
         {
-          '@id': 'https://skl.standard.storage/data/1',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/1',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
         },
         {
-          '@id': 'https://skl.standard.storage/data/2',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/2',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
           [RDFS.label]: 'image.jpeg',
         },
       ];
@@ -629,12 +629,12 @@ describe('a MemoryQueryAdapter', (): void => {
     it('returns entities matching a nested not equal operator.', async(): Promise<void> => {
       schemas = [
         {
-          '@id': 'https://skl.standard.storage/data/1',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/1',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
         },
         {
-          '@id': 'https://skl.standard.storage/data/2',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/2',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
           [RDFS.label]: 'image.jpeg',
         },
       ];
@@ -649,12 +649,12 @@ describe('a MemoryQueryAdapter', (): void => {
     it('returns entities matching an equal operator.', async(): Promise<void> => {
       schemas = [
         {
-          '@id': 'https://skl.standard.storage/data/1',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/1',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
         },
         {
-          '@id': 'https://skl.standard.storage/data/2',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/2',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
           [RDFS.label]: 'image.jpeg',
         },
       ];
@@ -668,8 +668,8 @@ describe('a MemoryQueryAdapter', (): void => {
 
     it('throws an error if there is an unsupported operation.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/1',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/1',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
@@ -688,9 +688,9 @@ describe('a MemoryQueryAdapter', (): void => {
     it('does not support the gt operator.', async(): Promise<void> => {
       schemas = [
         {
-          '@id': 'https://skl.standard.storage/data/2',
-          '@type': 'https://skl.standard.storage/File',
-          'https://skl.standard.storage/rating': [
+          '@id': 'https://example.com/data/2',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
+          'https://example.com/rating': [
             { '@value': '3', '@type': XSD.integer },
           ],
         },
@@ -698,7 +698,7 @@ describe('a MemoryQueryAdapter', (): void => {
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(adapter.findAll({
         where: {
-          'https://skl.standard.storage/rating': GreaterThan(1),
+          'https://example.com/rating': GreaterThan(1),
         },
       })).resolves.toEqual([]);
     });
@@ -706,9 +706,9 @@ describe('a MemoryQueryAdapter', (): void => {
     it('does not support the gte operator.', async(): Promise<void> => {
       schemas = [
         {
-          '@id': 'https://skl.standard.storage/data/2',
-          '@type': 'https://skl.standard.storage/File',
-          'https://skl.standard.storage/rating': [
+          '@id': 'https://example.com/data/2',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
+          'https://example.com/rating': [
             { '@value': '3', '@type': XSD.integer },
           ],
         },
@@ -716,7 +716,7 @@ describe('a MemoryQueryAdapter', (): void => {
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(adapter.findAll({
         where: {
-          'https://skl.standard.storage/rating': GreaterThanOrEqual(1),
+          'https://example.com/rating': GreaterThanOrEqual(1),
         },
       })).resolves.toEqual([]);
     });
@@ -724,9 +724,9 @@ describe('a MemoryQueryAdapter', (): void => {
     it('does not support the lt operator.', async(): Promise<void> => {
       schemas = [
         {
-          '@id': 'https://skl.standard.storage/data/2',
-          '@type': 'https://skl.standard.storage/File',
-          'https://skl.standard.storage/rating': [
+          '@id': 'https://example.com/data/2',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
+          'https://example.com/rating': [
             { '@value': '2', '@type': XSD.integer },
           ],
         },
@@ -734,7 +734,7 @@ describe('a MemoryQueryAdapter', (): void => {
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(adapter.findAll({
         where: {
-          'https://skl.standard.storage/rating': LessThan(3),
+          'https://example.com/rating': LessThan(3),
         },
       })).resolves.toEqual([]);
     });
@@ -742,9 +742,9 @@ describe('a MemoryQueryAdapter', (): void => {
     it('does not support the lte operator.', async(): Promise<void> => {
       schemas = [
         {
-          '@id': 'https://skl.standard.storage/data/2',
-          '@type': 'https://skl.standard.storage/File',
-          'https://skl.standard.storage/rating': [
+          '@id': 'https://example.com/data/2',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
+          'https://example.com/rating': [
             { '@value': '2', '@type': XSD.integer },
           ],
         },
@@ -752,7 +752,7 @@ describe('a MemoryQueryAdapter', (): void => {
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(adapter.findAll({
         where: {
-          'https://skl.standard.storage/rating': LessThanOrEqual(3),
+          'https://example.com/rating': LessThanOrEqual(3),
         },
       })).resolves.toEqual([]);
     });
@@ -760,9 +760,9 @@ describe('a MemoryQueryAdapter', (): void => {
     it('does not support the inverse operator.', async(): Promise<void> => {
       schemas = [
         {
-          '@id': 'https://skl.standard.storage/data/2',
-          '@type': 'https://skl.standard.storage/File',
-          'https://skl.standard.storage/rating': [
+          '@id': 'https://example.com/data/2',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
+          'https://example.com/rating': [
             { '@value': '2', '@type': XSD.integer },
           ],
         },
@@ -770,7 +770,7 @@ describe('a MemoryQueryAdapter', (): void => {
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(adapter.findAll({
         where: {
-          'https://skl.standard.storage/rating': Inverse(2),
+          'https://example.com/rating': Inverse(2),
         },
       })).resolves.toEqual([]);
     });
@@ -779,26 +779,26 @@ describe('a MemoryQueryAdapter', (): void => {
   describe('findAllBy', (): void => {
     it('returns an array of one schema by id.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
         adapter.findAllBy({
-          id: 'https://skl.standard.storage/data/123',
+          id: 'https://example.com/data/123',
         }),
       ).resolves.toEqual([ schemas[0] ]);
     });
 
     it('returns an empty array if no schema matches the id field.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
         adapter.findAllBy({
-          id: 'https://skl.standard.storage/data/127',
+          id: 'https://example.com/data/127',
         }),
       ).resolves.toEqual([]);
     });
@@ -806,18 +806,18 @@ describe('a MemoryQueryAdapter', (): void => {
     it('returns an array of schema matching all the query fields.', async(): Promise<void> => {
       schemas = [
         {
-          '@id': 'https://skl.standard.storage/data/123',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/123',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
         },
         {
-          '@id': 'https://skl.standard.storage/data/124',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/124',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
         },
       ];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
         adapter.findAllBy({
-          type: 'https://skl.standard.storage/File',
+          type: 'https://standardknowledge.com/ontologies/core/File',
         }),
       ).resolves.toEqual([ schemas[0], schemas[1] ]);
     });
@@ -826,32 +826,32 @@ describe('a MemoryQueryAdapter', (): void => {
       async(): Promise<void> => {
         schemas = [
           {
-            '@id': 'https://skl.standard.storage/data/123',
-            '@type': 'https://skl.standard.storage/File',
+            '@id': 'https://example.com/data/123',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
           },
           {
-            '@id': 'https://skl.standard.storage/data/124',
-            '@type': 'https://skl.standard.storage/Article',
+            '@id': 'https://example.com/data/124',
+            '@type': 'https://standardknowledge.com/ontologies/core/Article',
           },
           {
-            '@id': 'https://skl.standard.storage/File',
+            '@id': 'https://standardknowledge.com/ontologies/core/File',
             '@type': OWL.class,
             [RDFS.subClassOf]: [
-              { '@id': 'https://skl.standard.storage/Noun' },
+              { '@id': 'https://standardknowledge.com/ontologies/core/Noun' },
             ],
           },
           {
-            '@id': 'https://skl.standard.storage/Article',
+            '@id': 'https://standardknowledge.com/ontologies/core/Article',
             '@type': OWL.class,
             [RDFS.subClassOf]: [
-              { '@id': 'https://skl.standard.storage/Noun' },
+              { '@id': 'https://standardknowledge.com/ontologies/core/Noun' },
             ],
           },
         ];
         adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
         await expect(
           adapter.findAllBy({
-            type: 'https://skl.standard.storage/Noun',
+            type: 'https://standardknowledge.com/ontologies/core/Noun',
           }),
         ).resolves.toEqual([ schemas[0], schemas[1] ]);
       });
@@ -860,12 +860,12 @@ describe('a MemoryQueryAdapter', (): void => {
   describe('count', (): void => {
     it('is not supported.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
-        adapter.count({ id: 'https://skl.standard.storage/data/123' }),
+        adapter.count({ id: 'https://example.com/data/123' }),
       ).resolves.toBe(0);
     });
   });
@@ -873,8 +873,8 @@ describe('a MemoryQueryAdapter', (): void => {
   describe('save', (): void => {
     it('saves a single schema.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/File',
-        '@type': 'https://skl.standard.storage/Noun',
+        '@id': 'https://standardknowledge.com/ontologies/core/File',
+        '@type': 'https://standardknowledge.com/ontologies/core/Noun',
         [RDFS.label]: 'File',
       }];
       const entity = schemas[0];
@@ -889,12 +889,12 @@ describe('a MemoryQueryAdapter', (): void => {
     it('saves multiple schema.', async(): Promise<void> => {
       schemas = [
         {
-          '@id': 'https://skl.standard.storage/data/123',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/123',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
         },
         {
-          '@id': 'https://skl.standard.storage/data/124',
-          '@type': 'https://skl.standard.storage/Article',
+          '@id': 'https://example.com/data/124',
+          '@type': 'https://standardknowledge.com/ontologies/core/Article',
         },
       ];
       const entities = [ schemas[0], schemas[1] ];
@@ -913,18 +913,18 @@ describe('a MemoryQueryAdapter', (): void => {
   describe('destroy', (): void => {
     it('throws an error if the entity does not exist.', async(): Promise<void> => {
       const entity = {
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       };
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(adapter.destroy(entity))
-        .rejects.toThrow('Entity with id https://skl.standard.storage/data/123 does not exist.');
+        .rejects.toThrow('Entity with id https://example.com/data/123 does not exist.');
     });
 
     it('destroys a single schema.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       const entity = schemas[0];
@@ -938,12 +938,12 @@ describe('a MemoryQueryAdapter', (): void => {
     it('destroys multiple schema.', async(): Promise<void> => {
       schemas = [
         {
-          '@id': 'https://skl.standard.storage/data/123',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/123',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
         },
         {
-          '@id': 'https://skl.standard.storage/data/124',
-          '@type': 'https://skl.standard.storage/Article',
+          '@id': 'https://example.com/data/124',
+          '@type': 'https://standardknowledge.com/ontologies/core/Article',
         },
       ];
       const entities = [
@@ -965,8 +965,8 @@ describe('a MemoryQueryAdapter', (): void => {
   describe('destroyAll', (): void => {
     it('destroys all the schema.', async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       const res = await adapter.destroyAll();

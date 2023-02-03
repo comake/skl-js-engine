@@ -17,7 +17,9 @@
     "skos": "http://www.w3.org/2004/02/skos/core#",
     "rml:referenceFormulation": { "@type": "@id" },
     "rr:predicate": { "@type": "@id" },
-    "rr:object": { "@type": "@id" }
+    "rr:object": { "@type": "@id" },
+    "rr:termType": { "@type": "@id" },
+    "example": "https://example.com/"
   },
   "@graph": [
     {
@@ -52,12 +54,12 @@
             "@type": "rr:ObjectMap",
             "rml:reference": "field"
           },
-          "rr:predicate": "https://skl.standard.storage/field"
+          "rr:predicate": "example:field"
         }
       ],
       "rr:subjectMap": {
         "@type": "rr:SubjectMap",
-        "rr:template": "https://skl.standard.storage/mappingSubject"
+        "rr:termType": "rr:BlankNode"
       }
     }
   ]

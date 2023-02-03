@@ -21,20 +21,19 @@ import { SparqlQueryAdapter } from './storage/sparql/SparqlQueryAdapter';
 import type { SparqlQueryAdapterOptions } from './storage/sparql/SparqlQueryAdapterOptions';
 import type { OrArray, Entity } from './util/Types';
 import {
-  constructUri,
   convertJsonLdToQuads,
   toJSON,
   getValueIfDefined,
 } from './util/Util';
 import type { JSONObject } from './util/Util';
-import { SKL, SHACL, sklNamespace, RDFS } from './util/Vocabularies';
+import { SKL, SHACL, RDFS } from './util/Vocabularies';
 
 export type VerbHandler = (args: JSONObject) => Promise<NodeObject>;
 export type VerbInterface = Record<string, VerbHandler>;
 
 export type MappingResponseOption<T extends boolean> = T extends true ? JSONObject : NodeObject;
 
-export type SkqlOptions = MemoryQueryAdapterOptions | SparqlQueryAdapterOptions;
+export type SKLEngineOptions = MemoryQueryAdapterOptions | SparqlQueryAdapterOptions;
 
 export interface ErrorMatcher {
   status: number;
@@ -45,15 +44,13 @@ export interface OperationResponse {
   data: JSONObject;
 }
 
-const DEFAULT_MAPPING_FRAME = { '@id': SKL.mappingSubject };
-
-export class Skql {
+export class SKLEngine {
   private readonly mapper: Mapper;
   private readonly adapter: QueryAdapter;
   private readonly inputFiles?: Record<string, string>;
   public readonly verb: VerbInterface;
 
-  public constructor(options: SkqlOptions) {
+  public constructor(options: SKLEngineOptions) {
     switch (options.type) {
       case 'memory':
         this.adapter = new MemoryQueryAdapter(options);
@@ -143,20 +140,20 @@ export class Skql {
     frame?: Record<string, any>,
   ): Promise<NodeObject> {
     const nonReferenceMappings = await this.resolveMappingReferences(mapping);
-    return await this.mapper.apply(args, nonReferenceMappings, frame ?? DEFAULT_MAPPING_FRAME);
+    return await this.mapper.apply(args, nonReferenceMappings, frame ?? {});
   }
 
   public async performMappingAndConvertToJSON(
     args: JSONObject,
     mapping: OrArray<NodeObject>,
-    convertToJsonDeep = true,
     frame?: Record<string, any>,
+    convertToJsonDeep = true,
   ): Promise<JSONObject> {
     const nonReferenceMappings = await this.resolveMappingReferences(mapping);
-    const jsonLd = await this.mapper.applyAndFrameSklProperties(
+    const jsonLd = await this.mapper.apply(
       args,
       nonReferenceMappings,
-      frame ?? DEFAULT_MAPPING_FRAME,
+      frame ?? {},
     );
     return toJSON(jsonLd, convertToJsonDeep);
   }
@@ -174,9 +171,8 @@ export class Skql {
   }
 
   private async findVerbWithName(verbName: string): Promise<Entity> {
-    const verbSchemaId = constructUri(sklNamespace, verbName);
     try {
-      return await this.findBy({ id: verbSchemaId });
+      return await this.findBy({ type: SKL.Verb, [RDFS.label]: verbName });
     } catch {
       throw new Error(`Failed to find the verb ${verbName} in the schema.`);
     }
@@ -278,6 +274,7 @@ export class Skql {
       return await this.performMappingAndConvertToJSON(
         args,
         mapping[SKL.parameterMapping] as OrArray<NodeObject>,
+        getValueIfDefined(mapping[SKL.parameterMappingFrame]),
         convertToJsonDeep,
       );
     }
@@ -315,10 +312,10 @@ export class Skql {
 
   private async handleNounMappingVerb(verb: Entity, args: JSONObject): Promise<NodeObject> {
     const mapping = await this.findVerbNounMapping(verb['@id'], args.noun as string);
-    if (mapping[SKL.mapping]) {
+    if (mapping[SKL.returnValueMapping]) {
       return await this.performMapping(
         args,
-        mapping[SKL.mapping] as OrArray<NodeObject>,
+        mapping[SKL.returnValueMapping] as OrArray<NodeObject>,
         {
           ...getValueIfDefined<JSONObject>(verb[SKL.returnValueFrame]),
           ...getValueIfDefined<JSONObject>(mapping[SKL.returnValueFrame]),
@@ -416,7 +413,7 @@ export class Skql {
     openApiExecutor: OpenApiOperationExecutor,
     integrationId: string,
   ): Promise<OpenApiClientConfiguration> {
-    const getOauthTokenVerb = await this.findBy({ id: SKL.getOauthTokens });
+    const getOauthTokenVerb = await this.findBy({ type: SKL.Verb, [RDFS.label]: 'getOauthTokens' });
     const mapping = await this.findVerbIntegrationMapping(getOauthTokenVerb['@id'], integrationId);
     const operationArgs = await this.performParameterMappingOnArgsIfDefined(
       { refreshToken: getValueIfDefined<string>(securityCredentialsSchema[SKL.refreshToken])! },
@@ -454,28 +451,21 @@ export class Skql {
     returnValue: NodeObject,
     verb: Entity,
   ): Promise<void> {
-    const returnTypeSchemaObject = await this.getReturnTypeSchemaFromVerb(verb);
+    const returnTypeSchemaObject = verb[SKL.returnValue] as NodeObject;
 
     let report: ValidationReport | undefined;
     if (returnValue && Object.keys(returnValue).length > 0 && returnTypeSchemaObject) {
-      returnTypeSchemaObject[SHACL.targetNode] = { '@id': returnValue['@id'] };
+      if (returnValue['@id']) {
+        returnTypeSchemaObject[SHACL.targetNode] = { '@id': returnValue['@id'] };
+      } else {
+        returnTypeSchemaObject[SHACL.targetClass] = { '@id': returnValue['@type'] };
+      }
       report = await this.convertToQuadsAndValidateAgainstShape(returnValue, returnTypeSchemaObject);
     }
 
     if (report && !report?.conforms) {
       throw new Error(`Return value ${returnValue['@id']} does not conform to the schema`);
     }
-  }
-
-  private async getReturnTypeSchemaFromVerb(verb: Entity): Promise<NodeObject> {
-    const returnTypeSchema = verb[SKL.returnValue] as NodeObject;
-    if (typeof returnTypeSchema === 'object' && returnTypeSchema['@type']) {
-      return returnTypeSchema;
-    }
-    if (typeof returnTypeSchema === 'object' && returnTypeSchema['@id']) {
-      return await this.findBy({ id: returnTypeSchema['@id'] }) as NodeObject;
-    }
-    throw new Error('returnTypeSchema is not properly formatted.');
   }
 
   private async convertToQuadsAndValidateAgainstShape(

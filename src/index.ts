@@ -29,4 +29,4 @@ export * from './util/Types';
 export * from './util/Util';
 export * from './util/Vocabularies';
 
-export * from './Skql';
+export * from './sklEngine';

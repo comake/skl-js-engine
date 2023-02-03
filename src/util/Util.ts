@@ -16,10 +16,6 @@ export type JSONValue =
   | {[x: string]: JSONValue }
   | JSONValue[];
 
-export function constructUri(base: string, local: string): string {
-  return `${base}${local}`;
-}
-
 export async function convertJsonLdToQuads(jsonldDoc: any): Promise<Store> {
   const nquads = await jsonld.toRDF(jsonldDoc, { format: 'application/n-quads' }) as unknown as string;
   const turtleParser = new Parser({ format: 'application/n-quads' });

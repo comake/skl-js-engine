@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Quad, NamedNode } from 'n3';
 import {
-  constructUri,
   convertJsonLdToQuads,
   toJSON,
   ensureArray,
@@ -10,24 +9,18 @@ import {
 } from '../../../src/util/Util';
 
 describe('Util', (): void => {
-  describe('#constructUri', (): void => {
-    it('returns a string with the base param prepended to the local param.', (): void => {
-      expect(constructUri('https://example.com/', 'property')).toBe('https://example.com/property');
-    });
-  });
-
   describe('#convertJsonLdToQuads', (): void => {
     it('converts the input jsonLd to a store of quads.', async(): Promise<void> => {
       const jsonld = [{
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       }];
       const res = await convertJsonLdToQuads(jsonld);
       expect(res.size).toBe(1);
       expect(res.has(new Quad(
-        new NamedNode('https://skl.standard.storage/data/123'),
+        new NamedNode('https://example.com/data/123'),
         new NamedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
-        new NamedNode('https://skl.standard.storage/File'),
+        new NamedNode('https://standardknowledge.com/ontologies/core/File'),
       ))).toBe(true);
     });
   });
@@ -38,8 +31,8 @@ describe('Util', (): void => {
         '@context': {
           label: 'http://www.w3.org/2000/01/rdf-schema#label',
         },
-        '@id': 'https://skl.standard.storage/data/123',
-        '@type': 'https://skl.standard.storage/File',
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
         label: 'image.jpeg',
       };
       expect(toJSON(jsonld)).toEqual({
@@ -52,19 +45,19 @@ describe('Util', (): void => {
           '@context': {
             label: 'http://www.w3.org/2000/01/rdf-schema#label',
           },
-          '@id': 'https://skl.standard.storage/data/123',
-          '@type': 'https://skl.standard.storage/File',
+          '@id': 'https://example.com/data/123',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
           label: 'image.jpeg',
           subFileArr: [
             {
-              '@id': 'https://skl.standard.storage/data/123',
-              '@type': 'https://skl.standard.storage/File',
+              '@id': 'https://example.com/data/123',
+              '@type': 'https://standardknowledge.com/ontologies/core/File',
               md5: 'abc123',
             },
           ],
           subFileObj: {
-            '@id': 'https://skl.standard.storage/data/123',
-            '@type': 'https://skl.standard.storage/File',
+            '@id': 'https://example.com/data/123',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
             md5: 'abc123',
           },
         };

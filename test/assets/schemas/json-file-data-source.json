@@ -16,11 +16,9 @@
     "rml": "http://semweb.mmlab.be/ns/rml#",
     "owl": "http://www.w3.org/2002/07/owl#",
     "skos": "http://www.w3.org/2004/02/skos/core#",
-    "skl": "https://skl.standard.storage/",
-    "parameterMapping": {
-      "@id": "skl:parameterMapping",
-      "@type": "@id"
-    },
+    "dcterms": "http://purl.org/dc/elements/1.1/",
+    "description": "dcterms:description",
+    "skl": "https://standardknowledge.com/ontologies/core/",
     "returnValueMapping": {
       "@id": "skl:returnValueMapping",
       "@type": "@id"
@@ -40,29 +38,29 @@
     "rr:predicate": { "@type": "@id" },
     "rr:object": { "@type": "@id" },
     "rr:subject": { "@type": "@id" },
-    "rr:class": { "@type": "@id" },
     "rr:termType": { "@type": "@id" },
-    "https://skl.standard.storage/data": {
+     "https://standardknowledge.com/ontologies/core/data": {
       "@type": "@json"
-    }
+    },
+    "example": "https://example.com/"
   },
   "@graph": [
     {
-      "@id": "https://skl.standard.storage/data/JsonSourceAccount1",
-      "@type": "https://skl.standard.storage/Account",
-      "integration": "https://skl.standard.storage/integrations/JsonSource"
+      "@id": "https://example.com/data/JsonSourceAccount1",
+      "@type": "https://standardknowledge.com/ontologies/core/Account",
+      "integration": "https://example.com/integrations/JsonSource"
     },
     {
-      "@id": "https://skl.standard.storage/integrations/JsonSource",
-      "@type": "https://skl.standard.storage/Integration",
-      "https://skl.standard.storage/description": "ExampleJsonSource.",
+      "@id": "https://example.com/integrations/JsonSource",
+      "@type": "https://standardknowledge.com/ontologies/core/Integration",
+      "description": "ExampleJsonSource.",
       "label": "JsonSource"
     },
     {
-      "@id": "https://skl.standard.storage/data/JsonSourceDataSource",
-      "@type": "https://skl.standard.storage/JsonDataSource",
-      "integration": "https://skl.standard.storage/integrations/JsonSource",
-      "https://skl.standard.storage/data": {
+      "@id": "https://example.com/data/JsonSourceDataSource",
+      "@type": "https://standardknowledge.com/ontologies/core/JsonDataSource",
+      "integration": "https://example.com/integrations/JsonSource",
+       "https://standardknowledge.com/ontologies/core/data": {
         ".tag": "file",
         "client_modified": "2015-05-12T15:50:38Z",
         "content_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -77,10 +75,10 @@
       }
     },
     {
-      "@id": "https://skl.standard.storage/data/2",
-      "@type": "https://skl.standard.storage/VerbIntegrationMapping",
-      "integration": "https://skl.standard.storage/integrations/JsonSource",
-      "verb": "https://skl.standard.storage/getFile",
+      "@id": "https://example.com/data/2",
+      "@type": "https://standardknowledge.com/ontologies/core/VerbIntegrationMapping",
+      "integration": "https://example.com/integrations/JsonSource",
+      "verb": "https://example.com/getFile",
       "label": "getFileToJsonSource",
       "operationMapping": {
         "@type": "rr:TriplesMap",
@@ -95,12 +93,15 @@
             "@type": "rr:PredicateObjectMap",
             "rr:objectMap": {
               "@type": "rr:ObjectMap",
-              "rr:constant": "https://skl.standard.storage/data/JsonSourceDataSource"
+              "rr:constant": "https://example.com/data/JsonSourceDataSource"
             },
             "rr:predicate": "skl:dataSource"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/mappingSubject"
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
       },
       "returnValueMapping": {
         "@type": "rr:TriplesMap",
@@ -209,7 +210,7 @@
             "rr:objectMap": {
               "@type": "rr:ObjectMap",
               "rr:termType": "rr:IRI",
-              "rr:constant": "https://skl.standard.storage/integrations/JsonSource"
+              "rr:constant": "https://example.com/integrations/JsonSource"
             },
             "rr:predicate": "skl:integration"
           },
@@ -313,7 +314,7 @@
                     "@type": "rr:PredicateObjectMap",
                     "rr:objectMap": {
                       "@type": "rr:ObjectMap",
-                      "rr:constant": "https://skl.standard.storage/File"
+                      "rr:constant": "https://standardknowledge.com/ontologies/core/File"
                     },
                     "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_false"
                   },
@@ -359,7 +360,7 @@
                     "@type": "rr:PredicateObjectMap",
                     "rr:objectMap": {
                       "@type": "rr:ObjectMap",
-                      "rr:constant": "https://skl.standard.storage/Folder"
+                      "rr:constant": "https://standardknowledge.com/ontologies/core/Folder"
                     },
                     "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true"
                   }
@@ -449,12 +450,12 @@
             "rr:predicate": "skl:sourceId"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/data/abc123"
+        "rr:subject": "https://example.com/data/abc123"
       },
       "returnValueFrame": {
         "@type": [
-          "https://skl.standard.storage/File",
-          "https://skl.standard.storage/Folder"
+          "https://standardknowledge.com/ontologies/core/File",
+          "https://standardknowledge.com/ontologies/core/Folder"
         ]
       }
     }
