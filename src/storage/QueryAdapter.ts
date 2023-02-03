@@ -7,7 +7,7 @@ import type { FindAllOptions, FindOneOptions, FindOptionsWhere } from './FindOpt
 export type RawQueryResult = Record<string, number | boolean | string>;
 
 /**
- * Adapts SKQL CRUD operations to a specific persistence layer.
+ * Adapts CRUD operations to a specific persistence layer.
  */
 
 export interface QueryAdapter {

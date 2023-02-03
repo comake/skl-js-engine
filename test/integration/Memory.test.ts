@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
 import type { NodeObject } from 'jsonld';
-import { Skql } from '../../src/Skql';
+import { SKLEngine } from '../../src/sklEngine';
 import { SCHEMA, SKL } from '../../src/util/Vocabularies';
 import { describeIf, frameAndCombineSchemas } from '../util/Util';
 
@@ -18,7 +18,7 @@ jest.mock('@comake/openapi-operation-executor', (): any => {
   };
 });
 
-describeIf('docker', 'An Skql engine backed by a memory query adapter', (): void => {
+describeIf('docker', 'An SKL engine backed by a memory query adapter', (): void => {
   it('can get events from ticketmaster.', async(): Promise<void> => {
     const schemaFiles = [
       './test/assets/schemas/core.json',
@@ -26,8 +26,8 @@ describeIf('docker', 'An Skql engine backed by a memory query adapter', (): void
     ];
     const env = { TICKETMASTER_APIKEY: process.env.TICKETMASTER_APIKEY! };
     const schemas = await frameAndCombineSchemas(schemaFiles, env);
-    const skql = new Skql({ type: 'memory', schemas });
-    const eventsCollection = await skql.verb.getEvents({
+    const engine = new SKLEngine({ type: 'memory', schemas });
+    const eventsCollection = await engine.verb.getEvents({
       account: 'https://example.com/data/TicketmasterAccount1',
       city: 'Atlanta',
       pageSize: 20,

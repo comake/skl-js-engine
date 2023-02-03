@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/expiring-todo-comments */
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { NodeObject, ValueObject } from 'jsonld';
-import { Skql } from '../../src/Skql';
+import { SKLEngine } from '../../src/sklEngine';
 import { In } from '../../src/storage/operator/In';
 import type { Entity } from '../../src/util/Types';
 import { SCHEMA, SKL, OWL, RDFS } from '../../src/util/Vocabularies';
@@ -9,8 +9,8 @@ import { describeIf, frameAndCombineSchemas } from '../util/Util';
 
 const endpointUrl = 'http://localhost:9999/blazegraph/namespace/kb/sparql';
 
-describeIf('docker', 'An Skql engine backed by a sparql query adapter', (): void => {
-  let skql: Skql;
+describeIf('docker', 'An SKL engine backed by a sparql query adapter', (): void => {
+  let engine: SKLEngine;
   let schema: Entity[];
 
   beforeAll(async(): Promise<void> => {
@@ -20,22 +20,22 @@ describeIf('docker', 'An Skql engine backed by a sparql query adapter', (): void
     ];
     const env = { TICKETMASTER_APIKEY: process.env.TICKETMASTER_APIKEY! };
     schema = await frameAndCombineSchemas(schemas, env);
-    skql = new Skql({ type: 'sparql', endpointUrl });
-    await skql.destroyAll();
+    engine = new SKLEngine({ type: 'sparql', endpointUrl });
+    await engine.destroyAll();
   });
 
   afterAll(async(): Promise<void> => {
-    await skql.destroyAll();
+    await engine.destroyAll();
   });
 
   it('can save entities.', async(): Promise<void> => {
-    await skql.save(schema);
-    const savedSchemasCount = await skql.count();
+    await engine.save(schema);
+    const savedSchemasCount = await engine.count();
     expect(savedSchemasCount).toBe(schema.length);
   });
 
   it('can get events from ticketmaster.', async(): Promise<void> => {
-    const eventsCollection = await skql.verb.getEvents({
+    const eventsCollection = await engine.verb.getEvents({
       account: 'https://example.com/data/TicketmasterAccount1',
       city: 'Atlanta',
       pageSize: 20,
@@ -45,7 +45,7 @@ describeIf('docker', 'An Skql engine backed by a sparql query adapter', (): void
   });
 
   it('can find one entity.', async(): Promise<void> => {
-    const accessTokenProperty = await skql.find({
+    const accessTokenProperty = await engine.find({
       where: {
         type: OWL.ObjectProperty,
       },
@@ -58,7 +58,7 @@ describeIf('docker', 'An Skql engine backed by a sparql query adapter', (): void
   });
 
   it('can find many entities.', async(): Promise<void> => {
-    const nouns = await skql.findAll({
+    const nouns = await engine.findAll({
       where: {
         type: In([
           'https://standardknowledge.com/ontologies/core/Integration',
@@ -75,13 +75,13 @@ describeIf('docker', 'An Skql engine backed by a sparql query adapter', (): void
   });
 
   it('can update an entity.', async(): Promise<void> => {
-    const eventSchema = await skql.findBy({
+    const eventSchema = await engine.findBy({
       id: 'https://schema.org/Event',
     });
     expect(eventSchema[RDFS.label]).toBeUndefined();
     eventSchema[RDFS.label] = 'Event';
-    await skql.save(eventSchema);
-    const updatedEventSchema = await skql.findBy({
+    await engine.save(eventSchema);
+    const updatedEventSchema = await engine.findBy({
       id: 'https://schema.org/Event',
     });
     expect(updatedEventSchema[RDFS.label]).toBeDefined();

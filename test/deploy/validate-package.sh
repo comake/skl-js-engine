@@ -11,7 +11,7 @@ cd test/deploy
 
 npm install
 
-rm comake-skql-js-engine-*.tgz
+rm comake-skl-js-engine-*.tgz
 
 npm run build
 

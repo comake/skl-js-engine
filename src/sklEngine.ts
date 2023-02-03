@@ -33,7 +33,7 @@ export type VerbInterface = Record<string, VerbHandler>;
 
 export type MappingResponseOption<T extends boolean> = T extends true ? JSONObject : NodeObject;
 
-export type SkqlOptions = MemoryQueryAdapterOptions | SparqlQueryAdapterOptions;
+export type SKLEngineOptions = MemoryQueryAdapterOptions | SparqlQueryAdapterOptions;
 
 export interface ErrorMatcher {
   status: number;
@@ -44,13 +44,13 @@ export interface OperationResponse {
   data: JSONObject;
 }
 
-export class Skql {
+export class SKLEngine {
   private readonly mapper: Mapper;
   private readonly adapter: QueryAdapter;
   private readonly inputFiles?: Record<string, string>;
   public readonly verb: VerbInterface;
 
-  public constructor(options: SkqlOptions) {
+  public constructor(options: SKLEngineOptions) {
     switch (options.type) {
       case 'memory':
         this.adapter = new MemoryQueryAdapter(options);

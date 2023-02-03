@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Skql } from '../../src/Skql';
+import { SKLEngine } from '../../src/sklEngine';
 import { getValueIfDefined } from '../../src/util/Util';
 import { frameAndCombineSchemas } from '../util/Util';
 
-describe('An Skql engine with user supplied functions', (): void => {
+describe('An SKL engine with user supplied functions', (): void => {
   it('can execute mappings using the supplied functions.', async(): Promise<void> => {
     const schemaFiles = [
       './test/assets/schemas/divide-function.json',
@@ -16,8 +16,8 @@ describe('An Skql engine with user supplied functions', (): void => {
         return numerator / denominator;
       },
     };
-    const skql = new Skql({ type: 'memory', schemas, functions });
-    const response = await skql.verb.divide({
+    const engine = new SKLEngine({ type: 'memory', schemas, functions });
+    const response = await engine.verb.divide({
       noun: 'https://standardknowledge.com/ontologies/core/Equation',
       numerator: 10,
       denominator: 5,

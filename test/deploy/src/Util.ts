@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import * as jsonld from 'jsonld';
-import type { Entity } from '@comake/skql-js-engine';
+import type { Entity } from '@comake/skl-js-engine';
 
 export async function frameAndCombineSchemas(
   filePaths: string[],
