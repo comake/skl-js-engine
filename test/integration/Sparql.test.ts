@@ -36,7 +36,7 @@ describeIf('docker', 'An Skql engine backed by a sparql query adapter', (): void
 
   it('can get events from ticketmaster.', async(): Promise<void> => {
     const eventsCollection = await skql.verb.getEvents({
-      account: 'https://skl.standard.storage/data/TicketmasterAccount1',
+      account: 'https://example.com/data/TicketmasterAccount1',
       city: 'Atlanta',
       pageSize: 20,
     });
@@ -61,8 +61,8 @@ describeIf('docker', 'An Skql engine backed by a sparql query adapter', (): void
     const nouns = await skql.findAll({
       where: {
         type: In([
-          'https://skl.standard.storage/Integration',
-          'https://skl.standard.storage/Account',
+          'https://standardknowledge.com/ontologies/core/Integration',
+          'https://standardknowledge.com/ontologies/core/Account',
         ]),
       },
       order: {

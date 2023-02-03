@@ -28,7 +28,7 @@ describeIf('docker', 'An Skql engine backed by a memory query adapter', (): void
     const schemas = await frameAndCombineSchemas(schemaFiles, env);
     const skql = new Skql({ type: 'memory', schemas });
     const eventsCollection = await skql.verb.getEvents({
-      account: 'https://skl.standard.storage/data/TicketmasterAccount1',
+      account: 'https://example.com/data/TicketmasterAccount1',
       city: 'Atlanta',
       pageSize: 20,
     });

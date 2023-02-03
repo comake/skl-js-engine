@@ -134,7 +134,7 @@ describe('A Mapper', (): void => {
         },
       },
       '@id': 'https://example.com/mappingSubject',
-      integration: 'https://skl.standard.storage/integrations/Dropbox',
+      integration: 'https://example.com/integrations/Dropbox',
     });
   });
 
@@ -160,8 +160,8 @@ describe('A Mapper', (): void => {
       },
       '@id': 'https://example.com/mappingSubject',
       integration: [
-        'https://skl.standard.storage/integrations/Dropbox',
-        'https://skl.standard.storage/integrations/AirTable',
+        'https://example.com/integrations/Dropbox',
+        'https://example.com/integrations/AirTable',
       ],
     });
   });

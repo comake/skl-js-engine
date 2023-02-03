@@ -37,7 +37,7 @@
           "rr:objectMap": {
             "@type": "rr:ObjectMap",
             "rr:termType": "rr:IRI",
-            "rr:constant": "https://skl.standard.storage/integrations/Dropbox"
+            "rr:constant": "https://example.com/integrations/Dropbox"
           },
           "rr:predicate": "example:integration"
         },
@@ -46,7 +46,7 @@
           "rr:objectMap": {
             "@type": "rr:ObjectMap",
             "rr:termType": "rr:IRI",
-            "rr:constant": "https://skl.standard.storage/integrations/AirTable"
+            "rr:constant": "https://example.com/integrations/AirTable"
           },
           "rr:predicate": "example:integration"
         }

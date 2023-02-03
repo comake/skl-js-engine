@@ -21,7 +21,7 @@
     "shacl:minCount": { "@type": "xsd:integer" },
     "shacl:targetClass": { "@type": "@id" },
     "shacl:path": { "@type": "@id" },
-    "skl": "https://skl.standard.storage/",
+    "skl": "https://standardknowledge.com/ontologies/core/",
     "skl:integration": { "@type": "@id" },
     "skl:account": { "@type": "@id" },
     "skl:openApiDescription": { "@type": "@json" },
@@ -43,8 +43,13 @@
   },
   "@graph": [
     {
-      "@id": "https://skl.standard.storage/divide",
-      "@type": "https://skl.standard.storage/NounMappedVerb",
+      "@id": "https://standardknowledge.com/ontologies/core/NounMappedVerb",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Verb"
+    },
+    {
+      "@id": "https://example.com/divide",
+      "@type": "https://standardknowledge.com/ontologies/core/NounMappedVerb",
       "label": "divide",
       "skl:parametersContext": {
         "numerator": {
@@ -58,7 +63,7 @@
       },
       "skl:parameters": {
         "@type": "shacl:NodeShape",
-        "shacl:targetClass": "https://skl.standard.storage/Parameters",
+        "shacl:targetClass": "https://standardknowledge.com/ontologies/core/Parameters",
         "shacl:property": [
           {
             "shacl:maxCount": 1,
@@ -76,10 +81,10 @@
       }
     },
     {
-      "@id": "https://skl.standard.storage/data/87",
-      "@type": "https://skl.standard.storage/VerbNounMapping",
-      "skl:verb": "https://skl.standard.storage/divide",
-      "skl:noun": "https://skl.standard.storage/Equation",
+      "@id": "https://standardknowledge.com/ontologies/core/data/87",
+      "@type": "https://standardknowledge.com/ontologies/core/VerbNounMapping",
+      "skl:verb": "https://example.com/divide",
+      "skl:noun": "https://standardknowledge.com/ontologies/core/Equation",
       "label": "getNameToFile",
       "skl:returnValueMapping": {
         "@type": "rr:TriplesMap",

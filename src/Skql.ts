@@ -21,13 +21,12 @@ import { SparqlQueryAdapter } from './storage/sparql/SparqlQueryAdapter';
 import type { SparqlQueryAdapterOptions } from './storage/sparql/SparqlQueryAdapterOptions';
 import type { OrArray, Entity } from './util/Types';
 import {
-  constructUri,
   convertJsonLdToQuads,
   toJSON,
   getValueIfDefined,
 } from './util/Util';
 import type { JSONObject } from './util/Util';
-import { SKL, SHACL, sklNamespace, RDFS } from './util/Vocabularies';
+import { SKL, SHACL, RDFS } from './util/Vocabularies';
 
 export type VerbHandler = (args: JSONObject) => Promise<NodeObject>;
 export type VerbInterface = Record<string, VerbHandler>;
@@ -172,9 +171,8 @@ export class Skql {
   }
 
   private async findVerbWithName(verbName: string): Promise<Entity> {
-    const verbSchemaId = constructUri(sklNamespace, verbName);
     try {
-      return await this.findBy({ id: verbSchemaId });
+      return await this.findBy({ type: SKL.Verb, [RDFS.label]: verbName });
     } catch {
       throw new Error(`Failed to find the verb ${verbName} in the schema.`);
     }
@@ -415,7 +413,7 @@ export class Skql {
     openApiExecutor: OpenApiOperationExecutor,
     integrationId: string,
   ): Promise<OpenApiClientConfiguration> {
-    const getOauthTokenVerb = await this.findBy({ id: SKL.getOauthTokens });
+    const getOauthTokenVerb = await this.findBy({ type: SKL.Verb, [RDFS.label]: 'getOauthTokens' });
     const mapping = await this.findVerbIntegrationMapping(getOauthTokenVerb['@id'], integrationId);
     const operationArgs = await this.performParameterMappingOnArgsIfDefined(
       { refreshToken: getValueIfDefined<string>(securityCredentialsSchema[SKL.refreshToken])! },
@@ -453,28 +451,21 @@ export class Skql {
     returnValue: NodeObject,
     verb: Entity,
   ): Promise<void> {
-    const returnTypeSchemaObject = await this.getReturnTypeSchemaFromVerb(verb);
+    const returnTypeSchemaObject = verb[SKL.returnValue] as NodeObject;
 
     let report: ValidationReport | undefined;
     if (returnValue && Object.keys(returnValue).length > 0 && returnTypeSchemaObject) {
-      returnTypeSchemaObject[SHACL.targetNode] = { '@id': returnValue['@id'] };
+      if (returnValue['@id']) {
+        returnTypeSchemaObject[SHACL.targetNode] = { '@id': returnValue['@id'] };
+      } else {
+        returnTypeSchemaObject[SHACL.targetClass] = { '@id': returnValue['@type'] };
+      }
       report = await this.convertToQuadsAndValidateAgainstShape(returnValue, returnTypeSchemaObject);
     }
 
     if (report && !report?.conforms) {
       throw new Error(`Return value ${returnValue['@id']} does not conform to the schema`);
     }
-  }
-
-  private async getReturnTypeSchemaFromVerb(verb: Entity): Promise<NodeObject> {
-    const returnTypeSchema = verb[SKL.returnValue] as NodeObject;
-    if (typeof returnTypeSchema === 'object' && returnTypeSchema['@type']) {
-      return returnTypeSchema;
-    }
-    if (typeof returnTypeSchema === 'object' && returnTypeSchema['@id']) {
-      return await this.findBy({ id: returnTypeSchema['@id'] }) as NodeObject;
-    }
-    throw new Error('returnTypeSchema is not properly formatted.');
   }
 
   private async convertToQuadsAndValidateAgainstShape(

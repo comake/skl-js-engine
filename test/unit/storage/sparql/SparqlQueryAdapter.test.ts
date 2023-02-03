@@ -144,7 +144,7 @@ describe('a SparqlQueryAdapter', (): void => {
         ).resolves.toEqual({
           '@graph': [{
             '@id': 'https://example.com/data/1',
-            '@type': 'https://skl.standard.storage/File',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
           }],
         });
         expect(select).toHaveBeenCalledTimes(1);
@@ -242,7 +242,7 @@ describe('a SparqlQueryAdapter', (): void => {
           }),
         ).resolves.toEqual({
           '@id': 'https://example.com/data/1',
-          '@type': 'https://skl.standard.storage/File',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
         });
         expect(select).toHaveBeenCalledTimes(1);
         expect(select.mock.calls[0][0].split('\n')).toEqual([
@@ -319,7 +319,7 @@ describe('a SparqlQueryAdapter', (): void => {
           adapter.findBy({ id: 'https://example.com/data/1' }),
         ).resolves.toEqual({
           '@id': 'https://example.com/data/1',
-          '@type': 'https://skl.standard.storage/File',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
         });
         expect(select).toHaveBeenCalledTimes(1);
         expect(select.mock.calls[0][0].split('\n')).toEqual([
@@ -352,7 +352,7 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/File>. } }',
+          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
@@ -381,18 +381,18 @@ describe('a SparqlQueryAdapter', (): void => {
         ).resolves.toEqual([
           {
             '@id': 'https://example.com/data/1',
-            '@type': 'https://skl.standard.storage/File',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
           },
           {
             '@id': 'https://example.com/data/2',
-            '@type': 'https://skl.standard.storage/File',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
           },
         ]);
         expect(select).toHaveBeenCalledTimes(1);
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/File>. } }',
+          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
@@ -413,13 +413,13 @@ describe('a SparqlQueryAdapter', (): void => {
           }),
         ).resolves.toEqual([{
           '@id': 'https://example.com/data/1',
-          '@type': 'https://skl.standard.storage/File',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
         }]);
         expect(select).toHaveBeenCalledTimes(1);
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/File>. } }',
+          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
@@ -451,11 +451,11 @@ describe('a SparqlQueryAdapter', (): void => {
         ).resolves.toEqual([
           {
             '@id': 'https://example.com/data/1',
-            '@type': 'https://skl.standard.storage/File',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
           },
           {
             '@id': 'https://example.com/data/2',
-            '@type': 'https://skl.standard.storage/File',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
           },
         ]);
         expect(select).toHaveBeenCalledTimes(2);
@@ -486,7 +486,7 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/File>. } }',
+          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
@@ -511,18 +511,18 @@ describe('a SparqlQueryAdapter', (): void => {
         ).resolves.toEqual([
           {
             '@id': 'https://example.com/data/1',
-            '@type': 'https://skl.standard.storage/File',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
           },
           {
             '@id': 'https://example.com/data/2',
-            '@type': 'https://skl.standard.storage/File',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
           },
         ]);
         expect(select).toHaveBeenCalledTimes(1);
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://skl.standard.storage/File>. } }',
+          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
@@ -540,24 +540,24 @@ describe('a SparqlQueryAdapter', (): void => {
     it('saves a single schema.', async(): Promise<void> => {
       const entity = {
         '@id': 'https://example.com/data/1',
-        '@type': 'https://skl.standard.storage/File',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       };
       await expect(adapter.save(entity)).resolves.toEqual(entity);
       expect(update).toHaveBeenCalledTimes(1);
       expect(update.mock.calls[0][0].split('\n')).toEqual([
         'DELETE WHERE { GRAPH <https://example.com/data/1> { ?c1 ?c2 ?c3. } };',
-        'INSERT DATA { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://skl.standard.storage/File>. } }',
+        'INSERT DATA { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://standardknowledge.com/ontologies/core/File>. } }',
       ]);
     });
     it('saves multiple schema.', async(): Promise<void> => {
       const entities = [
         {
           '@id': 'https://example.com/data/1',
-          '@type': 'https://skl.standard.storage/File',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
         },
         {
           '@id': 'https://example.com/data/2',
-          '@type': 'https://skl.standard.storage/Article',
+          '@type': 'https://standardknowledge.com/ontologies/core/Article',
         },
       ];
       await expect(adapter.save(entities)).resolves.toEqual(entities);
@@ -568,8 +568,8 @@ describe('a SparqlQueryAdapter', (): void => {
         '  GRAPH <https://example.com/data/2> { ?c4 ?c5 ?c6. }',
         '};',
         'INSERT DATA {',
-        '  GRAPH <https://example.com/data/1> { <https://example.com/data/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://skl.standard.storage/File>. }',
-        '  GRAPH <https://example.com/data/2> { <https://example.com/data/2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://skl.standard.storage/Article>. }',
+        '  GRAPH <https://example.com/data/1> { <https://example.com/data/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://standardknowledge.com/ontologies/core/File>. }',
+        '  GRAPH <https://example.com/data/2> { <https://example.com/data/2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://standardknowledge.com/ontologies/core/Article>. }',
         '}',
       ]);
     });
@@ -579,7 +579,7 @@ describe('a SparqlQueryAdapter', (): void => {
     it('destroys a single schema.', async(): Promise<void> => {
       const entity = {
         '@id': 'https://example.com/data/1',
-        '@type': 'https://skl.standard.storage/File',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
       };
       await expect(adapter.destroy(entity)).resolves.toEqual(entity);
       expect(update).toHaveBeenCalledTimes(1);
@@ -592,11 +592,11 @@ describe('a SparqlQueryAdapter', (): void => {
       const entities = [
         {
           '@id': 'https://example.com/data/1',
-          '@type': 'https://skl.standard.storage/File',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
         },
         {
           '@id': 'https://example.com/data/2',
-          '@type': 'https://skl.standard.storage/Article',
+          '@type': 'https://standardknowledge.com/ontologies/core/Article',
         },
       ];
       await expect(adapter.destroy(entities)).resolves.toEqual(entities);

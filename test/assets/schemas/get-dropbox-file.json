@@ -4,6 +4,7 @@
     "fnml": "http://semweb.mmlab.be/ns/fnml#",
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "label": "rdfs:label",
     "rdfs:subClassOf": { "@type": "@id" },
     "rdfs:range": { "@type": "@id" },
     "rdfs:domain": { "@type": "@id" },
@@ -14,13 +15,15 @@
     "rml": "http://semweb.mmlab.be/ns/rml#",
     "owl": "http://www.w3.org/2002/07/owl#",
     "skos": "http://www.w3.org/2004/02/skos/core#",
+    "dcterms": "http://purl.org/dc/elements/1.1/",
+    "description": "dcterms:description",
     "shacl:class": { "@type": "@id" },
     "shacl:datatype": { "@type": "@id" },
     "shacl:maxCount": { "@type": "xsd:integer" },
     "shacl:minCount": { "@type": "xsd:integer" },
     "shacl:targetClass": { "@type": "@id" },
     "shacl:path": { "@type": "@id" },
-    "skl": "https://skl.standard.storage/",
+    "skl": "https://standardknowledge.com/ontologies/core/",
     "skl:integration": { "@type": "@id" },
     "skl:account": { "@type": "@id" },
     "skl:openApiDescription": { "@type": "@json" },
@@ -46,49 +49,49 @@
   },
   "@graph": [
     {
-      "@id": "https://skl.standard.storage/getFile",
-      "@type": "https://skl.standard.storage/Verb",
-      "rdfs:label": "getFile",
+      "@id": "https://example.com/getFile",
+      "@type": "https://standardknowledge.com/ontologies/core/Verb",
+      "label": "getFile",
       "skl:parametersContext": {
         "id": {
-          "@id": "https://skl.standard.storage/id",
+          "@id": "https://example.com/id",
           "@type": "http://www.w3.org/2001/XMLSchema#integer"
         },
         "account": {
-          "@id": "https://skl.standard.storage/account",
+          "@id": "https://example.com/account",
           "@type": "@id"
         }
       },
       "skl:parameters": {
         "@type": "shacl:NodeShape",
-        "shacl:targetClass": "https://skl.standard.storage/Parameters",
+        "shacl:targetClass": "https://standardknowledge.com/ontologies/core/Parameters",
         "shacl:property": [
           {
             "shacl:datatype": "xsd:integer",
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
-            "shacl:path": "https://skl.standard.storage/id"
+            "shacl:path": "https://example.com/id"
           },
           {
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
-            "shacl:path": "https://skl.standard.storage/account",
+            "shacl:path": "https://example.com/account",
             "shacl:nodeKind": { "@id": "shacl:IRI" }
           }
         ]
       },
       "skl:returnValue": {
-        "@id": "https://skl.standard.storage/File"
+        "@id": "https://standardknowledge.com/ontologies/core/File"
       },
       "skl:returnValueFrame": {
-        "@type": ["https://skl.standard.storage/File", "https://skl.standard.storage/Folder"]
+        "@type": ["https://standardknowledge.com/ontologies/core/File", "https://standardknowledge.com/ontologies/core/Folder"]
       }
     },
     {
-      "@id": "https://skl.standard.storage/data/4",
-      "@type": "https://skl.standard.storage/VerbIntegrationMapping",
-      "integration": "https://skl.standard.storage/integrations/Dropbox",
-      "verb": "https://skl.standard.storage/getFile",
+      "@id": "https://example.com/data/4",
+      "@type": "https://standardknowledge.com/ontologies/core/VerbIntegrationMapping",
+      "integration": "https://example.com/integrations/Dropbox",
+      "verb": "https://example.com/getFile",
       "label": "getFileToDropbox",
       "skl:operationMapping": {
         "@type": "rr:TriplesMap",
@@ -281,7 +284,7 @@
             "rr:objectMap": {
               "@type": "rr:ObjectMap",
               "rr:termType": "rr:IRI",
-              "rr:constant": "https://skl.standard.storage/integrations/Dropbox"
+              "rr:constant": "https://example.com/integrations/Dropbox"
             },
             "rr:predicate": "skl:integration"
           },
@@ -385,7 +388,7 @@
                     "@type": "rr:PredicateObjectMap",
                     "rr:objectMap": {
                       "@type": "rr:ObjectMap",
-                      "rr:constant": "https://skl.standard.storage/File"
+                      "rr:constant": "https://standardknowledge.com/ontologies/core/File"
                     },
                     "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_false"
                   },
@@ -431,7 +434,7 @@
                     "@type": "rr:PredicateObjectMap",
                     "rr:objectMap": {
                       "@type": "rr:ObjectMap",
-                      "rr:constant": "https://skl.standard.storage/Folder"
+                      "rr:constant": "https://standardknowledge.com/ontologies/core/Folder"
                     },
                     "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true"
                   }
@@ -521,50 +524,50 @@
             "rr:predicate": "skl:sourceId"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/data/abc123"
+        "rr:subject": "https://example.com/data/abc123"
       }
     },
     {
-      "@id": "https://skl.standard.storage/sync",
-      "@type": "https://skl.standard.storage/NounMappedVerb",
+      "@id": "https://example.com/sync",
+      "@type": "https://standardknowledge.com/ontologies/core/NounMappedVerb",
       "label": "sync",
       "skl:parametersContext": {
         "noun": {
-          "@id": "https://skl.standard.storage/noun",
+          "@id": "https://example.com/noun",
           "@type": "@id"
         },
         "account": {
-          "@id": "https://skl.standard.storage/account",
+          "@id": "https://example.com/account",
           "@type": "@id"
         }
       },
       "skl:parameters": {
         "@type": "shacl:NodeShape",
-        "shacl:targetClass": "https://skl.standard.storage/Parameters",
+        "shacl:targetClass": "https://standardknowledge.com/ontologies/core/Parameters",
         "shacl:property": [
           {
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
             "shacl:name": "noun",
-            "shacl:path": "https://skl.standard.storage/noun"
+            "shacl:path": "https://example.com/noun"
           },
           {
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
             "shacl:name": "account",
-            "shacl:path": "https://skl.standard.storage/account"
+            "shacl:path": "https://example.com/account"
           }
         ]
       },
       "skl:returnValue": {
-        "@id": "https://skl.standard.storage/Verb"
+        "@id": "https://standardknowledge.com/ontologies/core/Verb"
       }
     },
     {
-      "@id": "https://skl.standard.storage/data/34",
-      "@type": "https://skl.standard.storage/VerbNounMapping",
-      "skl:verb": "https://skl.standard.storage/sync",
-      "skl:noun": "https://skl.standard.storage/File",
+      "@id": "https://example.com/data/34",
+      "@type": "https://standardknowledge.com/ontologies/core/VerbNounMapping",
+      "skl:verb": "https://example.com/sync",
+      "skl:noun": "https://standardknowledge.com/ontologies/core/File",
       "label": "syncFileToGetFile",
       "skl:verbMapping": {
         "@type": "rr:TriplesMap",
@@ -577,7 +580,7 @@
         "rr:predicateObjectMap": [
           {
             "@type": "rr:PredicateObjectMap",
-            "rr:object": "https://skl.standard.storage/getFile",
+            "rr:object": "https://example.com/getFile",
             "rr:predicate": "skl:verb"
           }
         ],
@@ -588,43 +591,43 @@
       }
     },
     {
-      "@id": "https://skl.standard.storage/getName",
-      "@type": "https://skl.standard.storage/NounMappedVerb",
+      "@id": "https://example.com/getName",
+      "@type": "https://standardknowledge.com/ontologies/core/NounMappedVerb",
       "label": "getName",
       "skl:parametersContext": {
         "noun": {
-          "@id": "https://skl.standard.storage/noun",
+          "@id": "https://example.com/noun",
           "@type": "@id"
         },
         "entity": {
-          "@id": "https://skl.standard.storage/entity",
+          "@id": "https://example.com/entity",
           "@type": "@id"
         }
       },
       "skl:parameters": {
         "@type": "shacl:NodeShape",
-        "shacl:targetClass": "https://skl.standard.storage/Parameters",
+        "shacl:targetClass": "https://standardknowledge.com/ontologies/core/Parameters",
         "shacl:property": [
           {
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
             "shacl:name": "noun",
-            "shacl:path": "https://skl.standard.storage/noun"
+            "shacl:path": "https://example.com/noun"
           },
           {
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
             "shacl:name": "entity",
-            "shacl:path": "https://skl.standard.storage/entity"
+            "shacl:path": "https://example.com/entity"
           }
         ]
       }
     },
     {
-      "@id": "https://skl.standard.storage/data/87",
-      "@type": "https://skl.standard.storage/VerbNounMapping",
-      "skl:verb": "https://skl.standard.storage/getName",
-      "skl:noun": "https://skl.standard.storage/File",
+      "@id": "https://example.com/data/87",
+      "@type": "https://standardknowledge.com/ontologies/core/VerbNounMapping",
+      "skl:verb": "https://example.com/getName",
+      "skl:noun": "https://standardknowledge.com/ontologies/core/File",
       "label": "getNameToFile",
       "skl:returnValueMapping": {
         "@type": "rr:TriplesMap",
@@ -651,24 +654,24 @@
       }
     },
     {
-      "@id": "https://skl.standard.storage/authorizeWithPkceOauth",
-      "@type": "https://skl.standard.storage/OpenApiSecuritySchemeVerb",
+      "@id": "https://example.com/authorizeWithPkceOauth",
+      "@type": "https://standardknowledge.com/ontologies/core/OpenApiSecuritySchemeVerb",
       "rdfs:label": "authorizeWithPkceOauth",
       "skl:parametersContext": {
         "account": {
-          "@id": "https://skl.standard.storage/account",
+          "@id": "https://example.com/account",
           "@type": "@id"
         }
       },
       "skl:parameters": {
         "@type": "shacl:NodeShape",
-        "shacl:targetClass": "https://skl.standard.storage/Parameters",
+        "shacl:targetClass": "https://standardknowledge.com/ontologies/core/Parameters",
         "shacl:property": [
           {
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
             "shacl:name": "account",
-            "shacl:path": "https://skl.standard.storage/account"
+            "shacl:path": "https://example.com/account"
           }
         ]
       },
@@ -677,10 +680,10 @@
       }
     },
     {
-      "@id": "https://skl.standard.storage/data/44",
-      "@type": "https://skl.standard.storage/VerbIntegrationMapping",
-      "integration": "https://skl.standard.storage/integrations/Dropbox",
-      "verb": "https://skl.standard.storage/authorizeWithPkceOauth",
+      "@id": "https://example.com/data/44",
+      "@type": "https://standardknowledge.com/ontologies/core/VerbIntegrationMapping",
+      "integration": "https://example.com/integrations/Dropbox",
+      "verb": "https://example.com/authorizeWithPkceOauth",
       "label": "authorizeWithPkceOauthToDropbox",
       "skl:operationMapping": {
         "@type": "rr:TriplesMap",
@@ -723,47 +726,47 @@
       }
     },
     {
-      "@id": "https://skl.standard.storage/getOauthTokens",
-      "@type": "https://skl.standard.storage/OpenApiSecuritySchemeVerb",
+      "@id": "https://example.com/getOauthTokens",
+      "@type": "https://standardknowledge.com/ontologies/core/OpenApiSecuritySchemeVerb",
       "rdfs:label": "getOauthTokens",
       "skl:parametersContext": {
         "codeVerifier": {
-          "@id": "https://skl.standard.storage/codeVerifier",
+          "@id": "https://example.com/codeVerifier",
           "@type": "http://www.w3.org/2001/XMLSchema#string"
         },
         "code": {
-          "@id": "https://skl.standard.storage/code",
+          "@id": "https://example.com/code",
           "@type": "http://www.w3.org/2001/XMLSchema#string"
         },
         "account": {
-          "@id": "https://skl.standard.storage/account",
+          "@id": "https://example.com/account",
           "@type": "@id"
         }
       },
       "skl:parameters": {
         "@type": "shacl:NodeShape",
-        "shacl:targetClass": "https://skl.standard.storage/Parameters",
+        "shacl:targetClass": "https://standardknowledge.com/ontologies/core/Parameters",
         "shacl:property": [
           {
             "shacl:maxCount": 1,
             "shacl:name": "codeVerifier",
-            "shacl:path": "https://skl.standard.storage/codeVerifier"
+            "shacl:path": "https://example.com/codeVerifier"
           },
           {
             "shacl:maxCount": 1,
             "shacl:name": "code",
-            "shacl:path": "https://skl.standard.storage/code"
+            "shacl:path": "https://example.com/code"
           },
           {
             "shacl:maxCount": 1,
             "shacl:name": "refreshToken",
-            "shacl:path": "https://skl.standard.storage/refreshToken"
+            "shacl:path": "https://example.com/refreshToken"
           },
           {
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
             "shacl:name": "account",
-            "shacl:path": "https://skl.standard.storage/account"
+            "shacl:path": "https://example.com/account"
           }
         ]
       },
@@ -775,19 +778,19 @@
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
             "shacl:name": "accessToken",
-            "shacl:path": "https://skl.standard.storage/accessToken"
+            "shacl:path": "https://standardknowledge.com/ontologies/core/accessToken"
           }
         ]
       },
       "skl:returnValueFrame": {
-        "@id": "https://skl.standard.storage/getOauthTokensReturnValueSubject"
+        "@id": "https://example.com/getOauthTokensReturnValueSubject"
       }
     },
     {
-      "@id": "https://skl.standard.storage/data/45",
-      "@type": "https://skl.standard.storage/VerbIntegrationMapping",
-      "integration": "https://skl.standard.storage/integrations/Dropbox",
-      "verb": "https://skl.standard.storage/getOauthTokens",
+      "@id": "https://example.com/data/45",
+      "@type": "https://standardknowledge.com/ontologies/core/VerbIntegrationMapping",
+      "integration": "https://example.com/integrations/Dropbox",
+      "verb": "https://example.com/getOauthTokens",
       "label": "getOauthTokensToDropbox",
       "skl:parameterMapping": {
         "@type": "rr:TriplesMap",
@@ -959,37 +962,38 @@
             "rr:predicate": "skl:refreshToken"
           }
         ],
-        "rr:subject": "https://skl.standard.storage/getOauthTokensReturnValueSubject"
+        "rr:subject": "https://example.com/getOauthTokensReturnValueSubject"
       }
     },
     {
-      "@id": "https://skl.standard.storage/data/DropboxAccount1",
-      "@type": "https://skl.standard.storage/Account",
-      "skl:integration": "https://skl.standard.storage/integrations/Dropbox"
+      "@id": "https://example.com/data/DropboxAccount1",
+      "@type": "https://example.com/Account",
+      "skl:integration": "https://example.com/integrations/Dropbox",
+      "label": "Dropbox Account"
     },
     {
-      "@id": "https://skl.standard.storage/data/DropboxAccount1SecurityCredentials",
-      "@type": "https://skl.standard.storage/SecurityCredentials",
+      "@id": "https://example.com/data/DropboxAccount1SecurityCredentials",
+      "@type": "https://standardknowledge.com/ontologies/core/SecurityCredentials",
       "skl:clientId": "adlerfaulkner",
       "skl:clientSecret": "abc123",
-      "https://skl.standard.storage/accessToken": "SPOOFED_TOKEN",
-      "https://skl.standard.storage/refreshToken": "SPOOFED_REFRESH_TOKEN",
-      "skl:account": "https://skl.standard.storage/data/DropboxAccount1"
+      "https://standardknowledge.com/ontologies/core/accessToken": "SPOOFED_TOKEN",
+      "https://standardknowledge.com/ontologies/core/refreshToken": "SPOOFED_REFRESH_TOKEN",
+      "skl:account": "https://example.com/data/DropboxAccount1"
     },
     {
-      "@id": "https://skl.standard.storage/integrations/Dropbox",
-      "@type": "https://skl.standard.storage/Integration",
-      "https://skl.standard.storage/description": "Dropbox is a modern workspace designed to reduce busywork-so you can focus on the things that matter. Sign in and put your creative energy to work.",
-      "rdfs:label": "Dropbox",
+      "@id": "https://example.com/integrations/Dropbox",
+      "@type": "https://standardknowledge.com/ontologies/core/Integration",
+      "description": "Dropbox is a modern workspace designed to reduce busywork-so you can focus on the things that matter. Sign in and put your creative energy to work.",
+      "label": "Dropbox",
       "skl:invalidTokenErrorMatcher": {
         "status": 401,
         "messageRegex": "^Unauthorized$"
       }
     },
     {
-      "@id": "https://skl.standard.storage/data/DropboxOpenApiDescription",
-      "@type": "https://skl.standard.storage/OpenApiDescription",
-      "skl:integration": "https://skl.standard.storage/integrations/Dropbox",
+      "@id": "https://example.com/data/DropboxOpenApiDescription",
+      "@type": "https://standardknowledge.com/ontologies/core/OpenApiDescription",
+      "skl:integration": "https://example.com/integrations/Dropbox",
       "skl:openApiDescription": {
         "openapi": "3.0.3",
         "info": {

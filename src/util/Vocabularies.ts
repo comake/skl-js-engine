@@ -1,14 +1,18 @@
-function createNamespace<T extends string>(baseUri: string, localNames: T[]): Record<T, string> {
-  const namespace: Record<T, string> = {} as Record<T, string>;
-  for (const localName of localNames) {
-    namespace[localName] = `${baseUri}${localName}`;
-  }
-  return namespace;
+type Namespace<T extends string, TBase extends string> = {
+  [key in T]: `${TBase}${key}`
+};
+
+function createNamespace<T extends string, TBase extends string>(
+  baseUri: TBase,
+  localNames: T[],
+): Namespace<T, TBase> {
+  return localNames.reduce((obj: Namespace<T, TBase>, localName): Namespace<T, TBase> => (
+    { ...obj, [localName]: `${baseUri}${localName}` }
+  // eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter
+  ), {} as Namespace<T, TBase>);
 }
 
-export const sklNamespace = 'https://skl.standard.storage/';
-
-export const SKL = createNamespace(sklNamespace, [
+export const SKL = createNamespace('https://standardknowledge.com/ontologies/core/', [
   'Verb',
   'Noun',
   'Mapping',
@@ -20,7 +24,6 @@ export const SKL = createNamespace(sklNamespace, [
   'SecurityCredentials',
   'InterfaceComponent',
   'Folder',
-  'Verb',
   'OpenApiSecuritySchemeVerb',
   'NounMappedVerb',
   'VerbNounMapping',
