@@ -391,6 +391,29 @@ describe('SKLEngine', (): void => {
       expect(executeOperation).toHaveBeenCalledTimes(0);
     });
 
+    it('validates using the return value\'s type if it does not have an id.', async(): Promise<void> => {
+      schemas.forEach((schemaItem: any): void => {
+        if (schemaItem['@id'] === 'https://example.com/data/4') {
+          delete schemaItem['https://standardknowledge.com/ontologies/core/returnValueMapping']['http://www.w3.org/ns/r2rml#subject'];
+          schemaItem['https://standardknowledge.com/ontologies/core/returnValueMapping']['http://www.w3.org/ns/r2rml#subjectMap'] = {
+            '@type': 'rr:SubjectMap',
+            'http://www.w3.org/ns/r2rml#termType': { '@id': 'http://www.w3.org/ns/r2rml#BlankNode' },
+            'http://www.w3.org/ns/r2rml#class': { '@id': 'https://standardknowledge.com/ontologies/core/File' },
+          };
+        }
+      });
+      const skql = new SKLEngine({ type: 'memory', schemas });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { '@id': id, ...getFileResponseWithoutId } = expectedGetFileResponse;
+      await expect(skql.verb.getFile({ account, id: '12345' })).resolves.toEqual(getFileResponseWithoutId);
+      expect(executeOperation).toHaveBeenCalledTimes(1);
+      expect(executeOperation).toHaveBeenCalledWith(
+        'FilesGetMetadata',
+        { accessToken: 'SPOOFED_TOKEN', apiKey: undefined, basePath: undefined },
+        { path: 'id:12345' },
+      );
+    });
+
     it('errors if the return value does not conform to the verb return value schema.', async(): Promise<void> => {
       schemas.forEach((schemaItem: any): void => {
         if (schemaItem['@id'] === 'https://example.com/data/4') {
