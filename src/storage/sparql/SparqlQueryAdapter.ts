@@ -280,7 +280,7 @@ export class SparqlQueryAdapter implements QueryAdapter {
   private async executeSparqlSelectAndGetData<T extends Quad | SelectVariableQueryResult<any> = Quad>(
     query: string,
   ): Promise<T[]> {
-    const stream = await this.sparqlClient.query.select(query);
+    const stream = await this.sparqlClient.query.select(query, { operation: 'postUrlencoded' });
     return new Promise((resolve, reject): void => {
       const data: T[] = [];
       stream.on('data', (row): void => {
@@ -309,7 +309,7 @@ export class SparqlQueryAdapter implements QueryAdapter {
 
   private async executeSelectCountAndGetResponse(query: SelectQuery): Promise<number> {
     const generatedQuery = this.sparqlGenerator.stringify(query);
-    const stream = await this.sparqlClient.query.select(generatedQuery);
+    const stream = await this.sparqlClient.query.select(generatedQuery, { operation: 'postUrlencoded' });
     return new Promise((resolve, reject): void => {
       let countValue: number;
       stream.on('data', (row: { count: Literal }): void => {

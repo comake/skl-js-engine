@@ -53,11 +53,11 @@
       "label": "divide",
       "skl:parametersContext": {
         "numerator": {
-          "@id": "example:numerator",
+          "@id": "https://example.com/numerator",
           "@type": "@id"
         },
         "denominator": {
-          "@id": "example:denominator",
+          "@id": "https://example.com/denominator",
           "@type": "@id"
         }
       },

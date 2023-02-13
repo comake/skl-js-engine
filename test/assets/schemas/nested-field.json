@@ -17,6 +17,7 @@
     "skos": "http://www.w3.org/2004/02/skos/core#",
     "rml:referenceFormulation": { "@type": "@id" },
     "rr:predicate": { "@type": "@id" },
+    "rr:subject": { "@type": "@id" },
     "rr:termType": { "@type": "@id" },
     "rr:object": { "@type": "@id" },
     "example": "https://example.com/"
@@ -63,10 +64,7 @@
           "rr:predicate": "example:nestedField"
         }
       ],
-      "rr:subjectMap": {
-        "@type": "rr:SubjectMap",
-        "rr:template": "https://example.com/mappingSubject"
-      }
+      "rr:subject": "https://example.com/mappingSubject"
     }
   ]
 }
