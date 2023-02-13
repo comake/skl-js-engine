@@ -466,14 +466,14 @@ describe('a MemoryQueryAdapter', (): void => {
           },
           {
             '@id': 'https://standardknowledge.com/ontologies/core/File',
-            '@type': OWL.class,
+            '@type': OWL.Class,
             [RDFS.subClassOf]: [
               { '@id': 'https://standardknowledge.com/ontologies/core/Noun' },
             ],
           },
           {
             '@id': 'https://standardknowledge.com/ontologies/core/Article',
-            '@type': OWL.class,
+            '@type': OWL.Class,
             [RDFS.subClassOf]: [
               { '@id': 'https://standardknowledge.com/ontologies/core/Noun' },
             ],
@@ -835,14 +835,14 @@ describe('a MemoryQueryAdapter', (): void => {
           },
           {
             '@id': 'https://standardknowledge.com/ontologies/core/File',
-            '@type': OWL.class,
+            '@type': OWL.Class,
             [RDFS.subClassOf]: [
               { '@id': 'https://standardknowledge.com/ontologies/core/Noun' },
             ],
           },
           {
             '@id': 'https://standardknowledge.com/ontologies/core/Article',
-            '@type': OWL.class,
+            '@type': OWL.Class,
             [RDFS.subClassOf]: [
               { '@id': 'https://standardknowledge.com/ontologies/core/Noun' },
             ],

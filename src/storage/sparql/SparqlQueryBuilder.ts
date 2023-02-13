@@ -176,7 +176,8 @@ export class SparqlQueryBuilder {
       triples = this.createSelectPattern(select, entityVariable);
       where = [
         this.sparqlOptionalSelectGraph(entityVariable, triples),
-        ...graphWhere ];
+        ...graphWhere,
+      ];
     } else {
       const graphSelectsAndTriplePatterns = this.createGraphSelectsAndTriplePatterns(graphSelectVariables);
       const entityGraphTriple = { subject: subjectNode, predicate: predicateNode, object: objectNode };
