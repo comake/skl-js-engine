@@ -474,6 +474,28 @@ describe('a SparqlQueryAdapter', (): void => {
           '}',
         ]);
       });
+
+    it('executes an entity selection query then returns en empty array if there are no selected entity results.',
+      async(): Promise<void> => {
+        select.mockImplementationOnce(
+          async(): Promise<Readable> => streamFrom([]),
+        );
+        await expect(
+          adapter.findAll({
+            order: {
+              'https://example.com/pred': 'asc',
+            },
+          }),
+        ).resolves.toEqual([]);
+        expect(select).toHaveBeenCalledTimes(1);
+        expect(select.mock.calls[0][0].split('\n')).toEqual([
+          'SELECT ?entity WHERE {',
+          '  ?entity ?c1 ?c2.',
+          '  OPTIONAL { ?entity <https://example.com/pred> ?c3. }',
+          '}',
+          'ORDER BY (?c3)',
+        ]);
+      });
   });
 
   describe('findAllBy', (): void => {

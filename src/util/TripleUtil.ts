@@ -176,6 +176,9 @@ export async function triplesToJsonld(
   relations?: FindOptionsRelations,
   orderedNodeIds?: string[],
 ): Promise<OrArray<NodeObject>> {
+  if (triples.length === 0) {
+    return [];
+  }
   const { nodeIdOrder, nodesById } = triplesToNodes(triples);
   const framed = await frameWithRelationsOrNonBlankNodes(nodesById, relations);
   if ('@graph' in framed) {

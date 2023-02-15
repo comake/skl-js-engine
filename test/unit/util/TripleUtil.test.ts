@@ -49,6 +49,11 @@ describe('TripleUtil', (): void => {
   describe('#triplesToJsonld', (): void => {
     let triples: Quad[];
 
+    it('returns an empty array when no triples are supplied.', async(): Promise<void> => {
+      triples = [] as Quad[];
+      await expect(triplesToJsonld(triples)).resolves.toEqual([]);
+    });
+
     it('converts the rdf:type predicate to @type.', async(): Promise<void> => {
       triples = [{
         subject: data1,
