@@ -236,9 +236,25 @@ export class SKLEngine {
         operationArgs,
         account,
       );
-      return { ...response, args: operationArgs } as unknown as OperationResponse;
+      return this.axiosResponseAndArgsToOperationResponse(response, operationArgs);
     }
     throw new Error('Operation not supported.');
+  }
+
+  private axiosResponseAndArgsToOperationResponse(response: AxiosResponse, args: JSONObject): OperationResponse {
+    return {
+      args,
+      data: response.data,
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+      config: {
+        headers: response.config.headers,
+        method: response.config.method,
+        url: response.config.url,
+        data: response.config.data,
+      } as JSONObject,
+    };
   }
 
   private async performReturnValueMappingWithFrame(
@@ -431,7 +447,7 @@ export class SKLEngine {
     // Assert AxiosResponse here because this cannot be a code authorization url request
     ) as AxiosResponse;
     const mappedReturnValue = await this.performReturnValueMappingWithFrame(
-      { ...rawReturnValue, args: operationArgs } as unknown as OperationResponse,
+      this.axiosResponseAndArgsToOperationResponse(rawReturnValue, operationArgs),
       mapping,
       getOauthTokenVerb,
     );
@@ -511,10 +527,7 @@ export class SKLEngine {
         args: operationArgs,
       };
     }
-    return {
-      ...response,
-      args: operationArgs,
-    } as unknown as OperationResponse;
+    return this.axiosResponseAndArgsToOperationResponse(response, operationArgs);
   }
 
   private async getDataFromDataSource(dataSourceId: string): Promise<OperationResponse> {
