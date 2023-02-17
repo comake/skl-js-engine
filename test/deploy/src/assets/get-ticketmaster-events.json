@@ -262,7 +262,7 @@
           "@type": "rr:TriplesMap",
           "rml:logicalSource": {
             "@type": "rml:LogicalSource",
-            "rml:iterator": "$",
+            "rml:iterator": "$.data",
             "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
             "rml:source": "input.json"
           },

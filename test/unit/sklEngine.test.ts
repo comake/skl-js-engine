@@ -54,7 +54,7 @@ const incorrectReturnValueMapping = {
   '@type': 'http://www.w3.org/ns/r2rml#TriplesMap',
   'http://semweb.mmlab.be/ns/rml#logicalSource': {
     '@type': 'http://semweb.mmlab.be/ns/rml#LogicalSource',
-    'http://semweb.mmlab.be/ns/rml#iterator': '$',
+    'http://semweb.mmlab.be/ns/rml#iterator': '$.data',
     'http://semweb.mmlab.be/ns/rml#referenceFormulation': { '@id': 'http://semweb.mmlab.be/ns/ql#JSONPath' },
     'http://semweb.mmlab.be/ns/rml#source': 'input.json',
   },
@@ -354,7 +354,7 @@ describe('SKLEngine', (): void => {
       );
     });
 
-    it('returns the raw response if the openapi operation mapping does not have a return value mapping.',
+    it('returns the raw operation response if the openapi operation mapping does not have a return value mapping.',
       async(): Promise<void> => {
         schemas = schemas.map((schemaItem: any): any => {
           if (schemaItem['@id'] === 'https://example.com/data/4') {
@@ -365,7 +365,12 @@ describe('SKLEngine', (): void => {
         });
         const skql = new SKLEngine({ type: 'memory', schemas });
         const response = await skql.verb.getFile({ account, id: '12345' });
-        expect(response).toEqual({ data: mockDropboxFile });
+        expect(response).toEqual({
+          data: mockDropboxFile,
+          args: {
+            path: 'id:12345',
+          },
+        });
         expect(executeOperation).toHaveBeenCalledTimes(1);
         expect(executeOperation).toHaveBeenCalledWith(
           'FilesGetMetadata',
