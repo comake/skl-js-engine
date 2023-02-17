@@ -18,7 +18,7 @@ import type { MemoryQueryAdapterOptions } from './storage/memory/MemoryQueryAdap
 import type { QueryAdapter, RawQueryResult } from './storage/QueryAdapter';
 import { SparqlQueryAdapter } from './storage/sparql/SparqlQueryAdapter';
 import type { SparqlQueryAdapterOptions } from './storage/sparql/SparqlQueryAdapterOptions';
-import type { OrArray, Entity } from './util/Types';
+import type { OrArray, Entity, OperationResponse, ErrorMatcher } from './util/Types';
 import {
   convertJsonLdToQuads,
   toJSON,
@@ -27,22 +27,12 @@ import {
 import type { JSONObject } from './util/Util';
 import { SKL, SHACL, RDFS } from './util/Vocabularies';
 
-export type VerbHandler = (args: JSONObject) => Promise<NodeObject>;
+export type VerbHandler = (params: JSONObject) => Promise<NodeObject>;
 export type VerbInterface = Record<string, VerbHandler>;
 
 export type MappingResponseOption<T extends boolean> = T extends true ? JSONObject : NodeObject;
 
 export type SKLEngineOptions = MemoryQueryAdapterOptions | SparqlQueryAdapterOptions;
-
-export interface ErrorMatcher {
-  status: number;
-  messageRegex: string;
-}
-
-export interface OperationResponse extends JSONObject {
-  data: JSONObject;
-  args: JSONObject;
-}
 
 export class SKLEngine {
   private readonly mapper: Mapper;
@@ -236,14 +226,17 @@ export class SKLEngine {
         operationArgs,
         account,
       );
-      return this.axiosResponseAndArgsToOperationResponse(response, operationArgs);
+      return this.axiosResponseAndParamsToOperationResponse(response, operationArgs);
     }
     throw new Error('Operation not supported.');
   }
 
-  private axiosResponseAndArgsToOperationResponse(response: AxiosResponse, args: JSONObject): OperationResponse {
+  private axiosResponseAndParamsToOperationResponse(
+    response: AxiosResponse,
+    operationParameters: JSONObject,
+  ): OperationResponse {
     return {
-      args,
+      operationParameters,
       data: response.data,
       status: response.status,
       statusText: response.statusText,
@@ -447,7 +440,7 @@ export class SKLEngine {
     // Assert AxiosResponse here because this cannot be a code authorization url request
     ) as AxiosResponse;
     const mappedReturnValue = await this.performReturnValueMappingWithFrame(
-      this.axiosResponseAndArgsToOperationResponse(rawReturnValue, operationArgs),
+      this.axiosResponseAndParamsToOperationResponse(rawReturnValue, operationArgs),
       mapping,
       getOauthTokenVerb,
     );
@@ -500,7 +493,7 @@ export class SKLEngine {
 
   private async performSecuritySchemeStageWithCredentials(
     operationInfo: NodeObject,
-    operationArgs: JSONObject,
+    operationParameters: JSONObject,
     account: Entity,
   ): Promise<OperationResponse> {
     const integrationId = (account[SKL.integration] as ReferenceNodeObject)['@id'];
@@ -509,7 +502,7 @@ export class SKLEngine {
     let configuration: OpenApiClientConfiguration;
     if (securityCredentialsSchema) {
       configuration = this.getConfigurationFromSecurityCredentials(securityCredentialsSchema);
-      operationArgs.client_id = getValueIfDefined<string>(securityCredentialsSchema[SKL.clientId])!;
+      operationParameters.client_id = getValueIfDefined<string>(securityCredentialsSchema[SKL.clientId])!;
     } else {
       configuration = {};
     }
@@ -519,22 +512,22 @@ export class SKLEngine {
       getValueIfDefined(operationInfo[SKL.oauthFlow])!,
       getValueIfDefined(operationInfo[SKL.stage])!,
       configuration,
-      operationArgs,
+      operationParameters,
     );
     if ('codeVerifier' in response && 'authorizationUrl' in response) {
       return {
         data: response as unknown as JSONObject,
-        args: operationArgs,
+        operationParameters,
       };
     }
-    return this.axiosResponseAndArgsToOperationResponse(response, operationArgs);
+    return this.axiosResponseAndParamsToOperationResponse(response, operationParameters);
   }
 
   private async getDataFromDataSource(dataSourceId: string): Promise<OperationResponse> {
     const dataSource = await this.findBy({ id: dataSourceId });
     if (dataSource['@type'] === SKL.JsonDataSource) {
       const data = this.getDataFromJsonDataSource(dataSource);
-      return { data, args: {}};
+      return { data, operationParameters: {}};
     }
     throw new Error(`DataSource type ${dataSource['@type']} is not supported.`);
   }

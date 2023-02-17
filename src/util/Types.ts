@@ -11,6 +11,7 @@ import type {
   TypeMap,
   ValueObject,
 } from 'jsonld';
+import type { JSONObject } from './Util';
 
 export type PossibleArrayFieldValues =
   | boolean
@@ -48,3 +49,13 @@ export interface Entity {
 }
 
 export type OrArray<T> = T | T[];
+
+export interface ErrorMatcher {
+  status: number;
+  messageRegex: string;
+}
+
+export interface OperationResponse extends JSONObject {
+  data: JSONObject;
+  operationParameters: JSONObject;
+}

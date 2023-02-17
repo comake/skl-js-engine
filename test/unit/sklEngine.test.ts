@@ -368,7 +368,7 @@ describe('SKLEngine', (): void => {
         expect(response).toEqual(
           expect.objectContaining({
             data: mockDropboxFile,
-            args: {
+            operationParameters: {
               path: 'id:12345',
             },
           }),
