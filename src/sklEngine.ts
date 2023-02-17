@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type {
   OpenApi,
-  CodeAuthorizationUrlResponse,
   OpenApiClientConfiguration,
 } from '@comake/openapi-operation-executor';
 import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
@@ -40,8 +39,9 @@ export interface ErrorMatcher {
   messageRegex: string;
 }
 
-export interface OperationResponse {
+export interface OperationResponse extends JSONObject {
   data: JSONObject;
+  args: JSONObject;
 }
 
 export class SKLEngine {
@@ -186,16 +186,16 @@ export class SKLEngine {
     const operationArgs = await this.performParameterMappingOnArgsIfDefined(args, mapping);
     const operationInfo = await this.performOperationMappingWithArgs(args, mapping);
     const rawReturnValue = await this.performOperation(operationInfo, operationArgs, account);
-    if (operationInfo[SKL.schemeName] && (rawReturnValue as CodeAuthorizationUrlResponse).authorizationUrl) {
+    if (operationInfo[SKL.schemeName] && rawReturnValue.data.authorizationUrl) {
       return {
         '@type': '@json',
-        '@value': rawReturnValue as unknown as JSONObject,
-      } as NodeObject;
+        '@value': rawReturnValue.data,
+      };
     }
 
     if (mapping[SKL.returnValueMapping]) {
       const mappedReturnValue = await this.performReturnValueMappingWithFrame(
-        (rawReturnValue as OperationResponse).data,
+        rawReturnValue,
         mapping,
         verb,
       );
@@ -221,7 +221,7 @@ export class SKLEngine {
     operationInfo: NodeObject,
     operationArgs: JSONObject,
     account: Entity,
-  ): Promise<OperationResponse | CodeAuthorizationUrlResponse> {
+  ): Promise<OperationResponse> {
     if (operationInfo[SKL.schemeName]) {
       return await this.performSecuritySchemeStageWithCredentials(operationInfo, operationArgs, account);
     }
@@ -231,22 +231,39 @@ export class SKLEngine {
       );
     }
     if (operationInfo[SKL.operationId]) {
-      return await this.performOpenapiOperationWithCredentials(
+      const response = await this.performOpenapiOperationWithCredentials(
         getValueIfDefined(operationInfo[SKL.operationId])!,
         operationArgs,
         account,
       );
+      return this.axiosResponseAndArgsToOperationResponse(response, operationArgs);
     }
     throw new Error('Operation not supported.');
   }
 
+  private axiosResponseAndArgsToOperationResponse(response: AxiosResponse, args: JSONObject): OperationResponse {
+    return {
+      args,
+      data: response.data,
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+      config: {
+        headers: response.config.headers,
+        method: response.config.method,
+        url: response.config.url,
+        data: response.config.data,
+      } as JSONObject,
+    };
+  }
+
   private async performReturnValueMappingWithFrame(
-    data: JSONObject,
+    operationResponse: OperationResponse,
     mapping: Entity,
     verb: Entity,
   ): Promise<NodeObject> {
     return await this.performMapping(
-      data,
+      operationResponse,
       mapping[SKL.returnValueMapping] as OrArray<NodeObject>,
       {
         ...getValueIfDefined<JSONObject>(verb[SKL.returnValueFrame]),
@@ -427,9 +444,12 @@ export class SKLEngine {
       getValueIfDefined(operationInfoJsonLd[SKL.stage])!,
       configuration,
       operationArgs,
-    );
+    // Assert AxiosResponse here because this cannot be a code authorization url request
+    ) as AxiosResponse;
     const mappedReturnValue = await this.performReturnValueMappingWithFrame(
-      (rawReturnValue as OperationResponse).data, mapping, getOauthTokenVerb,
+      this.axiosResponseAndArgsToOperationResponse(rawReturnValue, operationArgs),
+      mapping,
+      getOauthTokenVerb,
     );
     await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, getOauthTokenVerb);
     securityCredentialsSchema[SKL.accessToken] = getValueIfDefined(mappedReturnValue[SKL.accessToken]);
@@ -482,7 +502,7 @@ export class SKLEngine {
     operationInfo: NodeObject,
     operationArgs: JSONObject,
     account: Entity,
-  ): Promise<AxiosResponse | CodeAuthorizationUrlResponse> {
+  ): Promise<OperationResponse> {
     const integrationId = (account[SKL.integration] as ReferenceNodeObject)['@id'];
     const openApiDescription = await this.getOpenApiDescriptionForIntegration(integrationId);
     const securityCredentialsSchema = await this.findSecurityCredentialsForAccountIfDefined(account['@id']);
@@ -494,20 +514,27 @@ export class SKLEngine {
       configuration = {};
     }
     const openApiExecutor = await this.createOpenApiOperationExecutorWithSpec(openApiDescription);
-    return await openApiExecutor.executeSecuritySchemeStage(
+    const response = await openApiExecutor.executeSecuritySchemeStage(
       getValueIfDefined(operationInfo[SKL.schemeName])!,
       getValueIfDefined(operationInfo[SKL.oauthFlow])!,
       getValueIfDefined(operationInfo[SKL.stage])!,
       configuration,
       operationArgs,
     );
+    if ('codeVerifier' in response && 'authorizationUrl' in response) {
+      return {
+        data: response as unknown as JSONObject,
+        args: operationArgs,
+      };
+    }
+    return this.axiosResponseAndArgsToOperationResponse(response, operationArgs);
   }
 
   private async getDataFromDataSource(dataSourceId: string): Promise<OperationResponse> {
     const dataSource = await this.findBy({ id: dataSourceId });
     if (dataSource['@type'] === SKL.JsonDataSource) {
       const data = this.getDataFromJsonDataSource(dataSource);
-      return { data };
+      return { data, args: {}};
     }
     throw new Error(`DataSource type ${dataSource['@type']} is not supported.`);
   }

@@ -54,7 +54,7 @@ const incorrectReturnValueMapping = {
   '@type': 'http://www.w3.org/ns/r2rml#TriplesMap',
   'http://semweb.mmlab.be/ns/rml#logicalSource': {
     '@type': 'http://semweb.mmlab.be/ns/rml#LogicalSource',
-    'http://semweb.mmlab.be/ns/rml#iterator': '$',
+    'http://semweb.mmlab.be/ns/rml#iterator': '$.data',
     'http://semweb.mmlab.be/ns/rml#referenceFormulation': { '@id': 'http://semweb.mmlab.be/ns/ql#JSONPath' },
     'http://semweb.mmlab.be/ns/rml#source': 'input.json',
   },
@@ -332,8 +332,8 @@ describe('SKLEngine', (): void => {
         './test/assets/schemas/core.json',
         './test/assets/schemas/get-dropbox-file.json',
       ]);
-      executeOperation = jest.fn().mockResolvedValue({ data: mockDropboxFile });
-      executeSecuritySchemeStage = jest.fn().mockResolvedValue({ data: { access_token: 'newToken' }});
+      executeOperation = jest.fn().mockResolvedValue({ data: mockDropboxFile, config: {}});
+      executeSecuritySchemeStage = jest.fn().mockResolvedValue({ data: { access_token: 'newToken' }, config: {}});
       setOpenapiSpec = jest.fn();
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({
         executeOperation,
@@ -354,7 +354,7 @@ describe('SKLEngine', (): void => {
       );
     });
 
-    it('returns the raw response if the openapi operation mapping does not have a return value mapping.',
+    it('returns the raw operation response if the openapi operation mapping does not have a return value mapping.',
       async(): Promise<void> => {
         schemas = schemas.map((schemaItem: any): any => {
           if (schemaItem['@id'] === 'https://example.com/data/4') {
@@ -365,7 +365,14 @@ describe('SKLEngine', (): void => {
         });
         const skql = new SKLEngine({ type: 'memory', schemas });
         const response = await skql.verb.getFile({ account, id: '12345' });
-        expect(response).toEqual({ data: mockDropboxFile });
+        expect(response).toEqual(
+          expect.objectContaining({
+            data: mockDropboxFile,
+            args: {
+              path: 'id:12345',
+            },
+          }),
+        );
         expect(executeOperation).toHaveBeenCalledTimes(1);
         expect(executeOperation).toHaveBeenCalledWith(
           'FilesGetMetadata',
@@ -641,7 +648,7 @@ describe('SKLEngine', (): void => {
     });
 
     it('can execute an OpenApiSecuritySchemeVerb that maps to the tokenUrl stage.', async(): Promise<void> => {
-      response = { data: { access_token: 'abc123' }};
+      response = { data: { access_token: 'abc123' }, config: {}};
       executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
       const skql = new SKLEngine({ type: 'memory', schemas });
@@ -666,7 +673,7 @@ describe('SKLEngine', (): void => {
     if no SecurityCredentialsSchema exists for the account.`,
     async(): Promise<void> => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://example.com/data/DropboxAccount1SecurityCredentials');
-      response = { data: { message: 'Access Denied' }};
+      response = { data: { message: 'Access Denied' }, config: {}};
       executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
       const skql = new SKLEngine({ type: 'memory', schemas });
@@ -688,7 +695,7 @@ describe('SKLEngine', (): void => {
           './test/assets/schemas/core.json',
           './test/assets/schemas/get-stubhub-events.json',
         ]);
-        response = { data: { access_token: 'abc123' }};
+        response = { data: { access_token: 'abc123' }, config: {}};
         executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
         (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
         const skql = new SKLEngine({ type: 'memory', schemas });
@@ -714,7 +721,7 @@ describe('SKLEngine', (): void => {
         './test/assets/schemas/core.json',
         './test/assets/schemas/get-dropbox-file.json',
       ]);
-      executeOperation = jest.fn().mockResolvedValue({ data: mockDropboxFile });
+      executeOperation = jest.fn().mockResolvedValue({ data: mockDropboxFile, config: {}});
       setOpenapiSpec = jest.fn();
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeOperation, setOpenapiSpec });
     });
