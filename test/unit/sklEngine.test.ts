@@ -349,7 +349,7 @@ describe('SKLEngine', (): void => {
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
         'FilesGetMetadata',
-        { accessToken: 'SPOOFED_TOKEN', apiKey: undefined, basePath: undefined },
+        { accessToken: 'SPOOFED_TOKEN', jwt: undefined, apiKey: undefined, basePath: undefined },
         { path: 'id:12345' },
       );
     });
@@ -376,7 +376,7 @@ describe('SKLEngine', (): void => {
         expect(executeOperation).toHaveBeenCalledTimes(1);
         expect(executeOperation).toHaveBeenCalledWith(
           'FilesGetMetadata',
-          { accessToken: 'SPOOFED_TOKEN', apiKey: undefined, basePath: undefined },
+          { accessToken: 'SPOOFED_TOKEN', jwt: undefined, apiKey: undefined, basePath: undefined },
           { path: 'id:12345' },
         );
       });
@@ -416,7 +416,7 @@ describe('SKLEngine', (): void => {
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
         'FilesGetMetadata',
-        { accessToken: 'SPOOFED_TOKEN', apiKey: undefined, basePath: undefined },
+        { accessToken: 'SPOOFED_TOKEN', jwt: undefined, apiKey: undefined, basePath: undefined },
         { path: 'id:12345' },
       );
     });
@@ -434,7 +434,7 @@ describe('SKLEngine', (): void => {
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
         'FilesGetMetadata',
-        { accessToken: 'SPOOFED_TOKEN', apiKey: undefined, basePath: undefined },
+        { accessToken: 'SPOOFED_TOKEN', jwt: undefined, apiKey: undefined, basePath: undefined },
         { path: 'id:12345' },
       );
     });
@@ -469,7 +469,7 @@ describe('SKLEngine', (): void => {
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
         'FilesGetMetadata',
-        { accessToken: undefined, apiKey: undefined, basePath: undefined },
+        { accessToken: undefined, jwt: undefined, apiKey: undefined, basePath: undefined },
         { path: 'id:12345' },
       );
     });
@@ -504,7 +504,7 @@ describe('SKLEngine', (): void => {
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
         'FilesGetMetadata',
-        { accessToken: 'SPOOFED_TOKEN', apiKey: undefined, basePath: undefined },
+        { accessToken: 'SPOOFED_TOKEN', jwt: undefined, apiKey: undefined, basePath: undefined },
         { path: 'id:12345' },
       );
     });

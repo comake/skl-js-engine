@@ -41,6 +41,7 @@ export const SKL = createNamespace('https://standardknowledge.com/ontologies/cor
   'verbMapping',
   'openApiDescription',
   'accessToken',
+  'jwt',
   'refreshToken',
   'apiKey',
   'sourceId',

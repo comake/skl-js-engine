@@ -213,7 +213,7 @@ export class SKLEngine {
     account: Entity,
   ): Promise<OperationResponse> {
     if (operationInfo[SKL.schemeName]) {
-      return await this.performSecuritySchemeStageWithCredentials(operationInfo, operationArgs, account);
+      return await this.performOauthSecuritySchemeStageWithCredentials(operationInfo, operationArgs, account);
     }
     if (operationInfo[SKL.dataSource]) {
       return await this.getDataFromDataSource(
@@ -375,18 +375,15 @@ export class SKLEngine {
     const openApiExecutor = await this.createOpenApiOperationExecutorWithSpec(openApiDescription);
     const securityCredentials = await this.findSecurityCredentialsForAccountIfDefined(account['@id']);
     const configuration = {
-      accessToken: securityCredentials
-        ? getValueIfDefined<string>(securityCredentials[SKL.accessToken])
-        : undefined,
-      apiKey: securityCredentials
-        ? getValueIfDefined<string>(securityCredentials[SKL.apiKey])
-        : undefined,
+      accessToken: getValueIfDefined<string>(securityCredentials?.[SKL.accessToken]),
+      jwt: getValueIfDefined<string>(securityCredentials?.[SKL.jwt]),
+      apiKey: getValueIfDefined<string>(securityCredentials?.[SKL.apiKey]),
       basePath: getValueIfDefined<string>(account[SKL.overrideBasePath]),
     };
     return await openApiExecutor.executeOperation(operationId, configuration, operationArgs)
       .catch(async(error: Error | AxiosError): Promise<any> => {
         if (axios.isAxiosError(error) && await this.isInvalidTokenError(error, integrationId) && securityCredentials) {
-          const refreshedConfiguration = await this.refreshOpenApiToken(
+          const refreshedConfiguration = await this.refreshOauthOpenApiToken(
             securityCredentials,
             openApiExecutor,
             integrationId,
@@ -418,7 +415,7 @@ export class SKLEngine {
     return false;
   }
 
-  private async refreshOpenApiToken(
+  private async refreshOauthOpenApiToken(
     securityCredentialsSchema: Entity,
     openApiExecutor: OpenApiOperationExecutor,
     integrationId: string,
@@ -430,7 +427,7 @@ export class SKLEngine {
       mapping,
     );
     const operationInfoJsonLd = await this.performOperationMappingWithArgs({}, mapping);
-    const configuration = this.getConfigurationFromSecurityCredentials(securityCredentialsSchema);
+    const configuration = this.getOauthConfigurationFromSecurityCredentials(securityCredentialsSchema);
     const rawReturnValue = await openApiExecutor.executeSecuritySchemeStage(
       getValueIfDefined(operationInfoJsonLd[SKL.schemeName])!,
       getValueIfDefined(operationInfoJsonLd[SKL.oauthFlow])!,
@@ -451,7 +448,7 @@ export class SKLEngine {
     return { accessToken: getValueIfDefined(securityCredentialsSchema[SKL.accessToken]) };
   }
 
-  private getConfigurationFromSecurityCredentials(
+  private getOauthConfigurationFromSecurityCredentials(
     securityCredentialsSchema: Entity,
   ): OpenApiClientConfiguration {
     const username = getValueIfDefined<string>(securityCredentialsSchema[SKL.clientId]);
@@ -491,7 +488,7 @@ export class SKLEngine {
     return validator.validate(valueAsQuads);
   }
 
-  private async performSecuritySchemeStageWithCredentials(
+  private async performOauthSecuritySchemeStageWithCredentials(
     operationInfo: NodeObject,
     operationParameters: JSONObject,
     account: Entity,
@@ -501,7 +498,7 @@ export class SKLEngine {
     const securityCredentialsSchema = await this.findSecurityCredentialsForAccountIfDefined(account['@id']);
     let configuration: OpenApiClientConfiguration;
     if (securityCredentialsSchema) {
-      configuration = this.getConfigurationFromSecurityCredentials(securityCredentialsSchema);
+      configuration = this.getOauthConfigurationFromSecurityCredentials(securityCredentialsSchema);
       operationParameters.client_id = getValueIfDefined<string>(securityCredentialsSchema[SKL.clientId])!;
     } else {
       configuration = {};
