@@ -361,7 +361,7 @@ export class SKLEngine {
     const parametersSchema = verb[SKL.parameters] as NodeObject;
     const report = await this.convertToQuadsAndValidateAgainstShape(verbParamsAsJsonLd, parametersSchema);
     if (!report.conforms) {
-      throw new Error(`${verb[RDFS.label]} parameters do not conform to the schema`);
+      throw new Error(`${getValueIfDefined(verb[RDFS.label])} parameters do not conform to the schema`);
     }
   }
 
