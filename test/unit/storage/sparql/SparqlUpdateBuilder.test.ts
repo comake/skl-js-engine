@@ -205,7 +205,8 @@ describe('A SparqlUpdateBuilder', (): void => {
           }],
         },
         {
-          updateType: 'insert',
+          updateType: 'insertdelete',
+          delete: [],
           insert: [
             {
               type: 'graph',
@@ -217,12 +218,8 @@ describe('A SparqlUpdateBuilder', (): void => {
               ],
             },
           ],
-          where: [{
-            type: 'query',
-            queryType: 'SELECT',
-            prefixes: {},
-            variables: [ now ],
-            where: [{
+          where: [
+            {
               type: 'bind',
               variable: now,
               expression: {
@@ -230,8 +227,8 @@ describe('A SparqlUpdateBuilder', (): void => {
                 operator: 'now',
                 args: [],
               },
-            }],
-          }],
+            },
+          ],
         },
       ],
     };

@@ -7,8 +7,8 @@ import type {
   GraphQuads,
   Triple,
   InsertDeleteOperation,
-  SelectQuery,
   UpdateOperation,
+  BindPattern,
 } from 'sparqljs';
 import {
   rdfTypeNamedNode,
@@ -221,14 +221,22 @@ export class SparqlUpdateBuilder {
       updates.push({
         updateType: 'deletewhere',
         delete: deletions,
-      } as InsertDeleteOperation);
+      });
     }
     if (insertions.length > 0) {
-      const insert = { updateType: 'insert', insert: insertions } as InsertDeleteOperation;
       if (this.setTimestamps) {
-        insert.where = [ this.selectNow() ];
+        updates.push({
+          updateType: 'insertdelete',
+          delete: [],
+          insert: insertions,
+          where: [ this.bindNow() ],
+        });
+      } else {
+        updates.push({
+          updateType: 'insert',
+          insert: insertions,
+        });
       }
-      updates.push(insert);
     }
     return updates;
   }
@@ -241,21 +249,15 @@ export class SparqlUpdateBuilder {
     };
   }
 
-  private selectNow(): SelectQuery {
+  private bindNow(): BindPattern {
     return {
-      type: 'query',
-      queryType: 'SELECT',
-      prefixes: {},
-      variables: [ now ],
-      where: [{
-        type: 'bind',
-        variable: now,
-        expression: {
-          type: 'operation',
-          operator: 'now',
-          args: [],
-        },
-      }],
+      type: 'bind',
+      variable: now,
+      expression: {
+        type: 'operation',
+        operator: 'now',
+        args: [],
+      },
     };
   }
 }
