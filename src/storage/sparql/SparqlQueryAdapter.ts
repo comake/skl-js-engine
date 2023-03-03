@@ -161,8 +161,8 @@ export class SparqlQueryAdapter implements QueryAdapter {
     if (orderedEntities.length === 0) {
       return [];
     }
-    const variableValueFilter = queryBuilder.buildInFilterForVariables(valuesByVariable);
-    selectQueryData.graphWhere.push(variableValueFilter);
+    const variableValueFilters = queryBuilder.buildValuesForVariables(valuesByVariable);
+    selectQueryData.graphWhere = [ ...variableValueFilters, ...selectQueryData.graphWhere ];
     return await this.executeEntitySelectQuery(
       queryBuilder,
       selectQueryData,

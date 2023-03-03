@@ -15,6 +15,8 @@ import type {
   OptionalPattern,
   BgpPattern,
   PropertyPath,
+  ValuePatternRow,
+  ValuesPattern,
 } from 'sparqljs';
 import {
   allTypesAndSuperTypesPath,
@@ -85,14 +87,14 @@ export class SparqlQueryBuilder {
     this.variableGenerator = new VariableGenerator();
   }
 
-  public buildInFilterForVariables(valuesByVariable: Record<string, (NamedNode | Literal)[]>): FilterPattern {
-    return this.filterPatternFromFilters(
-      Object.entries(valuesByVariable).map(([ variableName, values ]): OperationExpression =>
-        this.buildInOperation(
-          DataFactory.variable(variableName),
-          values,
-        )),
-    );
+  public buildValuesForVariables(valuesByVariable: Record<string, (NamedNode | Literal)[]>): ValuesPattern[] {
+    return Object.entries(valuesByVariable)
+      .map(([ variableName, values ]): ValuesPattern => ({
+        type: 'values',
+        values: values.map((value): ValuePatternRow => ({
+          [`?${variableName}`]: value,
+        })),
+      }));
   }
 
   private filterWithExpression(expression: Expression): FilterPattern {
@@ -224,26 +226,23 @@ export class SparqlQueryBuilder {
 
   private createGraphSelectsAndTriplePatterns(
     variables: Variable[],
-  ): { triples: Triple[]; graphPatterns: OptionalPattern[] } {
+  ): { triples: Triple[]; graphPatterns: GraphPattern[] } {
     return variables.reduce((
-      obj: { triples: Triple[]; graphPatterns: OptionalPattern[] },
+      obj: { triples: Triple[]; graphPatterns: GraphPattern[] },
       variable: Variable,
-    ): { triples: Triple[]; graphPatterns: OptionalPattern[] } => {
+    ): { triples: Triple[]; graphPatterns: GraphPattern[] } => {
       const triple = {
         subject: this.createVariable(),
         predicate: this.createVariable(),
         object: this.createVariable(),
       };
       obj.triples.push(triple);
-      obj.graphPatterns.push({
-        type: 'optional',
-        patterns: [
-          this.sparqlSelectGraph(
-            variable,
-            [ this.sparqlBasicGraphPattern([ triple ]) ],
-          ),
-        ],
-      });
+      obj.graphPatterns.push(
+        this.sparqlSelectGraph(
+          variable,
+          [ this.sparqlBasicGraphPattern([ triple ]) ],
+        ),
+      );
       return obj;
     }, { triples: [], graphPatterns: []});
   }

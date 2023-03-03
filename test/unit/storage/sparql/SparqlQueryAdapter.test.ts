@@ -469,7 +469,10 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[1][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  FILTER(?entity IN(<https://example.com/data/1>, <https://example.com/data/2>))',
+          '  VALUES ?entity {',
+          '    <https://example.com/data/1>',
+          '    <https://example.com/data/2>',
+          '  }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);

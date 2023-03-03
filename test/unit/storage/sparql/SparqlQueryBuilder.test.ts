@@ -38,27 +38,20 @@ describe('A SparqlQueryBuilder', (): void => {
     builder = new SparqlQueryBuilder();
   });
 
-  describe('#buildInFilterForVariables', (): void => {
+  describe('#buildValuesForVariables', (): void => {
     it('builds an and expression between multiple in expressions.', (): void => {
-      expect(builder.buildInFilterForVariables({
+      expect(builder.buildValuesForVariables({
         entity: [
           DataFactory.namedNode('https://example.com/data/1'),
           DataFactory.namedNode('https://example.com/data/2'),
         ],
-      })).toEqual({
-        type: 'filter',
-        expression: {
-          type: 'operation',
-          operator: 'in',
-          args: [
-            DataFactory.variable('entity'),
-            [
-              DataFactory.namedNode('https://example.com/data/1'),
-              DataFactory.namedNode('https://example.com/data/2'),
-            ],
-          ],
-        },
-      });
+      })).toEqual([{
+        type: 'values',
+        values: [
+          { '?entity': DataFactory.namedNode('https://example.com/data/1') },
+          { '?entity': DataFactory.namedNode('https://example.com/data/2') },
+        ],
+      }]);
     });
   });
 
@@ -1158,14 +1151,11 @@ describe('A SparqlQueryBuilder', (): void => {
             }],
           },
           {
-            type: 'optional',
+            type: 'graph',
+            name: foo,
             patterns: [{
-              type: 'graph',
-              name: foo,
-              patterns: [{
-                type: 'bgp',
-                triples: [{ subject: c1, predicate: c2, object: c3 }],
-              }],
+              type: 'bgp',
+              triples: [{ subject: c1, predicate: c2, object: c3 }],
             }],
           },
         ],
