@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { RDF, XSD } from '@comake/rmlmapper-js';
+import { RDF } from '@comake/rmlmapper-js';
 import DataFactory from '@rdfjs/data-model';
 import { SparqlUpdateBuilder } from '../../../../src/storage/sparql/SparqlUpdateBuilder';
 import {
@@ -11,7 +11,7 @@ import {
   rdfTypeNamedNode,
   subjectNode,
 } from '../../../../src/util/TripleUtil';
-import { SKL } from '../../../../src/util/Vocabularies';
+import { DCTERMS, SKL, XSD } from '../../../../src/util/Vocabularies';
 
 const c1 = DataFactory.variable('c1');
 const c2 = DataFactory.variable('c2');
@@ -214,6 +214,69 @@ describe('A SparqlUpdateBuilder', (): void => {
               triples: [
                 { subject: data1, predicate: rdfTypeNamedNode, object: file },
                 { subject: data1, predicate: created, object: now },
+                { subject: data1, predicate: modified, object: now },
+              ],
+            },
+          ],
+          where: [
+            {
+              type: 'bind',
+              variable: now,
+              expression: {
+                type: 'operation',
+                operator: 'now',
+                args: [],
+              },
+            },
+          ],
+        },
+      ],
+    };
+    expect(builder.buildUpdate(entity)).toEqual(query);
+  });
+
+  it(`resets the modified timestamp in an update query if the entity was 
+  already created and setTimestamps is turned on.`,
+  (): void => {
+    builder = new SparqlUpdateBuilder({ setTimestamps: true });
+    const entity = {
+      '@id': 'https://example.com/data/1',
+      '@type': SKL.File,
+      [DCTERMS.created]: {
+        '@type': XSD.dateTime,
+        '@value': '2022-10-12T00:00:00.000Z',
+      },
+      [DCTERMS.modified]: {
+        '@type': XSD.dateTime,
+        '@value': '2022-10-12T00:00:00.000Z',
+      },
+    };
+    const query = {
+      type: 'update',
+      prefixes: {},
+      updates: [
+        {
+          updateType: 'deletewhere',
+          delete: [{
+            type: 'graph',
+            name: data1,
+            triples: [{ subject: c1, predicate: c2, object: c3 }],
+          }],
+        },
+        {
+          updateType: 'insertdelete',
+          delete: [],
+          insert: [
+            {
+              type: 'graph',
+              name: data1,
+              triples: [
+                { subject: data1, predicate: rdfTypeNamedNode, object: file },
+                {
+                  subject: data1,
+                  predicate: created,
+                  object: DataFactory.literal('2022-10-12T00:00:00.000Z', XSD.dateTime),
+                },
                 { subject: data1, predicate: modified, object: now },
               ],
             },

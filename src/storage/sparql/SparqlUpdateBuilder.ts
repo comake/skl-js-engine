@@ -133,7 +133,18 @@ export class SparqlUpdateBuilder {
       if (!entity[DCTERMS.created]) {
         entityTriples.push({ subject, predicate: created, object: now });
       }
-      entityTriples.push({ subject, predicate: modified, object: now });
+      if (entity[DCTERMS.modified]) {
+        for (const triple of entityTriples) {
+          if (triple.subject.equals(subject) &&
+            'termType' in triple.predicate &&
+            triple.predicate.equals(modified)
+          ) {
+            triple.object = now;
+          }
+        }
+      } else {
+        entityTriples.push({ subject, predicate: modified, object: now });
+      }
     }
     return entityTriples;
   }
