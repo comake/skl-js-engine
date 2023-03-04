@@ -44,9 +44,11 @@ import type {
 import { VariableGenerator } from './VariableGenerator';
 
 export interface WhereQueryData {
+  values: ValuesPattern[];
   triples: Triple[];
-  graphTriples: Triple[];
   filters: OperationExpression[];
+  graphValues: ValuesPattern[];
+  graphTriples: Triple[];
   graphFilters: OperationExpression[];
 }
 
@@ -64,10 +66,12 @@ export interface OrderQueryData {
 
 export type QueryData = {
   relationsVariables: Variable[];
+  values: ValuesPattern[];
   filters: OperationExpression[];
   triples: Triple[];
   optionalTriples: Triple[];
   orders: Ordering[];
+  graphValues: ValuesPattern[];
   graphTriples: Triple[];
   optionalGraphTriples: Triple[];
   graphFilters: OperationExpression[];
@@ -109,11 +113,13 @@ export class SparqlQueryBuilder {
   ): SelectQueryData {
     const queryData = this.createQueryData(subject, where, order, relations);
     const wherePatterns = this.createWherePatternsFromQueryData(
+      queryData.values,
       queryData.triples,
       queryData.optionalTriples,
       queryData.filters,
     );
     const graphWherePatterns = this.createWherePatternsFromQueryData(
+      queryData.graphValues,
       queryData.graphTriples,
       queryData.optionalGraphTriples,
       queryData.graphFilters,
@@ -127,11 +133,12 @@ export class SparqlQueryBuilder {
   }
 
   private createWherePatternsFromQueryData(
+    values: ValuesPattern[],
     triples: Triple[],
     optionalTriples: Triple[],
     filters: OperationExpression[],
   ): Pattern[] {
-    const patterns: Pattern[] = [];
+    const patterns: Pattern[] = values;
     if (triples.length > 0) {
       patterns.push(this.sparqlBasicGraphPattern(triples));
     }
@@ -278,14 +285,28 @@ export class SparqlQueryBuilder {
     const whereQueryData = this.createWhereQueryData(subject, where);
     const orderQueryData = this.createOrderQueryData(subject, order);
     const relationsQueryData = this.createRelationsQueryData(subject, relations);
+    const optionalTriples = orderQueryData.triples;
+    if (whereQueryData.triples.length === 0 && (
+      whereQueryData.filters.length > 0 ||
+      optionalTriples.length > 0
+    )) {
+      whereQueryData.triples.push({
+        subject,
+        predicate: this.createVariable(),
+        object: this.createVariable(),
+      });
+    }
+
     return {
       relationsVariables: relationsQueryData.variables,
+      values: whereQueryData.values,
       triples: whereQueryData.triples,
       filters: whereQueryData.filters,
-      optionalTriples: [ ...relationsQueryData.triples, ...orderQueryData.triples ],
+      optionalTriples,
       orders: orderQueryData.orders,
+      graphValues: whereQueryData.graphValues,
       graphTriples: whereQueryData.graphTriples,
-      optionalGraphTriples: [ ...relationsQueryData.graphTriples ],
+      optionalGraphTriples: [ ...relationsQueryData.triples, ...relationsQueryData.graphTriples ],
       graphFilters: [ ...whereQueryData.graphFilters ],
     };
   }
@@ -295,20 +316,14 @@ export class SparqlQueryBuilder {
     const whereQueryData = Object.entries(where ?? {}).reduce((obj: WhereQueryData, [ key, value ]): WhereQueryData => {
       const whereQueryDataForField = this.createWhereQueryDataForField(subject, key, value!, hasSingleKey);
       return {
+        values: [ ...obj.values, ...whereQueryDataForField.values ],
         triples: [ ...obj.triples, ...whereQueryDataForField.triples ],
-        graphTriples: [ ...obj.graphTriples, ...whereQueryDataForField.graphTriples ],
         filters: [ ...obj.filters, ...whereQueryDataForField.filters ],
+        graphValues: [ ...obj.graphValues, ...whereQueryDataForField.graphValues ],
+        graphTriples: [ ...obj.graphTriples, ...whereQueryDataForField.graphTriples ],
         graphFilters: [ ...obj.graphFilters, ...whereQueryDataForField.graphFilters ],
       };
-    }, { triples: [], graphTriples: [], filters: [], graphFilters: []});
-
-    if (whereQueryData.triples.length === 0) {
-      whereQueryData.triples.push({
-        subject,
-        predicate: this.createVariable(),
-        object: this.createVariable(),
-      });
-    }
+    }, { values: [], triples: [], filters: [], graphValues: [], graphTriples: [], graphFilters: []});
     return whereQueryData;
   }
 
@@ -329,58 +344,70 @@ export class SparqlQueryBuilder {
   }
 
   private createWhereQueryDataForIdValue(
-    term: Variable | IriTerm,
+    term: Variable,
     value: IdOrTypeFindOptionsWhereField,
-    qualifyWithTriple: boolean,
+    isOnlyField: boolean,
   ): WhereQueryData {
-    let filter: OperationExpression;
+    let filter: OperationExpression | undefined;
+    let valuePattern: ValuesPattern | undefined;
     if (FindOperator.isFindOperator(value)) {
-      filter = this.resolveFindOperatorAsExpressionForId(term as Expression, value as FindOperator<string>);
+      ({ filter, valuePattern } = this.resolveFindOperatorAsExpressionForId(term, value as FindOperator<string>));
     } else {
-      filter = this.buildEqualOperation(term as Expression, DataFactory.namedNode(value as string));
+      valuePattern = {
+        type: 'values',
+        values: [{
+          [`?${term.value}`]: DataFactory.namedNode(value as string),
+        }],
+      };
     }
-    const queryData = {
-      filters: [ filter ],
-      graphFilters: [],
-      triples: [],
-      graphTriples: [],
-      optionalTriples: [],
-      orders: [],
-    } as WhereQueryData;
+    if (isOnlyField) {
+      return {
+        values: [],
+        filters: [],
+        triples: [],
+        graphValues: valuePattern ? [ valuePattern ] : [],
+        graphFilters: filter ? [ filter ] : [],
+        graphTriples: [],
+      };
+    }
 
-    if (qualifyWithTriple) {
-      queryData.triples.push({
-        subject: term,
-        predicate: this.createVariable(),
-        object: this.createVariable(),
-      });
-    }
-    return queryData;
+    return {
+      values: valuePattern ? [ valuePattern ] : [],
+      filters: filter ? [ filter ] : [],
+      triples: [],
+      graphValues: [],
+      graphFilters: [],
+      graphTriples: [],
+    } as WhereQueryData;
   }
 
   private createWhereQueryDataForType(
-    subject: Variable | IriTerm,
+    subject: Variable,
     value: IdOrTypeFindOptionsWhereField,
   ): WhereQueryData {
     if (FindOperator.isFindOperator(value)) {
       const variable = this.createVariable();
       const triple = this.buildTypesAndSuperTypesTriple(subject, variable);
-      const operatorFilter = this.resolveFindOperatorAsExpressionWithMultipleValues(
-        variable as Expression,
+      const { filter, valuePattern } = this.resolveFindOperatorAsExpressionWithMultipleValues(
+        variable,
         value as FindOperator<string>,
         triple,
       );
       return {
-        filters: [ operatorFilter ],
-        graphFilters: [],
+        values: valuePattern ? [ valuePattern ] : [],
+        filters: filter ? [ filter ] : [],
         triples: [ triple ],
+        graphValues: [],
+        graphFilters: [],
         graphTriples: [],
       };
     }
     return {
+      values: [],
       filters: [],
-      graphFilters: [],
       triples: [ this.buildTypesAndSuperTypesTriple(subject, DataFactory.namedNode(value as string)) ],
+      graphValues: [],
+      graphFilters: [],
       graphTriples: [],
     };
   }
@@ -397,12 +424,14 @@ export class SparqlQueryBuilder {
       return value.reduce((obj: WhereQueryData, valueItem): WhereQueryData => {
         const valueWhereQueryData = this.createWhereQueryDataFromKeyValue(subject, predicate, valueItem);
         return {
+          values: [ ...obj.values, ...valueWhereQueryData.values ],
           filters: [ ...obj.filters, ...valueWhereQueryData.filters ],
           triples: [ ...obj.triples, ...valueWhereQueryData.triples ],
+          graphValues: [ ...obj.graphValues, ...valueWhereQueryData.graphValues ],
           graphFilters: [ ...obj.graphFilters, ...valueWhereQueryData.graphFilters ],
           graphTriples: [ ...obj.graphTriples, ...valueWhereQueryData.graphTriples ],
         };
-      }, { filters: [], graphTriples: [], triples: [], graphFilters: []});
+      }, { values: [], filters: [], triples: [], graphTriples: [], graphValues: [], graphFilters: []});
     }
     if (typeof value === 'object') {
       if ('@value' in value) {
@@ -412,9 +441,11 @@ export class SparqlQueryBuilder {
     }
     const term = this.resolveValueToTerm(value);
     return {
+      values: [],
       filters: [],
-      graphFilters: [],
       triples: [{ subject, predicate, object: term }],
+      graphValues: [],
+      graphFilters: [],
       graphTriples: [],
     };
   }
@@ -436,17 +467,26 @@ export class SparqlQueryBuilder {
       const inversePredicate = this.inversePropertyPredicate(predicate);
       const inverseWhereQueryData = this.createWhereQueryDataFromKeyValue(subject, inversePredicate, operator.value);
       return {
+        values: [],
         filters: [],
         triples: [],
+        graphValues: inverseWhereQueryData.values,
         graphTriples: inverseWhereQueryData.triples,
         graphFilters: inverseWhereQueryData.filters,
       };
     }
     const variable = this.createVariable();
     const triple = { subject, predicate, object: variable };
+    const { filter, valuePattern } = this.resolveFindOperatorAsExpressionWithMultipleValues(
+      variable,
+      operator,
+      triple,
+    );
     return {
-      filters: [ this.resolveFindOperatorAsExpressionWithMultipleValues(variable, operator, triple) ],
+      values: valuePattern ? [ valuePattern ] : [],
+      filters: filter ? [ filter ] : [],
       triples: [ triple ],
+      graphValues: [],
       graphTriples: [],
       graphFilters: [],
     };
@@ -460,11 +500,13 @@ export class SparqlQueryBuilder {
     const subNodeVariable = this.createVariable();
     const subWhereQueryData = this.createWhereQueryData(subNodeVariable, where);
     return {
+      values: [ ...subWhereQueryData.values, ...subWhereQueryData.graphValues ],
       filters: subWhereQueryData.filters,
       triples: [
         { subject, predicate, object: subNodeVariable },
         ...subWhereQueryData.triples,
       ],
+      graphValues: [],
       graphFilters: [],
       graphTriples: [],
     };
@@ -477,8 +519,10 @@ export class SparqlQueryBuilder {
   ): WhereQueryData {
     const term = this.valueObjectToTerm(valueObject);
     return {
+      values: [],
       filters: [],
       triples: [{ subject, predicate, object: term }],
+      graphValues: [],
       graphFilters: [],
       graphTriples: [],
     };
@@ -498,72 +542,113 @@ export class SparqlQueryBuilder {
   }
 
   private resolveFindOperatorAsExpressionWithMultipleValues(
-    leftSide: Expression,
+    leftSide: Variable,
     operator: FindOperator<any>,
     triple: Triple,
-  ): OperationExpression {
+    dontUseValuePattern = false,
+  ): { filter?: OperationExpression; valuePattern?: ValuesPattern } {
     switch (operator.operator) {
-      case 'in':
-        return this.buildInOperation(
-          leftSide,
-          this.resolveValueToExpression(operator.value) as Expression,
-        );
-      case 'not':
-        return this.buildNotOperationForMultiValued(
-          leftSide,
-          this.resolveValueToExpression(operator.value) as Expression | FindOperator<any>,
-          triple,
-        );
+      case 'in': {
+        const resolvedValue = this.resolveValueToExpression(operator.value);
+        if (Array.isArray(resolvedValue) && !dontUseValuePattern) {
+          return {
+            valuePattern: {
+              type: 'values',
+              values: (resolvedValue as unknown as string[]).map((value): ValuePatternRow => ({
+                [`?${leftSide.value}`]: typeof value === 'string'
+                  ? DataFactory.namedNode(value)
+                  : value,
+              })),
+            },
+          };
+        }
+        return {
+          filter: this.buildInOperation(leftSide, resolvedValue as Expression),
+        };
+      } case 'not':
+        return {
+          filter: this.buildNotOperationForMultiValued(
+            leftSide,
+            this.resolveValueToExpression(operator.value) as Expression | FindOperator<any>,
+            triple,
+          ),
+        };
       case 'equal':
-        return this.buildEqualOperation(
-          leftSide,
-          this.resolveValueToExpression(operator.value) as Expression,
-        );
+        return {
+          filter: this.buildEqualOperation(
+            leftSide,
+            this.resolveValueToExpression(operator.value) as Expression,
+          ),
+        };
       case 'gt':
-        return this.buildGtOperation(
-          leftSide,
-          this.resolveValueToExpression(operator.value) as Expression,
-        );
+        return {
+          filter: this.buildGtOperation(
+            leftSide,
+            this.resolveValueToExpression(operator.value) as Expression,
+          ),
+        };
       case 'gte':
-        return this.buildGteOperation(
-          leftSide,
-          this.resolveValueToExpression(operator.value) as Expression,
-        );
+        return {
+          filter: this.buildGteOperation(
+            leftSide,
+            this.resolveValueToExpression(operator.value) as Expression,
+          ),
+        };
       case 'lt':
-        return this.buildLtOperation(
-          leftSide,
-          this.resolveValueToExpression(operator.value) as Expression,
-        );
+        return {
+          filter: this.buildLtOperation(
+            leftSide,
+            this.resolveValueToExpression(operator.value) as Expression,
+          ),
+        };
       case 'lte':
-        return this.buildLteOperation(
-          leftSide,
-          this.resolveValueToExpression(operator.value) as Expression,
-        );
+        return {
+          filter: this.buildLteOperation(
+            leftSide,
+            this.resolveValueToExpression(operator.value) as Expression,
+          ),
+        };
       default:
         throw new Error(`Unsupported operator "${operator.operator}"`);
     }
   }
 
   private resolveFindOperatorAsExpressionForId(
-    leftSide: Expression,
+    leftSide: Variable,
     operator: FindOperator<any>,
-  ): OperationExpression {
+  ): { filter?: OperationExpression; valuePattern?: ValuesPattern } {
     switch (operator.operator) {
-      case 'in':
-        return this.buildInOperation(
-          leftSide,
-          this.resolveValueToExpression(operator.value) as Expression,
-        );
-      case 'not':
-        return this.buildNotOperationForId(
-          leftSide,
-          this.resolveValueToExpression(operator.value) as Expression | FindOperator<any>,
-        );
+      case 'in': {
+        const resolvedValue = this.resolveValueToExpression(operator.value);
+        if (Array.isArray(resolvedValue)) {
+          return {
+            valuePattern: {
+              type: 'values',
+              values: (resolvedValue as unknown as string[]).map((value): ValuePatternRow => ({
+                [`?${leftSide.value}`]: typeof value === 'string'
+                  ? DataFactory.namedNode(value)
+                  : value,
+              })),
+            },
+          };
+        }
+        return {
+          filter: this.buildInOperation(leftSide, resolvedValue as Expression),
+        };
+      } case 'not':
+        return {
+          filter: this.buildNotOperationForId(
+            leftSide,
+            this.resolveValueToExpression(operator.value) as Expression | FindOperator<any>,
+          ),
+        };
       case 'equal':
-        return this.buildEqualOperation(
-          leftSide,
-          this.resolveValueToExpression(operator.value) as Expression,
-        );
+        return {
+          filter: this.buildEqualOperation(
+            leftSide,
+            this.resolveValueToExpression(operator.value) as Expression,
+          ),
+        };
       default:
         throw new Error(`Unsupported operator "${operator.operator}"`);
     }
@@ -598,24 +683,25 @@ export class SparqlQueryBuilder {
   }
 
   private buildNotOperationForMultiValued(
-    leftSide: Expression,
+    leftSide: Variable,
     rightSide: Expression | FindOperator<any>,
     triple: Triple,
   ): OperationExpression {
     let filterExpression: FilterPattern;
     const rightSideIsOperation = typeof rightSide === 'object' && 'operator' in rightSide;
     if (rightSideIsOperation) {
-      let expression: OperationExpression;
+      let expression: OperationExpression | undefined;
       try {
-        expression = this.resolveFindOperatorAsExpressionWithMultipleValues(
+        ({ filter: expression } = this.resolveFindOperatorAsExpressionWithMultipleValues(
           leftSide,
           rightSide as FindOperator<any>,
           triple,
-        );
+          true,
+        ));
       } catch {
         throw new Error(`Unsupported Not sub operator "${rightSide.operator}"`);
       }
-      filterExpression = this.filterWithExpression(expression);
+      filterExpression = this.filterWithExpression(expression!);
     } else {
       filterExpression = this.filterWithExpression(
         this.buildEqualOperation(leftSide, rightSide as Expression),

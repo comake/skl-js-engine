@@ -23,7 +23,6 @@ import { RDF, SKL, XSD } from '../../../../src/util/Vocabularies';
 const c1 = DataFactory.variable('c1');
 const c2 = DataFactory.variable('c2');
 const c3 = DataFactory.variable('c3');
-const c4 = DataFactory.variable('c4');
 const predicate = DataFactory.namedNode('https://example.com/pred');
 const predicate2 = DataFactory.namedNode('https://example.com/pred2');
 const data1 = DataFactory.namedNode('https://example.com/data/1');
@@ -59,14 +58,7 @@ describe('A SparqlQueryBuilder', (): void => {
     it('builds a query without any options.', (): void => {
       expect(builder.buildPatternsFromQueryOptions(entityVariable)).toEqual({
         variables: [],
-        where: [{
-          type: 'bgp',
-          triples: [{
-            subject: entityVariable,
-            predicate: c1,
-            object: c2,
-          }],
-        }],
+        where: [],
         orders: [],
         graphWhere: [],
       });
@@ -83,6 +75,12 @@ describe('A SparqlQueryBuilder', (): void => {
       )).toEqual({
         variables: [],
         where: [
+          {
+            type: 'values',
+            values: [
+              { '?entity': data1 },
+            ],
+          },
           {
             type: 'bgp',
             triples: [
@@ -109,14 +107,6 @@ describe('A SparqlQueryBuilder', (): void => {
               },
             ],
           },
-          {
-            type: 'filter',
-            expression: {
-              type: 'operation',
-              operator: '=',
-              args: [ entityVariable, data1 ],
-            },
-          },
         ],
         orders: [],
         graphWhere: [],
@@ -129,28 +119,16 @@ describe('A SparqlQueryBuilder', (): void => {
         { id: 'https://example.com/data/1' },
       )).toEqual({
         variables: [],
-        where: [
+        where: [],
+        orders: [],
+        graphWhere: [
           {
-            type: 'bgp',
-            triples: [
-              {
-                subject: entityVariable,
-                predicate: c1,
-                object: c2,
-              },
+            type: 'values',
+            values: [
+              { '?entity': data1 },
             ],
           },
-          {
-            type: 'filter',
-            expression: {
-              type: 'operation',
-              operator: '=',
-              args: [ entityVariable, data1 ],
-            },
-          },
         ],
-        orders: [],
-        graphWhere: [],
       });
     });
 
@@ -167,6 +145,18 @@ describe('A SparqlQueryBuilder', (): void => {
         variables: [],
         where: [
           {
+            type: 'values',
+            values: [
+              { '?entity': data1 },
+            ],
+          },
+          {
+            type: 'values',
+            values: [
+              { '?c1': data2 },
+            ],
+          },
+          {
             type: 'bgp',
             triples: [
               {
@@ -174,31 +164,7 @@ describe('A SparqlQueryBuilder', (): void => {
                 predicate: DataFactory.namedNode('https://example.com/nested'),
                 object: c1,
               },
-              {
-                subject: c1,
-                predicate: c2,
-                object: c3,
-              },
             ],
-          },
-          {
-            type: 'filter',
-            expression: {
-              type: 'operation',
-              operator: '&&',
-              args: [
-                {
-                  type: 'operation',
-                  operator: '=',
-                  args: [ entityVariable, data1 ],
-                },
-                {
-                  type: 'operation',
-                  operator: '=',
-                  args: [ c1, data2 ],
-                },
-              ],
-            },
           },
         ],
         orders: [],
@@ -315,28 +281,16 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       )).toEqual({
         variables: [],
-        where: [
+        where: [],
+        orders: [],
+        graphWhere: [
           {
-            type: 'bgp',
-            triples: [
-              {
-                subject: entityVariable,
-                predicate: c1,
-                object: c2,
-              },
+            type: 'values',
+            values: [
+              { '?entity': data1 },
             ],
           },
-          {
-            type: 'filter',
-            expression: {
-              type: 'operation',
-              operator: 'in',
-              args: [ entityVariable, [ data1 ]],
-            },
-          },
         ],
-        orders: [],
-        graphWhere: [],
       });
     });
 
@@ -349,6 +303,13 @@ describe('A SparqlQueryBuilder', (): void => {
       )).toEqual({
         variables: [],
         where: [
+          {
+            type: 'values',
+            values: [
+              { '?c1': file },
+              { '?c1': event },
+            ],
+          },
           {
             type: 'bgp',
             triples: [
@@ -370,14 +331,6 @@ describe('A SparqlQueryBuilder', (): void => {
               },
             ],
           },
-          {
-            type: 'filter',
-            expression: {
-              type: 'operation',
-              operator: 'in',
-              args: [ c1, [ file, event ]],
-            },
-          },
         ],
         orders: [],
         graphWhere: [],
@@ -394,6 +347,13 @@ describe('A SparqlQueryBuilder', (): void => {
         variables: [],
         where: [
           {
+            type: 'values',
+            values: [
+              { '?c1': DataFactory.literal('1', XSD.integer) },
+              { '?c1': DataFactory.literal('2', XSD.integer) },
+            ],
+          },
+          {
             type: 'bgp',
             triples: [
               {
@@ -402,20 +362,6 @@ describe('A SparqlQueryBuilder', (): void => {
                 object: c1,
               },
             ],
-          },
-          {
-            type: 'filter',
-            expression: {
-              type: 'operation',
-              operator: 'in',
-              args: [
-                c1,
-                [
-                  DataFactory.literal('1', XSD.integer),
-                  DataFactory.literal('2', XSD.integer),
-                ],
-              ],
-            },
           },
         ],
         orders: [],
@@ -431,17 +377,9 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       )).toEqual({
         variables: [],
-        where: [
-          {
-            type: 'bgp',
-            triples: [
-              {
-                subject: entityVariable,
-                predicate: c1,
-                object: c2,
-              },
-            ],
-          },
+        where: [],
+        orders: [],
+        graphWhere: [
           {
             type: 'filter',
             expression: {
@@ -451,8 +389,6 @@ describe('A SparqlQueryBuilder', (): void => {
             },
           },
         ],
-        orders: [],
-        graphWhere: [],
       });
     });
 
@@ -464,17 +400,9 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       )).toEqual({
         variables: [],
-        where: [
-          {
-            type: 'bgp',
-            triples: [
-              {
-                subject: entityVariable,
-                predicate: c1,
-                object: c2,
-              },
-            ],
-          },
+        where: [],
+        orders: [],
+        graphWhere: [
           {
             type: 'filter',
             expression: {
@@ -487,8 +415,6 @@ describe('A SparqlQueryBuilder', (): void => {
             },
           },
         ],
-        orders: [],
-        graphWhere: [],
       });
     });
 
@@ -500,17 +426,9 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       )).toEqual({
         variables: [],
-        where: [
-          {
-            type: 'bgp',
-            triples: [
-              {
-                subject: entityVariable,
-                predicate: c1,
-                object: c2,
-              },
-            ],
-          },
+        where: [],
+        orders: [],
+        graphWhere: [
           {
             type: 'filter',
             expression: {
@@ -520,8 +438,6 @@ describe('A SparqlQueryBuilder', (): void => {
             },
           },
         ],
-        orders: [],
-        graphWhere: [],
       });
     });
 
@@ -533,17 +449,9 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       )).toEqual({
         variables: [],
-        where: [
-          {
-            type: 'bgp',
-            triples: [
-              {
-                subject: entityVariable,
-                predicate: c1,
-                object: c2,
-              },
-            ],
-          },
+        where: [],
+        orders: [],
+        graphWhere: [
           {
             type: 'filter',
             expression: {
@@ -553,8 +461,6 @@ describe('A SparqlQueryBuilder', (): void => {
             },
           },
         ],
-        orders: [],
-        graphWhere: [],
       });
     });
 
@@ -917,16 +823,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       )).toEqual({
         variables: [],
-        where: [{
-          type: 'bgp',
-          triples: [
-            {
-              subject: entityVariable,
-              predicate: c1,
-              object: c2,
-            },
-          ],
-        }],
+        where: [],
         orders: [],
         graphWhere: [
           {
@@ -1016,11 +913,13 @@ describe('A SparqlQueryBuilder', (): void => {
         where: [
           {
             type: 'bgp',
-            triples: [{
-              subject: entityVariable,
-              predicate: c1,
-              object: c2,
-            }],
+            triples: [
+              {
+                subject: entityVariable,
+                predicate: c2,
+                object: c3,
+              },
+            ],
           },
           {
             type: 'optional',
@@ -1029,13 +928,13 @@ describe('A SparqlQueryBuilder', (): void => {
               triples: [{
                 subject: entityVariable,
                 predicate,
-                object: c3,
+                object: c1,
               }],
             }],
           },
         ],
         orders: [{
-          expression: c3,
+          expression: c1,
           descending: true,
         }],
         graphWhere: [],
@@ -1049,16 +948,7 @@ describe('A SparqlQueryBuilder', (): void => {
         { id: 'desc' },
       )).toEqual({
         variables: [],
-        where: [
-          {
-            type: 'bgp',
-            triples: [{
-              subject: entityVariable,
-              predicate: c1,
-              object: c2,
-            }],
-          },
-        ],
+        where: [],
         orders: [{
           expression: entityVariable,
           descending: true,
@@ -1078,32 +968,8 @@ describe('A SparqlQueryBuilder', (): void => {
           },
         },
       )).toEqual({
-        variables: [ c3, c4 ],
-        where: [
-          {
-            type: 'bgp',
-            triples: [{
-              subject: entityVariable,
-              predicate: c1,
-              object: c2,
-            }],
-          },
-          {
-            type: 'optional',
-            patterns: [
-              {
-                triples: [
-                  {
-                    subject: entityVariable,
-                    predicate,
-                    object: c3,
-                  },
-                ],
-                type: 'bgp',
-              },
-            ],
-          },
-        ],
+        variables: [ c1, c2 ],
+        where: [],
         orders: [],
         graphWhere: [
           {
@@ -1111,9 +977,14 @@ describe('A SparqlQueryBuilder', (): void => {
               {
                 triples: [
                   {
-                    object: c4,
+                    subject: entityVariable,
+                    object: c1,
+                    predicate,
+                  },
+                  {
+                    subject: c1,
                     predicate: predicate2,
-                    subject: c3,
+                    object: c2,
                   },
                 ],
                 type: 'bgp',

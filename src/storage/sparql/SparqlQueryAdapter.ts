@@ -88,17 +88,19 @@ export class SparqlQueryAdapter implements QueryAdapter {
     order: Ordering[],
     limit?: number,
     offset?: number,
-  ): SelectQuery {
-    return {
-      type: 'query',
-      queryType: 'SELECT',
-      variables,
-      where,
-      order: order.length > 0 ? order : undefined,
-      limit,
-      offset,
-      prefixes: {},
-    };
+  ): SelectQuery | undefined {
+    if (where.length > 0) {
+      return {
+        type: 'query',
+        queryType: 'SELECT',
+        variables,
+        where,
+        order: order.length > 0 ? order : undefined,
+        limit,
+        offset,
+        prefixes: {},
+      };
+    }
   }
 
   public async findBy(where: FindOptionsWhere): Promise<Entity | null> {
@@ -121,7 +123,7 @@ export class SparqlQueryAdapter implements QueryAdapter {
       options?.order,
       options?.relations,
     );
-    const entitySelectVariables = [ entityVariable, ...selectQueryData.variables ];
+    const entitySelectVariables = [ entityVariable ];
     const entitySelectQuery = this.constructSparqlSelect(
       entitySelectVariables,
       selectQueryData.where,
@@ -130,26 +132,26 @@ export class SparqlQueryAdapter implements QueryAdapter {
       options?.offset,
     );
 
-    if (selectQueryData.orders.length > 0 && options?.limit !== 1) {
+    if (selectQueryData.orders.length > 0 && options?.limit !== 1 && entitySelectQuery) {
       return await this.findAllWithOrder(
         queryBuilder,
-        entitySelectQuery,
         selectQueryData,
+        entitySelectQuery,
         options,
       );
     }
     return await this.findAllWithoutOrder(
       queryBuilder,
-      entitySelectQuery,
       selectQueryData,
+      entitySelectQuery,
       options,
     );
   }
 
   private async findAllWithOrder(
     queryBuilder: SparqlQueryBuilder,
-    entitySelectQuery: SelectQuery,
     selectQueryData: SelectQueryData,
+    entitySelectQuery: SelectQuery,
     options?: FindAllOptions,
   ): Promise<OrArray<NodeObject>> {
     // We need to execute the entity select query here first to get ordered results.
@@ -173,12 +175,14 @@ export class SparqlQueryAdapter implements QueryAdapter {
 
   private async findAllWithoutOrder(
     queryBuilder: SparqlQueryBuilder,
-    entitySelectQuery: SelectQuery,
     selectQueryData: SelectQueryData,
+    entitySelectQuery?: SelectQuery,
     options?: FindAllOptions,
   ): Promise<OrArray<NodeObject>> {
-    const entitySelectGroupQuery = this.sparqlSelectGroup([ entitySelectQuery ]);
-    selectQueryData.graphWhere.unshift(entitySelectGroupQuery);
+    if (entitySelectQuery) {
+      const entitySelectGroupQuery = this.sparqlSelectGroup([ entitySelectQuery ]);
+      selectQueryData.graphWhere.unshift(entitySelectGroupQuery);
+    }
     return await this.executeEntitySelectQuery(
       queryBuilder,
       selectQueryData,
@@ -274,7 +278,7 @@ export class SparqlQueryAdapter implements QueryAdapter {
         variable: countVariable,
       }],
       where: [
-        this.sparqlSelectGraph(entityVariable, where),
+        ...where.length > 0 ? [ this.sparqlSelectGraph(entityVariable, where) ] : [],
         ...graphWhere,
       ],
       prefixes: {},
