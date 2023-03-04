@@ -286,9 +286,15 @@ export class SparqlQueryBuilder {
     const orderQueryData = this.createOrderQueryData(subject, order);
     const relationsQueryData = this.createRelationsQueryData(subject, relations);
     const optionalTriples = orderQueryData.triples;
+    const optionalGraphTriples = [ ...relationsQueryData.triples, ...relationsQueryData.graphTriples ];
     if (whereQueryData.triples.length === 0 && (
       whereQueryData.filters.length > 0 ||
-      optionalTriples.length > 0
+      optionalTriples.length > 0 ||
+      (
+        whereQueryData.values.length === 0 &&
+        whereQueryData.graphValues.length === 0 &&
+        whereQueryData.graphTriples.length === 0
+      )
     )) {
       whereQueryData.triples.push({
         subject,
@@ -306,7 +312,7 @@ export class SparqlQueryBuilder {
       orders: orderQueryData.orders,
       graphValues: whereQueryData.graphValues,
       graphTriples: whereQueryData.graphTriples,
-      optionalGraphTriples: [ ...relationsQueryData.triples, ...relationsQueryData.graphTriples ],
+      optionalGraphTriples,
       graphFilters: [ ...whereQueryData.graphFilters ],
     };
   }
