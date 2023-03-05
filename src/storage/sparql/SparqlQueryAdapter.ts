@@ -11,8 +11,6 @@ import type {
   SelectQuery,
   Pattern,
   Variable,
-  GraphPattern,
-  IriTerm,
   Ordering,
   GroupPattern,
 } from 'sparqljs';
@@ -278,18 +276,10 @@ export class SparqlQueryAdapter implements QueryAdapter {
         variable: countVariable,
       }],
       where: [
-        ...where.length > 0 ? [ this.sparqlSelectGraph(entityVariable, where) ] : [],
+        ...where,
         ...graphWhere,
       ],
       prefixes: {},
-    };
-  }
-
-  private sparqlSelectGraph(name: Variable | NamedNode, patterns: Pattern[]): GraphPattern {
-    return {
-      type: 'graph',
-      name: name as IriTerm,
-      patterns,
     };
   }
 

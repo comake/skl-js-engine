@@ -190,7 +190,7 @@ describe('a SparqlQueryAdapter', (): void => {
       ).resolves.toBe(1);
       expect(select).toHaveBeenCalledTimes(1);
       expect(select.mock.calls[0][0].split('\n')).toEqual([
-        'SELECT (COUNT(DISTINCT ?entity) AS ?count) WHERE { GRAPH ?entity { ?entity <https://example.com/pred> <https://example.com/data/1>. } }',
+        'SELECT (COUNT(DISTINCT ?entity) AS ?count) WHERE { ?entity <https://example.com/pred> <https://example.com/data/1>. }',
       ]);
     });
 
