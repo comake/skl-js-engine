@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { OrArray } from '@comake/rmlmapper-js';
+import DataFactory from '@rdfjs/data-model';
 import type { Quad, Literal, NamedNode } from '@rdfjs/types';
 import type { GraphObject, NodeObject } from 'jsonld';
 import type { Frame } from 'jsonld/jsonld-spec';
@@ -11,6 +12,8 @@ import type {
   SelectQuery,
   Pattern,
   Variable,
+  GraphPattern,
+  IriTerm,
   Ordering,
   GroupPattern,
 } from 'sparqljs';
@@ -278,8 +281,24 @@ export class SparqlQueryAdapter implements QueryAdapter {
       where: [
         ...where,
         ...graphWhere,
+        this.sparqlSelectGraph(entityVariable, [{
+          type: 'bgp',
+          triples: [{
+            subject: entityVariable,
+            predicate: DataFactory.variable('predicate'),
+            object: DataFactory.variable('object'),
+          }],
+        }]),
       ],
       prefixes: {},
+    };
+  }
+
+  private sparqlSelectGraph(name: Variable | NamedNode, patterns: Pattern[]): GraphPattern {
+    return {
+      type: 'graph',
+      name: name as IriTerm,
+      patterns,
     };
   }
 
