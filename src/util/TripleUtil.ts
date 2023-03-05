@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-nested-ternary */
 /* eslint-disable @typescript-eslint/naming-convention */
 import DataFactory from '@rdfjs/data-model';
 import type { Quad, Quad_Object, Quad_Subject, Literal } from '@rdfjs/types';
@@ -94,7 +95,13 @@ function toJsonLdSubject(object: Quad_Subject): string {
 function relationsToFrame(relations: FindOptionsRelations): Frame {
   return Object.entries(relations).reduce((obj: NodeObject, [ field, value ]): NodeObject => ({
     ...obj,
-    [field]: typeof value === 'boolean' ? {} : relationsToFrame(value),
+    [field]: typeof value === 'boolean'
+      ? {}
+      : value.type === 'operator'
+        ? typeof value.value === 'boolean'
+          ? {}
+          : relationsToFrame(value.value as FindOptionsRelations)
+        : relationsToFrame(value as FindOptionsRelations),
   }), {});
 }
 

@@ -473,12 +473,12 @@ export class SparqlQueryBuilder {
       const inversePredicate = this.inversePropertyPredicate(predicate);
       const inverseWhereQueryData = this.createWhereQueryDataFromKeyValue(subject, inversePredicate, operator.value);
       return {
-        values: [],
-        filters: [],
-        triples: [],
-        graphValues: inverseWhereQueryData.values,
-        graphTriples: inverseWhereQueryData.triples,
-        graphFilters: inverseWhereQueryData.filters,
+        values: inverseWhereQueryData.values,
+        filters: inverseWhereQueryData.filters,
+        triples: inverseWhereQueryData.triples,
+        graphValues: [],
+        graphTriples: [],
+        graphFilters: [],
       };
     }
     const variable = this.createVariable();
@@ -858,26 +858,45 @@ export class SparqlQueryBuilder {
     };
   }
 
-  private createRelationsQueryData(subject: Variable, relations?: FindOptionsRelations): RelationsQueryData {
+  private createRelationsQueryData(
+    subject: Variable,
+    relations?: FindOptionsRelations,
+  ): RelationsQueryData {
     if (!relations) {
       return { variables: [], triples: [], graphTriples: []};
     }
     return Object.entries(relations).reduce((obj: RelationsQueryData, [ property, value ]): RelationsQueryData => {
       const variable = this.createVariable();
       obj.variables.push(variable);
-      obj.triples.push({
-        subject,
-        predicate: DataFactory.namedNode(property),
-        object: variable,
-      });
+      const predicate = DataFactory.namedNode(property);
       if (typeof value === 'object') {
-        const subRelationsQueryData = this.createRelationsQueryData(variable, value);
-        obj.variables = [ ...obj.variables, ...subRelationsQueryData.variables ];
-        obj.graphTriples = [
-          ...obj.graphTriples,
-          ...subRelationsQueryData.triples,
-          ...subRelationsQueryData.graphTriples,
-        ];
+        if (value.type && value.type === 'operator') {
+          obj.triples.push({
+            subject,
+            predicate: this.inversePropertyPredicate(predicate),
+            object: variable,
+          });
+          if (typeof value.value === 'object') {
+            const subRelationsQueryData = this.createRelationsQueryData(variable, value.value as FindOptionsRelations);
+            obj.variables = [ ...obj.variables, ...subRelationsQueryData.variables ];
+            obj.graphTriples = [
+              ...obj.graphTriples,
+              ...subRelationsQueryData.triples,
+              ...subRelationsQueryData.graphTriples,
+            ];
+          }
+        } else {
+          obj.triples.push({ subject, predicate, object: variable });
+          const subRelationsQueryData = this.createRelationsQueryData(variable, value as FindOptionsRelations);
+          obj.variables = [ ...obj.variables, ...subRelationsQueryData.variables ];
+          obj.graphTriples = [
+            ...obj.graphTriples,
+            ...subRelationsQueryData.triples,
+            ...subRelationsQueryData.graphTriples,
+          ];
+        }
+      } else {
+        obj.triples.push({ subject, predicate, object: variable });
       }
       return obj;
     }, { variables: [], triples: [], graphTriples: []});
