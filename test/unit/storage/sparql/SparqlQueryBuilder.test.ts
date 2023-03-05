@@ -1120,7 +1120,7 @@ describe('A SparqlQueryBuilder', (): void => {
       undefined,
       undefined,
       {
-        'https://example.com/pred': Inverse(true),
+        'https://example.com/pred': Inverse('https://example.com/inversePred'),
       },
     )).toEqual({
       variables: [ c1 ],
@@ -1152,60 +1152,6 @@ describe('A SparqlQueryBuilder', (): void => {
                     items: [ predicate ],
                   },
                   object: c1,
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    });
-  });
-
-  it('builds a query with an inverse relation with another nested relation.', (): void => {
-    expect(builder.buildPatternsFromQueryOptions(
-      entityVariable,
-      undefined,
-      undefined,
-      {
-        'https://example.com/pred': Inverse({
-          'https://example.com/pred2': true,
-        }),
-      },
-    )).toEqual({
-      variables: [ c1, c2 ],
-      where: [
-        {
-          type: 'bgp',
-          triples: [
-            {
-              subject: entityVariable,
-              predicate: c3,
-              object: c4,
-            },
-          ],
-        },
-      ],
-      orders: [],
-      graphWhere: [
-        {
-          type: 'optional',
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [
-                {
-                  subject: entityVariable,
-                  predicate: {
-                    type: 'path',
-                    pathType: '^',
-                    items: [ predicate ],
-                  },
-                  object: c1,
-                },
-                {
-                  subject: c1,
-                  predicate: predicate2,
-                  object: c2,
                 },
               ],
             },

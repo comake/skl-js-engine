@@ -1,14 +1,14 @@
-/* eslint-disable unicorn/no-nested-ternary */
 /* eslint-disable @typescript-eslint/naming-convention */
 import DataFactory from '@rdfjs/data-model';
 import type { Quad, Quad_Object, Quad_Subject, Literal } from '@rdfjs/types';
 import * as jsonld from 'jsonld';
-import type { GraphObject, NodeObject, ValueObject } from 'jsonld';
+import type { ContextDefinition, GraphObject, NodeObject, ValueObject } from 'jsonld';
 import type { Frame } from 'jsonld/jsonld-spec';
 import type { PropertyPath } from 'sparqljs';
 import type { FindOptionsRelations } from '../storage/FindOptionsTypes';
 import type { OrArray } from './Types';
 import type { JSONArray, JSONObject } from './Util';
+import { ensureArray } from './Util';
 import { RDF, XSD, RDFS, DCTERMS } from './Vocabularies';
 
 export const rdfTypeNamedNode = DataFactory.namedNode(RDF.type);
@@ -94,16 +94,26 @@ function toJsonLdSubject(object: Quad_Subject): string {
 }
 
 function relationsToFrame(relations: FindOptionsRelations): Frame {
-  return Object.entries(relations).reduce((obj: NodeObject, [ field, value ]): NodeObject => ({
-    ...obj,
-    [field]: typeof value === 'boolean'
-      ? {}
-      : value.type === 'operator'
-        ? typeof value.value === 'boolean'
-          ? {}
-          : relationsToFrame(value.value as FindOptionsRelations)
-        : relationsToFrame(value as FindOptionsRelations),
-  }), {});
+  return Object.entries(relations).reduce((obj: NodeObject, [ field, value ]): NodeObject => {
+    const fieldFrame: Frame = {};
+    const contextAddition: ContextDefinition = {};
+    if (typeof value === 'object' && value.type === 'operator') {
+      contextAddition[value.value as string] = { '@reverse': field };
+      fieldFrame[value.value as string] = {};
+    } else if (typeof value === 'boolean') {
+      fieldFrame[field] = {};
+    } else {
+      fieldFrame[field] = relationsToFrame(value as FindOptionsRelations);
+    }
+    return {
+      ...obj,
+      '@context': {
+        ...obj['@context'] as ContextDefinition,
+        ...contextAddition,
+      },
+      ...fieldFrame,
+    };
+  }, {});
 }
 
 function triplesToNodes(triples: Quad[]): {
@@ -148,21 +158,41 @@ async function frameWithRelationsOrNonBlankNodes(
   relations?: FindOptionsRelations,
   frame?: Frame,
 ): Promise<NodeObject> {
-  let appliedFrame: Frame;
   if (!frame) {
     if (relations) {
-      appliedFrame = relationsToFrame(relations);
-    } else {
-      const nonBlankNodes = Object.keys(nodesById)
-        .filter((nodeId: string): boolean => !nodeId.startsWith(BLANK_NODE_PREFIX));
-      appliedFrame = { '@id': nonBlankNodes as any };
+      frame = relationsToFrame(relations);
+      const results = await jsonld.frame(
+        { '@graph': Object.values(nodesById) },
+        frame,
+      );
+      if (typeof frame === 'object' && '@context' in frame &&
+        Object.keys(frame['@context']!).length > 0
+      ) {
+        let resultsList;
+        if (Array.isArray(results)) {
+          resultsList = results;
+        } else if ('@graph' in results) {
+          resultsList = ensureArray(results['@graph']);
+        } else {
+          resultsList = ensureArray(results);
+        }
+        return {
+          '@graph': resultsList.filter((result): boolean =>
+            Object.keys((frame as NodeObject)['@context']!).some((relationField): boolean => relationField in result)),
+        };
+      }
+      return results;
     }
-  } else {
-    appliedFrame = frame;
+    const nonBlankNodes = Object.keys(nodesById)
+      .filter((nodeId: string): boolean => !nodeId.startsWith(BLANK_NODE_PREFIX));
+    return await jsonld.frame(
+      { '@graph': Object.values(nodesById) },
+      { '@id': nonBlankNodes as any },
+    );
   }
   return await jsonld.frame(
     { '@graph': Object.values(nodesById) },
-    appliedFrame,
+    frame,
   );
 }
 

@@ -17,7 +17,7 @@ export interface FindOneOptions {
 }
 
 export interface FindOptionsRelations {
-  [k: string]: boolean | FindOptionsRelations | FindOperator<boolean | FindOptionsRelations>;
+  [k: string]: boolean | FindOptionsRelations | FindOperator<string>;
 }
 
 export type FindOptionsOrderValue = 'ASC' | 'DESC' | 'asc' | 'desc' | 1 | -1;
