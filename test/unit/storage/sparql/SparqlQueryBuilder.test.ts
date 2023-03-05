@@ -871,6 +871,45 @@ describe('A SparqlQueryBuilder', (): void => {
       });
     });
 
+    it('builds a query with an operator with a value object value.', (): void => {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
+          'https://example.com/pred': GreaterThanOrEqual({
+            '@type': XSD.dateTime,
+            '@value': '2023-03-05T07:28:51Z',
+          }),
+        },
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate,
+                object: c1,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: '>=',
+              args: [
+                c1,
+                DataFactory.literal('2023-03-05T07:28:51Z', XSD.dateTime),
+              ],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
+    });
+
     it('builds a query with an inverse operator.', (): void => {
       expect(builder.buildPatternsFromQueryOptions(
         entityVariable,

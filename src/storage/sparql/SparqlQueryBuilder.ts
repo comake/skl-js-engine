@@ -669,7 +669,7 @@ export class SparqlQueryBuilder {
     if (Array.isArray(value)) {
       return value.map((valueItem): Term => this.resolveValueToTerm(valueItem));
     }
-    return this.resolveValueToTerm(value as FieldPrimitiveValue);
+    return this.resolveValueToTerm(value);
   }
 
   private buildInOperation(leftSide: Expression, rightSide: Expression): OperationExpression {
@@ -806,7 +806,13 @@ export class SparqlQueryBuilder {
     return { subject, predicate: allTypesAndSuperTypesPath, object };
   }
 
-  private resolveValueToTerm(value: FieldPrimitiveValue): NamedNode | Literal {
+  private resolveValueToTerm(value: FieldPrimitiveValue | ValueObject): NamedNode | Literal {
+    if (typeof value === 'object' && '@value' in value) {
+      return valueToLiteral(
+        (value as ValueObject)['@value'],
+        '@type' in value ? value['@type'] : undefined,
+      );
+    }
     if (isUrl(value)) {
       return DataFactory.namedNode(value as string);
     }

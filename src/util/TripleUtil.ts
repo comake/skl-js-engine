@@ -8,6 +8,7 @@ import type { Frame } from 'jsonld/jsonld-spec';
 import type { PropertyPath } from 'sparqljs';
 import type { FindOptionsRelations } from '../storage/FindOptionsTypes';
 import type { OrArray } from './Types';
+import type { JSONArray, JSONObject } from './Util';
 import { RDF, XSD, RDFS, DCTERMS } from './Vocabularies';
 
 export const rdfTypeNamedNode = DataFactory.namedNode(RDF.type);
@@ -214,7 +215,16 @@ export async function triplesToJsonldWithFrame(
   return graphObject;
 }
 
-export function valueToLiteral(value: string | boolean | number | Date): Literal {
+export function valueToLiteral(
+  value: string | boolean | number | Date | JSONObject | JSONArray,
+  datatype?: string,
+): Literal {
+  if (datatype) {
+    if (datatype === '@json' || datatype === RDF.JSON) {
+      return DataFactory.literal(JSON.stringify(value), RDF.JSON);
+    }
+    return DataFactory.literal((value as string | boolean | number).toString(), datatype);
+  }
   if (typeof value === 'number') {
     if (Number.isInteger(value)) {
       return DataFactory.literal(value.toString(), XSD.integer);
@@ -227,6 +237,7 @@ export function valueToLiteral(value: string | boolean | number | Date): Literal
   if (value instanceof Date) {
     return DataFactory.literal(value.toISOString(), XSD.dateTime);
   }
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
   return DataFactory.literal(value.toString());
 }
 
