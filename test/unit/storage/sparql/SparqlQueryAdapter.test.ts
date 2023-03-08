@@ -2,6 +2,7 @@
 import type { Readable } from 'stream';
 import DataFactory from '@rdfjs/data-model';
 import SparqlClient from 'sparql-http-client';
+import { InverseRelation } from '../../../../src/storage/operator/InverseRelation';
 import { SparqlQueryAdapter } from '../../../../src/storage/sparql/SparqlQueryAdapter';
 import { rdfTypeNamedNode } from '../../../../src/util/TripleUtil';
 import { SKL, XSD } from '../../../../src/util/Vocabularies';
@@ -11,6 +12,7 @@ const endpointUrl = 'https://example.com/sparql';
 const file = DataFactory.namedNode(SKL.File);
 const data1 = DataFactory.namedNode('https://example.com/data/1');
 const data2 = DataFactory.namedNode('https://example.com/data/2');
+const predicate = DataFactory.namedNode('https://example.com/pred');
 
 jest.mock('sparql-http-client');
 
@@ -264,6 +266,64 @@ describe('a SparqlQueryAdapter', (): void => {
           '    <https://example.com/data/1>',
           '  }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
+          '}',
+        ]);
+      });
+
+    it('queries for entities with a limit of 1 and returns an entity if there is a response array of one.',
+      async(): Promise<void> => {
+        response = [
+          {
+            subject: data1,
+            predicate: rdfTypeNamedNode,
+            object: file,
+          },
+          {
+            subject: data2,
+            predicate,
+            object: data1,
+          },
+          {
+            subject: data2,
+            predicate: rdfTypeNamedNode,
+            object: file,
+          },
+        ];
+        await expect(
+          adapter.find({
+            where: {
+              id: 'https://example.com/data/1',
+            },
+            relations: {
+              'https://example.com/pred': InverseRelation({
+                resolvedName: 'https://example.com/inversePred',
+              }),
+            },
+          }),
+        ).resolves.toEqual({
+          '@id': 'https://example.com/data/1',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
+          'https://example.com/inversePred': {
+            '@id': 'https://example.com/data/2',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
+            'https://example.com/pred': {
+              '@id': 'https://example.com/data/1',
+            },
+          },
+        });
+        expect(select).toHaveBeenCalledTimes(1);
+        expect(select.mock.calls[0][0].split('\n')).toEqual([
+          'CONSTRUCT {',
+          '  ?subject ?predicate ?object.',
+          '  ?c2 ?c3 ?c4.',
+          '}',
+          'WHERE {',
+          '  VALUES ?entity {',
+          '    <https://example.com/data/1>',
+          '  }',
+          '  OPTIONAL { ?entity ^<https://example.com/pred> ?c1. }',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
+          '  GRAPH ?c1 { ?c2 ?c3 ?c4. }',
           '}',
         ]);
       });

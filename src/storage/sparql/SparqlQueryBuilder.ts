@@ -41,6 +41,7 @@ import type {
   IdOrTypeFindOptionsWhereField,
   ValueObject,
 } from '../FindOptionsTypes';
+import type { InverseRelationOperatorValue } from '../operator/InverseRelation';
 import { VariableGenerator } from './VariableGenerator';
 
 export interface WhereQueryData {
@@ -394,7 +395,7 @@ export class SparqlQueryBuilder {
     if (FindOperator.isFindOperator(value)) {
       const variable = this.createVariable();
       const triple = this.buildTypesAndSuperTypesTriple(subject, variable);
-      const { filter, valuePattern } = this.resolveFindOperatorAsExpressionWithMultipleValues(
+      const { filter, valuePattern, tripleInFilter } = this.resolveFindOperatorAsExpressionWithMultipleValues(
         variable,
         value as FindOperator<string>,
         triple,
@@ -402,7 +403,7 @@ export class SparqlQueryBuilder {
       return {
         values: valuePattern ? [ valuePattern ] : [],
         filters: filter ? [ filter ] : [],
-        triples: [ triple ],
+        triples: tripleInFilter ? [] : [ triple ],
         graphValues: [],
         graphFilters: [],
         graphTriples: [],
@@ -552,19 +553,15 @@ export class SparqlQueryBuilder {
     operator: FindOperator<any>,
     triple: Triple,
     dontUseValuePattern = false,
-  ): { filter?: OperationExpression; valuePattern?: ValuesPattern } {
+  ): { filter?: OperationExpression; valuePattern?: ValuesPattern; tripleInFilter?: boolean } {
     switch (operator.operator) {
       case 'in': {
-        const resolvedValue = this.resolveValueToExpression(operator.value);
+        const resolvedValue = this.resolveValueToExpression(operator.value) as (NamedNode | Literal)[];
         if (Array.isArray(resolvedValue) && !dontUseValuePattern) {
           return {
             valuePattern: {
               type: 'values',
-              values: (resolvedValue as unknown as string[]).map((value): ValuePatternRow => ({
-                [`?${leftSide.value}`]: typeof value === 'string'
-                  ? DataFactory.namedNode(value)
-                  : value,
-              })),
+              values: resolvedValue.map((value): ValuePatternRow => ({ [`?${leftSide.value}`]: value })),
             },
           };
         }
@@ -578,6 +575,7 @@ export class SparqlQueryBuilder {
             this.resolveValueToExpression(operator.value) as Expression | FindOperator<any>,
             triple,
           ),
+          tripleInFilter: true,
         };
       case 'equal':
         return {
@@ -625,21 +623,12 @@ export class SparqlQueryBuilder {
   ): { filter?: OperationExpression; valuePattern?: ValuesPattern } {
     switch (operator.operator) {
       case 'in': {
-        const resolvedValue = this.resolveValueToExpression(operator.value);
-        if (Array.isArray(resolvedValue)) {
-          return {
-            valuePattern: {
-              type: 'values',
-              values: (resolvedValue as unknown as string[]).map((value): ValuePatternRow => ({
-                [`?${leftSide.value}`]: typeof value === 'string'
-                  ? DataFactory.namedNode(value)
-                  : value,
-              })),
-            },
-          };
-        }
+        const resolvedValue = this.resolveValueToExpression(operator.value) as NamedNode[];
         return {
-          filter: this.buildInOperation(leftSide, resolvedValue as Expression),
+          valuePattern: {
+            type: 'values',
+            values: resolvedValue.map((value): ValuePatternRow => ({ [`?${leftSide.value}`]: value })),
+          },
         };
       } case 'not':
         return {
@@ -871,41 +860,98 @@ export class SparqlQueryBuilder {
     if (!relations) {
       return { variables: [], triples: [], graphTriples: []};
     }
-    return Object.entries(relations).reduce((obj: RelationsQueryData, [ property, value ]): RelationsQueryData => {
-      const variable = this.createVariable();
-      obj.variables.push(variable);
-      const predicate = DataFactory.namedNode(property);
-      if (typeof value === 'object') {
-        if (value.type && value.type === 'operator') {
-          obj.triples.push({
-            subject,
-            predicate: this.inversePropertyPredicate(predicate),
-            object: variable,
-          });
-          if (typeof value.value === 'object') {
-            const subRelationsQueryData = this.createRelationsQueryData(variable, value.value as FindOptionsRelations);
-            obj.variables = [ ...obj.variables, ...subRelationsQueryData.variables ];
-            obj.graphTriples = [
-              ...obj.graphTriples,
-              ...subRelationsQueryData.triples,
-              ...subRelationsQueryData.graphTriples,
-            ];
+    return Object.entries(relations)
+      .reduce((obj: RelationsQueryData, [ property, relationsValue ]): RelationsQueryData => {
+        const variable = this.createVariable();
+        const predicate = DataFactory.namedNode(property);
+        if (typeof relationsValue === 'object') {
+          if (FindOperator.isFindOperator(relationsValue)) {
+            const { triples, variables, graphTriples } = this.createRelationsQueryDataForInverseRelation(
+              subject,
+              predicate,
+              variable,
+              relationsValue as FindOperator<InverseRelationOperatorValue>,
+            );
+            return {
+              triples: [ ...obj.triples, ...triples ],
+              variables: [ ...obj.variables, variable, ...variables ],
+              graphTriples: [ ...obj.graphTriples, ...graphTriples ],
+            };
           }
-        } else {
-          obj.triples.push({ subject, predicate, object: variable });
-          const subRelationsQueryData = this.createRelationsQueryData(variable, value as FindOptionsRelations);
-          obj.variables = [ ...obj.variables, ...subRelationsQueryData.variables ];
-          obj.graphTriples = [
-            ...obj.graphTriples,
-            ...subRelationsQueryData.triples,
-            ...subRelationsQueryData.graphTriples,
-          ];
+          const { triples, variables, graphTriples } = this.createRelationsQueryDataForNestedRelation(
+            subject,
+            predicate,
+            variable,
+            relationsValue as FindOptionsRelations,
+          );
+          return {
+            triples: [ ...obj.triples, ...triples ],
+            variables: [ variable, ...obj.variables, ...variables ],
+            graphTriples: [ ...obj.graphTriples, ...graphTriples ],
+          };
         }
-      } else {
-        obj.triples.push({ subject, predicate, object: variable });
-      }
-      return obj;
-    }, { variables: [], triples: [], graphTriples: []});
+        const relationTriple = { subject, predicate, object: variable };
+        return {
+          ...obj,
+          triples: [ ...obj.triples, relationTriple ],
+          variables: [ ...obj.variables, variable ],
+        };
+      }, { variables: [], triples: [], graphTriples: []});
+  }
+
+  private createRelationsQueryDataForInverseRelation(
+    subject: Variable,
+    predicate: NamedNode,
+    variable: Variable,
+    relationsValue: FindOperator<InverseRelationOperatorValue>,
+  ): RelationsQueryData {
+    const inverseRelationTriple = {
+      subject,
+      predicate: this.inversePropertyPredicate(predicate),
+      object: variable,
+    };
+    if (typeof relationsValue.value === 'object' &&
+      (relationsValue.value as InverseRelationOperatorValue).relations
+    ) {
+      const subRelationsQueryData = this.createRelationsQueryData(
+        variable,
+        (relationsValue.value as InverseRelationOperatorValue).relations,
+      );
+      return {
+        triples: [ inverseRelationTriple ],
+        variables: subRelationsQueryData.variables,
+        graphTriples: [
+          ...subRelationsQueryData.triples,
+          ...subRelationsQueryData.graphTriples,
+        ],
+      };
+    }
+    return {
+      triples: [ inverseRelationTriple ],
+      variables: [],
+      graphTriples: [],
+    };
+  }
+
+  private createRelationsQueryDataForNestedRelation(
+    subject: Variable,
+    predicate: NamedNode,
+    variable: Variable,
+    relationsValue: FindOptionsRelations,
+  ): RelationsQueryData {
+    const relationTriple = { subject, predicate, object: variable };
+    const subRelationsQueryData = this.createRelationsQueryData(
+      variable,
+      relationsValue,
+    );
+    return {
+      triples: [ relationTriple ],
+      variables: subRelationsQueryData.variables,
+      graphTriples: [
+        ...subRelationsQueryData.triples,
+        ...subRelationsQueryData.graphTriples,
+      ],
+    };
   }
 
   private createVariable(): Variable {

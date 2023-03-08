@@ -6,6 +6,7 @@ import type { ContextDefinition, GraphObject, NodeObject, ValueObject } from 'js
 import type { Frame } from 'jsonld/jsonld-spec';
 import type { PropertyPath } from 'sparqljs';
 import type { FindOptionsRelations } from '../storage/FindOptionsTypes';
+import type { InverseRelationOperatorValue } from '../storage/operator/InverseRelation';
 import type { OrArray } from './Types';
 import type { JSONArray, JSONObject } from './Util';
 import { ensureArray } from './Util';
@@ -98,8 +99,9 @@ function relationsToFrame(relations: FindOptionsRelations): Frame {
     const fieldFrame: Frame = {};
     const contextAddition: ContextDefinition = {};
     if (typeof value === 'object' && value.type === 'operator') {
-      contextAddition[value.value as string] = { '@reverse': field };
-      fieldFrame[value.value as string] = {};
+      const { resolvedName } = value.value as InverseRelationOperatorValue;
+      contextAddition[resolvedName] = { '@reverse': field };
+      fieldFrame[resolvedName] = {};
     } else if (typeof value === 'boolean') {
       fieldFrame[field] = {};
     } else {
