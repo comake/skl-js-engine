@@ -6,6 +6,7 @@ import { GreaterThan } from '../../../../src/storage/operator/GreaterThan';
 import { GreaterThanOrEqual } from '../../../../src/storage/operator/GreaterThanOrEqual';
 import { In } from '../../../../src/storage/operator/In';
 import { Inverse } from '../../../../src/storage/operator/Inverse';
+import { InverseRelation } from '../../../../src/storage/operator/InverseRelation';
 import { LessThan } from '../../../../src/storage/operator/LessThan';
 import { LessThanOrEqual } from '../../../../src/storage/operator/LessThanOrEqual';
 import { Not } from '../../../../src/storage/operator/Not';
@@ -145,6 +146,56 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with more than one filter.', (): void => {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
+          'https://example.com/pred': GreaterThan(1),
+          'https://example.com/pred2': LessThan(1),
+        },
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate,
+                object: c1,
+              },
+              {
+                subject: entityVariable,
+                predicate: predicate2,
+                object: c2,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: '&&',
+              args: [
+                {
+                  type: 'operation',
+                  operator: '>',
+                  args: [ c1, DataFactory.literal('1', XSD.integer) ],
+                },
+                {
+                  type: 'operation',
+                  operator: '<',
+                  args: [ c2, DataFactory.literal('1', XSD.integer) ],
+                },
+              ],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
+    });
+
+    it('builds a query with a nested value filter.', (): void => {
       expect(builder.buildPatternsFromQueryOptions(
         entityVariable,
         {
@@ -349,6 +400,74 @@ describe('A SparqlQueryBuilder', (): void => {
       });
     });
 
+    it('builds a query with a not operator on the type field.', (): void => {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
+          type: Not(SKL.File),
+        },
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate: c2,
+                object: c3,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: 'notexists',
+              args: [
+                {
+                  type: 'group',
+                  patterns: [
+                    {
+                      type: 'bgp',
+                      triples: [
+                        {
+                          subject: entityVariable,
+                          predicate: {
+                            type: 'path',
+                            pathType: '/',
+                            items: [
+                              rdfTypeNamedNode,
+                              {
+                                type: 'path',
+                                pathType: '*',
+                                items: [ rdfsSubClassOfNamedNode ],
+                              },
+                            ],
+                          },
+                          object: c1,
+                        },
+                      ],
+                    },
+                    {
+                      type: 'filter',
+                      expression: {
+                        type: 'operation',
+                        operator: '=',
+                        args: [ c1, file ],
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
+    });
+
     it('builds a query with an in operator on a non id field.', (): void => {
       expect(builder.buildPatternsFromQueryOptions(
         entityVariable,
@@ -449,6 +568,54 @@ describe('A SparqlQueryBuilder', (): void => {
             },
           },
         ],
+      });
+    });
+
+    it('builds a query with a filtered id field and another field filter.', (): void => {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
+          id: Not(In([ 'https://example.com/data/1', 'https://example.com/data/2' ])),
+          'https://example.com/pred': GreaterThan(1),
+        },
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate,
+                object: c1,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: '&&',
+              args: [
+                {
+                  type: 'operation',
+                  operator: 'notin',
+                  args: [
+                    entityVariable,
+                    [ data1, data2 ],
+                  ],
+                },
+                {
+                  type: 'operation',
+                  operator: '>',
+                  args: [ c1, DataFactory.literal('1', XSD.integer) ],
+                },
+              ],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
       });
     });
 
@@ -910,6 +1077,44 @@ describe('A SparqlQueryBuilder', (): void => {
       });
     });
 
+    it('builds a query with an operator with a value object value with no @type as a string.', (): void => {
+      expect(builder.buildPatternsFromQueryOptions(
+        entityVariable,
+        {
+          'https://example.com/pred': GreaterThanOrEqual({
+            '@value': '2023-03-05T07:28:51Z',
+          }),
+        },
+      )).toEqual({
+        variables: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate,
+                object: c1,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: '>=',
+              args: [
+                c1,
+                DataFactory.literal('2023-03-05T07:28:51Z', XSD.string),
+              ],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
+    });
+
     it('builds a query with an inverse operator.', (): void => {
       expect(builder.buildPatternsFromQueryOptions(
         entityVariable,
@@ -1114,24 +1319,29 @@ describe('A SparqlQueryBuilder', (): void => {
     });
   });
 
-  it('builds a query with an inverse relation.', (): void => {
+  it('builds a query with an inverse relation and nested relation inside that.', (): void => {
     expect(builder.buildPatternsFromQueryOptions(
       entityVariable,
       undefined,
       undefined,
       {
-        'https://example.com/pred': Inverse('https://example.com/inversePred'),
+        'https://example.com/pred': InverseRelation({
+          resolvedName: 'https://example.com/inversePred',
+          relations: {
+            'https://example.com/pred2': true,
+          },
+        }),
       },
     )).toEqual({
-      variables: [ c1 ],
+      variables: [ c1, c2 ],
       where: [
         {
           type: 'bgp',
           triples: [
             {
               subject: entityVariable,
-              predicate: c2,
-              object: c3,
+              predicate: c3,
+              object: c4,
             },
           ],
         },
@@ -1152,6 +1362,11 @@ describe('A SparqlQueryBuilder', (): void => {
                     items: [ predicate ],
                   },
                   object: c1,
+                },
+                {
+                  subject: c1,
+                  predicate: predicate2,
+                  object: c2,
                 },
               ],
             },

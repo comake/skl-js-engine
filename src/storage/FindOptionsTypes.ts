@@ -2,6 +2,7 @@
 import type { OrArray } from '../util/Types';
 import type { JSONArray, JSONObject } from '../util/Util';
 import type { FindOperator } from './FindOperator';
+import type { InverseRelationOperatorValue } from './operator/InverseRelation';
 
 export type FindOptionsSelectByString = string[];
 
@@ -16,9 +17,9 @@ export interface FindOneOptions {
   order?: FindOptionsOrder;
 }
 
-export interface FindOptionsRelations {
-  [k: string]: boolean | FindOptionsRelations | FindOperator<string>;
-}
+export type FindOptionsRelations = {
+  [k: string]: boolean | FindOptionsRelations | FindOperator<InverseRelationOperatorValue>;
+};
 
 export type FindOptionsOrderValue = 'ASC' | 'DESC' | 'asc' | 'desc' | 1 | -1;
 

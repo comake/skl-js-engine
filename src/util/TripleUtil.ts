@@ -6,6 +6,7 @@ import type { ContextDefinition, GraphObject, NodeObject, ValueObject } from 'js
 import type { Frame } from 'jsonld/jsonld-spec';
 import type { PropertyPath } from 'sparqljs';
 import type { FindOptionsRelations } from '../storage/FindOptionsTypes';
+import type { InverseRelationOperatorValue } from '../storage/operator/InverseRelation';
 import type { OrArray } from './Types';
 import type { JSONArray, JSONObject } from './Util';
 import { ensureArray } from './Util';
@@ -96,23 +97,31 @@ function toJsonLdSubject(object: Quad_Subject): string {
 function relationsToFrame(relations: FindOptionsRelations): Frame {
   return Object.entries(relations).reduce((obj: NodeObject, [ field, value ]): NodeObject => {
     const fieldFrame: Frame = {};
-    const contextAddition: ContextDefinition = {};
+    let contextAddition: ContextDefinition | undefined;
     if (typeof value === 'object' && value.type === 'operator') {
-      contextAddition[value.value as string] = { '@reverse': field };
-      fieldFrame[value.value as string] = {};
+      const { resolvedName, relations: subRelations } = value.value as InverseRelationOperatorValue;
+      contextAddition = { [resolvedName]: { '@reverse': field }};
+      if (subRelations) {
+        fieldFrame[resolvedName] = relationsToFrame(subRelations);
+      } else {
+        fieldFrame[resolvedName] = {};
+      }
     } else if (typeof value === 'boolean') {
       fieldFrame[field] = {};
     } else {
       fieldFrame[field] = relationsToFrame(value as FindOptionsRelations);
     }
-    return {
-      ...obj,
-      '@context': {
-        ...obj['@context'] as ContextDefinition,
-        ...contextAddition,
-      },
-      ...fieldFrame,
-    };
+    if (contextAddition) {
+      return {
+        ...obj,
+        '@context': {
+          ...obj['@context'] as ContextDefinition,
+          ...contextAddition,
+        },
+        ...fieldFrame,
+      };
+    }
+    return fieldFrame;
   }, {});
 }
 
