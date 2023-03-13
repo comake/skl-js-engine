@@ -69,6 +69,9 @@ export class MemoryQueryAdapter implements QueryAdapter {
   }
 
   public async findAll(options?: FindAllOptions): Promise<Entity[]> {
+    if (options?.search) {
+      return [];
+    }
     let results: Entity[] = [];
     if (options?.where?.id && Object.keys(options.where).length === 1 && typeof options.where.id === 'string') {
       const schema = this.schemas[options.where.id];
@@ -260,13 +263,14 @@ export class MemoryQueryAdapter implements QueryAdapter {
     }, [ targetClass ]);
   }
 
-  public async exists(where: FindOptionsWhere): Promise<boolean> {
-    const res = await this.find({ where });
-    return res !== null;
+  public async exists(options: FindAllOptions): Promise<boolean> {
+    const res = await this.findAll(options);
+    return res.length > 0;
   }
 
-  public async count(where?: FindOptionsWhere): Promise<number> {
-    return 0;
+  public async count(options: FindAllOptions): Promise<number> {
+    const res = await this.findAll(options);
+    return res.length;
   }
 
   public async save(entity: Entity): Promise<Entity>;

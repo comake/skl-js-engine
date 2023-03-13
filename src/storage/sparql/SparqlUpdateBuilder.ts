@@ -11,14 +11,16 @@ import type {
   BindPattern,
 } from 'sparqljs';
 import {
-  rdfTypeNamedNode,
-  valueToLiteral,
-  now,
   created,
   modified,
-  subjectNode,
-  predicateNode,
+  now,
   objectNode,
+  predicateNode,
+  rdfTypeNamedNode,
+  subjectNode,
+} from '../../util/SparqlUtil';
+import {
+  valueToLiteral,
 } from '../../util/TripleUtil';
 import type { Entity } from '../../util/Types';
 import { ensureArray } from '../../util/Util';

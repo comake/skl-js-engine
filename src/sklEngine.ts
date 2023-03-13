@@ -12,11 +12,13 @@ import type { Frame } from 'jsonld/jsonld-spec';
 import SHACLValidator from 'rdf-validate-shacl';
 import type ValidationReport from 'rdf-validate-shacl/src/validation-report';
 import { Mapper } from './mapping/Mapper';
+import { BlazegraphQueryAdapter } from './storage/blazegraph/BlazegraphQueryAdapter';
+import type { BlazegraphQueryAdapterOptions } from './storage/blazegraph/BlazegraphQueryAdapterOptions';
 import type { FindAllOptions, FindOneOptions, FindOptionsWhere } from './storage/FindOptionsTypes';
 import { MemoryQueryAdapter } from './storage/memory/MemoryQueryAdapter';
 import type { MemoryQueryAdapterOptions } from './storage/memory/MemoryQueryAdapterOptions';
 import type { QueryAdapter, RawQueryResult } from './storage/QueryAdapter';
-import { SparqlQueryAdapter } from './storage/sparql/SparqlQueryAdapter';
+import { BasicSparqlQueryAdapter } from './storage/sparql/BasicSparqlQueryAdapter';
 import type { SparqlQueryAdapterOptions } from './storage/sparql/SparqlQueryAdapterOptions';
 import type { OrArray, Entity, OperationResponse, ErrorMatcher } from './util/Types';
 import {
@@ -32,7 +34,10 @@ export type VerbInterface = Record<string, VerbHandler>;
 
 export type MappingResponseOption<T extends boolean> = T extends true ? JSONObject : NodeObject;
 
-export type SKLEngineOptions = MemoryQueryAdapterOptions | SparqlQueryAdapterOptions;
+export type SKLEngineOptions =
+| MemoryQueryAdapterOptions
+| SparqlQueryAdapterOptions
+| BlazegraphQueryAdapterOptions;
 
 export class SKLEngine {
   private readonly mapper: Mapper;
@@ -46,7 +51,10 @@ export class SKLEngine {
         this.adapter = new MemoryQueryAdapter(options);
         break;
       case 'sparql':
-        this.adapter = new SparqlQueryAdapter(options);
+        this.adapter = new BasicSparqlQueryAdapter(options);
+        break;
+      case 'blazegraph':
+        this.adapter = new BlazegraphQueryAdapter(options);
         break;
       default:
         throw new Error('No schema source found in setSchema args.');
@@ -94,12 +102,12 @@ export class SKLEngine {
     return await this.adapter.findAllBy(where);
   }
 
-  public async exists(where: FindOptionsWhere): Promise<boolean> {
-    return await this.adapter.exists(where);
+  public async exists(options?: FindAllOptions): Promise<boolean> {
+    return await this.adapter.exists(options);
   }
 
-  public async count(where?: FindOptionsWhere): Promise<number> {
-    return await this.adapter.count(where);
+  public async count(options?: FindAllOptions): Promise<number> {
+    return await this.adapter.count(options);
   }
 
   public async save(entity: Entity): Promise<Entity>;

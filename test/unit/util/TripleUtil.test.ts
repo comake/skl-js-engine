@@ -2,8 +2,9 @@
 import DataFactory from '@rdfjs/data-model';
 import type { Quad } from '@rdfjs/types';
 import type { Frame } from 'jsonld/jsonld-spec';
+import { InverseRelation } from '../../../src/storage/operator/InverseRelation';
+import { rdfTypeNamedNode } from '../../../src/util/SparqlUtil';
 import {
-  rdfTypeNamedNode,
   triplesToJsonld,
   valueToLiteral,
   toJSValueFromDataType,
@@ -381,6 +382,62 @@ describe('TripleUtil', (): void => {
           },
         },
       });
+    });
+
+    it('frames the results according to the relations field with an inverse relation.', async(): Promise<void> => {
+      const predicate2 = DataFactory.namedNode('https://example.com/pred2');
+      const data3 = DataFactory.namedNode('https://example.com/data/3');
+      const article = DataFactory.namedNode('https://example.com/Article');
+      triples = [
+        {
+          subject: data1,
+          predicate: rdfTypeNamedNode,
+          object: file,
+        } as Quad,
+        {
+          subject: data2,
+          predicate,
+          object: data1,
+        } as Quad,
+        {
+          subject: data2,
+          predicate: rdfTypeNamedNode,
+          object: article,
+        } as Quad,
+        {
+          subject: data2,
+          predicate: predicate2,
+          object: data3,
+        } as Quad,
+        {
+          subject: data3,
+          predicate: rdfTypeNamedNode,
+          object: article,
+        } as Quad,
+      ];
+      const relations = {
+        'https://example.com/pred': InverseRelation({
+          resolvedName: 'https://example.com/inversePred',
+          relations: {
+            'https://example.com/pred2': true,
+          },
+        }),
+      };
+      await expect(triplesToJsonld(triples, relations)).resolves.toEqual([{
+        '@id': 'https://example.com/data/1',
+        '@type': SKL.File,
+        'https://example.com/inversePred': {
+          '@id': 'https://example.com/data/2',
+          '@type': 'https://example.com/Article',
+          'https://example.com/pred': {
+            '@id': 'https://example.com/data/1',
+          },
+          'https://example.com/pred2': {
+            '@id': 'https://example.com/data/3',
+            '@type': 'https://example.com/Article',
+          },
+        },
+      }]);
     });
   });
 

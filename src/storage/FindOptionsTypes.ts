@@ -11,10 +11,12 @@ export type FindOptionsRelationsByString = string[];
 export type FindOptionsSelect = FindOptionsSelectByString | {[key: string]: boolean | FindOptionsSelect };
 
 export interface FindOneOptions {
+  search?: string;
   select?: FindOptionsSelect;
   where?: FindOptionsWhere;
   relations?: FindOptionsRelations;
   order?: FindOptionsOrder;
+  searchRelations?: boolean;
 }
 
 export type FindOptionsRelations = {
@@ -48,7 +50,11 @@ export type ValueObject =
   | LanguageValueObject
   | NonJsonValueObject;
 
-export type FindOptionsWhereField = OrArray<FieldPrimitiveValue> | ValueObject | FindOptionsWhere | FindOperator<any>;
+export type FindOptionsWhereField =
+| OrArray<FieldPrimitiveValue>
+| ValueObject
+| Exclude<FindOptionsWhere, 'search'>
+| FindOperator<any>;
 
 export type IdOrTypeFindOptionsWhereField = string | FindOperator<string> | FindOperator<string[]>;
 

@@ -40,11 +40,11 @@ export interface QueryAdapter {
   /**
    * Determines if an entity matching the given where condition exists in the database.
    */
-  exists(where?: FindOptionsWhere): Promise<boolean>;
+  exists(options?: FindAllOptions): Promise<boolean>;
   /**
    * Returns a count of entities matching the given where condition in the database.
    */
-  count(where?: FindOptionsWhere): Promise<number>;
+  count(options?: FindAllOptions): Promise<number>;
   /**
    * Saves a given entity in the database.
    * If entity does not exist in the database then inserts, otherwise updates.

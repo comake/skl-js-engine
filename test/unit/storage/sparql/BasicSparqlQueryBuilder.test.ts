@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import DataFactory from '@rdfjs/data-model';
-import type { FindOperator } from '../../../../src/storage/FindOperator';
+import type { FindOperatorType } from '../../../../src/storage/FindOperator';
 import { Equal } from '../../../../src/storage/operator/Equal';
 import { GreaterThan } from '../../../../src/storage/operator/GreaterThan';
 import { GreaterThanOrEqual } from '../../../../src/storage/operator/GreaterThanOrEqual';
@@ -10,7 +10,7 @@ import { InverseRelation } from '../../../../src/storage/operator/InverseRelatio
 import { LessThan } from '../../../../src/storage/operator/LessThan';
 import { LessThanOrEqual } from '../../../../src/storage/operator/LessThanOrEqual';
 import { Not } from '../../../../src/storage/operator/Not';
-import { SparqlQueryBuilder } from '../../../../src/storage/sparql/SparqlQueryBuilder';
+import { BasicSparqlQueryBuilder } from '../../../../src/storage/sparql/BasicSparqlQueryBuilder';
 import {
   entityVariable,
   objectNode,
@@ -18,13 +18,19 @@ import {
   rdfsSubClassOfNamedNode,
   rdfTypeNamedNode,
   subjectNode,
-} from '../../../../src/util/TripleUtil';
+} from '../../../../src/util/SparqlUtil';
 import { RDF, SKL, XSD } from '../../../../src/util/Vocabularies';
 
 const c1 = DataFactory.variable('c1');
 const c2 = DataFactory.variable('c2');
 const c3 = DataFactory.variable('c3');
 const c4 = DataFactory.variable('c4');
+const c5 = DataFactory.variable('c5');
+const c6 = DataFactory.variable('c6');
+const c7 = DataFactory.variable('c7');
+const c8 = DataFactory.variable('c8');
+const c9 = DataFactory.variable('c9');
+const c10 = DataFactory.variable('c10');
 const predicate = DataFactory.namedNode('https://example.com/pred');
 const predicate2 = DataFactory.namedNode('https://example.com/pred2');
 const data1 = DataFactory.namedNode('https://example.com/data/1');
@@ -32,34 +38,17 @@ const data2 = DataFactory.namedNode('https://example.com/data/2');
 const file = DataFactory.namedNode(SKL.File);
 const event = DataFactory.namedNode(SKL.Event);
 
-describe('A SparqlQueryBuilder', (): void => {
-  let builder: SparqlQueryBuilder;
+describe('A BasicSparqlQueryBuilder', (): void => {
+  let builder: BasicSparqlQueryBuilder;
 
   beforeEach(async(): Promise<void> => {
-    builder = new SparqlQueryBuilder();
+    builder = new BasicSparqlQueryBuilder();
   });
 
-  describe('#buildValuesForVariables', (): void => {
-    it('builds an and expression between multiple in expressions.', (): void => {
-      expect(builder.buildValuesForVariables({
-        entity: [
-          DataFactory.namedNode('https://example.com/data/1'),
-          DataFactory.namedNode('https://example.com/data/2'),
-        ],
-      })).toEqual([{
-        type: 'values',
-        values: [
-          { '?entity': DataFactory.namedNode('https://example.com/data/1') },
-          { '?entity': DataFactory.namedNode('https://example.com/data/2') },
-        ],
-      }]);
-    });
-  });
-
-  describe('#buildPatternsFromQueryOptions', (): void => {
+  describe('#buildEntitySelectPatternsFromOptions', (): void => {
     it('builds a query without any options.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(entityVariable)).toEqual({
-        variables: [],
+      expect(builder.buildEntitySelectPatternsFromOptions(entityVariable)).toEqual({
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -78,15 +67,17 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with where options.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          id: 'https://example.com/data/1',
-          type: SKL.File,
-          'https://example.com/pred': 1,
+          where: {
+            id: 'https://example.com/data/1',
+            type: SKL.File,
+            'https://example.com/pred': 1,
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'values',
@@ -127,11 +118,13 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with one where filter and no triple patterns.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
-        { id: 'https://example.com/data/1' },
+        {
+          where: { id: 'https://example.com/data/1' },
+        },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [],
         orders: [],
         graphWhere: [
@@ -146,14 +139,16 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with more than one filter.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          'https://example.com/pred': GreaterThan(1),
-          'https://example.com/pred2': LessThan(1),
+          where: {
+            'https://example.com/pred': GreaterThan(1),
+            'https://example.com/pred2': LessThan(1),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -196,16 +191,18 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with a nested value filter.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          id: 'https://example.com/data/1',
-          'https://example.com/nested': {
-            id: 'https://example.com/data/2',
+          where: {
+            id: 'https://example.com/data/1',
+            'https://example.com/nested': {
+              id: 'https://example.com/data/2',
+            },
           },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'values',
@@ -236,24 +233,26 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with a literal value filter.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          'https://example.com/pred': {
-            '@value': { alpha: 1 },
-            '@type': '@json',
-          },
-          'https://example.com/pred2': {
-            '@value': false,
-            '@type': XSD.boolean,
-          },
-          'https://example.com/pred3': {
-            '@value': 'hello',
-            '@language': 'en',
+          where: {
+            'https://example.com/pred': {
+              '@value': { alpha: 1 },
+              '@type': '@json',
+            },
+            'https://example.com/pred2': {
+              '@value': false,
+              '@type': XSD.boolean,
+            },
+            'https://example.com/pred3': {
+              '@value': 'hello',
+              '@language': 'en',
+            },
           },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -282,13 +281,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with a NamedNode filter.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          'https://example.com/pred': 'https://example.com/object',
+          where: {
+            'https://example.com/pred': 'https://example.com/object',
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -307,13 +308,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with an array valued filter.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          'https://example.com/pred': [ 1, 2 ],
+          where: {
+            'https://example.com/pred': [ 1, 2 ],
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -337,13 +340,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with an in operator on the id field.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          id: In([ 'https://example.com/data/1' ]),
+          where: {
+            id: In([ 'https://example.com/data/1' ]),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [],
         orders: [],
         graphWhere: [
@@ -358,13 +363,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with an in operator on the type field.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          type: In([ SKL.File, SKL.Event ]),
+          where: {
+            type: In([ SKL.File, SKL.Event ]),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'values',
@@ -401,13 +408,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with a not operator on the type field.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          type: Not(SKL.File),
+          where: {
+            type: Not(SKL.File),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -469,13 +478,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with an in operator on a non id field.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          'https://example.com/pred': In([ 1, 2 ]),
+          where: {
+            'https://example.com/pred': In([ 1, 2 ]),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'values',
@@ -501,13 +512,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with a not operator on the id field.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          id: Not('https://example.com/data/1'),
+          where: {
+            id: Not('https://example.com/data/1'),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -535,13 +548,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with a nested not in operator on the id field.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          id: Not(In([ 'https://example.com/data/1', 'https://example.com/data/2' ])),
+          where: {
+            id: Not(In([ 'https://example.com/data/1', 'https://example.com/data/2' ])),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -572,14 +587,16 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with a filtered id field and another field filter.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          id: Not(In([ 'https://example.com/data/1', 'https://example.com/data/2' ])),
-          'https://example.com/pred': GreaterThan(1),
+          where: {
+            id: Not(In([ 'https://example.com/data/1', 'https://example.com/data/2' ])),
+            'https://example.com/pred': GreaterThan(1),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -620,13 +637,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with a nested not equal operator on the id field.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          id: Not(Equal('https://example.com/data/1')),
+          where: {
+            id: Not(Equal('https://example.com/data/1')),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -654,13 +673,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with an equal operator on the id field.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          id: Equal('https://example.com/data/1'),
+          where: {
+            id: Equal('https://example.com/data/1'),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -688,13 +709,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with a not operator on a non id field.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          'https://example.com/pred': Not(1),
+          where: {
+            'https://example.com/pred': Not(1),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -744,13 +767,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with a nested not in operator on a non id field.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          'https://example.com/pred': Not(In([ 1, 2 ])),
+          where: {
+            'https://example.com/pred': Not(In([ 1, 2 ])),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -803,13 +828,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with a nested not equal operator on a non id field.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          'https://example.com/pred': Not(Equal(1)),
+          where: {
+            'https://example.com/pred': Not(Equal(1)),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -859,13 +886,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with an equal operator on a non id field.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          'https://example.com/pred': Equal(1),
+          where: {
+            'https://example.com/pred': Equal(1),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -895,13 +924,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with a gt operator.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          'https://example.com/pred': GreaterThan(1),
+          where: {
+            'https://example.com/pred': GreaterThan(1),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -931,13 +962,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with a gte operator.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          'https://example.com/pred': GreaterThanOrEqual(1),
+          where: {
+            'https://example.com/pred': GreaterThanOrEqual(1),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -967,13 +1000,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with a lt operator.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          'https://example.com/pred': LessThan(1),
+          where: {
+            'https://example.com/pred': LessThan(1),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -1003,13 +1038,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with a lte operator.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          'https://example.com/pred': LessThanOrEqual(1),
+          where: {
+            'https://example.com/pred': LessThanOrEqual(1),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -1039,16 +1076,18 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with an operator with a value object value.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          'https://example.com/pred': GreaterThanOrEqual({
-            '@type': XSD.dateTime,
-            '@value': '2023-03-05T07:28:51Z',
-          }),
+          where: {
+            'https://example.com/pred': GreaterThanOrEqual({
+              '@type': XSD.dateTime,
+              '@value': '2023-03-05T07:28:51Z',
+            }),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -1078,15 +1117,17 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with an operator with a value object value with no @type as a string.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          'https://example.com/pred': GreaterThanOrEqual({
-            '@value': '2023-03-05T07:28:51Z',
-          }),
+          where: {
+            'https://example.com/pred': GreaterThanOrEqual({
+              '@value': '2023-03-05T07:28:51Z',
+            }),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -1116,13 +1157,15 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with an inverse operator.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
         {
-          'https://example.com/pred': Inverse(1),
+          where: {
+            'https://example.com/pred': Inverse(1),
+          },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -1146,12 +1189,15 @@ describe('A SparqlQueryBuilder', (): void => {
 
     it('throws an error if there is an unsupported operation on a non id field.', (): void => {
       expect((): void => {
-        builder.buildPatternsFromQueryOptions(
+        builder.buildEntitySelectPatternsFromOptions(
           entityVariable,
           {
-            'https://example.com/pred': {
-              type: 'operator',
-              operator: 'and',
+            where: {
+              'https://example.com/pred': {
+                type: 'operator',
+                operator: 'and' as FindOperatorType,
+                value: 'true',
+              },
             },
           },
         );
@@ -1160,13 +1206,16 @@ describe('A SparqlQueryBuilder', (): void => {
 
     it('throws an error if there is an unsupported operation on the id field.', (): void => {
       expect((): void => {
-        builder.buildPatternsFromQueryOptions(
+        builder.buildEntitySelectPatternsFromOptions(
           entityVariable,
           {
-            id: {
-              type: 'operator',
-              operator: 'and' as any,
-            } as FindOperator<string>,
+            where: {
+              id: {
+                type: 'operator',
+                operator: 'and' as FindOperatorType,
+                value: 'true',
+              },
+            },
           },
         );
       }).toThrow('Unsupported operator "and"');
@@ -1174,13 +1223,16 @@ describe('A SparqlQueryBuilder', (): void => {
 
     it('throws an error if there is an unsupported operation as an argument to a Not operator.', (): void => {
       expect((): void => {
-        builder.buildPatternsFromQueryOptions(
+        builder.buildEntitySelectPatternsFromOptions(
           entityVariable,
           {
-            'https://example.com/pred': Not({
-              type: 'operator',
-              operator: 'and',
-            }),
+            where: {
+              'https://example.com/pred': Not({
+                type: 'operator',
+                operator: 'and' as FindOperatorType,
+                value: 'true',
+              }),
+            },
           },
         );
       }).toThrow('Unsupported Not sub operator "and"');
@@ -1189,27 +1241,29 @@ describe('A SparqlQueryBuilder', (): void => {
     it('throws an error if there is an unsupported operation as an argument to a Not operator on the id field.',
       (): void => {
         expect((): void => {
-          builder.buildPatternsFromQueryOptions(
+          builder.buildEntitySelectPatternsFromOptions(
             entityVariable,
             {
-              id: Not({
-                type: 'operator',
-                operator: 'and',
-              }) as unknown as FindOperator<string>,
+              where: {
+                id: Not({
+                  type: 'operator',
+                  operator: 'and' as FindOperatorType,
+                  value: 'true',
+                }),
+              },
             },
           );
         }).toThrow('Unsupported Not sub operator "and"');
       });
 
     it('builds a query with a with an order.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
-        undefined,
         {
-          'https://example.com/pred': 'desc',
+          order: { 'https://example.com/pred': 'desc' },
         },
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -1242,12 +1296,11 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with a with an order on id.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
-        undefined,
-        { id: 'desc' },
+        { order: { id: 'desc' }},
       )).toEqual({
-        variables: [],
+        graphSelectionTriples: [],
         where: [
           {
             type: 'bgp',
@@ -1269,48 +1322,142 @@ describe('A SparqlQueryBuilder', (): void => {
     });
 
     it('builds a query with selected relations.', (): void => {
-      expect(builder.buildPatternsFromQueryOptions(
+      expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
-        undefined,
-        undefined,
         {
-          'https://example.com/pred': {
-            'https://example.com/pred2': true,
+          relations: {
+            'https://example.com/pred': {
+              'https://example.com/pred2': true,
+            },
           },
         },
       )).toEqual({
-        variables: [ c1, c2 ],
+        graphSelectionTriples: [
+          { subject: c2, predicate: c3, object: c4 },
+          { subject: c6, predicate: c7, object: c8 },
+        ],
         where: [
           {
             type: 'bgp',
             triples: [
-              {
-                subject: entityVariable,
-                predicate: c3,
-                object: c4,
-              },
+              { subject: entityVariable, predicate: c9, object: c10 },
             ],
           },
         ],
         orders: [],
         graphWhere: [
           {
-            type: 'optional',
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate,
+                object: c1,
+              },
+            ],
+          },
+          {
+            type: 'graph',
+            name: c1,
             patterns: [
               {
-                triples: [
-                  {
-                    subject: entityVariable,
-                    predicate,
-                    object: c1,
-                  },
-                  {
-                    subject: c1,
-                    predicate: predicate2,
-                    object: c2,
-                  },
-                ],
                 type: 'bgp',
+                triples: [
+                  { subject: c2, predicate: c3, object: c4 },
+                ],
+              },
+            ],
+          },
+          {
+            type: 'bgp',
+            triples: [
+              { subject: c1, predicate: predicate2, object: c5 },
+            ],
+          },
+          {
+            type: 'graph',
+            name: c5,
+            patterns: [
+              {
+                type: 'bgp',
+                triples: [
+                  { subject: c6, predicate: c7, object: c8 },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+    });
+    it('builds a query with an inverse relation and nested relation inside that.', (): void => {
+      expect(builder.buildEntitySelectPatternsFromOptions(
+        entityVariable,
+        {
+          relations: {
+            'https://example.com/pred': InverseRelation({
+              resolvedName: 'https://example.com/inversePred',
+              relations: {
+                'https://example.com/pred2': true,
+              },
+            }),
+          },
+        },
+      )).toEqual({
+        graphSelectionTriples: [
+          { subject: c2, predicate: c3, object: c4 },
+          { subject: c6, predicate: c7, object: c8 },
+        ],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              { subject: entityVariable, predicate: c9, object: c10 },
+            ],
+          },
+        ],
+        orders: [],
+        graphWhere: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate: {
+                  type: 'path',
+                  pathType: '^',
+                  items: [ predicate ],
+                },
+                object: c1,
+              },
+            ],
+          },
+          {
+            type: 'graph',
+            name: c1,
+            patterns: [
+              {
+                type: 'bgp',
+                triples: [
+                  { subject: c2, predicate: c3, object: c4 },
+                ],
+              },
+            ],
+          },
+          {
+            type: 'bgp',
+            triples: [
+              { subject: c1, predicate: predicate2, object: c5 },
+            ],
+          },
+          {
+            type: 'graph',
+            name: c5,
+            patterns: [
+              {
+                type: 'bgp',
+                triples: [
+                  { subject: c6, predicate: c7, object: c8 },
+                ],
               },
             ],
           },
@@ -1319,73 +1466,16 @@ describe('A SparqlQueryBuilder', (): void => {
     });
   });
 
-  it('builds a query with an inverse relation and nested relation inside that.', (): void => {
-    expect(builder.buildPatternsFromQueryOptions(
-      entityVariable,
-      undefined,
-      undefined,
-      {
-        'https://example.com/pred': InverseRelation({
-          resolvedName: 'https://example.com/inversePred',
-          relations: {
-            'https://example.com/pred2': true,
-          },
-        }),
-      },
-    )).toEqual({
-      variables: [ c1, c2 ],
-      where: [
-        {
-          type: 'bgp',
-          triples: [
-            {
-              subject: entityVariable,
-              predicate: c3,
-              object: c4,
-            },
-          ],
-        },
-      ],
-      orders: [],
-      graphWhere: [
-        {
-          type: 'optional',
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [
-                {
-                  subject: entityVariable,
-                  predicate: {
-                    type: 'path',
-                    pathType: '^',
-                    items: [ predicate ],
-                  },
-                  object: c1,
-                },
-                {
-                  subject: c1,
-                  predicate: predicate2,
-                  object: c2,
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    });
-  });
-
   describe('#buildConstructFromEntitySelectQuery', (): void => {
     it('builds a construct query without a select clause.', (): void => {
-      const foo = DataFactory.variable('foo');
+      const graphSelectionTriples = [{ subject: c1, predicate: c2, object: c3 }];
       const selectPattern = [
         { subject: subjectNode, predicate: predicateNode, object: objectNode },
         { subject: c1, predicate: c2, object: c3 },
       ];
       expect(builder.buildConstructFromEntitySelectQuery(
         [],
-        [ foo ],
+        graphSelectionTriples,
       )).toEqual({
         type: 'query',
         prefixes: {},
@@ -1398,14 +1488,6 @@ describe('A SparqlQueryBuilder', (): void => {
             patterns: [{
               type: 'bgp',
               triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            }],
-          },
-          {
-            type: 'graph',
-            name: foo,
-            patterns: [{
-              type: 'bgp',
-              triples: [{ subject: c1, predicate: c2, object: c3 }],
             }],
           },
         ],

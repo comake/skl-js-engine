@@ -10,7 +10,7 @@ import {
   predicateNode,
   rdfTypeNamedNode,
   subjectNode,
-} from '../../../../src/util/TripleUtil';
+} from '../../../../src/util/SparqlUtil';
 import { DCTERMS, SKL, XSD } from '../../../../src/util/Vocabularies';
 
 const c1 = DataFactory.variable('c1');

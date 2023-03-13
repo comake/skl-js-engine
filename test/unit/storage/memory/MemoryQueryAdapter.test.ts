@@ -793,6 +793,22 @@ describe('a MemoryQueryAdapter', (): void => {
         },
       })).resolves.toEqual([]);
     });
+
+    it('does not support search.', async(): Promise<void> => {
+      schemas = [
+        {
+          '@id': 'https://example.com/data/2',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
+          'https://example.com/name': [
+            { '@value': 'hello world', '@type': XSD.string },
+          ],
+        },
+      ];
+      adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
+      await expect(adapter.findAll({
+        search: 'hello world',
+      })).resolves.toEqual([]);
+    });
   });
 
   describe('findAllBy', (): void => {
@@ -877,15 +893,28 @@ describe('a MemoryQueryAdapter', (): void => {
   });
 
   describe('count', (): void => {
-    it('is not supported.', async(): Promise<void> => {
+    it('returns the number of entities matching the query.', async(): Promise<void> => {
       schemas = [{
         '@id': 'https://example.com/data/123',
         '@type': 'https://standardknowledge.com/ontologies/core/File',
       }];
       adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
       await expect(
-        adapter.count({ id: 'https://example.com/data/123' }),
-      ).resolves.toBe(0);
+        adapter.count({ where: { id: 'https://example.com/data/123' }}),
+      ).resolves.toBe(1);
+    });
+  });
+
+  describe('exists', (): void => {
+    it('returns true if there are entities matching the query.', async(): Promise<void> => {
+      schemas = [{
+        '@id': 'https://example.com/data/123',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
+      }];
+      adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
+      await expect(
+        adapter.exists({ where: { id: 'https://example.com/data/123' }}),
+      ).resolves.toBe(true);
     });
   });
 

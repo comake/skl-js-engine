@@ -4,39 +4,14 @@ import type { Quad, Quad_Object, Quad_Subject, Literal } from '@rdfjs/types';
 import * as jsonld from 'jsonld';
 import type { ContextDefinition, GraphObject, NodeObject, ValueObject } from 'jsonld';
 import type { Frame } from 'jsonld/jsonld-spec';
-import type { PropertyPath } from 'sparqljs';
 import type { FindOptionsRelations } from '../storage/FindOptionsTypes';
 import type { InverseRelationOperatorValue } from '../storage/operator/InverseRelation';
 import type { OrArray } from './Types';
 import type { JSONArray, JSONObject } from './Util';
 import { ensureArray } from './Util';
-import { RDF, XSD, RDFS, DCTERMS } from './Vocabularies';
-
-export const rdfTypeNamedNode = DataFactory.namedNode(RDF.type);
-export const rdfsSubClassOfNamedNode = DataFactory.namedNode(RDFS.subClassOf);
-export const subjectNode = DataFactory.variable('subject');
-export const predicateNode = DataFactory.variable('predicate');
-export const objectNode = DataFactory.variable('object');
-export const entityVariable = DataFactory.variable('entity');
-export const countVariable = DataFactory.variable('count');
-export const now = DataFactory.variable('now');
-export const created = DataFactory.namedNode(DCTERMS.created);
-export const modified = DataFactory.namedNode(DCTERMS.modified);
+import { RDF, XSD } from './Vocabularies';
 
 const BLANK_NODE_PREFIX = '_:';
-
-export const allTypesAndSuperTypesPath: PropertyPath = {
-  type: 'path',
-  pathType: '/',
-  items: [
-    rdfTypeNamedNode,
-    {
-      type: 'path',
-      pathType: '*',
-      items: [ rdfsSubClassOfNamedNode ],
-    },
-  ],
-};
 
 export function toJSValueFromDataType(value: string, dataType: string): number | boolean | string {
   switch (dataType) {

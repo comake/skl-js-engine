@@ -99,6 +99,13 @@ describe('SKLEngine', (): void => {
     });
   });
 
+  describe('Blazegraph', (): void => {
+    it('initializes.', async(): Promise<void> => {
+      const sparqlEndpoint = 'https://localhost:9999';
+      expect(new SKLEngine({ type: 'blazegraph', endpointUrl: sparqlEndpoint })).toBeInstanceOf(SKLEngine);
+    });
+  });
+
   describe('CRUD on schemas', (): void => {
     let skql: SKLEngine;
 
@@ -176,16 +183,16 @@ describe('SKLEngine', (): void => {
 
     it('delegates calls to exists to the query adapter.', async(): Promise<void> => {
       const existsSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'exists');
-      await expect(skql.exists({ id: 'https://standardknowledge.com/ontologies/core/Share' })).resolves.toBe(true);
+      await expect(skql.exists({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }})).resolves.toBe(true);
       expect(existsSpy).toHaveBeenCalledTimes(1);
-      expect(existsSpy).toHaveBeenCalledWith({ id: 'https://standardknowledge.com/ontologies/core/Share' });
+      expect(existsSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }});
     });
 
     it('delegates calls to count to the query adapter.', async(): Promise<void> => {
       const countSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'count');
-      await expect(skql.count({ id: 'https://standardknowledge.com/ontologies/core/Share' })).resolves.toBe(0);
+      await expect(skql.count({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }})).resolves.toBe(1);
       expect(countSpy).toHaveBeenCalledTimes(1);
-      expect(countSpy).toHaveBeenCalledWith({ id: 'https://standardknowledge.com/ontologies/core/Share' });
+      expect(countSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }});
     });
 
     it('delegates calls to save a single entity to the query adapter.', async(): Promise<void> => {

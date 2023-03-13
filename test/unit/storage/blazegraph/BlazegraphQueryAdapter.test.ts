@@ -2,9 +2,9 @@
 import type { Readable } from 'stream';
 import DataFactory from '@rdfjs/data-model';
 import SparqlClient from 'sparql-http-client';
+import { BlazegraphQueryAdapter } from '../../../../src/storage/blazegraph/BlazegraphQueryAdapter';
 import { InverseRelation } from '../../../../src/storage/operator/InverseRelation';
-import { SparqlQueryAdapter } from '../../../../src/storage/sparql/SparqlQueryAdapter';
-import { rdfTypeNamedNode } from '../../../../src/util/TripleUtil';
+import { rdfTypeNamedNode } from '../../../../src/util/SparqlUtil';
 import { SKL, XSD } from '../../../../src/util/Vocabularies';
 import { streamFrom } from '../../../util/Util';
 
@@ -16,13 +16,13 @@ const predicate = DataFactory.namedNode('https://example.com/pred');
 
 jest.mock('sparql-http-client');
 
-describe('a SparqlQueryAdapter', (): void => {
+describe('a BlazegraphQueryAdapter', (): void => {
   let response: any = [];
   let select: any;
   let update: any;
   let ask: any;
   let error: any;
-  let adapter: SparqlQueryAdapter;
+  let adapter: BlazegraphQueryAdapter;
 
   beforeEach(async(): Promise<void> => {
     response = [];
@@ -44,7 +44,7 @@ describe('a SparqlQueryAdapter', (): void => {
     (SparqlClient as unknown as jest.Mock).mockReturnValue({
       query: { select, update, ask },
     });
-    adapter = new SparqlQueryAdapter({ type: 'sparql', endpointUrl });
+    adapter = new BlazegraphQueryAdapter({ type: 'blazegraph', endpointUrl });
   });
 
   describe('executeRawQuery', (): void => {
@@ -100,7 +100,7 @@ describe('a SparqlQueryAdapter', (): void => {
             'CONSTRUCT { ?subject ?predicate ?object. }',
             'WHERE {',
             '  {',
-            '    SELECT ?entity WHERE {',
+            '    SELECT DISTINCT ?entity WHERE {',
             '      ?entity ?c1 ?c2.',
             '    }',
             '    LIMIT 1',
@@ -114,7 +114,7 @@ describe('a SparqlQueryAdapter', (): void => {
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
           '  {',
-          '    SELECT ?entity WHERE {',
+          '    SELECT DISTINCT ?entity WHERE {',
           '      ?entity ?c1 ?c2.',
           '    }',
           '    LIMIT 1',
@@ -135,7 +135,7 @@ describe('a SparqlQueryAdapter', (): void => {
             'CONSTRUCT { ?subject ?predicate ?object. }',
             'WHERE {',
             '  {',
-            '    SELECT ?entity WHERE {',
+            '    SELECT DISTINCT ?entity WHERE {',
             '      ?entity ?c1 ?c2.',
             '    }',
             '    LIMIT 1',
@@ -154,7 +154,7 @@ describe('a SparqlQueryAdapter', (): void => {
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
           '  {',
-          '    SELECT ?entity WHERE {',
+          '    SELECT DISTINCT ?entity WHERE {',
           '      ?entity ?c1 ?c2.',
           '    }',
           '    LIMIT 1',
@@ -170,7 +170,7 @@ describe('a SparqlQueryAdapter', (): void => {
       response = [{ count: { value: 1 }}];
       await expect(
         adapter.count({
-          id: 'https://example.com/data/1',
+          where: { id: 'https://example.com/data/1' },
         }),
       ).resolves.toBe(1);
       expect(select).toHaveBeenCalledTimes(1);
@@ -188,13 +188,13 @@ describe('a SparqlQueryAdapter', (): void => {
       response = [{ count: { value: 1 }}];
       await expect(
         adapter.count({
-          'https://example.com/pred': 'https://example.com/data/1',
+          where: { 'https://example.com/pred': 'https://example.com/data/1' },
         }),
       ).resolves.toBe(1);
       expect(select).toHaveBeenCalledTimes(1);
       expect(select.mock.calls[0][0].split('\n')).toEqual([
         'SELECT (COUNT(DISTINCT ?entity) AS ?count) WHERE {',
-        '  ?entity <https://example.com/pred> <https://example.com/data/1>.',
+        '  { SELECT DISTINCT ?entity WHERE { ?entity <https://example.com/pred> <https://example.com/data/1>. } }',
         '  GRAPH ?entity { ?entity ?predicate ?object. }',
         '}',
       ]);
@@ -204,7 +204,7 @@ describe('a SparqlQueryAdapter', (): void => {
       error = new Error('Something bad happened');
       await expect(
         adapter.count({
-          id: 'https://example.com/data/1',
+          where: { id: 'https://example.com/data/1' },
         }),
       ).rejects.toThrow('Something bad happened');
       expect(select).toHaveBeenCalledTimes(1);
@@ -321,9 +321,9 @@ describe('a SparqlQueryAdapter', (): void => {
           '  VALUES ?entity {',
           '    <https://example.com/data/1>',
           '  }',
-          '  OPTIONAL { ?entity ^<https://example.com/pred> ?c1. }',
-          '  GRAPH ?entity { ?subject ?predicate ?object. }',
+          '  ?entity ^<https://example.com/pred> ?c1.',
           '  GRAPH ?c1 { ?c2 ?c3 ?c4. }',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
       });
@@ -408,7 +408,7 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
+          '  { SELECT DISTINCT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
@@ -448,7 +448,7 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
+          '  { SELECT DISTINCT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
@@ -475,7 +475,7 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
+          '  { SELECT DISTINCT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
@@ -516,7 +516,7 @@ describe('a SparqlQueryAdapter', (): void => {
         ]);
         expect(select).toHaveBeenCalledTimes(2);
         expect(select.mock.calls[0][0].split('\n')).toEqual([
-          'SELECT ?entity WHERE {',
+          'SELECT DISTINCT ?entity WHERE {',
           '  ?entity ?c2 ?c3.',
           '  OPTIONAL { ?entity <https://example.com/pred> ?c1. }',
           '}',
@@ -548,7 +548,7 @@ describe('a SparqlQueryAdapter', (): void => {
         ).resolves.toEqual([]);
         expect(select).toHaveBeenCalledTimes(1);
         expect(select.mock.calls[0][0].split('\n')).toEqual([
-          'SELECT ?entity WHERE {',
+          'SELECT DISTINCT ?entity WHERE {',
           '  ?entity ?c2 ?c3.',
           '  OPTIONAL { ?entity <https://example.com/pred> ?c1. }',
           '}',
@@ -567,7 +567,7 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
+          '  { SELECT DISTINCT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
@@ -603,7 +603,7 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  { SELECT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
+          '  { SELECT DISTINCT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
@@ -611,9 +611,9 @@ describe('a SparqlQueryAdapter', (): void => {
   });
 
   describe('exists', (): void => {
-    it('querues for the existence of an entity matching the where parameter.', async(): Promise<void> => {
+    it('queries for the existence of an entity matching the where parameter.', async(): Promise<void> => {
       ask.mockReturnValue(true);
-      await expect(adapter.exists({ type: SKL.File })).resolves.toBe(true);
+      await expect(adapter.exists({ where: { type: SKL.File }})).resolves.toBe(true);
     });
   });
 

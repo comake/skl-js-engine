@@ -129,3 +129,7 @@ export const DCTERMS = createNamespace('http://purl.org/dc/terms/', [
   'created',
   'modified',
 ]);
+
+export const BDS = createNamespace('http://www.bigdata.com/rdf/search#', [
+  'search',
+]);
