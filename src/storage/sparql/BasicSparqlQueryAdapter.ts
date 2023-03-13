@@ -23,7 +23,13 @@ import {
   triplesToJsonldWithFrame,
 } from '../../util/TripleUtil';
 import type { Entity } from '../../util/Types';
-import type { FindOneOptions, FindAllOptions, FindOptionsWhere, FindOptionsRelations } from '../FindOptionsTypes';
+import type {
+  FindOneOptions,
+  FindAllOptions,
+  FindOptionsWhere,
+  FindOptionsRelations,
+  FindCountOptions,
+} from '../FindOptionsTypes';
 import type { QueryAdapter, RawQueryResult } from '../QueryAdapter';
 import { BasicSparqlQueryBuilder } from './BasicSparqlQueryBuilder';
 import type { SparqlQueryAdapterOptions } from './SparqlQueryAdapterOptions';
@@ -158,14 +164,14 @@ export class BasicSparqlQueryAdapter implements QueryAdapter {
     return this.findAll({ where });
   }
 
-  public async exists(options: FindAllOptions): Promise<boolean> {
+  public async exists(options: FindCountOptions): Promise<boolean> {
     const queryBuilder = new BasicSparqlQueryBuilder();
     const { where } = await this.buildFindAllQueryData(queryBuilder, options);
     const query = creteSparqlAskQuery(where);
     return await this.sparqlQueryExecutor.executeAskQueryAndGetResponse(query);
   }
 
-  public async count(options: FindAllOptions): Promise<number> {
+  public async count(options: FindCountOptions): Promise<number> {
     const queryBuilder = new BasicSparqlQueryBuilder();
     const { where } = await this.buildFindAllQueryData(queryBuilder, options);
     const query = createSparqlCountSelectQuery(entityVariable, where);

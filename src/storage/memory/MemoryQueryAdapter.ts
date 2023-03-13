@@ -17,6 +17,7 @@ import type {
   FindOptionsWhereField,
   FieldPrimitiveValue,
   ValueObject,
+  FindCountOptions,
 } from '../FindOptionsTypes';
 import type { QueryAdapter, RawQueryResult } from '../QueryAdapter';
 import type { MemoryQueryAdapterOptions } from './MemoryQueryAdapterOptions';
@@ -263,12 +264,12 @@ export class MemoryQueryAdapter implements QueryAdapter {
     }, [ targetClass ]);
   }
 
-  public async exists(options: FindAllOptions): Promise<boolean> {
+  public async exists(options: FindCountOptions): Promise<boolean> {
     const res = await this.findAll(options);
     return res.length > 0;
   }
 
-  public async count(options: FindAllOptions): Promise<number> {
+  public async count(options: FindCountOptions): Promise<number> {
     const res = await this.findAll(options);
     return res.length;
   }

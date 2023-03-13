@@ -2,7 +2,7 @@
 import type { GraphObject } from 'jsonld';
 import type { Frame } from 'jsonld/jsonld-spec';
 import type { Entity } from '../util/Types';
-import type { FindAllOptions, FindOneOptions, FindOptionsWhere } from './FindOptionsTypes';
+import type { FindAllOptions, FindCountOptions, FindOneOptions, FindOptionsWhere } from './FindOptionsTypes';
 
 export type RawQueryResult = Record<string, number | boolean | string>;
 
@@ -40,11 +40,11 @@ export interface QueryAdapter {
   /**
    * Determines if an entity matching the given where condition exists in the database.
    */
-  exists(options?: FindAllOptions): Promise<boolean>;
+  exists(options?: FindCountOptions): Promise<boolean>;
   /**
    * Returns a count of entities matching the given where condition in the database.
    */
-  count(options?: FindAllOptions): Promise<number>;
+  count(options?: FindCountOptions): Promise<number>;
   /**
    * Saves a given entity in the database.
    * If entity does not exist in the database then inserts, otherwise updates.

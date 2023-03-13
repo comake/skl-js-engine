@@ -68,3 +68,7 @@ export interface FindAllOptions extends FindOneOptions {
   offset?: number;
   limit?: number;
 }
+
+export interface FindCountOptions extends FindOneOptions {
+  offset?: number;
+}
