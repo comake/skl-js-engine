@@ -321,8 +321,10 @@ describe('a BlazegraphQueryAdapter', (): void => {
           '  VALUES ?entity {',
           '    <https://example.com/data/1>',
           '  }',
-          '  ?entity ^<https://example.com/pred> ?c1.',
-          '  GRAPH ?c1 { ?c2 ?c3 ?c4. }',
+          '  OPTIONAL {',
+          '    ?entity ^<https://example.com/pred> ?c1.',
+          '    GRAPH ?c1 { ?c2 ?c3 ?c4. }',
+          '  }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);

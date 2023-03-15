@@ -169,41 +169,51 @@ describe('A BlazegraphQueryBuilder', (): void => {
         orders: [],
         graphWhere: [
           {
-            type: 'bgp',
-            triples: [
-              {
-                subject: entityVariable,
-                predicate,
-                object: c2,
-              },
-            ],
-          },
-          {
-            type: 'graph',
-            name: c2,
+            type: 'optional',
             patterns: [
               {
                 type: 'bgp',
                 triples: [
-                  { subject: c3, predicate: c4, object: c5 },
+                  {
+                    subject: entityVariable,
+                    predicate,
+                    object: c2,
+                  },
                 ],
               },
-            ],
-          },
-          {
-            type: 'bgp',
-            triples: [
-              { subject: c2, predicate: predicate2, object: c6 },
-            ],
-          },
-          {
-            type: 'graph',
-            name: c6,
-            patterns: [
               {
-                type: 'bgp',
-                triples: [
-                  { subject: c7, predicate: c8, object: c9 },
+                type: 'graph',
+                name: c2,
+                patterns: [
+                  {
+                    type: 'bgp',
+                    triples: [
+                      { subject: c3, predicate: c4, object: c5 },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: 'optional',
+                patterns: [
+                  {
+                    type: 'bgp',
+                    triples: [
+                      { subject: c2, predicate: predicate2, object: c6 },
+                    ],
+                  },
+                  {
+                    type: 'graph',
+                    name: c6,
+                    patterns: [
+                      {
+                        type: 'bgp',
+                        triples: [
+                          { subject: c7, predicate: c8, object: c9 },
+                        ],
+                      },
+                    ],
+                  },
                 ],
               },
             ],
@@ -311,45 +321,55 @@ describe('A BlazegraphQueryBuilder', (): void => {
         orders: [],
         graphWhere: [
           {
-            triples: [
-              {
-                subject: entityVariable,
-                predicate: {
-                  type: 'path',
-                  pathType: '^',
-                  items: [ predicate ],
-                },
-                object: c2,
-              },
-            ],
-            type: 'bgp',
-          },
-          {
-            type: 'graph',
-            name: c2,
+            type: 'optional',
             patterns: [
               {
-                type: 'bgp',
                 triples: [
-                  { subject: c3, predicate: c4, object: c5 },
+                  {
+                    subject: entityVariable,
+                    predicate: {
+                      type: 'path',
+                      pathType: '^',
+                      items: [ predicate ],
+                    },
+                    object: c2,
+                  },
+                ],
+                type: 'bgp',
+              },
+              {
+                type: 'graph',
+                name: c2,
+                patterns: [
+                  {
+                    type: 'bgp',
+                    triples: [
+                      { subject: c3, predicate: c4, object: c5 },
+                    ],
+                  },
                 ],
               },
-            ],
-          },
-          {
-            type: 'bgp',
-            triples: [
-              { subject: c2, predicate: predicate2, object: c6 },
-            ],
-          },
-          {
-            type: 'graph',
-            name: c6,
-            patterns: [
               {
-                type: 'bgp',
-                triples: [
-                  { subject: c7, predicate: c8, object: c9 },
+                type: 'optional',
+                patterns: [
+                  {
+                    type: 'bgp',
+                    triples: [
+                      { subject: c2, predicate: predicate2, object: c6 },
+                    ],
+                  },
+                  {
+                    type: 'graph',
+                    name: c6,
+                    patterns: [
+                      {
+                        type: 'bgp',
+                        triples: [
+                          { subject: c7, predicate: c8, object: c9 },
+                        ],
+                      },
+                    ],
+                  },
                 ],
               },
             ],

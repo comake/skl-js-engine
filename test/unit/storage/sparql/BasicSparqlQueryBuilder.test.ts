@@ -1347,41 +1347,51 @@ describe('A BasicSparqlQueryBuilder', (): void => {
         orders: [],
         graphWhere: [
           {
-            type: 'bgp',
-            triples: [
-              {
-                subject: entityVariable,
-                predicate,
-                object: c1,
-              },
-            ],
-          },
-          {
-            type: 'graph',
-            name: c1,
+            type: 'optional',
             patterns: [
               {
                 type: 'bgp',
                 triples: [
-                  { subject: c2, predicate: c3, object: c4 },
+                  {
+                    subject: entityVariable,
+                    predicate,
+                    object: c1,
+                  },
                 ],
               },
-            ],
-          },
-          {
-            type: 'bgp',
-            triples: [
-              { subject: c1, predicate: predicate2, object: c5 },
-            ],
-          },
-          {
-            type: 'graph',
-            name: c5,
-            patterns: [
               {
-                type: 'bgp',
-                triples: [
-                  { subject: c6, predicate: c7, object: c8 },
+                type: 'graph',
+                name: c1,
+                patterns: [
+                  {
+                    type: 'bgp',
+                    triples: [
+                      { subject: c2, predicate: c3, object: c4 },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: 'optional',
+                patterns: [
+                  {
+                    type: 'bgp',
+                    triples: [
+                      { subject: c1, predicate: predicate2, object: c5 },
+                    ],
+                  },
+                  {
+                    type: 'graph',
+                    name: c5,
+                    patterns: [
+                      {
+                        type: 'bgp',
+                        triples: [
+                          { subject: c6, predicate: c7, object: c8 },
+                        ],
+                      },
+                    ],
+                  },
                 ],
               },
             ],
@@ -1418,45 +1428,55 @@ describe('A BasicSparqlQueryBuilder', (): void => {
         orders: [],
         graphWhere: [
           {
-            type: 'bgp',
-            triples: [
-              {
-                subject: entityVariable,
-                predicate: {
-                  type: 'path',
-                  pathType: '^',
-                  items: [ predicate ],
-                },
-                object: c1,
-              },
-            ],
-          },
-          {
-            type: 'graph',
-            name: c1,
+            type: 'optional',
             patterns: [
               {
                 type: 'bgp',
                 triples: [
-                  { subject: c2, predicate: c3, object: c4 },
+                  {
+                    subject: entityVariable,
+                    predicate: {
+                      type: 'path',
+                      pathType: '^',
+                      items: [ predicate ],
+                    },
+                    object: c1,
+                  },
                 ],
               },
-            ],
-          },
-          {
-            type: 'bgp',
-            triples: [
-              { subject: c1, predicate: predicate2, object: c5 },
-            ],
-          },
-          {
-            type: 'graph',
-            name: c5,
-            patterns: [
               {
-                type: 'bgp',
-                triples: [
-                  { subject: c6, predicate: c7, object: c8 },
+                type: 'graph',
+                name: c1,
+                patterns: [
+                  {
+                    type: 'bgp',
+                    triples: [
+                      { subject: c2, predicate: c3, object: c4 },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: 'optional',
+                patterns: [
+                  {
+                    type: 'bgp',
+                    triples: [
+                      { subject: c1, predicate: predicate2, object: c5 },
+                    ],
+                  },
+                  {
+                    type: 'graph',
+                    name: c5,
+                    patterns: [
+                      {
+                        type: 'bgp',
+                        triples: [
+                          { subject: c6, predicate: c7, object: c8 },
+                        ],
+                      },
+                    ],
+                  },
                 ],
               },
             ],

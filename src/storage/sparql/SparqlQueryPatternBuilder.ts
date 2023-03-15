@@ -604,15 +604,15 @@ export class SparqlQueryPatternBuilder {
           predicate: this.createVariable(),
           object: this.createVariable(),
         };
-        const relationPatterns = [
+        const relationPattern = createSparqlOptional([
           createSparqlBasicGraphPattern([{ subject, predicate, object: variable }]),
           createSparqlSelectGraph(
             variable,
             [ createSparqlBasicGraphPattern([ graphTriple ]) ],
           ),
-        ];
+        ]);
         return {
-          patterns: [ ...obj.patterns, ...relationPatterns ],
+          patterns: [ ...obj.patterns, relationPattern ],
           selectionTriples: [ ...obj.selectionTriples, graphTriple ],
         };
       }, { patterns: [], selectionTriples: []});
@@ -641,29 +641,28 @@ export class SparqlQueryPatternBuilder {
         variable,
         (relationsValue.value as InverseRelationOperatorValue).relations,
       );
-      const relationPatterns = [
+      const relationPattern = createSparqlOptional([
         createSparqlBasicGraphPattern([ inverseRelationTriple ]),
         createSparqlSelectGraph(
           variable,
           [ createSparqlBasicGraphPattern([ graphTriple ]) ],
         ),
         ...subRelationsQueryData.patterns,
-      ];
-
+      ]);
       return {
-        patterns: relationPatterns,
+        patterns: [ relationPattern ],
         selectionTriples: [ graphTriple, ...subRelationsQueryData.selectionTriples ],
       };
     }
-    const relationPatterns = [
+    const relationPattern = createSparqlOptional([
       createSparqlBasicGraphPattern([ inverseRelationTriple ]),
       createSparqlSelectGraph(
         variable,
         [ createSparqlBasicGraphPattern([ graphTriple ]) ],
       ),
-    ];
+    ]);
     return {
-      patterns: relationPatterns,
+      patterns: [ relationPattern ],
       selectionTriples: [ graphTriple ],
     };
   }
@@ -684,16 +683,16 @@ export class SparqlQueryPatternBuilder {
       variable,
       relationsValue,
     );
-    const relationPatterns = [
+    const relationPattern = createSparqlOptional([
       createSparqlBasicGraphPattern([ relationTriple ]),
       createSparqlSelectGraph(
         variable,
         [ createSparqlBasicGraphPattern([ graphTriple ]) ],
       ),
       ...subRelationsQueryData.patterns,
-    ];
+    ]);
     return {
-      patterns: relationPatterns,
+      patterns: [ relationPattern ],
       selectionTriples: [ graphTriple, ...subRelationsQueryData.selectionTriples ],
     };
   }
