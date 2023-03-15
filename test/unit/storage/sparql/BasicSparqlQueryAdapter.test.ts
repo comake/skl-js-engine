@@ -570,6 +570,56 @@ describe('a BasicSparqlQueryAdapter', (): void => {
         ).resolves.toEqual([]);
         expect(select).toHaveBeenCalledTimes(0);
       });
+
+    it('returns unframed json-ld if skipFraming is set to true.',
+      async(): Promise<void> => {
+        const blankNode = DataFactory.blankNode('c1');
+        response = [
+          {
+            subject: data1,
+            predicate: rdfTypeNamedNode,
+            object: file,
+          },
+          {
+            subject: data1,
+            predicate,
+            object: blankNode,
+          },
+          {
+            subject: blankNode,
+            predicate: rdfTypeNamedNode,
+            object: DataFactory.namedNode('https://example.com/OtherType'),
+          },
+        ];
+        await expect(
+          adapter.findAll({
+            where: {
+              type: SKL.File,
+            },
+            skipFraming: true,
+          }),
+        ).resolves.toEqual([
+          {
+            '@id': 'https://example.com/data/1',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
+            'https://example.com/pred': {
+              '@id': '_:c1',
+            },
+          },
+          {
+            '@id': '_:c1',
+            '@type': 'https://example.com/OtherType',
+          },
+        ]);
+        expect(select).toHaveBeenCalledTimes(1);
+        expect(select.mock.calls[0][0].split('\n')).toEqual([
+          'CONSTRUCT { ?subject ?predicate ?object. }',
+          'WHERE {',
+          '  { SELECT DISTINCT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
+          '}',
+        ]);
+      });
   });
 
   describe('findAllBy', (): void => {

@@ -17,6 +17,7 @@ export interface FindOneOptions {
   relations?: FindOptionsRelations;
   order?: FindOptionsOrder;
   searchRelations?: boolean;
+  skipFraming?: boolean;
 }
 
 export type FindOptionsRelations = {

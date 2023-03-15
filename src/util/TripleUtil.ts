@@ -195,6 +195,7 @@ function sortGraphOfNodeObject(graphObject: GraphObject, nodeIdOrder: string[]):
 
 export async function triplesToJsonld(
   triples: Quad[],
+  skipFraming?: boolean,
   relations?: FindOptionsRelations,
   orderedNodeIds?: string[],
 ): Promise<OrArray<NodeObject>> {
@@ -202,6 +203,9 @@ export async function triplesToJsonld(
     return [];
   }
   const { nodeIdOrder, nodesById } = triplesToNodes(triples);
+  if (skipFraming) {
+    return Object.values(nodesById);
+  }
   const framed = await frameWithRelationsOrNonBlankNodes(nodesById, relations);
   if ('@graph' in framed) {
     return sortNodesByOrder(framed['@graph'] as NodeObject[], orderedNodeIds ?? nodeIdOrder);

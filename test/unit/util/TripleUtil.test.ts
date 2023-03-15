@@ -370,7 +370,7 @@ describe('TripleUtil', (): void => {
           'https://example.com/pred2': true,
         },
       };
-      await expect(triplesToJsonld(triples, relations)).resolves.toEqual({
+      await expect(triplesToJsonld(triples, false, relations)).resolves.toEqual({
         '@id': 'https://example.com/data/1',
         '@type': SKL.File,
         'https://example.com/pred': {
@@ -423,7 +423,7 @@ describe('TripleUtil', (): void => {
           },
         }),
       };
-      await expect(triplesToJsonld(triples, relations)).resolves.toEqual([{
+      await expect(triplesToJsonld(triples, false, relations)).resolves.toEqual([{
         '@id': 'https://example.com/data/1',
         '@type': SKL.File,
         'https://example.com/inversePred': {
@@ -439,6 +439,68 @@ describe('TripleUtil', (): void => {
         },
       }]);
     });
+
+    it('does not frame the results according to the relations field if skipFraming is true.',
+      async(): Promise<void> => {
+        const predicate2 = DataFactory.namedNode('https://example.com/pred2');
+        const data3 = DataFactory.namedNode('https://example.com/data/3');
+        const article = DataFactory.namedNode('https://example.com/Article');
+        triples = [
+          {
+            subject: data1,
+            predicate: rdfTypeNamedNode,
+            object: file,
+          } as Quad,
+          {
+            subject: data2,
+            predicate,
+            object: data1,
+          } as Quad,
+          {
+            subject: data2,
+            predicate: rdfTypeNamedNode,
+            object: article,
+          } as Quad,
+          {
+            subject: data2,
+            predicate: predicate2,
+            object: data3,
+          } as Quad,
+          {
+            subject: data3,
+            predicate: rdfTypeNamedNode,
+            object: article,
+          } as Quad,
+        ];
+        const relations = {
+          'https://example.com/pred': InverseRelation({
+            resolvedName: 'https://example.com/inversePred',
+            relations: {
+              'https://example.com/pred2': true,
+            },
+          }),
+        };
+        await expect(triplesToJsonld(triples, true, relations)).resolves.toEqual([
+          {
+            '@id': 'https://example.com/data/1',
+            '@type': SKL.File,
+          },
+          {
+            '@id': 'https://example.com/data/2',
+            '@type': 'https://example.com/Article',
+            'https://example.com/pred': {
+              '@id': 'https://example.com/data/1',
+            },
+            'https://example.com/pred2': {
+              '@id': 'https://example.com/data/3',
+            },
+          },
+          {
+            '@id': 'https://example.com/data/3',
+            '@type': 'https://example.com/Article',
+          },
+        ]);
+      });
   });
 
   describe('#triplesToJsonldWithFrame', (): void => {

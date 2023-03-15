@@ -108,7 +108,7 @@ export class BasicSparqlQueryAdapter implements QueryAdapter {
       selectionTriples,
       options?.select,
     );
-    return await this.executeEntitySelectQuery(query, options?.relations, entityOrder);
+    return await this.executeEntitySelectQuery(query, options?.skipFraming, options?.relations, entityOrder);
   }
 
   private async buildFindAllQueryData(
@@ -154,11 +154,12 @@ export class BasicSparqlQueryAdapter implements QueryAdapter {
 
   private async executeEntitySelectQuery(
     query: ConstructQuery,
+    skipFraming?: boolean,
     relations?: FindOptionsRelations,
     entityOrder?: string[],
   ): Promise<OrArray<NodeObject>> {
     const responseTriples = await this.sparqlQueryExecutor.executeSparqlSelectAndGetData(query);
-    return await triplesToJsonld(responseTriples, relations, entityOrder);
+    return await triplesToJsonld(responseTriples, skipFraming, relations, entityOrder);
   }
 
   public async findAllBy(where: FindOptionsWhere): Promise<Entity[]> {
