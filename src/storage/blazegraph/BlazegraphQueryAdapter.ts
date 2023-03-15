@@ -29,6 +29,7 @@ import type {
   FindOptionsWhere,
   FindOptionsRelations,
   FindCountOptions,
+  FindExistsOptions,
 } from '../FindOptionsTypes';
 import type { QueryAdapter, RawQueryResult } from '../QueryAdapter';
 import type { SelectVariableQueryResult } from '../sparql/SparqlQueryExecutor';
@@ -161,17 +162,24 @@ export class BlazegraphQueryAdapter implements QueryAdapter {
     return this.findAll({ where });
   }
 
-  public async exists(options: FindCountOptions): Promise<boolean> {
+  public async exists(options: FindExistsOptions): Promise<boolean> {
     const queryBuilder = new BlazegraphQueryBuilder();
-    const { where } = await this.buildFindAllQueryData(queryBuilder, options);
-    const query = creteSparqlAskQuery(where);
+    const queryData = queryBuilder.buildEntitySelectPatternsFromOptions(entityVariable, options);
+    const values = queryData.graphWhere.filter((pattern): boolean => pattern.type === 'values');
+    const query = creteSparqlAskQuery([ ...values, ...queryData.where ]);
     return await this.sparqlQueryExecutor.executeAskQueryAndGetResponse(query);
   }
 
   public async count(options: FindCountOptions): Promise<number> {
     const queryBuilder = new BlazegraphQueryBuilder();
-    const { where } = await this.buildFindAllQueryData(queryBuilder, options);
-    const query = createSparqlCountSelectQuery(entityVariable, where);
+    const queryData = queryBuilder.buildEntitySelectPatternsFromOptions(entityVariable, options);
+    const values = queryData.graphWhere.filter((pattern): boolean => pattern.type === 'values');
+    const query = createSparqlCountSelectQuery(
+      entityVariable,
+      [ ...values, ...queryData.where ],
+      queryData.orders,
+      options.offset,
+    );
     return await this.sparqlQueryExecutor.executeSelectCountAndGetResponse(query);
   }
 

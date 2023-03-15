@@ -77,7 +77,12 @@ export function createSparqlConstructQuery(triples: Triple[], where: Pattern[]):
   };
 }
 
-export function createSparqlCountSelectQuery(subject: Variable, where: Pattern[]): SelectQuery {
+export function createSparqlCountSelectQuery(
+  subject: Variable,
+  where: Pattern[],
+  order: Ordering[],
+  offset?: number,
+): SelectQuery {
   return {
     type: 'query',
     queryType: 'SELECT',
@@ -103,6 +108,8 @@ export function createSparqlCountSelectQuery(subject: Variable, where: Pattern[]
         ],
       }]),
     ],
+    order: order.length > 0 ? order : undefined,
+    offset,
     prefixes: {},
   };
 }

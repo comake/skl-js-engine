@@ -194,7 +194,7 @@ describe('a BasicSparqlQueryAdapter', (): void => {
       expect(select).toHaveBeenCalledTimes(1);
       expect(select.mock.calls[0][0].split('\n')).toEqual([
         'SELECT (COUNT(DISTINCT ?entity) AS ?count) WHERE {',
-        '  { SELECT DISTINCT ?entity WHERE { ?entity <https://example.com/pred> <https://example.com/data/1>. } }',
+        '  ?entity <https://example.com/pred> <https://example.com/data/1>.',
         '  GRAPH ?entity { ?entity ?predicate ?object. }',
         '}',
       ]);

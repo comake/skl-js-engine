@@ -67,7 +67,7 @@ describe('SparqlUtil', (): void => {
     it('creates a sparql count select query.', (): void => {
       const node = DataFactory.variable('node');
       expect(
-        createSparqlCountSelectQuery(node, []),
+        createSparqlCountSelectQuery(node, [], []),
       ).toEqual({
         type: 'query',
         queryType: 'SELECT',
@@ -80,6 +80,8 @@ describe('SparqlUtil', (): void => {
           },
           variable: countVariable,
         }],
+        order: undefined,
+        offset: undefined,
         where: [
           {
             type: 'graph',

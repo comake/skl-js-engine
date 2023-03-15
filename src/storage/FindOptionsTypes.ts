@@ -69,6 +69,18 @@ export interface FindAllOptions extends FindOneOptions {
   limit?: number;
 }
 
-export interface FindCountOptions extends FindOneOptions {
+export interface FindExistsOptions {
+  search?: string;
+  where?: FindOptionsWhere;
+  relations?: FindOptionsRelations;
+  searchRelations?: boolean;
+}
+
+export interface FindCountOptions {
+  search?: string;
+  where?: FindOptionsWhere;
+  relations?: FindOptionsRelations;
+  order?: FindOptionsOrder;
   offset?: number;
+  searchRelations?: boolean;
 }
