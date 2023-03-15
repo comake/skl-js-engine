@@ -669,6 +669,37 @@ describe('a BasicSparqlQueryAdapter', (): void => {
     });
   });
 
+  describe('update', (): void => {
+    it('updates a schema by attribute.', async(): Promise<void> => {
+      await expect(adapter.update(
+        'https://example.com/data/1',
+        { [SKL.sourceId]: 'abc123' },
+      )).resolves.toBeUndefined();
+      expect(update).toHaveBeenCalledTimes(1);
+      expect(update.mock.calls[0][0].split('\n')).toEqual([
+        `DELETE WHERE { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <${SKL.sourceId}> ?c1. } };`,
+        `INSERT DATA { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <${SKL.sourceId}> "abc123". } }`,
+      ]);
+    });
+    it('updates multiple schemas by attribute.', async(): Promise<void> => {
+      await expect(adapter.update(
+        [ 'https://example.com/data/1', 'https://example.com/data/2' ],
+        { [SKL.sourceId]: 'abc123' },
+      )).resolves.toBeUndefined();
+      expect(update).toHaveBeenCalledTimes(1);
+      expect(update.mock.calls[0][0].split('\n')).toEqual([
+        'DELETE WHERE {',
+        `  GRAPH <https://example.com/data/1> { <https://example.com/data/1> <${SKL.sourceId}> ?c1. }`,
+        `  GRAPH <https://example.com/data/2> { <https://example.com/data/2> <${SKL.sourceId}> ?c2. }`,
+        '};',
+        'INSERT DATA {',
+        `  GRAPH <https://example.com/data/1> { <https://example.com/data/1> <${SKL.sourceId}> "abc123". }`,
+        `  GRAPH <https://example.com/data/2> { <https://example.com/data/2> <${SKL.sourceId}> "abc123". }`,
+        '}',
+      ]);
+    });
+  });
+
   describe('destroy', (): void => {
     it('destroys a single schema.', async(): Promise<void> => {
       const entity = {

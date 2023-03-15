@@ -45,6 +45,12 @@ export class SparqlUpdateBuilder {
     this.setTimestamps = args?.setTimestamps ?? false;
   }
 
+  public buildPartialUpdate(idOrIds: string | string[], attributes: Partial<Entity>): Update {
+    const ids = ensureArray(idOrIds);
+    const { insertions, deletions } = this.idsAndAttributesToGraphDeletionsAndInsertions(ids, attributes);
+    return this.buildUpdateWithInsertionsAndDeletions(deletions, insertions);
+  }
+
   public buildUpdate(entityOrEntities: Entity | Entity[]): Update {
     const entities = ensureArray(entityOrEntities);
     const { insertions, deletions } = this.entitiesToGraphDeletionsAndInsertions(entities);
@@ -68,6 +74,31 @@ export class SparqlUpdateBuilder {
     return this.sparqlUpdate(updates);
   }
 
+  private idsAndAttributesToGraphDeletionsAndInsertions(
+    ids: string[],
+    attributes: Partial<Entity>,
+  ): EntityUpdateQueries {
+    return ids.reduce((obj: EntityUpdateQueries, id): EntityUpdateQueries => {
+      const subject = DataFactory.namedNode(id);
+      obj.deletions.push({
+        type: 'graph',
+        name: subject,
+        triples: this.partialEntityToDeletionTriples(attributes, subject),
+      });
+      obj.insertions.push(this.partialEntityToGraphInsertion(subject, attributes));
+      return obj;
+    }, { insertions: [], deletions: []});
+  }
+
+  private partialEntityToGraphInsertion(entityGraphName: NamedNode, entity: NodeObject): GraphQuads {
+    const triples = this.partialEntityToTriples(entity, entityGraphName);
+    return {
+      type: 'graph',
+      name: entityGraphName,
+      triples,
+    };
+  }
+
   private entitiesToGraphDeletionsAndInsertions(
     entities: Entity[],
   ): EntityUpdateQueries {
@@ -89,7 +120,7 @@ export class SparqlUpdateBuilder {
     }, []);
   }
 
-  private entityToGraphInsertion(entityGraphName: NamedNode, entity: Entity): GraphQuads {
+  private entityToGraphInsertion(entityGraphName: NamedNode, entity: NodeObject): GraphQuads {
     const triples = this.entityToTriples(entity, entityGraphName);
     return {
       type: 'graph',
@@ -107,6 +138,59 @@ export class SparqlUpdateBuilder {
       name: entityGraphName,
       triples: [{ subject, predicate, object }],
     };
+  }
+
+  private partialEntityToDeletionTriples(entity: NodeObject, subject: NamedNode): Triple[] {
+    const entityTriples = Object.keys(entity).reduce((triples: Triple[], key): Triple[] => {
+      if (key !== '@id') {
+        return [
+          ...triples,
+          this.buildTriplesWithSubjectPredicateAndVariableValue(
+            subject,
+            DataFactory.namedNode(key),
+            this.variableGenerator.getNext(),
+          ),
+        ];
+      }
+      return triples;
+    }, []);
+
+    if (this.setTimestamps) {
+      entityTriples.push({
+        subject,
+        predicate: modified,
+        object: DataFactory.variable(this.variableGenerator.getNext()),
+      });
+    }
+    return entityTriples;
+  }
+
+  private partialEntityToTriples(entity: NodeObject, subject: NamedNode): Triple[] {
+    const entityTriples = Object.entries(entity).reduce((triples: Triple[], [ key, value ]): Triple[] => {
+      const values = ensureArray(value);
+      if (key !== '@id') {
+        if (key === '@type') {
+          return [
+            ...triples,
+            ...this.buildTriplesWithSubjectPredicateAndIriValue(
+              subject,
+              rdfTypeNamedNode,
+              values as string[],
+            ),
+          ];
+        }
+        return [
+          ...triples,
+          ...this.buildTriplesForSubjectPredicateAndValues(subject, key, values),
+        ];
+      }
+      return triples;
+    }, []);
+
+    if (this.setTimestamps && subject.termType === 'NamedNode') {
+      entityTriples.push({ subject, predicate: modified, object: now });
+    }
+    return entityTriples;
   }
 
   private entityToTriples(entity: NodeObject, subject: BlankNode | NamedNode): Triple[] {
@@ -171,6 +255,18 @@ export class SparqlUpdateBuilder {
       predicate,
       object: DataFactory.namedNode(valueItem),
     } as Triple));
+  }
+
+  private buildTriplesWithSubjectPredicateAndVariableValue(
+    subject: NamedNode,
+    predicate: NamedNode,
+    value: string,
+  ): Triple {
+    return {
+      subject,
+      predicate,
+      object: DataFactory.variable(value),
+    };
   }
 
   private buildTriplesWithSubjectPredicateAndValue(

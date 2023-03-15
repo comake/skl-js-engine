@@ -119,6 +119,15 @@ export class SKLEngine {
     return await this.adapter.save(entityOrEntities);
   }
 
+  public async update(id: string, attributes: Partial<Entity>): Promise<void>;
+  public async update(ids: string[], attributes: Partial<Entity>): Promise<void>;
+  public async update(idOrIds: string | string[], attributes: Partial<Entity>): Promise<void> {
+    if (Array.isArray(idOrIds)) {
+      return await this.adapter.update(idOrIds, attributes);
+    }
+    return await this.adapter.update(idOrIds, attributes);
+  }
+
   public async destroy(entity: Entity): Promise<Entity>;
   public async destroy(entities: Entity[]): Promise<Entity[]>;
   public async destroy(entityOrEntities: Entity | Entity[]): Promise<Entity | Entity[]> {

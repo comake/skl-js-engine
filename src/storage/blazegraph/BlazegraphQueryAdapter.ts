@@ -184,6 +184,14 @@ export class BlazegraphQueryAdapter implements QueryAdapter {
     return entityOrEntities;
   }
 
+  public async update(id: string, attributes: Partial<Entity>): Promise<void>;
+  public async update(ids: string[], attributes: Partial<Entity>): Promise<void>;
+  public async update(idOrIds: string | string[], attributes: Partial<Entity>): Promise<void> {
+    const queryBuilder = new SparqlUpdateBuilder({ setTimestamps: this.setTimestamps });
+    const query = queryBuilder.buildPartialUpdate(idOrIds, attributes);
+    await this.sparqlQueryExecutor.executeSparqlUpdate(query);
+  }
+
   public async destroy(entity: Entity): Promise<Entity>;
   public async destroy(entities: Entity[]): Promise<Entity[]>;
   public async destroy(entityOrEntities: Entity | Entity[]): Promise<Entity | Entity[]> {

@@ -56,11 +56,13 @@ export interface QueryAdapter {
    */
   save(entities: Entity[]): Promise<Entity[]>;
   /**
-   * Updates entity partially. Entity can be found by a given conditions.
-   * Unlike save method executes a primitive operation without cascades, relations and other operations included
+   * Updates an entity partially.
    */
-  // export type UpdateOrDeleteCriteria = string | string[] | FindOptionsWhere;
-  // update(criteria: UpdateOrDeleteCriteria, partialEntity: Partial<Entity>): Promise<void>;
+  update(id: string, attributes: Partial<Entity>): Promise<void>;
+  /**
+   * Updates multiple entities partially.
+   */
+  update(ids: string[], attributes: Partial<Entity>): Promise<void>;
   /**
    * Removes a given entity from the database.
    */

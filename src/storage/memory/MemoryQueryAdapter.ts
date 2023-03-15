@@ -283,6 +283,12 @@ export class MemoryQueryAdapter implements QueryAdapter {
     return this.saveEntity(entityOrEntities);
   }
 
+  public async update(id: string, attributes: Partial<Entity>): Promise<void>;
+  public async update(ids: string[], attributes: Partial<Entity>): Promise<void>;
+  public async update(idOrIds: string | string[], attributes: Partial<Entity>): Promise<void> {
+    // Do nothing
+  }
+
   private saveEntity(entity: Entity): Entity {
     const savedEntity = { ...entity };
     this.schemas[entity['@id']] = savedEntity;
