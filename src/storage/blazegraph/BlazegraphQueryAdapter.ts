@@ -178,7 +178,7 @@ export class BlazegraphQueryAdapter implements QueryAdapter {
       entityVariable,
       [ ...values, ...queryData.where ],
       queryData.orders,
-      options.offset,
+      options?.offset,
     );
     return await this.sparqlQueryExecutor.executeSelectCountAndGetResponse(query);
   }
