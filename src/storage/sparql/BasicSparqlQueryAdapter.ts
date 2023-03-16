@@ -71,7 +71,7 @@ export class BasicSparqlQueryAdapter implements QueryAdapter {
 
   public async find(options?: FindOneOptions): Promise<Entity | null> {
     const jsonld = await this.findAllAsJsonLd({ ...options, limit: 1 });
-    if (Array.isArray(jsonld)) {
+    if (Array.isArray(jsonld) && !options?.skipFraming) {
       if (jsonld.length === 0) {
         return null;
       }

@@ -330,6 +330,69 @@ describe('a BasicSparqlQueryAdapter', (): void => {
         ]);
       });
 
+    it('returns an unframed graph if skipFraming is set to true.',
+      async(): Promise<void> => {
+        response = [
+          {
+            subject: data1,
+            predicate: rdfTypeNamedNode,
+            object: file,
+          },
+          {
+            subject: data2,
+            predicate,
+            object: data1,
+          },
+          {
+            subject: data2,
+            predicate: rdfTypeNamedNode,
+            object: file,
+          },
+        ];
+        await expect(
+          adapter.find({
+            where: {
+              id: 'https://example.com/data/1',
+            },
+            relations: {
+              'https://example.com/pred': InverseRelation({
+                resolvedName: 'https://example.com/inversePred',
+              }),
+            },
+            skipFraming: true,
+          }),
+        ).resolves.toEqual([
+          {
+            '@id': 'https://example.com/data/1',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
+          },
+          {
+            '@id': 'https://example.com/data/2',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
+            'https://example.com/pred': {
+              '@id': 'https://example.com/data/1',
+            },
+          },
+        ]);
+        expect(select).toHaveBeenCalledTimes(1);
+        expect(select.mock.calls[0][0].split('\n')).toEqual([
+          'CONSTRUCT {',
+          '  ?subject ?predicate ?object.',
+          '  ?c2 ?c3 ?c4.',
+          '}',
+          'WHERE {',
+          '  VALUES ?entity {',
+          '    <https://example.com/data/1>',
+          '  }',
+          '  OPTIONAL {',
+          '    ?entity ^<https://example.com/pred> ?c1.',
+          '    GRAPH ?c1 { ?c2 ?c3 ?c4. }',
+          '  }',
+          '  GRAPH ?entity { ?subject ?predicate ?object. }',
+          '}',
+        ]);
+      });
+
     it('throws an error when the sparql endpoint stream errors.', async(): Promise<void> => {
       error = new Error('Something bad happened');
       await expect(
