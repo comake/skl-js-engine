@@ -57,7 +57,9 @@ export type FindOptionsWhereField =
 | Exclude<FindOptionsWhere, 'search'>
 | FindOperator<any>;
 
-export type IdOrTypeFindOptionsWhereField = string | FindOperator<string> | FindOperator<string[]>;
+export type IdOrTypeFindOptionsWhereField =
+| string
+| FindOperator<string | string[] | FindOptionsWhere>;
 
 export interface FindOptionsWhere {
   type?: IdOrTypeFindOptionsWhereField;

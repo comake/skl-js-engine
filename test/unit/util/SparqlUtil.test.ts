@@ -21,7 +21,7 @@ import {
   createSparqlOptionalGraphSelection,
   createSparqlOrPredicate,
   createSparqlPathPredicate,
-  createSparqlSelectGraph,
+  createSparqlGraphPattern,
   createSparqlSelectGroup,
   createSparqlSelectQuery,
   createSparqlServicePattern,
@@ -36,11 +36,11 @@ import {
 import { XSD } from '../../../src/util/Vocabularies';
 
 describe('SparqlUtil', (): void => {
-  describe('#createSparqlSelectGraph', (): void => {
+  describe('#createSparqlGraphPattern', (): void => {
     it('creates a sparql select graph.', (): void => {
       const node = DataFactory.variable('node');
       expect(
-        createSparqlSelectGraph(node, []),
+        createSparqlGraphPattern(node, []),
       ).toEqual({
         type: 'graph',
         name: node,

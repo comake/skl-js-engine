@@ -28,7 +28,7 @@ import {
   createSparqlNotExistsOperation,
   createSparqlNotInOperation,
   createSparqlOptional,
-  createSparqlSelectGraph,
+  createSparqlGraphPattern,
   createSparqlSelectGroup,
   createSparqlServicePattern,
 } from '../../util/SparqlUtil';
@@ -216,8 +216,25 @@ export class SparqlQueryPatternBuilder {
     value: IdOrTypeFindOptionsWhereField,
   ): WhereQueryData {
     if (FindOperator.isFindOperator(value)) {
+      if ((value as FindOperator<any>).operator === 'inverse') {
+        const inversePredicate = createSparqlInversePredicate([ allTypesAndSuperTypesPath ]);
+        const inverseWhereQueryData = this.createWhereQueryDataFromKeyValue(
+          subject,
+          inversePredicate,
+          (value as FindOperator<any>).value,
+        );
+        return {
+          values: inverseWhereQueryData.values,
+          filters: inverseWhereQueryData.filters,
+          triples: inverseWhereQueryData.triples,
+          graphValues: [],
+          graphTriples: [],
+          graphFilters: [],
+        };
+      }
+
       const variable = this.createVariable();
-      const triple = this.buildTypesAndSuperTypesTriple(subject, variable);
+      const triple = { subject, predicate: allTypesAndSuperTypesPath, object: variable };
       const { filter, valuePattern, tripleInFilter } = this.resolveFindOperatorAsExpressionWithMultipleValues(
         variable,
         value as FindOperator<string>,
@@ -235,7 +252,11 @@ export class SparqlQueryPatternBuilder {
     return {
       values: [],
       filters: [],
-      triples: [ this.buildTypesAndSuperTypesTriple(subject, DataFactory.namedNode(value as string)) ],
+      triples: [{
+        subject,
+        predicate: allTypesAndSuperTypesPath,
+        object: DataFactory.namedNode(value as string),
+      }],
       graphValues: [],
       graphFilters: [],
       graphTriples: [],
@@ -505,10 +526,6 @@ export class SparqlQueryPatternBuilder {
     return createSparqlNotEqualOperation(leftSide, rightSide as Expression);
   }
 
-  private buildTypesAndSuperTypesTriple(subject: IriTerm | Variable, object: IriTerm | Variable): Triple {
-    return { subject, predicate: allTypesAndSuperTypesPath, object };
-  }
-
   private resolveValueToTerm(value: FieldPrimitiveValue | ValueObject): NamedNode | Literal {
     if (typeof value === 'object' && '@value' in value) {
       return valueToLiteral(
@@ -606,7 +623,7 @@ export class SparqlQueryPatternBuilder {
         };
         const relationPattern = createSparqlOptional([
           createSparqlBasicGraphPattern([{ subject, predicate, object: variable }]),
-          createSparqlSelectGraph(
+          createSparqlGraphPattern(
             variable,
             [ createSparqlBasicGraphPattern([ graphTriple ]) ],
           ),
@@ -643,7 +660,7 @@ export class SparqlQueryPatternBuilder {
       );
       const relationPattern = createSparqlOptional([
         createSparqlBasicGraphPattern([ inverseRelationTriple ]),
-        createSparqlSelectGraph(
+        createSparqlGraphPattern(
           variable,
           [ createSparqlBasicGraphPattern([ graphTriple ]) ],
         ),
@@ -656,7 +673,7 @@ export class SparqlQueryPatternBuilder {
     }
     const relationPattern = createSparqlOptional([
       createSparqlBasicGraphPattern([ inverseRelationTriple ]),
-      createSparqlSelectGraph(
+      createSparqlGraphPattern(
         variable,
         [ createSparqlBasicGraphPattern([ graphTriple ]) ],
       ),
@@ -685,7 +702,7 @@ export class SparqlQueryPatternBuilder {
     );
     const relationPattern = createSparqlOptional([
       createSparqlBasicGraphPattern([ relationTriple ]),
-      createSparqlSelectGraph(
+      createSparqlGraphPattern(
         variable,
         [ createSparqlBasicGraphPattern([ graphTriple ]) ],
       ),

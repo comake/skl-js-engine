@@ -9,9 +9,12 @@ import type {
   InsertDeleteOperation,
   UpdateOperation,
   BindPattern,
+  GraphPattern,
 } from 'sparqljs';
 import {
   created,
+  createSparqlBasicGraphPattern,
+  createSparqlGraphPattern,
   modified,
   now,
   objectNode,
@@ -80,10 +83,11 @@ export class SparqlUpdateBuilder {
   ): EntityUpdateQueries {
     return ids.reduce((obj: EntityUpdateQueries, id): EntityUpdateQueries => {
       const subject = DataFactory.namedNode(id);
+      const deletionTriples = this.partialEntityToDeletionTriples(attributes, subject);
       obj.deletions.push({
         type: 'graph',
         name: subject,
-        triples: this.partialEntityToDeletionTriples(attributes, subject),
+        triples: deletionTriples,
       });
       obj.insertions.push(this.partialEntityToGraphInsertion(subject, attributes));
       return obj;
@@ -325,29 +329,26 @@ export class SparqlUpdateBuilder {
     deletions: GraphQuads[],
     insertions: GraphQuads[],
   ): InsertDeleteOperation[] {
-    const updates: InsertDeleteOperation[] = [];
-    if (deletions.length > 0) {
-      updates.push({
+    if (insertions.length === 0) {
+      return [{
         updateType: 'deletewhere',
         delete: deletions,
-      });
+      }];
     }
-    if (insertions.length > 0) {
-      if (this.setTimestamps) {
-        updates.push({
-          updateType: 'insertdelete',
-          delete: [],
-          insert: insertions,
-          where: [ this.bindNow() ],
-        });
-      } else {
-        updates.push({
-          updateType: 'insert',
-          insert: insertions,
-        });
-      }
+    const update: InsertDeleteOperation = {
+      updateType: 'insertdelete',
+      delete: deletions,
+      insert: insertions,
+      where: deletions.map((deletion): GraphPattern =>
+        createSparqlGraphPattern(
+          deletion.name,
+          [ createSparqlBasicGraphPattern(deletion.triples) ],
+        )),
+    };
+    if (insertions.length > 0 && this.setTimestamps) {
+      update.where!.push(this.bindNow());
     }
-    return updates;
+    return [ update ];
   }
 
   private sparqlUpdate(updates: UpdateOperation[]): Update {

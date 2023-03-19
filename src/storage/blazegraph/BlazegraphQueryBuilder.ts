@@ -12,7 +12,7 @@ import {
   anyPredicatePropertyPath,
   entityVariable,
   createSparqlBasicGraphPattern,
-  createSparqlSelectGraph,
+  createSparqlGraphPattern,
   createSparqlOptionalGraphSelection,
   createSparqlInversePredicate,
   createSparqlOrPredicate,
@@ -98,7 +98,7 @@ export class BlazegraphQueryBuilder implements SparqlQueryBuilder {
       triples = [ entityGraphTriple, ...graphSelectionTriples ];
       where = [
         ...graphWhere,
-        createSparqlSelectGraph(
+        createSparqlGraphPattern(
           entityVariable,
           [ createSparqlBasicGraphPattern([ entityGraphTriple ]) ],
         ),

@@ -235,6 +235,40 @@ describe('SKLEngine', (): void => {
       expect(saveSpy).toHaveBeenCalledWith(entities);
     });
 
+    it('delegates calls to update a single entity to the query adapter.', async(): Promise<void> => {
+      const updateSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'update');
+      const res = await skql.update(
+        'https://standardknowledge.com/ontologies/core/Share',
+        { [RDFS.label]: 'Share' },
+      );
+      expect(res).toBeUndefined();
+      expect(updateSpy).toHaveBeenCalledTimes(1);
+      expect(updateSpy).toHaveBeenCalledWith(
+        'https://standardknowledge.com/ontologies/core/Share',
+        { [RDFS.label]: 'Share' },
+      );
+    });
+
+    it('delegates calls to update multiple entities to the query adapter.', async(): Promise<void> => {
+      const updateSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'update');
+      const res = await skql.update(
+        [
+          'https://standardknowledge.com/ontologies/core/Share',
+          'https://standardknowledge.com/ontologies/core/Send',
+        ],
+        { [RDFS.label]: 'Share' },
+      );
+      expect(res).toBeUndefined();
+      expect(updateSpy).toHaveBeenCalledTimes(1);
+      expect(updateSpy).toHaveBeenCalledWith(
+        [
+          'https://standardknowledge.com/ontologies/core/Share',
+          'https://standardknowledge.com/ontologies/core/Send',
+        ],
+        { [RDFS.label]: 'Share' },
+      );
+    });
+
     it('delegates calls to destroy a single entity to the query adapter.', async(): Promise<void> => {
       const destroySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'destroy');
       const entity = {

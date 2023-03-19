@@ -59,7 +59,7 @@ export const allTypesAndSuperTypesPath: PropertyPath = {
 
 export const entityGraphTriple = { subject: subjectNode, predicate: predicateNode, object: objectNode };
 
-export function createSparqlSelectGraph(name: Variable | NamedNode, patterns: Pattern[]): GraphPattern {
+export function createSparqlGraphPattern(name: Variable | NamedNode, patterns: Pattern[]): GraphPattern {
   return {
     type: 'graph',
     name,
@@ -97,7 +97,7 @@ export function createSparqlCountSelectQuery(
     }],
     where: [
       ...where,
-      createSparqlSelectGraph(subject, [{
+      createSparqlGraphPattern(subject, [{
         type: 'bgp',
         triples: [
           {

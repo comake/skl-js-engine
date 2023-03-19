@@ -362,6 +362,57 @@ describe('A BasicSparqlQueryBuilder', (): void => {
       });
     });
 
+    it('builds a query with an inverse operator on the type field.', (): void => {
+      expect(builder.buildEntitySelectPatternsFromOptions(
+        entityVariable,
+        {
+          where: {
+            type: Inverse({
+              'https://example.com/pred': 'hello world',
+            }),
+          },
+        },
+      )).toEqual({
+        graphSelectionTriples: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate: {
+                  type: 'path',
+                  pathType: '^',
+                  items: [
+                    {
+                      type: 'path',
+                      pathType: '/',
+                      items: [
+                        rdfTypeNamedNode,
+                        {
+                          type: 'path',
+                          pathType: '*',
+                          items: [ rdfsSubClassOfNamedNode ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                object: c1,
+              },
+              {
+                subject: c1,
+                predicate,
+                object: DataFactory.literal('hello world'),
+              },
+            ],
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
+    });
+
     it('builds a query with an in operator on the type field.', (): void => {
       expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,

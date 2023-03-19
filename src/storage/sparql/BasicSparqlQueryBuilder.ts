@@ -7,7 +7,7 @@ import type {
 import {
   entityVariable,
   createSparqlBasicGraphPattern,
-  createSparqlSelectGraph,
+  createSparqlGraphPattern,
   createSparqlOptionalGraphSelection,
   createSparqlConstructQuery,
   entityGraphTriple,
@@ -66,7 +66,7 @@ export class BasicSparqlQueryBuilder implements SparqlQueryBuilder {
       triples = [ entityGraphTriple, ...graphSelectionTriples ];
       where = [
         ...graphWhere,
-        createSparqlSelectGraph(
+        createSparqlGraphPattern(
           entityVariable,
           [ createSparqlBasicGraphPattern([ entityGraphTriple ]) ],
         ),
