@@ -4,7 +4,8 @@ import type { NodeObject, ValueObject } from 'jsonld';
 import { SKLEngine } from '../../src/sklEngine';
 import { In } from '../../src/storage/operator/In';
 import type { Entity } from '../../src/util/Types';
-import { SCHEMA, SKL, OWL, RDFS } from '../../src/util/Vocabularies';
+import { getValueIfDefined } from '../../src/util/Util';
+import { SCHEMA, SKL, OWL, RDFS, DCTERMS } from '../../src/util/Vocabularies';
 import { describeIf, frameAndCombineSchemas } from '../util/Util';
 
 const endpointUrl = 'http://localhost:9999/blazegraph/namespace/kb/sparql';
@@ -20,7 +21,7 @@ describeIf('docker', 'An SKL engine backed by a sparql query adapter', (): void 
     ];
     const env = { TICKETMASTER_APIKEY: process.env.TICKETMASTER_APIKEY! };
     schema = await frameAndCombineSchemas(schemas, env);
-    engine = new SKLEngine({ type: 'sparql', endpointUrl });
+    engine = new SKLEngine({ type: 'sparql', endpointUrl, setTimestamps: true });
     await engine.destroyAll();
   });
 
@@ -78,7 +79,7 @@ describeIf('docker', 'An SKL engine backed by a sparql query adapter', (): void 
     const eventSchema = await engine.findBy({
       id: 'https://schema.org/Event',
     });
-    expect(eventSchema[RDFS.label]).toBeUndefined();
+    expect(eventSchema[RDFS.label]).not.toBe('Event');
     eventSchema[RDFS.label] = 'Event';
     await engine.save(eventSchema);
     const updatedEventSchema = await engine.findBy({
@@ -88,6 +89,24 @@ describeIf('docker', 'An SKL engine backed by a sparql query adapter', (): void 
     expect((updatedEventSchema[RDFS.label] as ValueObject)['@value']).toBe('Event');
   });
 
+  it('can update a partial entity.', async(): Promise<void> => {
+    const eventSchema = await engine.findBy({
+      id: 'https://schema.org/Event',
+    });
+    expect(eventSchema[RDFS.label]).not.toBe('Events');
+    const prevUpdateTime = getValueIfDefined(eventSchema[DCTERMS.modified]);
+    await engine.update(
+      'https://schema.org/Event',
+      { [RDFS.label]: 'Events' },
+    );
+    const updatedEventSchema = await engine.findBy({
+      id: 'https://schema.org/Event',
+    });
+    expect(updatedEventSchema[RDFS.label]).toBeDefined();
+    expect((updatedEventSchema[RDFS.label] as ValueObject)['@value']).toBe('Events');
+    expect(updatedEventSchema[DCTERMS.modified]).toBeDefined();
+    expect((updatedEventSchema[DCTERMS.modified] as ValueObject)['@value']).not.toEqual(prevUpdateTime);
+  });
   // TODO: Test relations
   // TODO: Test select
 });

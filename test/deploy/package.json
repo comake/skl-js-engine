@@ -7,7 +7,7 @@
 	},
 	"main": "./dist/index.js",
 	"dependencies": {
-		"@comake/skl-js-engine": "file:./comake-skl-js-engine-0.7.1.tgz",
+		"@comake/skl-js-engine": "file:./comake-skl-js-engine-0.7.2.tgz",
 		"jsonld": "^6.0.0"
 	},
 	"devDependencies": {

@@ -21,6 +21,12 @@ import type {
   ValuePatternRow,
   PropertyPath,
   ConstructQuery,
+  UpdateOperation,
+  Update,
+  BindPattern,
+  ClearDropOperation,
+  GraphQuads,
+  InsertDeleteOperation,
 } from 'sparqljs';
 import type { RawQueryResult } from '../storage/QueryAdapter';
 import type { SelectVariableQueryResult } from '../storage/sparql/SparqlQueryExecutor';
@@ -57,7 +63,64 @@ export const allTypesAndSuperTypesPath: PropertyPath = {
   ],
 };
 
+export const bindNow: BindPattern = {
+  type: 'bind',
+  variable: now,
+  expression: {
+    type: 'operation',
+    operator: 'now',
+    args: [],
+  },
+};
+
+export const dropAll: ClearDropOperation = {
+  type: 'drop',
+  silent: true,
+  graph: {
+    type: 'graph',
+    all: true,
+  },
+};
+
 export const entityGraphTriple = { subject: subjectNode, predicate: predicateNode, object: objectNode };
+
+export function createSparqlGraphQuads(graph: NamedNode, triples: Triple[]): GraphQuads {
+  return {
+    type: 'graph',
+    name: graph,
+    triples,
+  };
+}
+
+export function createSparqlClearUpdate(graph: NamedNode): ClearDropOperation {
+  return {
+    type: 'clear',
+    silent: true,
+    graph: {
+      type: 'graph',
+      name: graph,
+    },
+  };
+}
+
+export function createSparqlDropUpdate(graph: NamedNode): ClearDropOperation {
+  return {
+    type: 'drop',
+    silent: true,
+    graph: {
+      type: 'graph',
+      name: graph,
+    },
+  };
+}
+
+export function createSparqlUpdate(updates: UpdateOperation[]): Update {
+  return {
+    type: 'update',
+    prefixes: {},
+    updates,
+  };
+}
 
 export function createSparqlGraphPattern(name: Variable | NamedNode, patterns: Pattern[]): GraphPattern {
   return {
@@ -291,6 +354,22 @@ export function createSparqlPathPredicate(predicates: (IriTerm | PropertyPath)[]
     pathType: '/',
     items: predicates,
   };
+}
+
+export function createSparqlInsertDeleteOperation(
+  graph: NamedNode,
+  insertionTriples: Triple[],
+  deletionTriples: Triple[],
+): InsertDeleteOperation {
+  return {
+    updateType: 'insertdelete',
+    delete: [ createSparqlGraphQuads(graph, deletionTriples) ],
+    insert: [ createSparqlGraphQuads(graph, insertionTriples) ],
+    where: [ createSparqlBasicGraphPattern(deletionTriples) ],
+    using: {
+      default: [ graph ],
+    },
+  } as InsertDeleteOperation;
 }
 
 export function selectQueryResultsAsJSValues<T extends RawQueryResult>(

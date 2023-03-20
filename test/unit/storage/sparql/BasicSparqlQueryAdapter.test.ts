@@ -754,9 +754,8 @@ describe('a BasicSparqlQueryAdapter', (): void => {
       await expect(adapter.save(entity)).resolves.toEqual(entity);
       expect(update).toHaveBeenCalledTimes(1);
       expect(update.mock.calls[0][0].split('\n')).toEqual([
-        'DELETE { GRAPH <https://example.com/data/1> { ?c1 ?c2 ?c3. } }',
-        'INSERT { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://standardknowledge.com/ontologies/core/File>. } }',
-        'WHERE { GRAPH <https://example.com/data/1> { ?c1 ?c2 ?c3. } }',
+        'CLEAR SILENT GRAPH <https://example.com/data/1>;',
+        'INSERT DATA { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://standardknowledge.com/ontologies/core/File>. } }',
       ]);
     });
     it('saves multiple schema.', async(): Promise<void> => {
@@ -773,17 +772,11 @@ describe('a BasicSparqlQueryAdapter', (): void => {
       await expect(adapter.save(entities)).resolves.toEqual(entities);
       expect(update).toHaveBeenCalledTimes(1);
       expect(update.mock.calls[0][0].split('\n')).toEqual([
-        'DELETE {',
-        '  GRAPH <https://example.com/data/1> { ?c1 ?c2 ?c3. }',
-        '  GRAPH <https://example.com/data/2> { ?c4 ?c5 ?c6. }',
-        '}',
-        'INSERT {',
+        'CLEAR SILENT GRAPH <https://example.com/data/1>;',
+        'CLEAR SILENT GRAPH <https://example.com/data/2>;',
+        'INSERT DATA {',
         '  GRAPH <https://example.com/data/1> { <https://example.com/data/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://standardknowledge.com/ontologies/core/File>. }',
         '  GRAPH <https://example.com/data/2> { <https://example.com/data/2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://standardknowledge.com/ontologies/core/Article>. }',
-        '}',
-        'WHERE {',
-        '  GRAPH <https://example.com/data/1> { ?c1 ?c2 ?c3. }',
-        '  GRAPH <https://example.com/data/2> { ?c4 ?c5 ?c6. }',
         '}',
       ]);
     });
@@ -799,7 +792,8 @@ describe('a BasicSparqlQueryAdapter', (): void => {
       expect(update.mock.calls[0][0].split('\n')).toEqual([
         `DELETE { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <${SKL.sourceId}> ?c1. } }`,
         `INSERT { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <${SKL.sourceId}> "abc123". } }`,
-        `WHERE { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <${SKL.sourceId}> ?c1. } }`,
+        'USING <https://example.com/data/1>',
+        `WHERE { OPTIONAL { <https://example.com/data/1> <${SKL.sourceId}> ?c1. } }`,
       ]);
     });
     it('updates multiple schemas by attribute.', async(): Promise<void> => {
@@ -809,18 +803,14 @@ describe('a BasicSparqlQueryAdapter', (): void => {
       )).resolves.toBeUndefined();
       expect(update).toHaveBeenCalledTimes(1);
       expect(update.mock.calls[0][0].split('\n')).toEqual([
-        'DELETE {',
-        `  GRAPH <https://example.com/data/1> { <https://example.com/data/1> <${SKL.sourceId}> ?c1. }`,
-        `  GRAPH <https://example.com/data/2> { <https://example.com/data/2> <${SKL.sourceId}> ?c2. }`,
-        '}',
-        'INSERT {',
-        `  GRAPH <https://example.com/data/1> { <https://example.com/data/1> <${SKL.sourceId}> "abc123". }`,
-        `  GRAPH <https://example.com/data/2> { <https://example.com/data/2> <${SKL.sourceId}> "abc123". }`,
-        '}',
-        'WHERE {',
-        `  GRAPH <https://example.com/data/1> { <https://example.com/data/1> <${SKL.sourceId}> ?c1. }`,
-        `  GRAPH <https://example.com/data/2> { <https://example.com/data/2> <${SKL.sourceId}> ?c2. }`,
-        '}',
+        `DELETE { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <${SKL.sourceId}> ?c1. } }`,
+        `INSERT { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <${SKL.sourceId}> "abc123". } }`,
+        'USING <https://example.com/data/1>',
+        `WHERE { OPTIONAL { <https://example.com/data/1> <${SKL.sourceId}> ?c1. } };`,
+        `DELETE { GRAPH <https://example.com/data/2> { <https://example.com/data/2> <${SKL.sourceId}> ?c2. } }`,
+        `INSERT { GRAPH <https://example.com/data/2> { <https://example.com/data/2> <${SKL.sourceId}> "abc123". } }`,
+        'USING <https://example.com/data/2>',
+        `WHERE { OPTIONAL { <https://example.com/data/2> <${SKL.sourceId}> ?c2. } }`,
       ]);
     });
   });
@@ -834,7 +824,7 @@ describe('a BasicSparqlQueryAdapter', (): void => {
       await expect(adapter.destroy(entity)).resolves.toEqual(entity);
       expect(update).toHaveBeenCalledTimes(1);
       expect(update.mock.calls[0][0].split('\n')).toEqual([
-        'DELETE WHERE { GRAPH <https://example.com/data/1> { ?c1 ?c2 ?c3. } }',
+        'DROP SILENT GRAPH <https://example.com/data/1>',
       ]);
     });
 
@@ -852,10 +842,8 @@ describe('a BasicSparqlQueryAdapter', (): void => {
       await expect(adapter.destroy(entities)).resolves.toEqual(entities);
       expect(update).toHaveBeenCalledTimes(1);
       expect(update.mock.calls[0][0].split('\n')).toEqual([
-        'DELETE WHERE {',
-        '  GRAPH <https://example.com/data/1> { ?c1 ?c2 ?c3. }',
-        '  GRAPH <https://example.com/data/2> { ?c4 ?c5 ?c6. }',
-        '}',
+        'DROP SILENT GRAPH <https://example.com/data/1>;',
+        'DROP SILENT GRAPH <https://example.com/data/2>',
       ]);
     });
   });
@@ -865,7 +853,7 @@ describe('a BasicSparqlQueryAdapter', (): void => {
       await expect(adapter.destroyAll()).resolves.toBeUndefined();
       expect(update).toHaveBeenCalledTimes(1);
       expect(update.mock.calls[0][0].split('\n')).toEqual([
-        'DELETE WHERE { ?subject ?predicate ?object. }',
+        'DROP SILENT ALL',
       ]);
     });
   });

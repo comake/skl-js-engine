@@ -6,24 +6,16 @@ import {
   created,
   modified,
   now,
-  objectNode,
-  predicateNode,
   rdfTypeNamedNode,
-  subjectNode,
 } from '../../../../src/util/SparqlUtil';
 import { DCTERMS, SKL, XSD } from '../../../../src/util/Vocabularies';
 
 const c1 = DataFactory.variable('c1');
 const c2 = DataFactory.variable('c2');
-const c3 = DataFactory.variable('c3');
-const c4 = DataFactory.variable('c4');
-const c5 = DataFactory.variable('c5');
-const c6 = DataFactory.variable('c6');
-
 const data1 = DataFactory.namedNode('https://example.com/data/1');
 const data2 = DataFactory.namedNode('https://example.com/data/2');
 const file = DataFactory.namedNode(SKL.File);
-const blank = DataFactory.blankNode('c4');
+const blank = DataFactory.blankNode('c1');
 
 describe('A SparqlUpdateBuilder', (): void => {
   let builder: SparqlUpdateBuilder;
@@ -60,14 +52,88 @@ describe('A SparqlUpdateBuilder', (): void => {
               ],
             },
           ],
+          using: {
+            default: [ data1 ],
+          },
           where: [{
-            type: 'graph',
-            name: data1,
+            type: 'optional',
             patterns: [{
               type: 'bgp',
               triples: [{ subject: data1, predicate, object: c1 }],
             }],
           }],
+        },
+      ],
+    };
+    expect(builder.buildPartialUpdate(
+      'https://example.com/data/1',
+      {
+        'https://example.com/predicate': 'marshmellow',
+      },
+    )).toEqual(query);
+  });
+
+  it('build a partial entity update query when setTimestamps is on.', (): void => {
+    builder = new SparqlUpdateBuilder({ setTimestamps: true });
+    const predicate = DataFactory.namedNode('https://example.com/predicate');
+    const query = {
+      type: 'update',
+      prefixes: {},
+      updates: [
+        {
+          updateType: 'insertdelete',
+          delete: [
+            {
+              type: 'graph',
+              name: data1,
+              triples: [
+                { subject: data1, predicate, object: c1 },
+                { subject: data1, predicate: modified, object: c2 },
+              ],
+            },
+          ],
+          insert: [
+            {
+              type: 'graph',
+              name: data1,
+              triples: [
+                {
+                  subject: data1,
+                  predicate,
+                  object: DataFactory.literal('marshmellow'),
+                },
+                { subject: data1, predicate: modified, object: now },
+              ],
+            },
+          ],
+          using: {
+            default: [ data1 ],
+          },
+          where: [
+            {
+              type: 'optional',
+              patterns: [{
+                type: 'bgp',
+                triples: [{ subject: data1, predicate, object: c1 }],
+              }],
+            },
+            {
+              type: 'optional',
+              patterns: [{
+                type: 'bgp',
+                triples: [{ subject: data1, predicate: modified, object: c2 }],
+              }],
+            },
+            {
+              type: 'bind',
+              variable: now,
+              expression: {
+                type: 'operation',
+                operator: 'now',
+                args: [],
+              },
+            },
+          ],
         },
       ],
     };
@@ -112,14 +178,15 @@ describe('A SparqlUpdateBuilder', (): void => {
       prefixes: {},
       updates: [
         {
-          updateType: 'insertdelete',
-          delete: [
-            {
-              type: 'graph',
-              name: data1,
-              triples: [{ subject: c1, predicate: c2, object: c3 }],
-            },
-          ],
+          type: 'clear',
+          silent: true,
+          graph: {
+            type: 'graph',
+            name: data1,
+          },
+        },
+        {
+          updateType: 'insert',
           insert: [
             {
               type: 'graph',
@@ -174,14 +241,6 @@ describe('A SparqlUpdateBuilder', (): void => {
               ],
             },
           ],
-          where: [{
-            type: 'graph',
-            name: data1,
-            patterns: [{
-              type: 'bgp',
-              triples: [{ subject: c1, predicate: c2, object: c3 }],
-            }],
-          }],
         },
       ],
     };
@@ -204,19 +263,23 @@ describe('A SparqlUpdateBuilder', (): void => {
       prefixes: {},
       updates: [
         {
-          updateType: 'insertdelete',
-          delete: [
-            {
-              type: 'graph',
-              name: data1,
-              triples: [{ subject: c1, predicate: c2, object: c3 }],
-            },
-            {
-              type: 'graph',
-              name: data2,
-              triples: [{ subject: c4, predicate: c5, object: c6 }],
-            },
-          ],
+          type: 'clear',
+          silent: true,
+          graph: {
+            type: 'graph',
+            name: data1,
+          },
+        },
+        {
+          type: 'clear',
+          silent: true,
+          graph: {
+            type: 'graph',
+            name: data2,
+          },
+        },
+        {
+          updateType: 'insert',
           insert: [
             {
               type: 'graph',
@@ -227,24 +290,6 @@ describe('A SparqlUpdateBuilder', (): void => {
               type: 'graph',
               name: data2,
               triples: [{ subject: data2, predicate: rdfTypeNamedNode, object: file }],
-            },
-          ],
-          where: [
-            {
-              type: 'graph',
-              name: data1,
-              patterns: [{
-                type: 'bgp',
-                triples: [{ subject: c1, predicate: c2, object: c3 }],
-              }],
-            },
-            {
-              type: 'graph',
-              name: data2,
-              patterns: [{
-                type: 'bgp',
-                triples: [{ subject: c4, predicate: c5, object: c6 }],
-              }],
             },
           ],
         },
@@ -264,12 +309,16 @@ describe('A SparqlUpdateBuilder', (): void => {
       prefixes: {},
       updates: [
         {
-          updateType: 'insertdelete',
-          delete: [{
+          type: 'clear',
+          silent: true,
+          graph: {
             type: 'graph',
             name: data1,
-            triples: [{ subject: c1, predicate: c2, object: c3 }],
-          }],
+          },
+        },
+        {
+          updateType: 'insertdelete',
+          delete: [],
           insert: [
             {
               type: 'graph',
@@ -281,25 +330,15 @@ describe('A SparqlUpdateBuilder', (): void => {
               ],
             },
           ],
-          where: [
-            {
-              type: 'graph',
-              name: data1,
-              patterns: [{
-                type: 'bgp',
-                triples: [{ subject: c1, predicate: c2, object: c3 }],
-              }],
+          where: [{
+            type: 'bind',
+            variable: now,
+            expression: {
+              type: 'operation',
+              operator: 'now',
+              args: [],
             },
-            {
-              type: 'bind',
-              variable: now,
-              expression: {
-                type: 'operation',
-                operator: 'now',
-                args: [],
-              },
-            },
-          ],
+          }],
         },
       ],
     };
@@ -327,12 +366,16 @@ describe('A SparqlUpdateBuilder', (): void => {
       prefixes: {},
       updates: [
         {
-          updateType: 'insertdelete',
-          delete: [{
+          type: 'clear',
+          silent: true,
+          graph: {
             type: 'graph',
             name: data1,
-            triples: [{ subject: c1, predicate: c2, object: c3 }],
-          }],
+          },
+        },
+        {
+          updateType: 'insertdelete',
+          delete: [],
           insert: [
             {
               type: 'graph',
@@ -348,25 +391,15 @@ describe('A SparqlUpdateBuilder', (): void => {
               ],
             },
           ],
-          where: [
-            {
-              type: 'graph',
-              name: data1,
-              patterns: [{
-                type: 'bgp',
-                triples: [{ subject: c1, predicate: c2, object: c3 }],
-              }],
+          where: [{
+            type: 'bind',
+            variable: now,
+            expression: {
+              type: 'operation',
+              operator: 'now',
+              args: [],
             },
-            {
-              type: 'bind',
-              variable: now,
-              expression: {
-                type: 'operation',
-                operator: 'now',
-                args: [],
-              },
-            },
-          ],
+          }],
         },
       ],
     };
@@ -381,18 +414,14 @@ describe('A SparqlUpdateBuilder', (): void => {
     const query = {
       type: 'update',
       prefixes: {},
-      updates: [
-        {
-          updateType: 'deletewhere',
-          delete: [
-            {
-              type: 'graph',
-              name: data1,
-              triples: [{ subject: c1, predicate: c2, object: c3 }],
-            },
-          ],
+      updates: [{
+        type: 'drop',
+        silent: true,
+        graph: {
+          type: 'graph',
+          name: data1,
         },
-      ],
+      }],
     };
     expect(builder.buildDelete(entity)).toEqual(query);
   });
@@ -413,19 +442,20 @@ describe('A SparqlUpdateBuilder', (): void => {
       prefixes: {},
       updates: [
         {
-          updateType: 'deletewhere',
-          delete: [
-            {
-              type: 'graph',
-              name: data1,
-              triples: [{ subject: c1, predicate: c2, object: c3 }],
-            },
-            {
-              type: 'graph',
-              name: data2,
-              triples: [{ subject: c4, predicate: c5, object: c6 }],
-            },
-          ],
+          type: 'drop',
+          silent: true,
+          graph: {
+            type: 'graph',
+            name: data1,
+          },
+        },
+        {
+          type: 'drop',
+          silent: true,
+          graph: {
+            type: 'graph',
+            name: data2,
+          },
         },
       ],
     };
@@ -438,13 +468,12 @@ describe('A SparqlUpdateBuilder', (): void => {
       prefixes: {},
       updates: [
         {
-          updateType: 'deletewhere',
-          delete: [
-            {
-              type: 'bgp',
-              triples: [{ subject: subjectNode, predicate: predicateNode, object: objectNode }],
-            },
-          ],
+          type: 'drop',
+          silent: true,
+          graph: {
+            type: 'graph',
+            all: true,
+          },
         },
       ],
     };
