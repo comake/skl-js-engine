@@ -43,6 +43,7 @@
     "rr:predicate": { "@type": "@id" },
     "rr:object": { "@type": "@id" },
     "rr:termType": { "@type": "@id" },
+    "rr:datatype": { "@type": "@id" },
     "rr:subject": { "@type": "@id" },
     "skl:invalidTokenErrorMatcher": { "@type": "@json" },
     "example": "https://example.com/"
@@ -150,7 +151,7 @@
                     "@type": "rr:PredicateObjectMap",
                     "rr:objectMap": {
                       "@type": "rr:ObjectMap",
-                      "rr:reference": "id"
+                      "rml:reference": "id"
                     },
                     "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_array_a"
                   },

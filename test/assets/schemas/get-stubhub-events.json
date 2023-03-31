@@ -44,6 +44,7 @@
     "rr:object": { "@type": "@id" },
     "rr:termType": { "@type": "@id" },
     "rr:subject": { "@type": "@id" },
+    "rr:datatype": { "@type": "@id" },
     "example": "https://example.com/"
   },
   "@graph": [
@@ -833,7 +834,7 @@
                               "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_dec_n",
                               "rr:objectMap": {
                                 "@type": "rr:ObjectMap",
-                                "rr:reference": "total_items",
+                                "rml:reference": "total_items",
                                 "rr:datatype": "http://www.w3.org/2001/XMLSchema#integer"
                               }
                             },
@@ -864,7 +865,7 @@
                                       "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#p_array_a",
                                       "rr:objectMap": {
                                         "@type": "rr:ObjectMap",
-                                        "rr:reference": "page_size",
+                                        "rml:reference": "page_size",
                                         "rr:datatype": "http://www.w3.org/2001/XMLSchema#integer"
                                       }
                                     }

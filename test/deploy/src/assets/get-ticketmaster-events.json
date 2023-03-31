@@ -48,6 +48,7 @@
     "rr:subject": { "@type": "@id" },
     "rr:class": { "@type": "@id" },
     "rr:termType": { "@type": "@id" },
+    "rr:datatype": { "@type": "@id" },
     "example": "https://example.com/"
 
   },

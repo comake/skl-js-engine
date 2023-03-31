@@ -19,7 +19,6 @@ async function run(): Promise<void> {
     city: 'Atlanta',
     pageSize: 20,
   });
-  console.log(eventsCollection[SKL.records]);
 }
 
 run();

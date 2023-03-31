@@ -26,10 +26,12 @@ export class Mapper {
   }
 
   private async doMapping(data: JSONObject, mapping: OrArray<NodeObject>): Promise<NodeObject[]> {
-    const mappingAsQuads = await this.jsonLdToQuads(mapping);
     const sources = { 'input.json': JSON.stringify(data) };
     const options = { functions: this.functions };
-    return await RmlParser.parse(mappingAsQuads, sources, options) as NodeObject[];
+    const mappingNodeObject = Array.isArray(mapping)
+      ? { '@graph': mapping }
+      : mapping;
+    return await RmlParser.parseJsonLd(mappingNodeObject, sources, options) as NodeObject[];
   }
 
   private async frame(
@@ -46,9 +48,5 @@ export class Mapper {
       '@context': { ...frame['@context'], ...overrideFrame?.['@context'] },
     };
     return await jsonld.frame(jsonldDoc, frame);
-  }
-
-  private async jsonLdToQuads(jsonldDoc: OrArray<NodeObject>): Promise<string> {
-    return (await jsonld.toRDF(jsonldDoc, { format: 'application/n-quads' })) as unknown as string;
   }
 }

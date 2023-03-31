@@ -146,8 +146,7 @@ export class SKLEngine {
     mapping: OrArray<NodeObject>,
     frame?: Record<string, any>,
   ): Promise<NodeObject> {
-    const nonReferenceMappings = await this.resolveMappingReferences(mapping);
-    return await this.mapper.apply(args, nonReferenceMappings, frame ?? {});
+    return await this.mapper.apply(args, mapping, frame ?? {});
   }
 
   public async performMappingAndConvertToJSON(
@@ -156,10 +155,9 @@ export class SKLEngine {
     frame?: Record<string, any>,
     convertToJsonDeep = true,
   ): Promise<JSONObject> {
-    const nonReferenceMappings = await this.resolveMappingReferences(mapping);
     const jsonLd = await this.mapper.apply(
       args,
-      nonReferenceMappings,
+      mapping,
       frame ?? {},
     );
     return toJSON(jsonLd, convertToJsonDeep);
@@ -280,16 +278,6 @@ export class SKLEngine {
         ...getValueIfDefined<JSONObject>(mapping[SKL.returnValueFrame]),
       },
     );
-  }
-
-  private async resolveMappingReferences(mapping: OrArray<NodeObject>): Promise<OrArray<NodeObject>> {
-    if (Array.isArray(mapping)) {
-      return await Promise.all(
-        mapping.map(async(subMapping): Promise<NodeObject> =>
-          await this.resolveMappingReferences(subMapping) as NodeObject),
-      );
-    }
-    return mapping;
   }
 
   private async performParameterMappingOnArgsIfDefined(

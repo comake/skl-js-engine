@@ -19,6 +19,7 @@
     "rr:predicate": { "@type": "@id" },
     "rr:object": { "@type": "@id" },
     "rr:termType": { "@type": "@id" },
+    "rr:datatype": { "@type": "@id" },
     "example": "https://example.com/"
   },
   "@graph": [
