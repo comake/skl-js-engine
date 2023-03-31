@@ -8,7 +8,7 @@ import { getValueIfDefined } from '../../src/util/Util';
 import { SCHEMA, SKL, OWL, RDFS, DCTERMS } from '../../src/util/Vocabularies';
 import { describeIf, frameAndCombineSchemas } from '../util/Util';
 
-const endpointUrl = 'http://localhost:9990/blazegraph/namespace/kb/sparql';
+const endpointUrl = 'http://localhost:9999/blazegraph/namespace/kb/sparql';
 
 describeIf('docker', 'An SKL engine backed by a sparql query adapter', (): void => {
   let engine: SKLEngine;
