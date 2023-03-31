@@ -27,6 +27,7 @@ import type {
   ClearDropOperation,
   GraphQuads,
   InsertDeleteOperation,
+  Grouping,
 } from 'sparqljs';
 import type { RawQueryResult } from '../storage/QueryAdapter';
 import type { SelectVariableQueryResult } from '../storage/sparql/SparqlQueryExecutor';
@@ -229,6 +230,7 @@ export function createSparqlSelectQuery(
   variable: Variable,
   where: Pattern[],
   order: Ordering[],
+  group?: Variable,
   limit?: number,
   offset?: number,
 ): SelectQuery {
@@ -238,6 +240,9 @@ export function createSparqlSelectQuery(
     variables: [ variable ],
     distinct: true,
     where,
+    group: group
+      ? [ { expression: group } as Grouping ]
+      : undefined,
     order: order.length > 0 ? order : undefined,
     limit,
     offset,
@@ -250,6 +255,16 @@ export function createSparqlFilterWithExpression(expression: Expression): Filter
 }
 
 export function createFilterPatternFromFilters(filters: Expression[]): FilterPattern {
+  if (filters.length > 2) {
+    return createFilterPatternFromFilters([
+      {
+        type: 'operation',
+        operator: '&&',
+        args: filters.slice(0, 2),
+      },
+      ...filters.slice(2),
+    ]);
+  }
   if (filters.length > 1) {
     return createSparqlFilterWithExpression({
       type: 'operation',

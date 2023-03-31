@@ -121,6 +121,7 @@ export class BasicSparqlQueryAdapter implements QueryAdapter {
         entityVariable,
         queryData.where,
         queryData.orders,
+        queryData.group,
         options?.limit,
         options?.offset,
       )

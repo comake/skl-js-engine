@@ -118,6 +118,7 @@ export class BlazegraphQueryAdapter implements QueryAdapter {
         entityVariable,
         queryData.where,
         queryData.orders,
+        queryData.group,
         options?.limit,
         options?.offset,
       )

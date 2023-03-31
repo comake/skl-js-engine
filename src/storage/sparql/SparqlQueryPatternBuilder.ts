@@ -71,6 +71,7 @@ export interface RelationsQueryData {
 export interface OrderQueryData {
   triples: Triple[];
   orders: Ordering[];
+  groupByParent?: boolean;
 }
 
 export interface EntitySelectQueryData {
@@ -78,6 +79,7 @@ export interface EntitySelectQueryData {
   orders: Ordering[];
   graphWhere: Pattern[];
   graphSelectionTriples: Triple[];
+  group?: Variable;
 }
 
 export class SparqlQueryPatternBuilder {
@@ -132,6 +134,7 @@ export class SparqlQueryPatternBuilder {
     return {
       where: wherePatterns,
       orders: orderQueryData.orders,
+      group: orderQueryData.groupByParent ? subject : undefined,
       graphWhere: graphWherePatterns,
       graphSelectionTriples: relationsQueryData.selectionTriples,
     };
@@ -268,11 +271,14 @@ export class SparqlQueryPatternBuilder {
     predicate: IriTerm | PropertyPath,
     value: FindOptionsWhereField,
   ): WhereQueryData {
+    if (Array.isArray(value) && FindOperator.isFindOperator(value[0])) {
+      return this.createWhereQueryDataForMultipleFindOperators(subject, predicate, value as FindOperator<any>[]);
+    }
     if (FindOperator.isFindOperator(value)) {
       return this.createWhereQueryDataForFindOperator(subject, predicate, value as FindOperator<any>);
     }
     if (Array.isArray(value)) {
-      return value.reduce((obj: WhereQueryData, valueItem): WhereQueryData => {
+      return (value as FieldPrimitiveValue[]).reduce((obj: WhereQueryData, valueItem): WhereQueryData => {
         const valueWhereQueryData = this.createWhereQueryDataFromKeyValue(subject, predicate, valueItem);
         return {
           values: [ ...obj.values, ...valueWhereQueryData.values ],
@@ -333,6 +339,37 @@ export class SparqlQueryPatternBuilder {
       graphTriples: [],
       graphFilters: [],
     };
+  }
+
+  private createWhereQueryDataForMultipleFindOperators(
+    subject: Variable,
+    predicate: IriTerm | PropertyPath,
+    operators: FindOperator<any>[],
+  ): WhereQueryData {
+    const variable = this.createVariable();
+    const triple = { subject, predicate, object: variable };
+    const whereQueryData = {
+      values: [],
+      filters: [],
+      triples: [ triple ],
+      graphValues: [],
+      graphTriples: [],
+      graphFilters: [],
+    };
+    return operators.reduce((obj: WhereQueryData, operator): WhereQueryData => {
+      const { filter, valuePattern } = this.resolveFindOperatorAsExpressionWithMultipleValues(
+        variable,
+        operator,
+        triple,
+      );
+      if (valuePattern) {
+        obj.values.push(valuePattern);
+      }
+      if (filter) {
+        obj.filters.push(filter);
+      }
+      return obj;
+    }, whereQueryData);
   }
 
   private createWhereQueryDataForNestedWhere(
@@ -539,16 +576,19 @@ export class SparqlQueryPatternBuilder {
     return valueToLiteral(value);
   }
 
-  private createOrderQueryData(subject: Variable, order?: FindOptionsOrder): OrderQueryData {
+  private createOrderQueryData(
+    subject: Variable,
+    order?: FindOptionsOrder | FindOperator<FindOptionsOrder>,
+    isNested = false,
+  ): OrderQueryData {
     if (!order) {
       return { triples: [], orders: []};
     }
-    return Object.entries(order).reduce((obj: OrderQueryData, [ property, direction ]): OrderQueryData => {
-      const orderQueryData = this.createOrderQueryDataForProperty(subject, property, direction);
-      obj.orders = [ ...obj.orders, orderQueryData.order ];
-      if (orderQueryData.triple) {
-        obj.triples.push(orderQueryData.triple);
-      }
+    return Object.entries(order).reduce((obj: OrderQueryData, [ property, orderValue ]): OrderQueryData => {
+      const orderQueryData = this.createOrderQueryDataForProperty(subject, property, orderValue, isNested);
+      obj.orders = [ ...obj.orders, ...orderQueryData.orders ];
+      obj.triples = [ ...obj.triples, ...orderQueryData.triples ];
+      obj.groupByParent = obj.groupByParent ?? orderQueryData.groupByParent;
       return obj;
     }, { triples: [], orders: []});
   }
@@ -556,30 +596,51 @@ export class SparqlQueryPatternBuilder {
   private createOrderQueryDataForProperty(
     subject: Variable,
     property: string,
-    direction: FindOptionsOrderValue,
-  ): { triple?: Triple; order: Ordering; variable: Variable } {
+    orderValue: FindOptionsOrderValue | FindOperator<FindOptionsOrder>,
+    isNested = false,
+  ): OrderQueryData {
+    const predicate = DataFactory.namedNode(property);
+    if (FindOperator.isFindOperator(orderValue)) {
+      const variable = this.createVariable();
+      const inverseRelationTriple = {
+        subject,
+        predicate: createSparqlInversePredicate([ predicate ]),
+        object: variable,
+      };
+      const subRelationOrderQueryData = this.createOrderQueryData(
+        variable,
+        (orderValue as FindOperator<FindOptionsOrder>).value,
+        true,
+      );
+      return {
+        triples: [ inverseRelationTriple, ...subRelationOrderQueryData.triples ],
+        orders: subRelationOrderQueryData.orders,
+        groupByParent: true,
+      };
+    }
     if (property === 'id') {
       return {
-        triple: undefined,
-        order: {
+        triples: [],
+        orders: [{
           expression: subject,
-          descending: direction === 'DESC' || direction === 'desc',
-        },
-        variable: subject,
+          descending: orderValue === 'DESC' || orderValue === 'desc',
+        }],
       };
     }
     const variable = this.createVariable();
+    const isDescending = orderValue === 'DESC' || orderValue === 'desc';
     return {
-      triple: {
-        subject,
-        predicate: DataFactory.namedNode(property),
-        object: variable,
-      },
-      order: {
-        expression: variable,
-        descending: direction === 'DESC' || direction === 'desc',
-      },
-      variable,
+      triples: [{ subject, predicate, object: variable }],
+      orders: [{
+        expression: isNested
+          ? {
+            type: 'aggregate',
+            expression: variable,
+            aggregation: isDescending ? 'max' : 'min',
+          }
+          : variable,
+        descending: isDescending,
+      }],
     };
   }
 

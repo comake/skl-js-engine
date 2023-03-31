@@ -26,7 +26,9 @@ export type FindOptionsRelations = {
 
 export type FindOptionsOrderValue = 'ASC' | 'DESC' | 'asc' | 'desc' | 1 | -1;
 
-export type FindOptionsOrder = Record<string, FindOptionsOrderValue>;
+export type FindOptionsOrder = {
+  [k: string]: FindOptionsOrderValue | FindOperator<FindOptionsOrder>;
+};
 
 export type FieldPrimitiveValue = boolean | number | string | Date;
 
@@ -55,7 +57,7 @@ export type FindOptionsWhereField =
 | OrArray<FieldPrimitiveValue>
 | ValueObject
 | Exclude<FindOptionsWhere, 'search'>
-| FindOperator<any>;
+| OrArray<FindOperator<any>>;
 
 export type IdOrTypeFindOptionsWhereField =
 | string

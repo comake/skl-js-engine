@@ -197,6 +197,7 @@ describe('SparqlUtil', (): void => {
         variables: [ node ],
         distinct: true,
         where: [],
+        group: undefined,
         order: undefined,
         limit: undefined,
         offset: undefined,
@@ -215,7 +216,26 @@ describe('SparqlUtil', (): void => {
         variables: [ node ],
         distinct: true,
         where: [],
+        group: undefined,
         order: [ order ],
+        limit: undefined,
+        offset: undefined,
+        prefixes: {},
+      });
+    });
+
+    it('creates a sparql select query with a group.', (): void => {
+      const node = DataFactory.variable('node');
+      expect(
+        createSparqlSelectQuery(node, [], [], node),
+      ).toEqual({
+        type: 'query',
+        queryType: 'SELECT',
+        variables: [ node ],
+        distinct: true,
+        where: [],
+        group: [{ expression: node }],
+        order: undefined,
         limit: undefined,
         offset: undefined,
         prefixes: {},

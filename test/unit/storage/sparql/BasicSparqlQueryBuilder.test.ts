@@ -7,6 +7,7 @@ import { GreaterThanOrEqual } from '../../../../src/storage/operator/GreaterThan
 import { In } from '../../../../src/storage/operator/In';
 import { Inverse } from '../../../../src/storage/operator/Inverse';
 import { InverseRelation } from '../../../../src/storage/operator/InverseRelation';
+import { InverseRelationOrder } from '../../../../src/storage/operator/InverseRelationOrder';
 import { LessThan } from '../../../../src/storage/operator/LessThan';
 import { LessThanOrEqual } from '../../../../src/storage/operator/LessThanOrEqual';
 import { Not } from '../../../../src/storage/operator/Not';
@@ -180,6 +181,52 @@ describe('A BasicSparqlQueryBuilder', (): void => {
                   type: 'operation',
                   operator: '<',
                   args: [ c2, DataFactory.literal('1', XSD.integer) ],
+                },
+              ],
+            },
+          },
+        ],
+        orders: [],
+        graphWhere: [],
+      });
+    });
+
+    it('builds a query with more than one filter on a single property.', (): void => {
+      expect(builder.buildEntitySelectPatternsFromOptions(
+        entityVariable,
+        {
+          where: {
+            'https://example.com/pred': [ GreaterThan(1), LessThan(5) ],
+          },
+        },
+      )).toEqual({
+        graphSelectionTriples: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate,
+                object: c1,
+              },
+            ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: '&&',
+              args: [
+                {
+                  type: 'operation',
+                  operator: '>',
+                  args: [ c1, DataFactory.literal('1', XSD.integer) ],
+                },
+                {
+                  type: 'operation',
+                  operator: '<',
+                  args: [ c1, DataFactory.literal('5', XSD.integer) ],
                 },
               ],
             },
@@ -1366,6 +1413,65 @@ describe('A BasicSparqlQueryBuilder', (): void => {
         ],
         orders: [{
           expression: entityVariable,
+          descending: true,
+        }],
+        graphWhere: [],
+      });
+    });
+
+    it('builds a query with a with an inverse relation order.', (): void => {
+      expect(builder.buildEntitySelectPatternsFromOptions(
+        entityVariable,
+        {
+          order: {
+            'https://example.com/pred': InverseRelationOrder({
+              'https://example.com/pred2': 'desc',
+            }),
+          },
+        },
+      )).toEqual({
+        graphSelectionTriples: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [
+              {
+                subject: entityVariable,
+                predicate: c3,
+                object: c4,
+              },
+            ],
+          },
+          {
+            type: 'optional',
+            patterns: [{
+              type: 'bgp',
+              triples: [
+                {
+                  subject: entityVariable,
+                  predicate: {
+                    type: 'path',
+                    pathType: '^',
+                    items: [ predicate ],
+                  },
+                  object: c1,
+                },
+                {
+                  subject: c1,
+                  predicate: predicate2,
+                  object: c2,
+                },
+              ],
+            }],
+          },
+        ],
+        group: entityVariable,
+        orders: [{
+          expression: {
+            type: 'aggregate',
+            expression: c2,
+            aggregation: 'max',
+          },
           descending: true,
         }],
         graphWhere: [],
