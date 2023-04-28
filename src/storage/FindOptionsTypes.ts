@@ -3,6 +3,7 @@ import type { OrArray } from '../util/Types';
 import type { JSONArray, JSONObject } from '../util/Util';
 import type { FindOperator } from './FindOperator';
 import type { InverseRelationOperatorValue } from './operator/InverseRelation';
+import type { InverseRelationOrderValue } from './operator/InverseRelationOrder';
 
 export type FindOptionsSelectByString = string[];
 
@@ -26,9 +27,7 @@ export type FindOptionsRelations = {
 
 export type FindOptionsOrderValue = 'ASC' | 'DESC' | 'asc' | 'desc' | 1 | -1;
 
-export type FindOptionsOrder = {
-  [k: string]: FindOptionsOrderValue | FindOperator<FindOptionsOrder>;
-};
+export type FindOptionsOrder = Record<string, FindOptionsOrderValue | FindOperator<InverseRelationOrderValue>>;
 
 export type FieldPrimitiveValue = boolean | number | string | Date;
 

@@ -1425,7 +1425,12 @@ describe('A BasicSparqlQueryBuilder', (): void => {
         {
           order: {
             'https://example.com/pred': InverseRelationOrder({
-              'https://example.com/pred2': 'desc',
+              order: {
+                'https://example.com/pred2': 'desc',
+              },
+              where: {
+                'https://example.com/name': Not('Bob'),
+              },
             }),
           },
         },
@@ -1437,32 +1442,71 @@ describe('A BasicSparqlQueryBuilder', (): void => {
             triples: [
               {
                 subject: entityVariable,
-                predicate: c3,
-                object: c4,
+                predicate: c4,
+                object: c5,
               },
             ],
           },
           {
             type: 'optional',
-            patterns: [{
-              type: 'bgp',
-              triples: [
-                {
-                  subject: entityVariable,
-                  predicate: {
-                    type: 'path',
-                    pathType: '^',
-                    items: [ predicate ],
+            patterns: [
+              {
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate: {
+                      type: 'path',
+                      pathType: '^',
+                      items: [ predicate ],
+                    },
+                    object: c1,
                   },
-                  object: c1,
+                  {
+                    subject: c1,
+                    predicate: predicate2,
+                    object: c2,
+                  },
+                  {
+                    subject: c1,
+                    predicate: DataFactory.namedNode('https://example.com/name'),
+                    object: c3,
+                  },
+                ],
+              },
+              {
+                type: 'filter',
+                expression: {
+                  type: 'operation',
+                  operator: 'notexists',
+                  args: [
+                    {
+                      type: 'group',
+                      patterns: [
+                        {
+                          type: 'bgp',
+                          triples: [
+                            {
+                              subject: c1,
+                              predicate: DataFactory.namedNode('https://example.com/name'),
+                              object: c3,
+                            },
+                          ],
+                        },
+                        {
+                          type: 'filter',
+                          expression: {
+                            type: 'operation',
+                            operator: '=',
+                            args: [ c3, DataFactory.literal('Bob') ],
+                          },
+                        },
+                      ],
+                    },
+                  ],
                 },
-                {
-                  subject: c1,
-                  predicate: predicate2,
-                  object: c2,
-                },
-              ],
-            }],
+              },
+            ],
           },
         ],
         group: entityVariable,

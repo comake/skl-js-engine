@@ -51,6 +51,7 @@ import type {
   ValueObject,
 } from '../FindOptionsTypes';
 import type { InverseRelationOperatorValue } from '../operator/InverseRelation';
+import type { InverseRelationOrderValue } from '../operator/InverseRelationOrder';
 import { VariableGenerator } from './VariableGenerator';
 
 export interface WhereQueryData {
@@ -70,6 +71,7 @@ export interface RelationsQueryData {
 
 export interface OrderQueryData {
   triples: Triple[];
+  filters: OperationExpression[];
   orders: Ordering[];
   groupByParent?: boolean;
 }
@@ -121,12 +123,14 @@ export class SparqlQueryPatternBuilder {
       whereQueryData.triples,
       whereQueryData.filters,
       orderQueryData.triples,
+      orderQueryData.filters,
       serviceTriples,
     );
     const graphWherePatterns = this.createWherePatternsFromQueryData(
       whereQueryData.graphValues,
       whereQueryData.graphTriples,
       whereQueryData.graphFilters,
+      undefined,
       undefined,
       undefined,
       relationsQueryData.patterns,
@@ -578,25 +582,26 @@ export class SparqlQueryPatternBuilder {
 
   private createOrderQueryData(
     subject: Variable,
-    order?: FindOptionsOrder | FindOperator<FindOptionsOrder>,
+    order?: FindOptionsOrder | FindOperator<InverseRelationOrderValue>,
     isNested = false,
   ): OrderQueryData {
     if (!order) {
-      return { triples: [], orders: []};
+      return { triples: [], orders: [], filters: []};
     }
     return Object.entries(order).reduce((obj: OrderQueryData, [ property, orderValue ]): OrderQueryData => {
       const orderQueryData = this.createOrderQueryDataForProperty(subject, property, orderValue, isNested);
       obj.orders = [ ...obj.orders, ...orderQueryData.orders ];
       obj.triples = [ ...obj.triples, ...orderQueryData.triples ];
+      obj.filters = [ ...obj.filters, ...orderQueryData.filters ];
       obj.groupByParent = obj.groupByParent ?? orderQueryData.groupByParent;
       return obj;
-    }, { triples: [], orders: []});
+    }, { triples: [], orders: [], filters: []});
   }
 
   private createOrderQueryDataForProperty(
     subject: Variable,
     property: string,
-    orderValue: FindOptionsOrderValue | FindOperator<FindOptionsOrder>,
+    orderValue: FindOptionsOrderValue | FindOperator<InverseRelationOrderValue>,
     isNested = false,
   ): OrderQueryData {
     const predicate = DataFactory.namedNode(property);
@@ -607,13 +612,18 @@ export class SparqlQueryPatternBuilder {
         predicate: createSparqlInversePredicate([ predicate ]),
         object: variable,
       };
+      const subRelationOperatorValue = (
+        orderValue as FindOperator<InverseRelationOrderValue>
+      ).value as InverseRelationOrderValue;
       const subRelationOrderQueryData = this.createOrderQueryData(
         variable,
-        (orderValue as FindOperator<FindOptionsOrder>).value,
+        subRelationOperatorValue.order,
         true,
       );
+      const subRelationWhereQueryData = this.createWhereQueryData(variable, subRelationOperatorValue.where);
       return {
-        triples: [ inverseRelationTriple, ...subRelationOrderQueryData.triples ],
+        triples: [ inverseRelationTriple, ...subRelationOrderQueryData.triples, ...subRelationWhereQueryData.triples ],
+        filters: subRelationWhereQueryData.filters,
         orders: subRelationOrderQueryData.orders,
         groupByParent: true,
       };
@@ -621,6 +631,7 @@ export class SparqlQueryPatternBuilder {
     if (property === 'id') {
       return {
         triples: [],
+        filters: [],
         orders: [{
           expression: subject,
           descending: orderValue === 'DESC' || orderValue === 'desc',
@@ -631,6 +642,7 @@ export class SparqlQueryPatternBuilder {
     const isDescending = orderValue === 'DESC' || orderValue === 'desc';
     return {
       triples: [{ subject, predicate, object: variable }],
+      filters: [],
       orders: [{
         expression: isNested
           ? {
@@ -802,6 +814,7 @@ export class SparqlQueryPatternBuilder {
     triples: Triple[],
     filters: OperationExpression[],
     orderTriples?: Triple[],
+    orderFilters?: OperationExpression[],
     serviceTriples?: Record<string, Triple[]>,
     additionalPatterns?: Pattern[],
   ): Pattern[] {
@@ -810,11 +823,11 @@ export class SparqlQueryPatternBuilder {
       patterns.push(createSparqlBasicGraphPattern(triples));
     }
     if (orderTriples && orderTriples.length > 0) {
-      patterns.push(
-        createSparqlOptional(
-          [ createSparqlBasicGraphPattern(orderTriples) ],
-        ),
-      );
+      const optionalPatterns: Pattern[] = [ createSparqlBasicGraphPattern(orderTriples) ];
+      if (orderFilters && orderFilters.length > 0) {
+        optionalPatterns.push(createFilterPatternFromFilters(orderFilters));
+      }
+      patterns.push(createSparqlOptional(optionalPatterns));
     }
     if (filters.length > 0) {
       patterns.push(createFilterPatternFromFilters(filters));
