@@ -322,30 +322,7 @@ describe('SKLEngine', (): void => {
       skql = new SKLEngine({ type: 'memory', schemas });
     });
 
-    it('maps data and converts it to json without a frame.', async(): Promise<void> => {
-      const data = { field: 'abc123' };
-      const mapping = await expandJsonLd(simpleMapping);
-      const response = await skql.performMappingAndConvertToJSON(data, mapping as NodeObject);
-      expect(response).toEqual({
-        'https://example.com/field': 'abc123',
-      });
-    });
-
-    it('maps data and converts it to json with a frame.', async(): Promise<void> => {
-      const data = { field: 'abc123' };
-      const frame = {
-        '@context': {
-          field: 'https://example.com/field',
-        },
-      };
-      const mapping = await expandJsonLd(simpleMapping);
-      const response = await skql.performMappingAndConvertToJSON(data, mapping as NodeObject, frame);
-      expect(response).toEqual({
-        field: 'abc123',
-      });
-    });
-
-    it('maps data without converting it to json.', async(): Promise<void> => {
+    it('maps data with a frame.', async(): Promise<void> => {
       const data = { field: 'abc123' };
       const frame = {
         '@context': {

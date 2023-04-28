@@ -1,3 +1,4 @@
+/* eslint-disable capitalized-comments */
 /* eslint-disable @typescript-eslint/naming-convention */
 import type {
   OpenApi,
@@ -66,7 +67,7 @@ export class SKLEngine {
     // eslint-disable-next-line func-style
     const getVerbHandler = (getTarget: VerbInterface, property: string): VerbHandler =>
       async(verbArgs: JSONObject): Promise<NodeObject> =>
-        this.handleVerb(property, verbArgs);
+        this.handleVerbByName(property, verbArgs);
     this.verb = new Proxy({} as VerbInterface, { get: getVerbHandler });
   }
 
@@ -149,29 +150,36 @@ export class SKLEngine {
     return await this.mapper.apply(args, mapping, frame ?? {});
   }
 
-  public async performMappingAndConvertToJSON(
-    args: JSONObject,
-    mapping: OrArray<NodeObject>,
-    frame?: Record<string, any>,
-    convertToJsonDeep = true,
-  ): Promise<JSONObject> {
-    const jsonLd = await this.mapper.apply(
-      args,
-      mapping,
-      frame ?? {},
-    );
-    return toJSON(jsonLd, convertToJsonDeep);
+  public async executeTrigger(
+    integration: string,
+    payload: any,
+  ): Promise<void> {
+    const triggerToVerbMapping = await this.findBy({
+      type: SKL.TriggerVerbMapping,
+      [SKL.integration]: integration,
+    });
+    const verbArgs = await this.performParameterMappingOnArgsIfDefined(payload, triggerToVerbMapping, false);
+    const verbInfoJsonLd = await this.performVerbMappingWithArgs(payload, triggerToVerbMapping);
+    const mappedVerb = await this.findBy({ id: getValueIfDefined(verbInfoJsonLd[SKL.verb]) });
+    await this.handleVerb(mappedVerb, verbArgs);
   }
 
-  private async handleVerb(verbName: string, verbArgs: JSONObject): Promise<NodeObject> {
+  private async handleVerbByName(verbName: string, verbArgs: JSONObject): Promise<NodeObject> {
     const verb = await this.findVerbWithName(verbName);
+    return await this.handleVerb(verb, verbArgs);
+  }
+
+  private async handleVerb(verb: Entity, verbArgs: JSONObject): Promise<NodeObject> {
+    // if (verb[SKL.seriesVerbExecution]) {
+    // }
+    // if (verb[SKL.parallelVerbExecution]) {
+    // }
     if (verbArgs.noun) {
       return this.handleNounMappingVerb(verb, verbArgs);
     }
     if (verbArgs.account) {
       return this.handleIntegrationVerb(verb, verbArgs);
     }
-
     throw new Error(`Verb parameters must include either a noun or an account.`);
   }
 
@@ -286,12 +294,12 @@ export class SKLEngine {
     convertToJsonDeep = true,
   ): Promise<Record<string, any>> {
     if (mapping[SKL.parameterMapping]) {
-      return await this.performMappingAndConvertToJSON(
+      const mappedData = await this.performMapping(
         args,
         mapping[SKL.parameterMapping] as OrArray<NodeObject>,
         getValueIfDefined(mapping[SKL.parameterMappingFrame]),
-        convertToJsonDeep,
       );
+      return toJSON(mappedData, convertToJsonDeep);
     }
     return args;
   }
@@ -339,9 +347,7 @@ export class SKLEngine {
     }
     const verbArgs = await this.performParameterMappingOnArgsIfDefined(args, mapping, false);
     const verbInfoJsonLd = await this.performVerbMappingWithArgs(args, mapping);
-    const mappedVerb = await this.findBy({
-      id: getValueIfDefined(verbInfoJsonLd[SKL.verb]),
-    });
+    const mappedVerb = await this.findBy({ id: getValueIfDefined(verbInfoJsonLd[SKL.verb]) });
     return this.handleIntegrationVerb(mappedVerb, verbArgs);
   }
 

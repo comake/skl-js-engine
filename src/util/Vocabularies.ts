@@ -75,6 +75,7 @@ export const SKL = createNamespace('https://standardknowledge.com/ontologies/cor
   'dataSource',
   'data',
   'source',
+  'TriggerVerbMapping',
 ]);
 
 export const XSD = createNamespace('http://www.w3.org/2001/XMLSchema#', [
