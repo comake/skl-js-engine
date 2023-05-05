@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import { promises as fs } from 'fs';
 import type { ReadableOptions } from 'stream';
 import { Readable } from 'stream';
@@ -25,18 +24,11 @@ export async function frameAndCombineSchemas(
       return await jsonld.expand(JSON.parse(schema));
     }),
   );
-  const expandedSchema = schemas.flat();
-  const nonBlankNodes = expandedSchema
-    .map((schema): string | undefined => schema['@id'])
-    .filter((id): boolean => id !== undefined && !id.startsWith('_:'));
-  const framedSchema = await jsonld.frame(
-    expandedSchema,
-    {
-      '@context': {},
-      '@id': nonBlankNodes as any,
-    },
+  const flat = schemas.flat();
+  const compacted = await Promise.all(
+    flat.map((schema): Promise<Entity> => jsonld.compact(schema, {}) as Promise<Entity>),
   );
-  return framedSchema['@graph'] as Entity[];
+  return compacted;
 }
 
 export async function expandJsonLd(json: jsonld.JsonLdDocument): Promise<jsonld.JsonLdDocument> {

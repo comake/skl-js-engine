@@ -548,7 +548,10 @@ export class SKLEngine {
     returnValue: OrArray<NodeObject>,
     verb: Verb,
   ): Promise<void> {
-    const returnTypeSchemaObject = verb[SKL.returnValue];
+    let returnTypeSchemaObject = verb[SKL.returnValue];
+    if (returnTypeSchemaObject?.['@id'] && Object.keys(returnTypeSchemaObject).length === 1) {
+      returnTypeSchemaObject = await this.findBy({ id: returnTypeSchemaObject['@id'] });
+    }
     let report: ValidationReport | undefined;
     if (returnValue && returnTypeSchemaObject) {
       if (Array.isArray(returnValue)) {
