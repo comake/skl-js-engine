@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import type { ReferenceNodeObject, TriplesMap } from '@comake/rmlmapper-js';
 import type {
   GraphObject,
   IdMap,
@@ -12,6 +13,72 @@ import type {
   ValueObject,
 } from 'jsonld';
 import type { JSONObject } from './Util';
+import type { RDF, SKL } from './Vocabularies';
+
+export interface RdfList<T> {
+  [RDF.first]: T;
+  [RDF.rest]?: RdfList<T> | typeof RDF.nil;
+}
+
+export interface Verb extends NodeObject {
+  '@id': string;
+  '@type': typeof SKL.Verb;
+  [SKL.parametersContext]?: ValueObject;
+  [SKL.returnValue]?: NodeObject;
+  [SKL.returnValueFrame]?: ValueObject;
+  [SKL.series]?: NodeObject;
+  [SKL.parallel]?: NodeObject;
+}
+
+export interface SeriesVerbArgs extends JSONObject {
+  originalVerbParameters: JSONObject;
+  previousVerbReturnValue: JSONObject;
+}
+
+export interface MappingWithParameterMapping extends NodeObject {
+  [SKL.parameterMapping]: OrArray<TriplesMap>;
+  [SKL.parameterMappingFrame]: NodeObject;
+}
+
+export interface MappingWithReturnValueMapping extends NodeObject {
+  [SKL.returnValueMapping]: OrArray<TriplesMap>;
+  [SKL.returnValueFrame]: NodeObject;
+}
+
+export interface MappingWithVerbMapping extends NodeObject {
+  [SKL.verbMapping]: TriplesMap;
+}
+
+export interface MappingWithOperationMapping extends NodeObject {
+  [SKL.operationMapping]: TriplesMap;
+}
+
+export interface VerbMapping extends
+  MappingWithVerbMapping,
+  Partial<MappingWithParameterMapping>,
+  Partial<MappingWithReturnValueMapping> {}
+
+export interface VerbIntegrationMapping extends
+  Partial<MappingWithParameterMapping>,
+  MappingWithOperationMapping,
+  Partial<MappingWithReturnValueMapping> {
+  [SKL.verb]: ReferenceNodeObject;
+  [SKL.integration]: ReferenceNodeObject;
+}
+
+export interface VerbNounMapping extends
+  Partial<MappingWithParameterMapping>,
+  MappingWithVerbMapping,
+  Partial<MappingWithReturnValueMapping> {
+  [SKL.verb]: ReferenceNodeObject;
+  [SKL.noun]: ReferenceNodeObject;
+}
+
+export interface TriggerVerbMapping extends
+  MappingWithVerbMapping,
+  Partial<MappingWithParameterMapping> {
+  [SKL.integration]: ReferenceNodeObject;
+}
 
 export type PossibleArrayFieldValues =
   | boolean

@@ -76,6 +76,12 @@ export const SKL = createNamespace('https://standardknowledge.com/ontologies/cor
   'data',
   'source',
   'TriggerVerbMapping',
+  'series',
+  'parallel',
+]);
+
+export const SKL_ENGINE = createNamespace('https://standardknowledge.com/ontologies/skl-engine/', [
+  'update',
 ]);
 
 export const XSD = createNamespace('http://www.w3.org/2001/XMLSchema#', [
@@ -99,6 +105,7 @@ export const RDF = createNamespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#'
   'rest',
   'datatype',
   'JSON',
+  'nil',
 ]);
 
 export const RDFS = createNamespace('http://www.w3.org/2000/01/rdf-schema#', [

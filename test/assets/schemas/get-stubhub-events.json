@@ -45,6 +45,7 @@
     "rr:termType": { "@type": "@id" },
     "rr:subject": { "@type": "@id" },
     "rr:datatype": { "@type": "@id" },
+    "rr:class": { "@type": "@id" },
     "example": "https://example.com/"
   },
   "@graph": [

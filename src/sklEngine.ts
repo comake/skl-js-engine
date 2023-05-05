@@ -1,4 +1,3 @@
-/* eslint-disable capitalized-comments */
 /* eslint-disable @typescript-eslint/naming-convention */
 import type {
   OpenApi,
@@ -21,16 +20,33 @@ import type { MemoryQueryAdapterOptions } from './storage/memory/MemoryQueryAdap
 import type { QueryAdapter, RawQueryResult } from './storage/QueryAdapter';
 import { BasicSparqlQueryAdapter } from './storage/sparql/BasicSparqlQueryAdapter';
 import type { SparqlQueryAdapterOptions } from './storage/sparql/SparqlQueryAdapterOptions';
-import type { OrArray, Entity, OperationResponse, ErrorMatcher } from './util/Types';
+import type {
+  OrArray,
+  Entity,
+  OperationResponse,
+  ErrorMatcher,
+  RdfList,
+  VerbMapping,
+  VerbIntegrationMapping,
+  VerbNounMapping,
+  MappingWithVerbMapping,
+  MappingWithOperationMapping,
+  MappingWithReturnValueMapping,
+  MappingWithParameterMapping,
+  SeriesVerbArgs,
+  Verb,
+  TriggerVerbMapping,
+} from './util/Types';
 import {
   convertJsonLdToQuads,
   toJSON,
   getValueIfDefined,
+  ensureArray,
 } from './util/Util';
 import type { JSONObject } from './util/Util';
-import { SKL, SHACL, RDFS } from './util/Vocabularies';
+import { SKL, SHACL, RDFS, RDF, SKL_ENGINE } from './util/Vocabularies';
 
-export type VerbHandler = (params: JSONObject) => Promise<NodeObject>;
+export type VerbHandler = <T extends OrArray<NodeObject> = OrArray<NodeObject>>(params: JSONObject) => Promise<T>;
 export type VerbInterface = Record<string, VerbHandler>;
 
 export type MappingResponseOption<T extends boolean> = T extends true ? JSONObject : NodeObject;
@@ -66,8 +82,8 @@ export class SKLEngine {
 
     // eslint-disable-next-line func-style
     const getVerbHandler = (getTarget: VerbInterface, property: string): VerbHandler =>
-      async(verbArgs: JSONObject): Promise<NodeObject> =>
-        this.handleVerbByName(property, verbArgs);
+      async<T extends OrArray<NodeObject> = OrArray<NodeObject>>(verbArgs: JSONObject): Promise<T> =>
+        this.executeVerbByName(property, verbArgs) as Promise<T>;
     this.verb = new Proxy({} as VerbInterface, { get: getVerbHandler });
   }
 
@@ -154,49 +170,113 @@ export class SKLEngine {
     integration: string,
     payload: any,
   ): Promise<void> {
-    const triggerToVerbMapping = await this.findBy({
+    const triggerToVerbMapping = (await this.findBy({
       type: SKL.TriggerVerbMapping,
       [SKL.integration]: integration,
-    });
-    const verbArgs = await this.performParameterMappingOnArgsIfDefined(payload, triggerToVerbMapping, false);
+    })) as TriggerVerbMapping;
+    const verbArgs = await this.performParameterMappingOnArgsIfDefined(
+      payload,
+      triggerToVerbMapping,
+      false,
+    );
     const verbInfoJsonLd = await this.performVerbMappingWithArgs(payload, triggerToVerbMapping);
-    const mappedVerb = await this.findBy({ id: getValueIfDefined(verbInfoJsonLd[SKL.verb]) });
-    await this.handleVerb(mappedVerb, verbArgs);
+    const mappedVerb = (await this.findBy({ id: getValueIfDefined(verbInfoJsonLd[SKL.verb]) })) as Verb;
+    await this.executeVerb(mappedVerb, verbArgs);
   }
 
-  private async handleVerbByName(verbName: string, verbArgs: JSONObject): Promise<NodeObject> {
+  private async executeVerbByName(verbName: string, verbArgs: JSONObject): Promise<OrArray<NodeObject>> {
     const verb = await this.findVerbWithName(verbName);
-    return await this.handleVerb(verb, verbArgs);
+    return await this.executeVerb(verb, verbArgs);
   }
 
-  private async handleVerb(verb: Entity, verbArgs: JSONObject): Promise<NodeObject> {
-    // if (verb[SKL.seriesVerbExecution]) {
-    // }
-    // if (verb[SKL.parallelVerbExecution]) {
-    // }
-    if (verbArgs.noun) {
-      return this.handleNounMappingVerb(verb, verbArgs);
-    }
-    if (verbArgs.account) {
-      return this.handleIntegrationVerb(verb, verbArgs);
-    }
-    throw new Error(`Verb parameters must include either a noun or an account.`);
-  }
-
-  private async findVerbWithName(verbName: string): Promise<Entity> {
+  private async findVerbWithName(verbName: string): Promise<Verb> {
     try {
-      return await this.findBy({ type: SKL.Verb, [RDFS.label]: verbName });
+      return (await this.findBy({ type: SKL.Verb, [RDFS.label]: verbName })) as Verb;
     } catch {
       throw new Error(`Failed to find the verb ${verbName} in the schema.`);
     }
   }
 
-  private async handleIntegrationVerb(verb: Entity, args: JSONObject): Promise<NodeObject> {
+  private async executeVerb(verb: Verb, verbArgs: JSONObject): Promise<OrArray<NodeObject>> {
+    if (verb[SKL.series]) {
+      return this.executeSeriesVerb(verb, verbArgs);
+    }
+    if (verb[SKL.parallel]) {
+      return this.executeParallelVerb(verb, verbArgs);
+    }
+    if (verbArgs.noun) {
+      return this.executeNounMappingVerb(verb, verbArgs);
+    }
+    if (verbArgs.account) {
+      return this.executeIntegrationMappingVerb(verb, verbArgs);
+    }
+    throw new Error(`Verb must be a composite or its parameters must include either a noun or an account.`);
+  }
+
+  private async executeSeriesVerb(verb: Verb, args: JSONObject): Promise<OrArray<NodeObject>> {
+    await this.assertVerbParamsMatchParameterSchemas(args, verb);
+    const seriesVerbMappingsRdfList = verb[SKL.series] as unknown as RdfList<VerbMapping>;
+    const seriesVerbArgs = { originalVerbParameters: args, previousVerbReturnValue: {}};
+    const returnValue = await this.executeSeriesFromRdfList(seriesVerbMappingsRdfList, seriesVerbArgs);
+    await this.assertVerbReturnValueMatchesReturnTypeSchema(returnValue, verb);
+    return returnValue;
+  }
+
+  private async executeSeriesFromRdfList(
+    list: RdfList<VerbMapping>,
+    args: SeriesVerbArgs,
+  ): Promise<OrArray<NodeObject>> {
+    const nextVerbMapping = list[RDF.first];
+    const returnValue = await this.executeVerbFromVerbMapping(nextVerbMapping, args as JSONObject);
+    const restOfList = list[RDF.rest];
+    if (restOfList && restOfList !== RDF.nil) {
+      return this.executeSeriesFromRdfList(restOfList, { ...args, previousVerbReturnValue: returnValue as JSONObject });
+    }
+    return returnValue;
+  }
+
+  private async executeVerbFromVerbMapping(verbMapping: VerbMapping, args: JSONObject): Promise<OrArray<NodeObject>> {
+    const verbArgs = await this.performParameterMappingOnArgsIfDefined(args, verbMapping, false);
+    const verbInfoJsonLd = await this.performVerbMappingWithArgs(args, verbMapping);
+    const verbId = getValueIfDefined<string>(verbInfoJsonLd[SKL.verb]);
+    if (verbId === SKL_ENGINE.update) {
+      await this.update(verbArgs.entity['@id'], verbArgs.attributes);
+      return { ...verbArgs.entity, ...verbArgs.attributes };
+    }
+    const mappedVerb = (await this.findBy({ id: verbId })) as Verb;
+    const returnValue = await this.executeVerb(mappedVerb, verbArgs);
+    if (verbMapping[SKL.returnValueMapping]) {
+      const mappedReturnValue = await this.performReturnValueMappingWithFrame(
+        returnValue as JSONObject,
+        verbMapping as MappingWithReturnValueMapping,
+        mappedVerb,
+      );
+      return mappedReturnValue;
+    }
+    return returnValue;
+  }
+
+  private async executeParallelVerb(verb: Verb, args: JSONObject): Promise<NodeObject[]> {
+    await this.assertVerbParamsMatchParameterSchemas(args, verb);
+    const parallelVerbMappings = ensureArray(verb[SKL.parallel] as unknown as OrArray<VerbMapping>);
+    const nestedReturnValues = await Promise.all<Promise<OrArray<NodeObject>>>(
+      parallelVerbMappings.map((verbMapping): Promise<OrArray<NodeObject>> =>
+        this.executeVerbFromVerbMapping(verbMapping, args)),
+    );
+    const allReturnValues = nestedReturnValues.flat();
+    await this.assertVerbReturnValueMatchesReturnTypeSchema(allReturnValues, verb);
+    return allReturnValues;
+  }
+
+  private async executeIntegrationMappingVerb(verb: Verb, args: JSONObject): Promise<NodeObject> {
     await this.assertVerbParamsMatchParameterSchemas(args, verb);
     const account = await this.findBy({ id: args.account as string });
     const integrationId = (account[SKL.integration] as ReferenceNodeObject)['@id'];
     const mapping = await this.findVerbIntegrationMapping(verb['@id'], integrationId);
-    const operationArgs = await this.performParameterMappingOnArgsIfDefined(args, mapping);
+    const operationArgs = await this.performParameterMappingOnArgsIfDefined(
+      args,
+      mapping as MappingWithParameterMapping,
+    );
     const operationInfo = await this.performOperationMappingWithArgs(args, mapping);
     const rawReturnValue = await this.performOperation(operationInfo, operationArgs, account);
     if (operationInfo[SKL.schemeName] && rawReturnValue.data.authorizationUrl) {
@@ -209,7 +289,7 @@ export class SKLEngine {
     if (mapping[SKL.returnValueMapping]) {
       const mappedReturnValue = await this.performReturnValueMappingWithFrame(
         rawReturnValue,
-        mapping,
+        mapping as MappingWithReturnValueMapping,
         verb,
       );
       await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, verb);
@@ -218,15 +298,18 @@ export class SKLEngine {
     return rawReturnValue as unknown as NodeObject;
   }
 
-  private async findVerbIntegrationMapping(verbId: string, integrationId: string): Promise<Entity> {
-    return await this.findBy({
+  private async findVerbIntegrationMapping(verbId: string, integrationId: string): Promise<VerbIntegrationMapping> {
+    return (await this.findBy({
       type: SKL.VerbIntegrationMapping,
       [SKL.verb]: verbId,
       [SKL.integration]: integrationId,
-    });
+    })) as VerbIntegrationMapping;
   }
 
-  private async performOperationMappingWithArgs(args: JSONObject, mapping: Entity): Promise<NodeObject> {
+  private async performOperationMappingWithArgs(
+    args: JSONObject,
+    mapping: MappingWithOperationMapping,
+  ): Promise<NodeObject> {
     return await this.performMapping(args, mapping[SKL.operationMapping] as OrArray<NodeObject>);
   }
 
@@ -274,13 +357,13 @@ export class SKLEngine {
   }
 
   private async performReturnValueMappingWithFrame(
-    operationResponse: OperationResponse,
-    mapping: Entity,
+    returnValue: JSONObject,
+    mapping: MappingWithReturnValueMapping,
     verb: Entity,
   ): Promise<NodeObject> {
     return await this.performMapping(
-      operationResponse,
-      mapping[SKL.returnValueMapping] as OrArray<NodeObject>,
+      returnValue,
+      mapping[SKL.returnValueMapping],
       {
         ...getValueIfDefined<JSONObject>(verb[SKL.returnValueFrame]),
         ...getValueIfDefined<JSONObject>(mapping[SKL.returnValueFrame]),
@@ -290,13 +373,13 @@ export class SKLEngine {
 
   private async performParameterMappingOnArgsIfDefined(
     args: JSONObject,
-    mapping: Entity,
+    mapping: Partial<MappingWithParameterMapping>,
     convertToJsonDeep = true,
   ): Promise<Record<string, any>> {
     if (mapping[SKL.parameterMapping]) {
       const mappedData = await this.performMapping(
         args,
-        mapping[SKL.parameterMapping] as OrArray<NodeObject>,
+        mapping[SKL.parameterMapping]!,
         getValueIfDefined(mapping[SKL.parameterMappingFrame]),
       );
       return toJSON(mappedData, convertToJsonDeep);
@@ -333,33 +416,26 @@ export class SKLEngine {
     return executor;
   }
 
-  private async handleNounMappingVerb(verb: Entity, args: JSONObject): Promise<NodeObject> {
+  private async executeNounMappingVerb(verb: Entity, args: JSONObject): Promise<NodeObject> {
     const mapping = await this.findVerbNounMapping(verb['@id'], args.noun as string);
     if (mapping[SKL.returnValueMapping]) {
-      return await this.performMapping(
-        args,
-        mapping[SKL.returnValueMapping] as OrArray<NodeObject>,
-        {
-          ...getValueIfDefined<JSONObject>(verb[SKL.returnValueFrame]),
-          ...getValueIfDefined<JSONObject>(mapping[SKL.returnValueFrame]),
-        },
-      );
+      return await this.performReturnValueMappingWithFrame(args, mapping as MappingWithReturnValueMapping, verb);
     }
     const verbArgs = await this.performParameterMappingOnArgsIfDefined(args, mapping, false);
     const verbInfoJsonLd = await this.performVerbMappingWithArgs(args, mapping);
-    const mappedVerb = await this.findBy({ id: getValueIfDefined(verbInfoJsonLd[SKL.verb]) });
-    return this.handleIntegrationVerb(mappedVerb, verbArgs);
+    const mappedVerb = (await this.findBy({ id: getValueIfDefined(verbInfoJsonLd[SKL.verb]) })) as Verb;
+    return this.executeIntegrationMappingVerb(mappedVerb, verbArgs);
   }
 
-  private async findVerbNounMapping(verbId: string, noun: string): Promise<Entity> {
-    return await this.findBy({
+  private async findVerbNounMapping(verbId: string, noun: string): Promise<VerbNounMapping> {
+    return (await this.findBy({
       type: SKL.VerbNounMapping,
       [SKL.verb]: verbId,
       [SKL.noun]: noun,
-    });
+    })) as VerbNounMapping;
   }
 
-  private async performVerbMappingWithArgs(args: JSONObject, mapping: Entity): Promise<NodeObject> {
+  private async performVerbMappingWithArgs(args: JSONObject, mapping: MappingWithVerbMapping): Promise<NodeObject> {
     return await this.performMapping(args, mapping[SKL.verbMapping] as NodeObject);
   }
 
@@ -431,7 +507,7 @@ export class SKLEngine {
     openApiExecutor: OpenApiOperationExecutor,
     integrationId: string,
   ): Promise<OpenApiClientConfiguration> {
-    const getOauthTokenVerb = await this.findBy({ type: SKL.Verb, [RDFS.label]: 'getOauthTokens' });
+    const getOauthTokenVerb = (await this.findBy({ type: SKL.Verb, [RDFS.label]: 'getOauthTokens' })) as Verb;
     const mapping = await this.findVerbIntegrationMapping(getOauthTokenVerb['@id'], integrationId);
     const operationArgs = await this.performParameterMappingOnArgsIfDefined(
       { refreshToken: getValueIfDefined<string>(securityCredentialsSchema[SKL.refreshToken])! },
@@ -449,7 +525,7 @@ export class SKLEngine {
     ) as AxiosResponse;
     const mappedReturnValue = await this.performReturnValueMappingWithFrame(
       this.axiosResponseAndParamsToOperationResponse(rawReturnValue, operationArgs),
-      mapping,
+      mapping as MappingWithReturnValueMapping,
       getOauthTokenVerb,
     );
     await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, getOauthTokenVerb);
@@ -469,31 +545,63 @@ export class SKLEngine {
   }
 
   private async assertVerbReturnValueMatchesReturnTypeSchema(
-    returnValue: NodeObject,
-    verb: Entity,
+    returnValue: OrArray<NodeObject>,
+    verb: Verb,
   ): Promise<void> {
-    const returnTypeSchemaObject = verb[SKL.returnValue] as NodeObject;
-
+    const returnTypeSchemaObject = verb[SKL.returnValue];
     let report: ValidationReport | undefined;
-    if (returnValue && Object.keys(returnValue).length > 0 && returnTypeSchemaObject) {
-      if (returnValue['@id']) {
-        returnTypeSchemaObject[SHACL.targetNode] = { '@id': returnValue['@id'] };
-      } else {
-        returnTypeSchemaObject[SHACL.targetClass] = { '@id': returnValue['@type'] };
+    if (returnValue && returnTypeSchemaObject) {
+      if (Array.isArray(returnValue)) {
+        if (returnValue.some((valueItem): boolean => '@id' in valueItem)) {
+          returnTypeSchemaObject[SHACL.targetNode] = returnValue
+            .reduce((nodes: ReferenceNodeObject[], returnValueItem): ReferenceNodeObject[] => {
+              if (returnValueItem['@id']) {
+                nodes.push({ '@id': returnValueItem['@id'] });
+              }
+              return nodes;
+            }, []);
+        } else {
+          const targetClasses = returnValue
+            .reduce((nodes: ReferenceNodeObject[], returnValueItem): ReferenceNodeObject[] => {
+              if (returnValueItem['@type']) {
+                const type = Array.isArray(returnValueItem['@type'])
+                  ? returnValueItem['@type'][0]
+                  : returnValueItem['@type'];
+                if (!nodes.includes({ '@id': type })) {
+                  nodes.push({ '@id': type });
+                }
+              }
+              return nodes;
+            }, []);
+          if (targetClasses.length > 0) {
+            returnTypeSchemaObject[SHACL.targetClass] = targetClasses;
+          }
+        }
+        report = await this.convertToQuadsAndValidateAgainstShape(returnValue, returnTypeSchemaObject);
+      } else if (Object.keys(returnValue).length > 0) {
+        if (returnValue['@id']) {
+          returnTypeSchemaObject[SHACL.targetNode] = { '@id': returnValue['@id'] };
+        } else {
+          returnTypeSchemaObject[SHACL.targetClass] = {
+            '@id': Array.isArray(returnValue['@type']) ? returnValue['@type'][0] : returnValue['@type']!,
+          };
+        }
+        report = await this.convertToQuadsAndValidateAgainstShape(returnValue, returnTypeSchemaObject);
       }
-      report = await this.convertToQuadsAndValidateAgainstShape(returnValue, returnTypeSchemaObject);
     }
 
     if (report && !report?.conforms) {
-      throw new Error(`Return value ${returnValue['@id']} does not conform to the schema`);
+      throw new Error(
+        `Return value ${Array.isArray(returnValue) ? 'array' : returnValue['@id']} does not conform to the schema`,
+      );
     }
   }
 
   private async convertToQuadsAndValidateAgainstShape(
-    value: NodeObject,
+    value: OrArray<NodeObject>,
     shape: NodeObject,
   ): Promise<ValidationReport> {
-    const valueAsQuads = await convertJsonLdToQuads([ value ]);
+    const valueAsQuads = await convertJsonLdToQuads(Array.isArray(value) ? value : [ value ]);
     const shapeQuads = await convertJsonLdToQuads(shape);
     const validator = new SHACLValidator(shapeQuads);
     return validator.validate(valueAsQuads);

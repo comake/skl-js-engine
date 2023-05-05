@@ -18,7 +18,12 @@
     "shacl:class": { "@type": "@id" },
     "shacl:datatype": { "@type": "@id" },
     "shacl:maxCount": { "@type": "xsd:integer" },
-    "shacl:minCount": { "@type": "xsd:integer" }
+    "shacl:minCount": { "@type": "xsd:integer" },
+    "shacl:name": { "@type": "xsd:string" },
+    "shacl:description": { "@type": "xsd:string" },
+    "shacl:closed": { "@type": "xsd:boolean" },
+    "shacl:property": { "@type": "@id" },
+    "shacl:nodeKind": { "@type": "@id" }
   },
   "@graph": [
     {
@@ -207,29 +212,169 @@
       "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Noun",
       "rdfs:label": "Verb",
       "shacl:closed": false,
-      "shacl:property": [
-        {
-          "shacl:class": "shacl:NodeShape",
-          "shacl:maxCount": 1,
-          "shacl:path": "https://standardknowledge.com/ontologies/core/returnValue"
-        },
-        {
-          "shacl:maxCount": 1,
-          "shacl:path": "https://standardknowledge.com/ontologies/core/parametersContext"
-        },
+      "property": [
         {
           "shacl:class": "shacl:NodeShape",
           "shacl:maxCount": 1,
           "shacl:nodeKind": { "@id": "shacl:BlankNode" },
-          "shacl:path": "https://standardknowledge.com/ontologies/core/parameters"
+          "shacl:path": "skl:parameters",
+          "shacl:name": "parameters",
+          "shacl:description": "A SHACL NodeShape specifying the format and constraints that the parameters of a Verb must conform to."
         },
         {
           "shacl:maxCount": 1,
-          "shacl:path": "rdfs:label"
+          "shacl:path": "skl:parametersContext",
+          "shacl:name": "parametersContext",
+          "shacl:datatype": "rdf:JSON",
+          "shacl:description": "A JSON-LD Context Definition used to expand the parameters supplied a Verb so that they can be validated against the Verb's `parameters` NodeShape."
+        },
+        {
+          "shacl:class": "shacl:NodeShape",
+          "shacl:maxCount": 1,
+          "shacl:path": "skl:returnValue",
+          "shacl:name": "returnValue",
+          "shacl:description": "A SHACL NodeShape specifying the format and constraints that the return value of a Verb must conform to."
         },
         {
           "shacl:maxCount": 1,
-          "shacl:path": "https://standardknowledge.com/ontologies/core/id"
+          "shacl:path": "skl:returnValueFrame",
+          "shacl:name": "returnValueFrame",
+          "shacl:datatype": "rdf:JSON",
+          "shacl:description": "A JSON-LD Frame used to transform the JSON-LD returned by a Mapping to this Verb."
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "skl:series",
+          "shacl:name": "series",
+          "shacl:nodeKind": { "@id": "shacl:BlankNode" },
+          "shacl:class": "rdf:List",
+          "shacl:description": "An rdf List of one or more Verb Mappings that determine Verbs that should be executed in series. The return value of each Verb in series gets passes the original Verb parameters and the previous Verb return value." 
+        },
+        {
+          "shacl:path": {
+            "rdf:first": "skl:series",
+            "rdf:rest": {
+              "rdf:first": {
+                "shacl:zeroOrMorePath": "rdf:rest"
+              },
+              "rdf:rest": {
+                "rdf:first": "skl:parameterMapping"
+              }
+            }
+          },
+          "shacl:class": "rr:TriplesMap",
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:name": "parameterMapping",
+          "shacl:shacl:description": "An RML TriplesMap specifying how the standard parameters of the original Verb should be translated into the parameters of the target Verb."
+        },
+        {
+          "shacl:path": {
+            "rdf:first": "skl:series",
+            "rdf:rest": {
+              "rdf:first": {
+                "shacl:zeroOrMorePath": "rdf:rest"
+              },
+              "rdf:rest": {
+                "rdf:first": "skl:parameterMappingFrame"
+              }
+            }
+          },
+          "shacl:name": "parameterMappingFrame",
+          "shacl:datatype": "rdf:JSON",
+          "shacl:shacl:description": "A JSON-LD Frame used to transform the JSON-LD returned by the parameterMapping into the format required by target Verb's parameters."
+        },
+        {
+          "shacl:path": {
+            "rdf:first": "skl:series",
+            "rdf:rest": {
+              "rdf:first": {
+                "shacl:zeroOrMorePath": "rdf:rest"
+              },
+              "rdf:rest": {
+                "rdf:first": "skl:verbMapping"
+              }
+            }
+          },
+          "shacl:maxCount": 1,
+          "shacl:class": "rr:TriplesMap",
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:name": "verbMapping",
+          "shacl:description": "An RML TriplesMap specifying what target Verb should be executed depending on the parameters supplied to the original Verb."
+        },
+        {
+          "shacl:path": {
+            "rdf:first": "skl:series",
+            "rdf:rest": {
+              "rdf:first": {
+                "shacl:zeroOrMorePath": "rdf:rest"
+              },
+              "rdf:rest": {
+                "rdf:first": "skl:returnValueMapping"
+              }
+            }
+          },
+          "shacl:class": "rr:TriplesMap",
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:name": "returnValueMapping",
+          "shacl:description": "An RML TriplesMap specifying how the return value of the Verb should be translated to be passed to the next Verb in series."
+        },
+        {
+          "shacl:path": {
+            "rdf:first": "skl:series",
+            "rdf:rest": {
+              "rdf:first": {
+                "shacl:zeroOrMorePath": "rdf:rest"
+              },
+              "rdf:rest": {
+                "rdf:first": "skl:returnValueFrame"
+              }
+            }
+          },
+          "shacl:maxCount": 1,
+          "shacl:name": "returnValueFrame",
+          "shacl:datatype": "rdf:JSON",
+          "shacl:description": "A JSON-LD Frame used to transform the JSON-LD returned by the returnValueMapping into a prefered format. This field overrides the returnValueFrame of the Verb. If not supplied, the Verb's returnValueFrame will be used instead."
+        },
+        {
+          "shacl:path": "skl:parallel",
+          "shacl:name": "parallel",
+          "shacl:shacl:description": "One or more Verb Mappings that determine Verbs that should be executed in parallel."
+        },
+        {
+          "shacl:path": {
+            "rdf:first": "skl:parallel",
+            "rdf:rest": {
+              "rdf:first": "skl:parameterMapping"
+            }
+          },
+          "shacl:class": "rr:TriplesMap",
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:name": "parameterMapping",
+          "shacl:description": "An RML TriplesMap specifying how the standard parameters of the original Verb should be translated into the parameters of the target Verb."
+        },
+        {
+          "shacl:path": {
+            "rdf:first": "skl:parallel",
+            "rdf:rest": {
+              "rdf:first": "skl:parameterMappingFrame"
+            }
+          },
+          "shacl:name": "parameterMappingFrame",
+          "shacl:datatype": "rdf:JSON",
+          "shacl:description": "A JSON-LD Frame used to transform the JSON-LD returned by the parameterMapping into the format required by target Verb's parameters."
+        },
+        {
+          "shacl:path": {
+            "rdf:first": "skl:parallel",
+            "rdf:rest": {
+              "rdf:first": "skl:verbMapping"
+            }
+          },
+          "shacl:maxCount": 1,
+          "shacl:class": "rr:TriplesMap",
+          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:name": "verbMapping",
+          "shacl:description": "An RML TriplesMap specifying what target Verb should be executed depending on the parameters supplied to the original Verb."
         }
       ]
     },
