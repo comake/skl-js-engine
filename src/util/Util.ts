@@ -56,8 +56,9 @@ export function ensureArray<T>(arrayable: T | T[]): T[] {
 
 export function getValueIfDefined<T>(fieldValue?: EntityFieldValue): T | undefined {
   if (fieldValue && Array.isArray(fieldValue)) {
-    return fieldValue.map((valueItem): EntityFieldSingularValue =>
-      getValueIfDefined<EntityFieldSingularValue>(valueItem)!) as unknown as T;
+    const values = fieldValue.map((valueItem): EntityFieldSingularValue =>
+      getValueIfDefined<EntityFieldSingularValue>(valueItem)!);
+    return (values.length === 1 ? values[0] : values) as unknown as T;
   }
   if (fieldValue && typeof fieldValue === 'object') {
     return (fieldValue as ValueObject)['@value'] as unknown as T;

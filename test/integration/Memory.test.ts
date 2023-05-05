@@ -27,7 +27,7 @@ describeIf('docker', 'An SKL engine backed by a memory query adapter', (): void 
     const env = { TICKETMASTER_APIKEY: process.env.TICKETMASTER_APIKEY! };
     const schemas = await frameAndCombineSchemas(schemaFiles, env);
     const engine = new SKLEngine({ type: 'memory', schemas });
-    const eventsCollection = await engine.verb.getEvents({
+    const eventsCollection = await engine.verb.getEvents<NodeObject>({
       account: 'https://example.com/data/TicketmasterAccount1',
       city: 'Atlanta',
       pageSize: 20,

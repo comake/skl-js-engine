@@ -1041,6 +1041,31 @@
                 }
               }
             }
+          },
+          "/files/list_folder/get_latest_cursor": {
+            "post": {
+              "summary": "Files - List Folder - Get Latest Cursor",
+              "description": "A way to quickly get a cursor for the folder's state.\nUnlike list_folder, list_folder/get_latest_cursor doesn't return any entries.\nThis endpoint is for app which only needs to know about new files and modifications and doesn't need to know about files that already exist in Dropbox.\n",
+              "operationId": "FilesListFolderGetLatestCursor",
+              "security": [
+                {
+                  "oAuth": [
+                    "files.metadata.read"
+                  ]
+                }
+              ],
+              "requestBody": {
+                "$ref": "#/components/requestBodies/ListFolderRequestBody"
+              },
+              "responses": {
+                "200": {
+                  "$ref": "#/components/responses/ListFolderGetLatestCursorResultResponse"
+                },
+                "default": {
+                  "$ref": "#/components/responses/ListFolderErrorResponse"
+                }
+              }
+            }
           }
         },
         "components": {
@@ -1543,9 +1568,97 @@
                   "description": "If set to a valid list of template IDs, FileMetadata.property_groups is set if there exists property data associated with the file and each of the listed templates. This field is optional."
                 }
               }
+            },
+            "ListFolderArg": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "A unique identifier for the file."
+                },
+                "recursive": {
+                  "type": "boolean",
+                  "description": "If true, the list folder operation will be applied recursively to all subfolders and the response will contain contents of all subfolders."
+                },
+                "include_media_info": {
+                  "type": "boolean",
+                  "description": "If true, :field:`FileMetadata.media_info` is set for photo and video."
+                },
+                "include_deleted": {
+                  "type": "boolean",
+                  "description": "If true, the results will include entries for files and folders that used to exist but were deleted."
+                },
+                "include_has_explicit_shared_members": {
+                  "type": "boolean",
+                  "description": "If true, the results will include a flag for each file indicating whether or not  that file has any explicit members."
+                },
+                "include_mounted_folders": {
+                  "type": "boolean",
+                  "description": "If true, the results will include entries under mounted folders which includes app folder, shared folder and team folder."
+                },
+                "limit": {
+                  "type": "number",
+                  "description": "The maximum number of results to return per request. Note: This is an approximate number and there can be slightly more entries returned in some cases."
+                },
+                "shared_link": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SharedLink"
+                    }
+                  ],
+                  "description": "A shared link to list the contents of. If the link is password-protected, the password must be provided. If this field is present, ListFolderArg.path will be relative to root of the shared link. Only non-recursive mode is supported for shared link."
+                },
+                "include_property_groups": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/TemplateFilterBase"
+                    }
+                  ],
+                  "description": "If set to a valid list of template IDs, FileMetadata.property_groups is set if there exists property data associated with the file and each of the listed templates."
+                },
+                "include_non_downloadable_files": {
+                  "type": "boolean",
+                  "description": "If true, include files that are not downloadable, i.e. Google Docs. The default for this field is True."
+                }
+              }
+            },
+            "SharedLink": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "description": "Shared link url."
+                },
+                "password": {
+                  "type": "string",
+                  "description": "Password for the shared link."
+                }
+              }
+            },
+            "ListFolderGetLatestCursorResult": {
+              "type": "object",
+              "properties": {
+                "cursor": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Pass the cursor into :route:`list_folder/continue` to see what's changed in the folder since your previous query."
+                }
+              }
+            },
+            "ListFolderError": {
+              "type": "object"
             }
           },
           "requestBodies": {
+            "ListFolderRequestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ListFolderArg"
+                  }
+                }
+              }
+            },
             "GetMetadataRequestBody": {
               "content": {
                 "application/json": {
@@ -1557,6 +1670,26 @@
             }
           },
           "responses": {
+            "ListFolderErrorResponse": {
+              "description": "Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ListFolderError"
+                  }
+                }
+              }
+            },
+            "ListFolderGetLatestCursorResultResponse": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ListFolderGetLatestCursorResult"
+                  }
+                }
+              }
+            },
             "GetMetadataResultResponse": {
               "description": "Success",
               "content": {

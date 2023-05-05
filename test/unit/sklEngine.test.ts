@@ -1,17 +1,20 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
+import { RR } from '@comake/rmlmapper-js';
 import { AxiosError } from 'axios';
 import type { NodeObject } from 'jsonld';
 import type { SKLEngineOptions } from '../../src/sklEngine';
 import { SKLEngine } from '../../src/sklEngine';
 import type { QueryAdapterType } from '../../src/storage/BaseQueryAdapterOptions';
 import { MemoryQueryAdapter } from '../../src/storage/memory/MemoryQueryAdapter';
-import { SKL, RDFS } from '../../src/util/Vocabularies';
+import { SKL, RDFS, XSD } from '../../src/util/Vocabularies';
 import simpleMapping from '../assets/schemas/simple-mapping.json';
 import { frameAndCombineSchemas, expandJsonLd } from '../util/Util';
 
 jest.mock('@comake/openapi-operation-executor');
 
+// eslint-disable-next-line max-len
+const URI_REGEXP = /(?:(?:[^:/?#\s]+:)?(?:\/\/)?[^/?#\s]*\.(?:com|org|net|edu|gov|int|xyz|io|cn|tk|de|top|info|icu|online|site|co|club|shop|biz|ch|vip|loan|store|work|live|buzz|af|ax|al|dz|as|ad|ao|ai|aq|ag|ar|am|aw|ac|au|at|az|bs|bh|bd|bb|eus|by|be|bz|bj|bm|bt|bo|bq|an|ba|bw|bv|br|io|vg|bn|bg|bf|mm|bi|kh|cm|ca|cv|cat|ky|cf|td|cl|cn|cx|cc|co|km|cd|cg|ck|cr|ci|hr|cu|cw|cy|cz|dk|dj|dm|do|tl|tp|ec|eg|sv|gq|er|ee|et|eu|fk|fo|fm|fj|fi|fr|gf|pf|tf|ga|gal|gm|ps|ge|de|gh|gi|gr|gl|gd|gp|gu|gt|gg|gn|gw|gy|ht|hm|hn|hk|hu|is|in|id|ir|iq|ie|im|il|it|jm|jp|je|jo|kz|ke|ki|kw|kg|la|lv|lb|ls|lr|ly|li|lt|lu|mo|mk|mg|mw|my|mv|ml|mt|mh|mq|mr|mu|yt|mx|md|mc|mn|me|ms|ma|mz|mm|na|nr|np|nl|nc|nz|ni|ne|ng|nu|nf|nc|tr|kp|mp|no|om|pk|pw|ps|pa|pg|py|pe|ph|pn|pl|pt|pr|qa|ro|ru|rw|re|bq|an|bl|gp|fr|sh|kn|lc|mf|gp|fr|pm|vc|ws|sm|st|sa|sn|rs|sc|sl|sg|bq|an|sx|an|sk|si|sb|so|so|za|gs|kr|ss|es|lk|sd|sr|sj|sz|se|ch|sy|tw|tj|tz|th|tg|tk|to|tt|tn|tr|tm|tc|tv|ug|ua|ae|uk|us|vi|uy|uz|vu|va|ve|vn|wf|eh|ma|ye|zm|zw)[^?#\s]*(?:\?[^#\s]*)?(?:#[^\s]*)?)|(?:(?:[^:/?#\s]+:)(?:\/\/)[^/?#\s]*\.[^?#\s]*(?:\?[^#\s]*)?(?:#[^\s]*)?)/gu;
 const account = 'https://example.com/data/DropboxAccount1';
 const mockDropboxFile = {
   '.tag': 'file',
@@ -322,30 +325,7 @@ describe('SKLEngine', (): void => {
       skql = new SKLEngine({ type: 'memory', schemas });
     });
 
-    it('maps data and converts it to json without a frame.', async(): Promise<void> => {
-      const data = { field: 'abc123' };
-      const mapping = await expandJsonLd(simpleMapping);
-      const response = await skql.performMappingAndConvertToJSON(data, mapping as NodeObject);
-      expect(response).toEqual({
-        'https://example.com/field': 'abc123',
-      });
-    });
-
-    it('maps data and converts it to json with a frame.', async(): Promise<void> => {
-      const data = { field: 'abc123' };
-      const frame = {
-        '@context': {
-          field: 'https://example.com/field',
-        },
-      };
-      const mapping = await expandJsonLd(simpleMapping);
-      const response = await skql.performMappingAndConvertToJSON(data, mapping as NodeObject, frame);
-      expect(response).toEqual({
-        field: 'abc123',
-      });
-    });
-
-    it('maps data without converting it to json.', async(): Promise<void> => {
+    it('maps data with a frame.', async(): Promise<void> => {
       const data = { field: 'abc123' };
       const frame = {
         '@context': {
@@ -442,11 +422,12 @@ describe('SKLEngine', (): void => {
     it('validates using the return value\'s type if it does not have an id.', async(): Promise<void> => {
       schemas.forEach((schemaItem: any): void => {
         if (schemaItem['@id'] === 'https://example.com/data/4') {
-          delete schemaItem['https://standardknowledge.com/ontologies/core/returnValueMapping']['http://www.w3.org/ns/r2rml#subject'];
-          schemaItem['https://standardknowledge.com/ontologies/core/returnValueMapping']['http://www.w3.org/ns/r2rml#subjectMap'] = {
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          delete schemaItem[SKL.returnValueMapping][RR.subject];
+          schemaItem[SKL.returnValueMapping][RR.subjectMap] = {
             '@type': 'rr:SubjectMap',
-            'http://www.w3.org/ns/r2rml#termType': { '@id': 'http://www.w3.org/ns/r2rml#BlankNode' },
-            'http://www.w3.org/ns/r2rml#class': { '@id': 'https://standardknowledge.com/ontologies/core/File' },
+            [RR.termType]: { '@id': RR.BlankNode },
+            [RR.class]: { '@id': 'https://standardknowledge.com/ontologies/core/File' },
           };
         }
       });
@@ -465,7 +446,7 @@ describe('SKLEngine', (): void => {
     it('errors if the return value does not conform to the verb return value schema.', async(): Promise<void> => {
       schemas.forEach((schemaItem: any): void => {
         if (schemaItem['@id'] === 'https://example.com/data/4') {
-          schemaItem['https://standardknowledge.com/ontologies/core/returnValueMapping'] = incorrectReturnValueMapping;
+          schemaItem[SKL.returnValueMapping] = incorrectReturnValueMapping;
         }
       });
       const skql = new SKLEngine({ type: 'memory', schemas });
@@ -693,7 +674,11 @@ describe('SKLEngine', (): void => {
       executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
       const skql = new SKLEngine({ type: 'memory', schemas });
-      const res = await skql.verb.getOauthTokens({ account, codeVerifier: 'something', code: 'dummy_code' });
+      const res = await skql.verb.getOauthTokens<NodeObject>({
+        account,
+        codeVerifier: 'something',
+        code: 'dummy_code',
+      });
       expect(res[SKL.accessToken]).toBe('abc123');
       expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
       expect(executeSecuritySchemeStage).toHaveBeenCalledWith(
@@ -718,7 +703,7 @@ describe('SKLEngine', (): void => {
       executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
       const skql = new SKLEngine({ type: 'memory', schemas });
-      const res = await skql.verb.authorizeWithPkceOauth({ account });
+      const res = await skql.verb.authorizeWithPkceOauth<NodeObject>({ account });
       expect(res[SKL.accessToken]).toBeUndefined();
       expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
       expect(executeSecuritySchemeStage).toHaveBeenCalledWith(
@@ -740,7 +725,7 @@ describe('SKLEngine', (): void => {
         executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
         (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
         const skql = new SKLEngine({ type: 'memory', schemas });
-        const res = await skql.verb.getOauthTokens({ account: 'https://example.com/data/StubhubAccount1' });
+        const res = await skql.verb.getOauthTokens<NodeObject>({ account: 'https://example.com/data/StubhubAccount1' });
         expect(res[SKL.accessToken]).toBe('abc123');
         expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
         expect(executeSecuritySchemeStage).toHaveBeenCalledWith(
@@ -877,10 +862,198 @@ describe('SKLEngine', (): void => {
     });
   });
 
+  describe('calling Verbs which specify a series sub Verb execution', (): void => {
+    beforeEach(async(): Promise<void> => {
+      schemas = await frameAndCombineSchemas([
+        './test/assets/schemas/core.json',
+        './test/assets/schemas/series-verb.json',
+      ]);
+    });
+
+    it('can execute multiple Verbs in series.', async(): Promise<void> => {
+      const functions = {
+        'https://example.com/functions/parseLinksFromText'(data: any): string[] {
+          const text = data['https://example.com/functions/text'];
+          const res = text.match(URI_REGEXP);
+          return res;
+        },
+      };
+      const skql = new SKLEngine({ type: 'memory', schemas, functions });
+      const entity = {
+        '@id': 'https://example.com/data/1',
+        '@type': 'https://schema.org/BlogPosting',
+        'https://schema.org/articleBody': {
+          '@value': 'Hello world https://example.com/test',
+          '@type': XSD.string,
+        },
+      };
+      const response = await skql.verb.parseAndSaveLinksFromEntity({ entity });
+      expect(response).toEqual(
+        expect.objectContaining({
+          ...entity,
+          'https://example.com/links': {
+            '@value': 'https://example.com/test',
+            '@type': XSD.string,
+          },
+        }),
+      );
+    });
+  });
+
+  describe('calling Verbs which specify a parallel sub Verb execution', (): void => {
+    beforeEach(async(): Promise<void> => {
+      schemas = await frameAndCombineSchemas([
+        './test/assets/schemas/core.json',
+        './test/assets/schemas/parallel-verb.json',
+      ]);
+    });
+
+    it('can execute multiple Verbs in parallel.', async(): Promise<void> => {
+      const functions = {
+        'https://example.com/functions/parseLinksFromText'(data: any): string[] {
+          const text = data['https://example.com/functions/text'];
+          const res = text.match(URI_REGEXP);
+          return res;
+        },
+      };
+      const skql = new SKLEngine({ type: 'memory', schemas, functions });
+      const entity = {
+        '@id': 'https://example.com/data/1',
+        '@type': 'https://schema.org/BlogPosting',
+        'https://schema.org/articleBody': {
+          '@value': 'Hello world https://example.com/test',
+          '@type': XSD.string,
+        },
+      };
+      const response = await skql.verb.parseLinksAndCountCharactersFromEntity({ entity });
+      expect(response).toEqual([
+        {
+          '@context': {
+            links: {
+              '@container': '@set',
+              '@id': 'https://example.com/links',
+              '@type': 'http://www.w3.org/2001/XMLSchema#string',
+            },
+          },
+          '@type': 'https://example.com/LinksObject',
+          links: [
+            'https://example.com/test',
+          ],
+        },
+        {
+          '@context': {
+            length: {
+              '@id': 'https://example.com/length',
+              '@type': 'http://www.w3.org/2001/XMLSchema#integer',
+            },
+          },
+          '@type': 'https://example.com/MeasurementObject',
+          length: 36,
+        },
+      ]);
+    });
+
+    it('can execute multiple Verbs in with return values that have ids.', async(): Promise<void> => {
+      const functions = {
+        'https://example.com/functions/parseLinksFromText'(data: any): string[] {
+          const text = data['https://example.com/functions/text'];
+          const res = text.match(URI_REGEXP);
+          return res;
+        },
+      };
+      schemas = schemas.map((schemaItem: any): any => {
+        if (schemaItem['@id'] === 'https://example.com/parseLinksAndCountCharactersFromEntity') {
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          delete schemaItem[SKL.parallel][0][SKL.returnValueMapping][RR.subjectMap][RR.class];
+          schemaItem[SKL.parallel][0][SKL.returnValueMapping][RR.subjectMap][RR.constant] = 'https://example.com/res/1';
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          delete schemaItem[SKL.parallel][1][SKL.returnValueMapping][RR.subjectMap][RR.class];
+          schemaItem[SKL.parallel][1][SKL.returnValueMapping][RR.subjectMap][RR.constant] = 'https://example.com/res/2';
+        }
+        return schemaItem;
+      });
+      const skql = new SKLEngine({ type: 'memory', schemas, functions });
+      const entity = {
+        '@id': 'https://example.com/data/1',
+        '@type': 'https://schema.org/BlogPosting',
+        'https://schema.org/articleBody': {
+          '@value': 'Hello world https://example.com/test',
+          '@type': XSD.string,
+        },
+      };
+      const response = await skql.verb.parseLinksAndCountCharactersFromEntity({ entity });
+      expect(response).toEqual([
+        {
+          '@context': {
+            links: {
+              '@container': '@set',
+              '@id': 'https://example.com/links',
+              '@type': 'http://www.w3.org/2001/XMLSchema#string',
+            },
+          },
+          '@id': 'https://example.com/res/1',
+          links: [
+            'https://example.com/test',
+          ],
+        },
+        {
+          '@context': {
+            length: {
+              '@id': 'https://example.com/length',
+              '@type': 'http://www.w3.org/2001/XMLSchema#integer',
+            },
+          },
+          '@id': 'https://example.com/res/2',
+          length: 36,
+        },
+      ]);
+    });
+  });
+
+  describe('calling Triggers', (): void => {
+    let executeOperation: any;
+    let setOpenapiSpec: any;
+    let executeSecuritySchemeStage: any;
+
+    beforeEach(async(): Promise<void> => {
+      schemas = await frameAndCombineSchemas([
+        './test/assets/schemas/core.json',
+        './test/assets/schemas/get-dropbox-file.json',
+        './test/assets/schemas/trigger.json',
+      ]);
+    });
+
+    it('can execute a Verb as result of a trigger.', async(): Promise<void> => {
+      executeOperation = jest.fn().mockResolvedValue({ data: { cursor: 'abc123' }, config: {}});
+      executeSecuritySchemeStage = jest.fn().mockResolvedValue({ data: { access_token: 'newToken' }, config: {}});
+      setOpenapiSpec = jest.fn();
+      (OpenApiOperationExecutor as jest.Mock).mockReturnValue({
+        executeOperation,
+        setOpenapiSpec,
+        executeSecuritySchemeStage,
+      });
+      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      await sklEngine.executeTrigger(
+        'https://example.com/integrations/Dropbox',
+        {},
+      );
+      expect(executeOperation).toHaveBeenCalledTimes(1);
+      expect(executeOperation).toHaveBeenCalledWith(
+        'FilesListFolderGetLatestCursor',
+        { accessToken: 'SPOOFED_TOKEN', jwt: undefined, apiKey: undefined, basePath: undefined },
+        {},
+      );
+    });
+  });
+
   it('throws an error when a noun or account is not supplied with the Verb.', async(): Promise<void> => {
+    schemas = await frameAndCombineSchemas([
+      './test/assets/schemas/core.json',
+      './test/assets/schemas/get-dropbox-file.json',
+    ]);
     const skql = new SKLEngine({ type: 'memory', schemas });
     await expect(skql.verb.getName({ entity: { [RDFS.label]: 'final.jpg' }}))
-      .rejects.toThrow('Verb parameters must include either a noun or an account.');
+      .rejects.toThrow('Verb must be a composite or its parameters must include either a noun or an account.');
   });
 
   it('throws an error if the operation is not supported.', async(): Promise<void> => {

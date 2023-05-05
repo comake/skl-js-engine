@@ -199,22 +199,26 @@ export class MemoryQueryAdapter implements QueryAdapter {
   }
 
   private fieldValueMatchesField(
-    fieldValue: FieldPrimitiveValue | JSONObject | JSONArray,
+    value: FieldPrimitiveValue | JSONObject | JSONArray,
     field: EntityFieldValue,
   ): boolean {
+    if (Array.isArray(field)) {
+      return field.some((fieldItem): boolean =>
+        this.fieldValueMatchesField(value, fieldItem));
+    }
     if (typeof field === 'object') {
       if ((field as ReferenceNodeObject)['@id']) {
-        return (field as ReferenceNodeObject)['@id'] === fieldValue;
+        return (field as ReferenceNodeObject)['@id'] === value;
       }
       if ((field as ValueObject)['@value']) {
         const jsValue = toJSValueFromDataType(
           (field as any)['@value'],
           (field as any)['@type'],
         );
-        return jsValue === fieldValue;
+        return jsValue === value;
       }
     }
-    return field === fieldValue;
+    return field === value;
   }
 
   private async findOptionWhereMatchesNodeObject(

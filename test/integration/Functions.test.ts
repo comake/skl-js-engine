@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import type { NodeObject } from 'jsonld';
 import { SKLEngine } from '../../src/sklEngine';
 import { getValueIfDefined } from '../../src/util/Util';
 import { frameAndCombineSchemas } from '../util/Util';
@@ -17,7 +18,7 @@ describe('An SKL engine with user supplied functions', (): void => {
       },
     };
     const engine = new SKLEngine({ type: 'memory', schemas, functions });
-    const response = await engine.verb.divide({
+    const response = await engine.verb.divide<NodeObject>({
       noun: 'https://standardknowledge.com/ontologies/core/Equation',
       numerator: 10,
       denominator: 5,
