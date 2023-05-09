@@ -1,11 +1,11 @@
 module.exports = {
-  globals: {
-    'ts-jest': {
-      tsconfig: 'tsconfig.json',
-    },
-  },
   transform: {
-    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.ts$': [
+      'ts-jest',
+      {
+        tsconfig: 'tsconfig.json',
+      },
+    ]
   },
   testRegex: '/test/(unit|integration)/.*\\.test\\.ts$',
   moduleFileExtensions: [
@@ -22,5 +22,7 @@ module.exports = {
     '/test/',
   ],
   testTimeout: 60000,
-  testURL: "http://example.com/"
+  testEnvironmentOptions: {
+    url: "http://example.com/",
+  }, 
 };
