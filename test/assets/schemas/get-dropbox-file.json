@@ -30,7 +30,6 @@
     "skl:parametersContext": { "@type": "@json" },
     "skl:returnValueFrame": { "@type": "@json" },
     "skl:noun": { "@type": "@id" },
-    "skl:verb": { "@type": "@id" },
     "skl:parameterMapping": { "@type": "@id" },
     "skl:parameterMappingFrame": { "@type": "@json" },
     "skl:returnValueMapping": { "@type": "@id" },
@@ -567,7 +566,7 @@
     {
       "@id": "https://example.com/data/34",
       "@type": "https://standardknowledge.com/ontologies/core/VerbNounMapping",
-      "skl:verb": "https://example.com/sync",
+      "verb": "https://example.com/sync",
       "skl:noun": "https://standardknowledge.com/ontologies/core/File",
       "label": "syncFileToGetFile",
       "skl:verbMapping": {
@@ -582,7 +581,7 @@
           {
             "@type": "rr:PredicateObjectMap",
             "rr:object": "https://example.com/getFile",
-            "rr:predicate": "skl:verb"
+            "rr:predicate": "skl:verbId"
           }
         ],
         "rr:subjectMap": {
@@ -627,7 +626,7 @@
     {
       "@id": "https://example.com/data/87",
       "@type": "https://standardknowledge.com/ontologies/core/VerbNounMapping",
-      "skl:verb": "https://example.com/getName",
+      "verb": "https://example.com/getName",
       "skl:noun": "https://standardknowledge.com/ontologies/core/File",
       "label": "getNameToFile",
       "skl:returnValueMapping": {

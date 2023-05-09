@@ -401,12 +401,19 @@
           "shacl:path": "https://standardknowledge.com/ontologies/core/parameterMapping"
         },
         {
-          "shacl:class": "https://standardknowledge.com/ontologies/core/Verb",
           "shacl:maxCount": 1,
+          "shacl:class": "https://standardknowledge.com/ontologies/core/Verb",
           "shacl:nodeKind": { "@id": "shacl:IRI" },
           "shacl:path": "https://standardknowledge.com/ontologies/core/verb"
         },
         {
+          "shacl:maxCount": 1,
+          "shacl:datatype": "xsd:string",
+          "shacl:name": "constantOperationId",
+          "shacl:path": "https://standardknowledge.com/ontologies/core/constantOperationId"
+        },
+        {
+          "shacl:maxCount": 1,
           "shacl:class": "rr:TriplesMap",
           "shacl:nodeKind": { "@id": "shacl:IRI" },
           "shacl:path": "https://standardknowledge.com/ontologies/core/operationMapping"
@@ -419,6 +426,7 @@
         {
           "shacl:class": "https://standardknowledge.com/ontologies/core/Integration",
           "shacl:maxCount": 1,
+          "shacl:minCount": 1,
           "shacl:nodeKind": { "@id": "shacl:IRI" },
           "shacl:path": "https://standardknowledge.com/ontologies/core/integration"
         }

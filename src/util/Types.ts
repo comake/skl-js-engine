@@ -46,11 +46,13 @@ export interface MappingWithReturnValueMapping extends NodeObject {
 }
 
 export interface MappingWithVerbMapping extends NodeObject {
-  [SKL.verbMapping]: TriplesMap;
+  [SKL.verbId]?: ValueObject | string;
+  [SKL.verbMapping]?: TriplesMap;
 }
 
 export interface MappingWithOperationMapping extends NodeObject {
-  [SKL.operationMapping]: TriplesMap;
+  [SKL.constantOperationId]: ValueObject;
+  [SKL.operationMapping]?: TriplesMap;
 }
 
 export interface VerbMapping extends

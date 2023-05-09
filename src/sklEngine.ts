@@ -170,18 +170,28 @@ export class SKLEngine {
     integration: string,
     payload: any,
   ): Promise<void> {
-    const triggerToVerbMapping = (await this.findBy({
-      type: SKL.TriggerVerbMapping,
-      [SKL.integration]: integration,
-    })) as TriggerVerbMapping;
+    const triggerToVerbMapping = await this.findTriggerVerbMapping(integration);
     const verbArgs = await this.performParameterMappingOnArgsIfDefined(
       payload,
       triggerToVerbMapping,
       false,
     );
-    const verbInfoJsonLd = await this.performVerbMappingWithArgs(payload, triggerToVerbMapping);
-    const mappedVerb = (await this.findBy({ id: getValueIfDefined(verbInfoJsonLd[SKL.verb]) })) as Verb;
-    await this.executeVerb(mappedVerb, verbArgs);
+    const verbId = await this.performVerbMappingWithArgs(payload, triggerToVerbMapping);
+    if (verbId) {
+      const mappedVerb = (await this.findBy({ id: verbId })) as Verb;
+      await this.executeVerb(mappedVerb, verbArgs);
+    }
+  }
+
+  private async findTriggerVerbMapping(integration: string): Promise<TriggerVerbMapping> {
+    try {
+      return (await this.findBy({
+        type: SKL.TriggerVerbMapping,
+        [SKL.integration]: integration,
+      })) as TriggerVerbMapping;
+    } catch {
+      throw new Error(`Failed to find a Trigger Verb mapping for integration ${integration}`);
+    }
   }
 
   private async executeVerbByName(verbName: string, verbArgs: JSONObject): Promise<OrArray<NodeObject>> {
@@ -237,8 +247,7 @@ export class SKLEngine {
 
   private async executeVerbFromVerbMapping(verbMapping: VerbMapping, args: JSONObject): Promise<OrArray<NodeObject>> {
     const verbArgs = await this.performParameterMappingOnArgsIfDefined(args, verbMapping, false);
-    const verbInfoJsonLd = await this.performVerbMappingWithArgs(args, verbMapping);
-    const verbId = getValueIfDefined<string>(verbInfoJsonLd[SKL.verb]);
+    const verbId = await this.performVerbMappingWithArgs(args, verbMapping);
     if (verbId === SKL_ENGINE.update) {
       await this.update(verbArgs.entity['@id'], verbArgs.attributes);
       return { ...verbArgs.entity, ...verbArgs.attributes };
@@ -310,6 +319,9 @@ export class SKLEngine {
     args: JSONObject,
     mapping: MappingWithOperationMapping,
   ): Promise<NodeObject> {
+    if (mapping[SKL.operationId]) {
+      return { [SKL.operationId]: mapping[SKL.operationId] };
+    }
     return await this.performMapping(args, mapping[SKL.operationMapping] as OrArray<NodeObject>);
   }
 
@@ -422,8 +434,8 @@ export class SKLEngine {
       return await this.performReturnValueMappingWithFrame(args, mapping as MappingWithReturnValueMapping, verb);
     }
     const verbArgs = await this.performParameterMappingOnArgsIfDefined(args, mapping, false);
-    const verbInfoJsonLd = await this.performVerbMappingWithArgs(args, mapping);
-    const mappedVerb = (await this.findBy({ id: getValueIfDefined(verbInfoJsonLd[SKL.verb]) })) as Verb;
+    const verbId = await this.performVerbMappingWithArgs(args, mapping);
+    const mappedVerb = (await this.findBy({ id: verbId })) as Verb;
     return this.executeIntegrationMappingVerb(mappedVerb, verbArgs);
   }
 
@@ -435,8 +447,15 @@ export class SKLEngine {
     })) as VerbNounMapping;
   }
 
-  private async performVerbMappingWithArgs(args: JSONObject, mapping: MappingWithVerbMapping): Promise<NodeObject> {
-    return await this.performMapping(args, mapping[SKL.verbMapping] as NodeObject);
+  private async performVerbMappingWithArgs(
+    args: JSONObject,
+    mapping: MappingWithVerbMapping,
+  ): Promise<string | undefined> {
+    if (mapping[SKL.verbId]) {
+      return getValueIfDefined<string>(mapping[SKL.verbId])!;
+    }
+    const verbInfoJsonLd = await this.performMapping(args, mapping[SKL.verbMapping] as NodeObject);
+    return getValueIfDefined<string>(verbInfoJsonLd[SKL.verbId])!;
   }
 
   private async assertVerbParamsMatchParameterSchemas(verbParams: any, verb: Entity): Promise<void> {
