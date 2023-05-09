@@ -30,7 +30,6 @@
     "skl:parametersContext": { "@type": "@json" },
     "skl:returnValueFrame": { "@type": "@json" },
     "skl:noun": { "@type": "@id" },
-    "skl:verb": { "@type": "@id" },
     "skl:parameterMapping": { "@type": "@id" },
     "skl:parameterMappingFrame": { "@type": "@json" },
     "skl:returnValueMapping": { "@type": "@id" },

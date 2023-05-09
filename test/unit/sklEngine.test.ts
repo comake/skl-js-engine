@@ -363,7 +363,30 @@ describe('SKLEngine', (): void => {
       });
     });
 
-    it('can execute an OpenApiOperationVerb.', async(): Promise<void> => {
+    it('can execute an OpenApi operation defined via an operationMapping.', async(): Promise<void> => {
+      const skql = new SKLEngine({ type: 'memory', schemas });
+      const response = await skql.verb.getFile({ account, id: '12345' });
+      expect(response).toEqual(expectedGetFileResponse);
+      expect(executeOperation).toHaveBeenCalledTimes(1);
+      expect(executeOperation).toHaveBeenCalledWith(
+        'FilesGetMetadata',
+        { accessToken: 'SPOOFED_TOKEN', jwt: undefined, apiKey: undefined, basePath: undefined },
+        { path: 'id:12345' },
+      );
+    });
+
+    it('can execute an OpenApi operation defined via a constant operationId.', async(): Promise<void> => {
+      schemas = schemas.map((schemaItem: any): any => {
+        if (schemaItem['@id'] === 'https://example.com/data/4') {
+          schemaItem[SKL.operationId] = {
+            '@type': XSD.string,
+            '@value': 'FilesGetMetadata',
+          };
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          delete schemaItem[SKL.operationMapping];
+        }
+        return schemaItem;
+      });
       const skql = new SKLEngine({ type: 'memory', schemas });
       const response = await skql.verb.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
@@ -752,7 +775,7 @@ describe('SKLEngine', (): void => {
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeOperation, setOpenapiSpec });
     });
 
-    it('can execute a NounMappedVerb.', async(): Promise<void> => {
+    it('can execute a Noun mapped Verb defined via a verbMapping.', async(): Promise<void> => {
       const skql = new SKLEngine({ type: 'memory', schemas });
       const response = await skql.verb.sync({
         noun: 'https://standardknowledge.com/ontologies/core/File',
@@ -762,7 +785,7 @@ describe('SKLEngine', (): void => {
       expect(response).toEqual(expectedGetFileResponse);
     });
 
-    it('can execute a NounMappedVerb with only a mapping.', async(): Promise<void> => {
+    it('can execute a Noun mapped Verb with only a mapping.', async(): Promise<void> => {
       const skql = new SKLEngine({ type: 'memory', schemas });
       const response = await skql.verb.getName({
         noun: 'https://standardknowledge.com/ontologies/core/File',
@@ -771,6 +794,27 @@ describe('SKLEngine', (): void => {
       expect(response).toEqual({
         [RDFS.label]: 'final.jpg',
       });
+    });
+
+    it('can execute a Noun mapped Verb through a mapping that defines a constant verbId.', async(): Promise<void> => {
+      schemas = schemas.map((schemaItem: any): any => {
+        if (schemaItem['@id'] === 'https://example.com/data/34') {
+          schemaItem[SKL.verbId] = {
+            '@type': XSD.string,
+            '@value': 'https://example.com/getFile',
+          };
+          // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+          delete schemaItem[SKL.verbMapping];
+        }
+        return schemaItem;
+      });
+      const skql = new SKLEngine({ type: 'memory', schemas });
+      const response = await skql.verb.sync({
+        noun: 'https://standardknowledge.com/ontologies/core/File',
+        account,
+        id: '12345',
+      });
+      expect(response).toEqual(expectedGetFileResponse);
     });
   });
 
@@ -1013,7 +1057,6 @@ describe('SKLEngine', (): void => {
   describe('calling Triggers', (): void => {
     let executeOperation: any;
     let setOpenapiSpec: any;
-    let executeSecuritySchemeStage: any;
 
     beforeEach(async(): Promise<void> => {
       schemas = await frameAndCombineSchemas([
@@ -1025,24 +1068,39 @@ describe('SKLEngine', (): void => {
 
     it('can execute a Verb as result of a trigger.', async(): Promise<void> => {
       executeOperation = jest.fn().mockResolvedValue({ data: { cursor: 'abc123' }, config: {}});
-      executeSecuritySchemeStage = jest.fn().mockResolvedValue({ data: { access_token: 'newToken' }, config: {}});
       setOpenapiSpec = jest.fn();
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({
         executeOperation,
         setOpenapiSpec,
-        executeSecuritySchemeStage,
       });
       const sklEngine = new SKLEngine({ type: 'memory', schemas });
       await sklEngine.executeTrigger(
         'https://example.com/integrations/Dropbox',
         {},
       );
+      expect(setOpenapiSpec).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
         'FilesListFolderGetLatestCursor',
         { accessToken: 'SPOOFED_TOKEN', jwt: undefined, apiKey: undefined, basePath: undefined },
         {},
       );
+    });
+
+    it('throws an error when no Trigger Verb Mapping exists for the integration.', async(): Promise<void> => {
+      executeOperation = jest.fn();
+      setOpenapiSpec = jest.fn();
+      (OpenApiOperationExecutor as jest.Mock).mockReturnValue({
+        executeOperation,
+        setOpenapiSpec,
+      });
+      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      await expect(sklEngine.executeTrigger(
+        'https://example.com/integrations/GoogleDrive',
+        {},
+      )).rejects.toThrow('Failed to find a Trigger Verb mapping for integration https://example.com/integrations/GoogleDrive');
+      expect(setOpenapiSpec).toHaveBeenCalledTimes(0);
+      expect(executeOperation).toHaveBeenCalledTimes(0);
     });
   });
 

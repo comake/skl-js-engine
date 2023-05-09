@@ -78,6 +78,8 @@ export const SKL = createNamespace('https://standardknowledge.com/ontologies/cor
   'TriggerVerbMapping',
   'series',
   'parallel',
+  'constantOperationId',
+  'verbId',
 ]);
 
 export const SKL_ENGINE = createNamespace('https://standardknowledge.com/ontologies/skl-engine/', [

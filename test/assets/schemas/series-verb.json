@@ -30,7 +30,6 @@
     "skl:parametersContext": { "@type": "@json" },
     "skl:returnValueFrame": { "@type": "@json" },
     "skl:noun": { "@type": "@id" },
-    "skl:verb": { "@type": "@id" },
     "skl:parameterMapping": { "@type": "@id" },
     "skl:parameterMappingFrame": { "@type": "@json" },
     "skl:returnValueMapping": { "@type": "@id" },
@@ -129,7 +128,7 @@
               {
                 "@type": "rr:PredicateObjectMap",
                 "rr:object": "https://example.com/getLinkParsableText",
-                "rr:predicate": "skl:verb"
+                "rr:predicate": "skl:verbId"
               }
             ],
             "rr:subjectMap": {
@@ -266,7 +265,7 @@
               "rr:predicateObjectMap": [
                 {
                   "@type": "rr:PredicateObjectMap",
-                  "rr:predicate": "skl:verb",
+                  "rr:predicate": "skl:verbId",
                   "rr:objectMap": {
                     "@type": "rr:ObjectMap",
                     "rr:constant": "https://standardknowledge.com/ontologies/skl-engine/update"
@@ -339,7 +338,7 @@
     {
       "@id": "https://example.com/data/34",
       "@type": "https://standardknowledge.com/ontologies/core/VerbNounMapping",
-      "skl:verb": "https://example.com/getLinkParsableText",
+      "verb": "https://example.com/getLinkParsableText",
       "skl:noun": "https://schema.org/BlogPosting",
       "label": "getLinkParsableTextToBlogPosting",
       "skl:returnValueMapping": {
