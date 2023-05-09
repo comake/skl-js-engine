@@ -27,10 +27,11 @@ jobs:
           - ubuntu-latest
           - windows-latest
         node-version:
-          - '14.2'
           - '14.x'
           - '16.0'
           - '16.x'
+          - '18.0'
+          - '18.x'
     timeout-minutes: 15
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
@@ -58,8 +59,8 @@ jobs:
     strategy:
       matrix:
         node-version:
-          - '14.x'
           - '16.x'
+          - '18.x'
     env:
       TEST_DOCKER: true
       TICKETMASTER_APIKEY: ${{ secrets.TICKETMASTER_APIKEY }}
@@ -85,8 +86,8 @@ jobs:
     strategy:
       matrix:
         node-version:
-          - '14.x'
           - '16.x'
+          - '18.x'
     timeout-minutes: 15
     steps:
       - name: Use Node.js ${{ matrix.node-version }}
