@@ -96,7 +96,10 @@ function relationsToFrame(relations: FindOptionsRelations): Frame {
         ...fieldFrame,
       };
     }
-    return fieldFrame;
+    return {
+      ...obj,
+      ...fieldFrame,
+    };
   }, {});
 }
 
