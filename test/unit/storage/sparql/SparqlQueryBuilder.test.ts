@@ -11,7 +11,7 @@ import { InverseRelationOrder } from '../../../../src/storage/operator/InverseRe
 import { LessThan } from '../../../../src/storage/operator/LessThan';
 import { LessThanOrEqual } from '../../../../src/storage/operator/LessThanOrEqual';
 import { Not } from '../../../../src/storage/operator/Not';
-import { BasicSparqlQueryBuilder } from '../../../../src/storage/sparql/BasicSparqlQueryBuilder';
+import { SparqlQueryBuilder } from '../../../../src/storage/sparql/SparqlQueryBuilder';
 import {
   entityVariable,
   objectNode,
@@ -39,11 +39,11 @@ const data2 = DataFactory.namedNode('https://example.com/data/2');
 const file = DataFactory.namedNode(SKL.File);
 const event = DataFactory.namedNode(SKL.Event);
 
-describe('A BasicSparqlQueryBuilder', (): void => {
-  let builder: BasicSparqlQueryBuilder;
+describe('A SparqlQueryBuilder', (): void => {
+  let builder: SparqlQueryBuilder;
 
   beforeEach(async(): Promise<void> => {
-    builder = new BasicSparqlQueryBuilder();
+    builder = new SparqlQueryBuilder();
   });
 
   describe('#buildEntitySelectPatternsFromOptions', (): void => {
@@ -1735,12 +1735,8 @@ describe('A BasicSparqlQueryBuilder', (): void => {
         template: selectPattern,
         where: [
           {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{
-              type: 'optional',
-              patterns: [{ type: 'bgp', triples: selectPattern }],
-            }],
+            type: 'optional',
+            patterns: [{ type: 'bgp', triples: selectPattern }],
           },
         ],
       });
@@ -1765,12 +1761,8 @@ describe('A BasicSparqlQueryBuilder', (): void => {
         template: selectPattern,
         where: [
           {
-            type: 'graph',
-            name: entityVariable,
-            patterns: [{
-              type: 'optional',
-              patterns: [{ type: 'bgp', triples: selectPattern }],
-            }],
+            type: 'optional',
+            patterns: [{ type: 'bgp', triples: selectPattern }],
           },
         ],
       });

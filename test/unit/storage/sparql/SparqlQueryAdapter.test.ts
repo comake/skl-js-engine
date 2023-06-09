@@ -3,7 +3,7 @@ import type { Readable } from 'stream';
 import DataFactory from '@rdfjs/data-model';
 import SparqlClient from 'sparql-http-client';
 import { InverseRelation } from '../../../../src/storage/operator/InverseRelation';
-import { BasicSparqlQueryAdapter } from '../../../../src/storage/sparql/BasicSparqlQueryAdapter';
+import { SparqlQueryAdapter } from '../../../../src/storage/sparql/SparqlQueryAdapter';
 import { rdfTypeNamedNode } from '../../../../src/util/SparqlUtil';
 import { SKL, XSD } from '../../../../src/util/Vocabularies';
 import { streamFrom } from '../../../util/Util';
@@ -16,13 +16,13 @@ const predicate = DataFactory.namedNode('https://example.com/pred');
 
 jest.mock('sparql-http-client');
 
-describe('a BasicSparqlQueryAdapter', (): void => {
+describe('a SparqlQueryAdapter', (): void => {
   let response: any = [];
   let select: any;
   let update: any;
   let ask: any;
   let error: any;
-  let adapter: BasicSparqlQueryAdapter;
+  let adapter: SparqlQueryAdapter;
 
   beforeEach(async(): Promise<void> => {
     response = [];
@@ -44,7 +44,7 @@ describe('a BasicSparqlQueryAdapter', (): void => {
     (SparqlClient as unknown as jest.Mock).mockReturnValue({
       query: { select, update, ask },
     });
-    adapter = new BasicSparqlQueryAdapter({ type: 'sparql', endpointUrl });
+    adapter = new SparqlQueryAdapter({ type: 'sparql', endpointUrl });
   });
 
   describe('executeRawQuery', (): void => {

@@ -1,4 +1,4 @@
-export type QueryAdapterType = 'memory' | 'sparql' | 'blazegraph';
+export type QueryAdapterType = 'memory' | 'sparql';
 
 export interface BaseQueryAdapterOptions {
   /**
