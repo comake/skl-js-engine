@@ -32,8 +32,8 @@ import type {
   FindExistsOptions,
 } from '../FindOptionsTypes';
 import type { QueryAdapter, RawQueryResult } from '../QueryAdapter';
-import { BasicSparqlQueryBuilder } from './BasicSparqlQueryBuilder';
 import type { SparqlQueryAdapterOptions } from './SparqlQueryAdapterOptions';
+import { SparqlQueryBuilder } from './SparqlQueryBuilder';
 import type { SelectVariableQueryResult } from './SparqlQueryExecutor';
 import { SparqlQueryExecutor } from './SparqlQueryExecutor';
 import { SparqlUpdateBuilder } from './SparqlUpdateBuilder';
@@ -41,7 +41,7 @@ import { SparqlUpdateBuilder } from './SparqlUpdateBuilder';
 /**
  * A {@link QueryAdapter} that stores data in a database through a sparql endpoint.
  */
-export class BasicSparqlQueryAdapter implements QueryAdapter {
+export class SparqlQueryAdapter implements QueryAdapter {
   protected readonly sparqlQueryExecutor: SparqlQueryExecutor;
   private readonly setTimestamps: boolean;
 
@@ -98,7 +98,7 @@ export class BasicSparqlQueryAdapter implements QueryAdapter {
     if (options?.search) {
       return [];
     }
-    const queryBuilder = new BasicSparqlQueryBuilder();
+    const queryBuilder = new SparqlQueryBuilder();
     const { where, selectionTriples, entityOrder } = await this.buildFindAllQueryData(queryBuilder, options);
     if (entityOrder && entityOrder.length === 0) {
       return [];
@@ -112,7 +112,7 @@ export class BasicSparqlQueryAdapter implements QueryAdapter {
   }
 
   private async buildFindAllQueryData(
-    queryBuilder: BasicSparqlQueryBuilder,
+    queryBuilder: SparqlQueryBuilder,
     options?: FindAllOptions,
   ): Promise<{ where: Pattern[]; selectionTriples: Triple[]; entityOrder?: string[] }> {
     const queryData = queryBuilder.buildEntitySelectPatternsFromOptions(entityVariable, options);
@@ -168,7 +168,7 @@ export class BasicSparqlQueryAdapter implements QueryAdapter {
   }
 
   public async exists(options: FindExistsOptions): Promise<boolean> {
-    const queryBuilder = new BasicSparqlQueryBuilder();
+    const queryBuilder = new SparqlQueryBuilder();
     const queryData = queryBuilder.buildEntitySelectPatternsFromOptions(entityVariable, options);
     const values = queryData.graphWhere.filter((pattern): boolean => pattern.type === 'values');
     const query = creteSparqlAskQuery([ ...values, ...queryData.where ]);
@@ -176,7 +176,7 @@ export class BasicSparqlQueryAdapter implements QueryAdapter {
   }
 
   public async count(options: FindCountOptions): Promise<number> {
-    const queryBuilder = new BasicSparqlQueryBuilder();
+    const queryBuilder = new SparqlQueryBuilder();
     const queryData = queryBuilder.buildEntitySelectPatternsFromOptions(entityVariable, options);
     const values = queryData.graphWhere.filter((pattern): boolean => pattern.type === 'values');
     const query = createSparqlCountSelectQuery(

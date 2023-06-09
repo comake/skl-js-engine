@@ -12,13 +12,11 @@ import type { Frame } from 'jsonld/jsonld-spec';
 import SHACLValidator from 'rdf-validate-shacl';
 import type ValidationReport from 'rdf-validate-shacl/src/validation-report';
 import { Mapper } from './mapping/Mapper';
-import { BlazegraphQueryAdapter } from './storage/blazegraph/BlazegraphQueryAdapter';
-import type { BlazegraphQueryAdapterOptions } from './storage/blazegraph/BlazegraphQueryAdapterOptions';
 import type { FindAllOptions, FindOneOptions, FindOptionsWhere } from './storage/FindOptionsTypes';
 import { MemoryQueryAdapter } from './storage/memory/MemoryQueryAdapter';
 import type { MemoryQueryAdapterOptions } from './storage/memory/MemoryQueryAdapterOptions';
 import type { QueryAdapter, RawQueryResult } from './storage/QueryAdapter';
-import { BasicSparqlQueryAdapter } from './storage/sparql/BasicSparqlQueryAdapter';
+import { SparqlQueryAdapter } from './storage/sparql/SparqlQueryAdapter';
 import type { SparqlQueryAdapterOptions } from './storage/sparql/SparqlQueryAdapterOptions';
 import type {
   OrArray,
@@ -53,8 +51,7 @@ export type MappingResponseOption<T extends boolean> = T extends true ? JSONObje
 
 export type SKLEngineOptions =
 | MemoryQueryAdapterOptions
-| SparqlQueryAdapterOptions
-| BlazegraphQueryAdapterOptions;
+| SparqlQueryAdapterOptions;
 
 export class SKLEngine {
   private readonly mapper: Mapper;
@@ -68,10 +65,7 @@ export class SKLEngine {
         this.adapter = new MemoryQueryAdapter(options);
         break;
       case 'sparql':
-        this.adapter = new BasicSparqlQueryAdapter(options);
-        break;
-      case 'blazegraph':
-        this.adapter = new BlazegraphQueryAdapter(options);
+        this.adapter = new SparqlQueryAdapter(options);
         break;
       default:
         throw new Error('No schema source found in setSchema args.');

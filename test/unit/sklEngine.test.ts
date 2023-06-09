@@ -102,13 +102,6 @@ describe('SKLEngine', (): void => {
     });
   });
 
-  describe('Blazegraph', (): void => {
-    it('initializes.', async(): Promise<void> => {
-      const sparqlEndpoint = 'https://localhost:9999';
-      expect(new SKLEngine({ type: 'blazegraph', endpointUrl: sparqlEndpoint })).toBeInstanceOf(SKLEngine);
-    });
-  });
-
   describe('CRUD on schemas', (): void => {
     let skql: SKLEngine;
 
