@@ -476,7 +476,7 @@ export class SKLEngine {
     const securityCredentials = await this.findSecurityCredentialsForAccountIfDefined(account['@id']);
     const configuration = {
       accessToken: getValueIfDefined<string>(securityCredentials?.[SKL.accessToken]),
-      jwt: getValueIfDefined<string>(securityCredentials?.[SKL.jwt]),
+      bearerToken: getValueIfDefined<string>(securityCredentials?.[SKL.bearerToken]),
       apiKey: getValueIfDefined<string>(securityCredentials?.[SKL.apiKey]),
       basePath: getValueIfDefined<string>(account[SKL.overrideBasePath]),
     };

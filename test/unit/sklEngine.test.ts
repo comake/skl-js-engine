@@ -363,7 +363,7 @@ describe('SKLEngine', (): void => {
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
         'FilesGetMetadata',
-        { accessToken: 'SPOOFED_TOKEN', jwt: undefined, apiKey: undefined, basePath: undefined },
+        { accessToken: 'SPOOFED_TOKEN', bearerToken: undefined, apiKey: undefined, basePath: undefined },
         { path: 'id:12345' },
       );
     });
@@ -386,7 +386,7 @@ describe('SKLEngine', (): void => {
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
         'FilesGetMetadata',
-        { accessToken: 'SPOOFED_TOKEN', jwt: undefined, apiKey: undefined, basePath: undefined },
+        { accessToken: 'SPOOFED_TOKEN', bearerToken: undefined, apiKey: undefined, basePath: undefined },
         { path: 'id:12345' },
       );
     });
@@ -413,7 +413,7 @@ describe('SKLEngine', (): void => {
         expect(executeOperation).toHaveBeenCalledTimes(1);
         expect(executeOperation).toHaveBeenCalledWith(
           'FilesGetMetadata',
-          { accessToken: 'SPOOFED_TOKEN', jwt: undefined, apiKey: undefined, basePath: undefined },
+          { accessToken: 'SPOOFED_TOKEN', bearerToken: undefined, apiKey: undefined, basePath: undefined },
           { path: 'id:12345' },
         );
       });
@@ -454,7 +454,7 @@ describe('SKLEngine', (): void => {
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
         'FilesGetMetadata',
-        { accessToken: 'SPOOFED_TOKEN', jwt: undefined, apiKey: undefined, basePath: undefined },
+        { accessToken: 'SPOOFED_TOKEN', bearerToken: undefined, apiKey: undefined, basePath: undefined },
         { path: 'id:12345' },
       );
     });
@@ -472,7 +472,7 @@ describe('SKLEngine', (): void => {
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
         'FilesGetMetadata',
-        { accessToken: 'SPOOFED_TOKEN', jwt: undefined, apiKey: undefined, basePath: undefined },
+        { accessToken: 'SPOOFED_TOKEN', bearerToken: undefined, apiKey: undefined, basePath: undefined },
         { path: 'id:12345' },
       );
     });
@@ -507,7 +507,7 @@ describe('SKLEngine', (): void => {
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
         'FilesGetMetadata',
-        { accessToken: undefined, jwt: undefined, apiKey: undefined, basePath: undefined },
+        { accessToken: undefined, bearerToken: undefined, apiKey: undefined, basePath: undefined },
         { path: 'id:12345' },
       );
     });
@@ -542,7 +542,7 @@ describe('SKLEngine', (): void => {
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
         'FilesGetMetadata',
-        { accessToken: 'SPOOFED_TOKEN', jwt: undefined, apiKey: undefined, basePath: undefined },
+        { accessToken: 'SPOOFED_TOKEN', bearerToken: undefined, apiKey: undefined, basePath: undefined },
         { path: 'id:12345' },
       );
     });
@@ -1075,7 +1075,7 @@ describe('SKLEngine', (): void => {
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
         'FilesListFolderGetLatestCursor',
-        { accessToken: 'SPOOFED_TOKEN', jwt: undefined, apiKey: undefined, basePath: undefined },
+        { accessToken: 'SPOOFED_TOKEN', bearerToken: undefined, apiKey: undefined, basePath: undefined },
         {},
       );
     });
