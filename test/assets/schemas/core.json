@@ -36,7 +36,7 @@
         {
           "shacl:class": "https://standardknowledge.com/ontologies/core/Integration",
           "shacl:maxCount": 1,
-          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:nodeKind": "shacl:IRI",
           "shacl:path": "https://standardknowledge.com/ontologies/core/integration"
         },
         { "shacl:maxCount": 1, "shacl:path": "http://schema.org/email" }
@@ -63,7 +63,7 @@
         {
           "shacl:maxCount": 1,
           "shacl:minCount": 1,
-          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:nodeKind": "shacl:IRI",
           "shacl:path": "https://standardknowledge.com/ontologies/core/integration"
         },
         {
@@ -117,7 +117,7 @@
         },
         {
           "shacl:class": "https://standardknowledge.com/ontologies/core/File",
-          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:nodeKind": "shacl:IRI",
           "shacl:path": "https://standardknowledge.com/ontologies/core/icons"
         }
       ]
@@ -157,7 +157,7 @@
         {
           "shacl:class": "https://standardknowledge.com/ontologies/core/Account",
           "shacl:maxCount": 1,
-          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:nodeKind": "shacl:IRI",
           "shacl:path": "https://standardknowledge.com/ontologies/core/account"
         },
         {
@@ -180,7 +180,7 @@
         {
           "shacl:class": "https://standardknowledge.com/ontologies/core/Integration",
           "shacl:maxCount": 1,
-          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:nodeKind": "shacl:IRI",
           "shacl:path": "https://standardknowledge.com/ontologies/core/integration"
         },
         {
@@ -201,7 +201,7 @@
           "shacl:path": "https://standardknowledge.com/ontologies/core/nextPageToken"
         },
         {
-          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:nodeKind": "shacl:IRI",
           "shacl:path": "https://standardknowledge.com/ontologies/core/records"
         }
       ]
@@ -216,7 +216,7 @@
         {
           "shacl:class": "shacl:NodeShape",
           "shacl:maxCount": 1,
-          "shacl:nodeKind": { "@id": "shacl:BlankNode" },
+          "shacl:nodeKind": "shacl:BlankNode",
           "shacl:path": "skl:parameters",
           "shacl:name": "parameters",
           "shacl:description": "A SHACL NodeShape specifying the format and constraints that the parameters of a Verb must conform to."
@@ -246,7 +246,7 @@
           "shacl:maxCount": 1,
           "shacl:path": "skl:series",
           "shacl:name": "series",
-          "shacl:nodeKind": { "@id": "shacl:BlankNode" },
+          "shacl:nodeKind": "shacl:BlankNode",
           "shacl:class": "rdf:List",
           "shacl:description": "An rdf List of one or more Verb Mappings that determine Verbs that should be executed in series. The return value of each Verb in series gets passes the original Verb parameters and the previous Verb return value." 
         },
@@ -263,7 +263,7 @@
             }
           },
           "shacl:class": "rr:TriplesMap",
-          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:nodeKind": "shacl:IRI",
           "shacl:name": "parameterMapping",
           "shacl:shacl:description": "An RML TriplesMap specifying how the standard parameters of the original Verb should be translated into the parameters of the target Verb."
         },
@@ -297,7 +297,7 @@
           },
           "shacl:maxCount": 1,
           "shacl:class": "rr:TriplesMap",
-          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:nodeKind": "shacl:IRI",
           "shacl:name": "verbMapping",
           "shacl:description": "An RML TriplesMap specifying what target Verb should be executed depending on the parameters supplied to the original Verb."
         },
@@ -314,7 +314,7 @@
             }
           },
           "shacl:class": "rr:TriplesMap",
-          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:nodeKind": "shacl:IRI",
           "shacl:name": "returnValueMapping",
           "shacl:description": "An RML TriplesMap specifying how the return value of the Verb should be translated to be passed to the next Verb in series."
         },
@@ -348,7 +348,7 @@
             }
           },
           "shacl:class": "rr:TriplesMap",
-          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:nodeKind": "shacl:IRI",
           "shacl:name": "parameterMapping",
           "shacl:description": "An RML TriplesMap specifying how the standard parameters of the original Verb should be translated into the parameters of the target Verb."
         },
@@ -372,7 +372,7 @@
           },
           "shacl:maxCount": 1,
           "shacl:class": "rr:TriplesMap",
-          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:nodeKind": "shacl:IRI",
           "shacl:name": "verbMapping",
           "shacl:description": "An RML TriplesMap specifying what target Verb should be executed depending on the parameters supplied to the original Verb."
         }
@@ -397,13 +397,13 @@
       "shacl:property": [
         {
           "shacl:class": "rr:TriplesMap",
-          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:nodeKind": "shacl:IRI",
           "shacl:path": "https://standardknowledge.com/ontologies/core/parameterMapping"
         },
         {
           "shacl:maxCount": 1,
           "shacl:class": "https://standardknowledge.com/ontologies/core/Verb",
-          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:nodeKind": "shacl:IRI",
           "shacl:path": "https://standardknowledge.com/ontologies/core/verb"
         },
         {
@@ -415,19 +415,19 @@
         {
           "shacl:maxCount": 1,
           "shacl:class": "rr:TriplesMap",
-          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:nodeKind": "shacl:IRI",
           "shacl:path": "https://standardknowledge.com/ontologies/core/operationMapping"
         },
         {
           "shacl:class": "rr:TriplesMap",
-          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:nodeKind": "shacl:IRI",
           "shacl:path": "https://standardknowledge.com/ontologies/core/returnValueMapping"
         },
         {
           "shacl:class": "https://standardknowledge.com/ontologies/core/Integration",
           "shacl:maxCount": 1,
           "shacl:minCount": 1,
-          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:nodeKind": "shacl:IRI",
           "shacl:path": "https://standardknowledge.com/ontologies/core/integration"
         }
       ]
@@ -443,14 +443,14 @@
           "shacl:class": "https://standardknowledge.com/ontologies/core/Verb",
           "shacl:maxCount": 1,
           "shacl:minCount": 1,
-          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:nodeKind": "shacl:IRI",
           "shacl:path": "https://standardknowledge.com/ontologies/core/verb"
         },
         {
           "shacl:class": "https://standardknowledge.com/ontologies/core/Noun",
           "shacl:maxCount": 1,
           "shacl:minCount": 1,
-          "shacl:nodeKind": { "@id": "shacl:IRI" },
+          "shacl:nodeKind": "shacl:IRI",
           "shacl:path": "https://standardknowledge.com/ontologies/core/noun"
         }
       ]

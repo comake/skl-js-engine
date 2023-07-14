@@ -1,0 +1,112 @@
+{
+  "@context": {
+    "shacl": "http://www.w3.org/ns/shacl#",
+    "fnml": "http://semweb.mmlab.be/ns/fnml#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "label": "rdfs:label",
+    "rdfs:subClassOf": { "@type": "@id" },
+    "rdfs:range": { "@type": "@id" },
+    "rdfs:domain": { "@type": "@id" },
+    "boolean": "http://www.w3.org/2001/XMLSchema#boolean",
+    "integer": "http://www.w3.org/2001/XMLSchema#integer",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "rr": "http://www.w3.org/ns/r2rml#",
+    "rml": "http://semweb.mmlab.be/ns/rml#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "dcterms": "http://purl.org/dc/elements/1.1/",
+    "description": "dcterms:description",
+    "shacl:class": { "@type": "@id" },
+    "shacl:datatype": { "@type": "@id" },
+    "shacl:maxCount": { "@type": "xsd:integer" },
+    "shacl:minCount": { "@type": "xsd:integer" },
+    "shacl:targetClass": { "@type": "@id" },
+    "shacl:path": { "@type": "@id" },
+    "skl": "https://standardknowledge.com/ontologies/core/",
+    "skl:integration": { "@type": "@id" },
+    "skl:account": { "@type": "@id" },
+    "skl:openApiDescription": { "@type": "@json" },
+    "skl:parametersContext": { "@type": "@json" },
+    "skl:returnValueFrame": { "@type": "@json" },
+    "skl:noun": { "@type": "@id" },
+    "skl:parameterMapping": { "@type": "@id" },
+    "skl:parameterMappingFrame": { "@type": "@json" },
+    "skl:returnValueMapping": { "@type": "@id" },
+    "skl:operationMapping": { "@type": "@id" },
+    "skl:verbMapping": { "@type": "@id" },
+    "integration": { "@id": "skl:integration", "@type": "@id" },
+    "verb": { "@id": "skl:verb", "@type": "@id" },
+    "rml:referenceFormulation": { "@type": "@id" },
+    "rr:parentTriplesMap": { "@type": "@id" },
+    "rr:predicate": { "@type": "@id" },
+    "rr:object": { "@type": "@id" },
+    "rr:termType": { "@type": "@id" },
+    "rr:datatype": { "@type": "@id" },
+    "rr:subject": { "@type": "@id" },
+    "skl:invalidTokenErrorMatcher": { "@type": "@json" },
+    "example": "https://example.com/",
+    "skl:series": { "@container": "@list" }
+  },
+  "@graph": [
+    {
+      "@id": "https://example.com/findAllEntities",
+      "@type": "https://standardknowledge.com/ontologies/core/Verb",
+      "label": "findAllEntities",
+      "skl:parametersContext": {
+        "where": {
+          "@id": "https://example.com/where",
+          "@type": "@json"
+        }
+      },
+      "skl:parameters": {
+        "@type": "shacl:NodeShape",
+        "shacl:targetClass": "skl:Parameters",
+        "shacl:property": [
+          {
+            "shacl:maxCount": 1,
+            "shacl:minCount": 1,
+            "shacl:path": "https://example.com/where",
+            "shacl:name": "where",
+            "shacl:datatype": "rdf:JSON"
+          }
+        ]
+      },
+      "skl:series": [
+        {
+          "skl:verbId": "https://standardknowledge.com/ontologies/skl-engine/findAll",
+          "skl:parameterMapping": {
+            "@type": "rr:TriplesMap",
+            "rml:logicalSource": {
+              "@type": "rml:LogicalSource",
+              "rml:iterator": "$",
+              "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+              "rml:source": "input.json"
+            },
+            "rr:subject": "https://example.com/mappingSubject",
+            "rr:predicateObjectMap": [
+              {
+                "@type": "rr:PredicateObjectMap",
+                "rr:objectMap": {
+                  "@type": "rr:ObjectMap",
+                  "rr:datatype": "http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON",
+                  "rml:reference": "originalVerbParameters.where"
+                },
+                "rr:predicate": "example:where"
+              }
+            ]
+          },
+          "skl:parameterMappingFrame": {
+            "@context": {
+              "where": {
+                "@id": "https://example.com/where",
+                "@type": "@json"
+              }
+            },
+            "@id": "https://example.com/mappingSubject"
+          }
+        }
+      ]
+    }
+  ]
+}
