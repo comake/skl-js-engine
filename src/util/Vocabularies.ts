@@ -80,10 +80,22 @@ export const SKL = createNamespace('https://standardknowledge.com/ontologies/cor
   'parallel',
   'constantOperationId',
   'verbId',
+  'preProcessingMapping',
+  'preProcessingMappingFrame',
 ]);
 
 export const SKL_ENGINE = createNamespace('https://standardknowledge.com/ontologies/skl-engine/', [
   'update',
+  'findAll',
+  'findAllBy',
+  'find',
+  'findBy',
+  'exists',
+  'existsResult',
+  'count',
+  'countResult',
+  'save',
+  'destroy',
 ]);
 
 export const XSD = createNamespace('http://www.w3.org/2001/XMLSchema#', [
@@ -103,11 +115,8 @@ export const XSD = createNamespace('http://www.w3.org/2001/XMLSchema#', [
 
 export const RDF = createNamespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#', [
   'type',
-  'first',
-  'rest',
   'datatype',
   'JSON',
-  'nil',
 ]);
 
 export const RDFS = createNamespace('http://www.w3.org/2000/01/rdf-schema#', [

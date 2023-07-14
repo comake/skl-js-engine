@@ -30,6 +30,8 @@
     "skl:parametersContext": { "@type": "@json" },
     "skl:returnValueFrame": { "@type": "@json" },
     "skl:noun": { "@type": "@id" },
+    "skl:preProcessingMapping": { "@type": "@id" },
+    "skl:preProcessingMappingFrame": { "@type": "@json" },
     "skl:parameterMapping": { "@type": "@id" },
     "skl:parameterMappingFrame": { "@type": "@json" },
     "skl:returnValueMapping": { "@type": "@id" },
@@ -74,7 +76,7 @@
       },
       "skl:series": [
         {
-          "skl:parameterMapping": {
+          "skl:preProcessingMapping": {
             "@type": "rr:TriplesMap",
             "rml:logicalSource": {
               "@type": "rml:LogicalSource",
@@ -90,6 +92,35 @@
                   "@type": "rr:ObjectMap",
                   "rr:datatype": "http://www.w3.org/2001/XMLSchema#string",
                   "rml:reference": "originalVerbParameters.entity[`@type]"
+                },
+                "rr:predicate": "example:noun"
+              }
+            ]
+          },
+          "skl:preProcessingMappingFrame": {
+            "@context": {
+              "noun": {
+                "@id": "https://example.com/noun",
+                "@type": "http://www.w3.org/2001/XMLSchema#string"
+              }
+            }
+          },
+          "skl:parameterMapping": {
+            "@type": "rr:TriplesMap",
+            "rml:logicalSource": {
+              "@type": "rml:LogicalSource",
+              "rml:iterator": "$",
+              "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+              "rml:source": "input.json"
+            },
+            "rr:subject": "https://example.com/mappingSubject",
+            "rr:predicateObjectMap": [
+              {
+                "@type": "rr:PredicateObjectMap",
+                "rr:objectMap": {
+                  "@type": "rr:ObjectMap",
+                  "rr:datatype": "http://www.w3.org/2001/XMLSchema#string",
+                  "rml:reference": "preProcessedParameters.noun"
                 },
                 "rr:predicate": "example:noun"
               },
