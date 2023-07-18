@@ -3,8 +3,9 @@ import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
 import { RR } from '@comake/rmlmapper-js';
 import { AxiosError } from 'axios';
 import type { NodeObject } from 'jsonld';
-import type { SKLEngineOptions } from '../../src/sklEngine';
-import { SKLEngine } from '../../src/sklEngine';
+import type { Callbacks } from '../../src/Callbacks';
+import { SKLEngine } from '../../src/SklEngine';
+import type { SklEngineOptions } from '../../src/SklEngineOptions';
 import type { QueryAdapterType } from '../../src/storage/BaseQueryAdapterOptions';
 import { MemoryQueryAdapter } from '../../src/storage/memory/MemoryQueryAdapter';
 import { SKL, RDFS, XSD, SKL_ENGINE } from '../../src/util/Vocabularies';
@@ -84,7 +85,7 @@ describe('SKLEngine', (): void => {
       new SKLEngine(
         {
           type: 'postgres' as QueryAdapterType,
-        } as SKLEngineOptions,
+        } as SklEngineOptions,
       );
     }).toThrow('No schema source found in setSchema args.');
   });
@@ -1189,6 +1190,25 @@ describe('SKLEngine', (): void => {
     });
   });
 
+  describe('calling Verbs which have a parameter reference in their mappings', (): void => {
+    it('gets data using the parameter reference.', async(): Promise<void> => {
+      schemas = await frameAndCombineSchemas([
+        './test/assets/schemas/core.json',
+        './test/assets/schemas/exists-with-parameter-reference.json',
+      ]);
+      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const response = await sklEngine.verb.entitiesExist({ where: { type: SKL.Verb }});
+      expect(response).toEqual(
+        expect.objectContaining({
+          [SKL_ENGINE.existsResult]: {
+            '@type': XSD.boolean,
+            '@value': true,
+          },
+        }),
+      );
+    });
+  });
+
   describe('calling Triggers', (): void => {
     let executeOperation: any;
     let setOpenapiSpec: any;
@@ -1236,6 +1256,52 @@ describe('SKLEngine', (): void => {
       )).rejects.toThrow('Failed to find a Trigger Verb mapping for integration https://example.com/integrations/GoogleDrive');
       expect(setOpenapiSpec).toHaveBeenCalledTimes(0);
       expect(executeOperation).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe('callbacks', (): void => {
+    let executeOperation: any;
+    let setOpenapiSpec: any;
+    let executeSecuritySchemeStage: any;
+    let callbacks: Callbacks;
+    let onVerbEnd: any;
+    let onVerbStart: any;
+
+    beforeEach(async(): Promise<void> => {
+      schemas = await frameAndCombineSchemas([
+        './test/assets/schemas/core.json',
+        './test/assets/schemas/get-dropbox-file.json',
+      ]);
+      executeOperation = jest.fn().mockResolvedValue({ data: mockDropboxFile, config: {}});
+      executeSecuritySchemeStage = jest.fn().mockResolvedValue({ data: { access_token: 'newToken' }, config: {}});
+      setOpenapiSpec = jest.fn();
+      (OpenApiOperationExecutor as jest.Mock).mockReturnValue({
+        executeOperation,
+        setOpenapiSpec,
+        executeSecuritySchemeStage,
+      });
+      onVerbEnd = jest.fn();
+      onVerbStart = jest.fn();
+      callbacks = {
+        onVerbEnd,
+        onVerbStart,
+      };
+    });
+
+    it('calls the onVerbStart and onVerbEnd callbacks if they are defined.', async(): Promise<void> => {
+      const sklEngine = new SKLEngine({ type: 'memory', schemas, callbacks });
+      const response = await sklEngine.verb.getFile({ account, id: '12345' });
+      expect(response).toEqual(expectedGetFileResponse);
+      expect(executeOperation).toHaveBeenCalledTimes(1);
+      expect(executeOperation).toHaveBeenCalledWith(
+        'FilesGetMetadata',
+        { accessToken: 'SPOOFED_TOKEN', bearerToken: undefined, apiKey: undefined, basePath: undefined },
+        { path: 'id:12345' },
+      );
+      expect(onVerbStart).toHaveBeenCalledTimes(1);
+      expect(onVerbStart).toHaveBeenCalledWith('https://example.com/getFile', { account, id: '12345' });
+      expect(onVerbEnd).toHaveBeenCalledTimes(1);
+      expect(onVerbEnd).toHaveBeenCalledWith('https://example.com/getFile', expectedGetFileResponse);
     });
   });
 

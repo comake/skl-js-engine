@@ -36,6 +36,10 @@ export interface MappingWithParameterMapping extends NodeObject {
   [SKL.parameterMappingFrame]: NodeObject;
 }
 
+export interface MappingWithParameterReference extends NodeObject {
+  [SKL.parameterReference]: string | ValueObject;
+}
+
 export interface MappingWithReturnValueMapping extends NodeObject {
   [SKL.returnValueMapping]: OrArray<TriplesMap>;
   [SKL.returnValueFrame]: NodeObject;
@@ -54,9 +58,11 @@ export interface MappingWithOperationMapping extends NodeObject {
 export interface VerbMapping extends
   MappingWithVerbMapping,
   Partial<MappingWithParameterMapping>,
+  Partial<MappingWithParameterReference>,
   Partial<MappingWithReturnValueMapping> {}
 
 export interface VerbIntegrationMapping extends
+  Partial<MappingWithParameterReference>,
   Partial<MappingWithParameterMapping>,
   MappingWithOperationMapping,
   Partial<MappingWithReturnValueMapping> {
@@ -65,6 +71,7 @@ export interface VerbIntegrationMapping extends
 }
 
 export interface VerbNounMapping extends
+  Partial<MappingWithParameterReference>,
   Partial<MappingWithParameterMapping>,
   MappingWithVerbMapping,
   Partial<MappingWithReturnValueMapping> {
@@ -74,6 +81,7 @@ export interface VerbNounMapping extends
 
 export interface TriggerVerbMapping extends
   MappingWithVerbMapping,
+  Partial<MappingWithParameterReference>,
   Partial<MappingWithParameterMapping> {
   [SKL.integration]: ReferenceNodeObject;
 }

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { NodeObject } from 'jsonld';
-import { SKLEngine } from '../../src/sklEngine';
+import { SKLEngine } from '../../src/SklEngine';
 import { getValueIfDefined } from '../../src/util/Util';
 import { frameAndCombineSchemas } from '../util/Util';
 

@@ -34,6 +34,7 @@ export const SKL = createNamespace('https://standardknowledge.com/ontologies/cor
   'integration',
   'parameters',
   'operationMapping',
+  'parameterReference',
   'parameterMapping',
   'parameterMappingFrame',
   'returnValueMapping',
