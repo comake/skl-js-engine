@@ -9,15 +9,16 @@ import axios from 'axios';
 import type { AxiosError, AxiosResponse } from 'axios';
 import type { ContextDefinition, GraphObject, NodeObject } from 'jsonld';
 import type { Frame } from 'jsonld/jsonld-spec';
+import { JSONPath } from 'jsonpath-plus';
 import SHACLValidator from 'rdf-validate-shacl';
 import type ValidationReport from 'rdf-validate-shacl/src/validation-report';
+import type { Callbacks } from './Callbacks';
 import { Mapper } from './mapping/Mapper';
+import type { SklEngineOptions } from './SklEngineOptions';
 import type { FindAllOptions, FindOneOptions, FindOptionsWhere } from './storage/FindOptionsTypes';
 import { MemoryQueryAdapter } from './storage/memory/MemoryQueryAdapter';
-import type { MemoryQueryAdapterOptions } from './storage/memory/MemoryQueryAdapterOptions';
 import type { QueryAdapter, RawQueryResult } from './storage/QueryAdapter';
 import { SparqlQueryAdapter } from './storage/sparql/SparqlQueryAdapter';
-import type { SparqlQueryAdapterOptions } from './storage/sparql/SparqlQueryAdapterOptions';
 import type {
   OrArray,
   Entity,
@@ -33,6 +34,7 @@ import type {
   SeriesVerbArgs,
   Verb,
   TriggerVerbMapping,
+  MappingWithParameterReference,
 } from './util/Types';
 import {
   convertJsonLdToQuads,
@@ -48,17 +50,14 @@ export type VerbInterface = Record<string, VerbHandler>;
 
 export type MappingResponseOption<T extends boolean> = T extends true ? JSONObject : NodeObject;
 
-export type SKLEngineOptions =
-| MemoryQueryAdapterOptions
-| SparqlQueryAdapterOptions;
-
 export class SKLEngine {
   private readonly mapper: Mapper;
   private readonly adapter: QueryAdapter;
   private readonly inputFiles?: Record<string, string>;
+  private readonly callbacks?: Callbacks;
   public readonly verb: VerbInterface;
 
-  public constructor(options: SKLEngineOptions) {
+  public constructor(options: SklEngineOptions) {
     switch (options.type) {
       case 'memory':
         this.adapter = new MemoryQueryAdapter(options);
@@ -70,6 +69,7 @@ export class SKLEngine {
         throw new Error('No schema source found in setSchema args.');
     }
 
+    this.callbacks = options.callbacks;
     this.inputFiles = options.inputFiles;
     this.mapper = new Mapper({ functions: options.functions });
 
@@ -201,25 +201,26 @@ export class SKLEngine {
   }
 
   private async executeVerb(verb: Verb, verbArgs: JSONObject): Promise<OrArray<NodeObject>> {
+    this.callbacks?.onVerbStart?.(verb['@id'], verbArgs);
+    let verbReturnValue: any;
     if (SKL.returnValueMapping in verb) {
-      return await this.performReturnValueMappingWithFrame(
+      verbReturnValue = await this.performReturnValueMappingWithFrame(
         verbArgs,
         verb as MappingWithReturnValueMapping,
       );
+    } else if (SKL.series in verb) {
+      verbReturnValue = await this.executeSeriesVerb(verb, verbArgs);
+    } else if (SKL.parallel in verb) {
+      verbReturnValue = await this.executeParallelVerb(verb, verbArgs);
+    } else if (verbArgs.noun) {
+      verbReturnValue = await this.executeNounMappingVerb(verb, verbArgs);
+    } else if (verbArgs.account) {
+      verbReturnValue = await this.executeIntegrationMappingVerb(verb, verbArgs);
+    } else {
+      throw new Error(`Verb must be a composite or its parameters must include either a noun or an account.`);
     }
-    if (SKL.series in verb) {
-      return await this.executeSeriesVerb(verb, verbArgs);
-    }
-    if (SKL.parallel in verb) {
-      return await this.executeParallelVerb(verb, verbArgs);
-    }
-    if (verbArgs.noun) {
-      return await this.executeNounMappingVerb(verb, verbArgs);
-    }
-    if (verbArgs.account) {
-      return await this.executeIntegrationMappingVerb(verb, verbArgs);
-    }
-    throw new Error(`Verb must be a composite or its parameters must include either a noun or an account.`);
+    this.callbacks?.onVerbEnd?.(verb['@id'], verbReturnValue);
+    return verbReturnValue;
   }
 
   private async executeSeriesVerb(verb: Verb, args: JSONObject): Promise<OrArray<NodeObject>> {
@@ -271,7 +272,7 @@ export class SKLEngine {
         return await this.existsAndWrapValueFromVerbArgs(verbArgs);
       }
       const returnValue = await this.findAndExecuteVerb(verbId, verbArgs);
-      if (verbMapping[SKL.returnValueMapping]) {
+      if (SKL.returnValueMapping in verbMapping) {
         return await this.performReturnValueMappingWithFrame(
           returnValue as JSONObject,
           verbMapping as MappingWithReturnValueMapping,
@@ -454,18 +455,32 @@ export class SKLEngine {
 
   private async performParameterMappingOnArgsIfDefined(
     args: JSONObject,
-    mapping: Partial<MappingWithParameterMapping>,
+    mapping: Partial<MappingWithParameterMapping> | Partial<MappingWithParameterReference>,
     convertToJsonDeep = true,
   ): Promise<Record<string, any>> {
-    if (mapping[SKL.parameterMapping]) {
+    if (SKL.parameterReference in mapping) {
+      const reference = getValueIfDefined<string>(mapping[SKL.parameterReference])!;
+      return this.getDataAtReference(reference, args);
+    }
+    if (SKL.parameterMapping in mapping) {
       const mappedData = await this.performMapping(
         args,
-        mapping[SKL.parameterMapping]!,
+        (mapping as MappingWithParameterMapping)[SKL.parameterMapping]!,
         getValueIfDefined(mapping[SKL.parameterMappingFrame]),
       );
       return toJSON(mappedData, convertToJsonDeep);
     }
     return args;
+  }
+
+  private getDataAtReference(reference: string, data: JSONObject): any {
+    const results = JSONPath({
+      path: reference,
+      json: data,
+      resultType: 'value',
+    });
+    const isArrayOfLengthOne = Array.isArray(results) && results.length === 1;
+    return isArrayOfLengthOne ? results[0] : results;
   }
 
   private async getOpenApiDescriptionForIntegration(integrationId: string): Promise<OpenApi> {

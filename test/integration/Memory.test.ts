@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
 import type { NodeObject } from 'jsonld';
-import { SKLEngine } from '../../src/sklEngine';
+import { SKLEngine } from '../../src/SklEngine';
 import { SCHEMA, SKL } from '../../src/util/Vocabularies';
 import { describeIf, frameAndCombineSchemas } from '../util/Util';
 

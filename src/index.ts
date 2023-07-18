@@ -35,4 +35,4 @@ export * from './util/Types';
 export * from './util/Util';
 export * from './util/Vocabularies';
 
-export * from './sklEngine';
+export * from './SklEngine';
