@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/expiring-todo-comments */
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { NodeObject, ValueObject } from 'jsonld';
-import { SKLEngine } from '../../src/sklEngine';
+import { SKLEngine } from '../../src/SklEngine';
 import { In } from '../../src/storage/operator/In';
 import type { Entity } from '../../src/util/Types';
 import { getValueIfDefined } from '../../src/util/Util';
