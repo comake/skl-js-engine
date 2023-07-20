@@ -4,7 +4,7 @@ import type {
   OpenApiClientConfiguration,
 } from '@comake/openapi-operation-executor';
 import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
-import type { ReferenceNodeObject } from '@comake/rmlmapper-js';
+import { getIdFromNodeObjectIfDefined, type ReferenceNodeObject } from '@comake/rmlmapper-js';
 import axios from 'axios';
 import type { AxiosError, AxiosResponse } from 'axios';
 import type { ContextDefinition, GraphObject, NodeObject } from 'jsonld';
@@ -35,6 +35,7 @@ import type {
   Verb,
   TriggerVerbMapping,
   MappingWithParameterReference,
+  RdfList,
 } from './util/Types';
 import {
   convertJsonLdToQuads,
@@ -43,7 +44,7 @@ import {
   ensureArray,
 } from './util/Util';
 import type { JSONObject } from './util/Util';
-import { SKL, SHACL, RDFS, SKL_ENGINE, XSD } from './util/Vocabularies';
+import { SKL, SHACL, RDFS, SKL_ENGINE, XSD, RDF } from './util/Vocabularies';
 
 export type VerbHandler = <T extends OrArray<NodeObject> = OrArray<NodeObject>>(params: JSONObject) => Promise<T>;
 export type VerbInterface = Record<string, VerbHandler>;
@@ -225,11 +226,23 @@ export class SKLEngine {
 
   private async executeSeriesVerb(verb: Verb, args: JSONObject): Promise<OrArray<NodeObject>> {
     await this.assertVerbParamsMatchParameterSchemas(args, verb);
-    const seriesVerbMappingsList = verb[SKL.series]!['@list'] as unknown as VerbMapping[];
+    const seriesVerbMappingsList = this.rdfListToArray(verb[SKL.series]!);
     const seriesVerbArgs = { originalVerbParameters: args, previousVerbReturnValue: {}};
     const returnValue = await this.executeSeriesFromList(seriesVerbMappingsList, seriesVerbArgs);
     await this.assertVerbReturnValueMatchesReturnTypeSchema(returnValue, verb);
     return returnValue;
+  }
+
+  private rdfListToArray(list: { '@list': VerbMapping[] } | RdfList<VerbMapping>): VerbMapping[] {
+    if (!('@list' in list)) {
+      return [
+        list[RDF.first],
+        ...getIdFromNodeObjectIfDefined(list[RDF.rest] as ReferenceNodeObject) === RDF.nil
+          ? []
+          : this.rdfListToArray(list[RDF.rest] as RdfList<VerbMapping>),
+      ];
+    }
+    return list['@list'];
   }
 
   private async executeSeriesFromList(

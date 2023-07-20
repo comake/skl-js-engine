@@ -21,9 +21,12 @@ import {
   createSparqlOptional,
   createSparqlUpdate,
   dropAll,
+  firstPredicate,
   modified,
+  nilPredicate,
   now,
   rdfTypeNamedNode,
+  restPredicate,
 } from '../../util/SparqlUtil';
 import {
   valueToLiteral,
@@ -264,6 +267,9 @@ export class SparqlUpdateBuilder {
   ): Triple[] {
     const isObject = typeof value === 'object';
     if (isObject) {
+      if ('@list' in value) {
+        return this.buildTriplesForList(subject, predicate, value['@list']);
+      }
       if ('@value' in value) {
         return [ { subject, predicate, object: this.jsonLdValueObjectToLiteral(value) } as Triple ];
       }
@@ -291,6 +297,18 @@ export class SparqlUpdateBuilder {
       return DataFactory.literal(value['@value'].toString(), (value as any)['@type']);
     }
     return valueToLiteral(value['@value']);
+  }
+
+  private buildTriplesForList(subject: BlankNode | NamedNode, predicate: NamedNode, value: NodeObject[]): Triple[] {
+    const blankNode = DataFactory.blankNode(this.variableGenerator.getNext());
+    const rest = value.length > 1
+      ? this.buildTriplesForList(blankNode, restPredicate, value.slice(1))
+      : [{ subject: blankNode, predicate: restPredicate, object: nilPredicate }];
+    return [
+      { subject, predicate, object: blankNode },
+      ...this.buildTriplesWithSubjectPredicateAndValue(blankNode, firstPredicate, value[0]),
+      ...rest,
+    ];
   }
 
   private buildTriplesForBlankNode(subject: BlankNode | NamedNode, predicate: NamedNode, value: NodeObject): Triple[] {

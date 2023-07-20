@@ -118,6 +118,9 @@ export const RDF = createNamespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#'
   'type',
   'datatype',
   'JSON',
+  'first',
+  'rest',
+  'nil',
 ]);
 
 export const RDFS = createNamespace('http://www.w3.org/2000/01/rdf-schema#', [

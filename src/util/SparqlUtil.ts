@@ -45,6 +45,9 @@ export const now = DataFactory.variable('now');
 export const created = DataFactory.namedNode(DCTERMS.created);
 export const modified = DataFactory.namedNode(DCTERMS.modified);
 export const searchPredicate = DataFactory.namedNode(BDS.search);
+export const firstPredicate = DataFactory.namedNode(RDF.first);
+export const restPredicate = DataFactory.namedNode(RDF.rest);
+export const nilPredicate = DataFactory.namedNode(RDF.nil);
 export const anyPredicatePropertyPath = {
   type: 'path',
   pathType: '!',

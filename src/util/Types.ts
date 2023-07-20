@@ -13,7 +13,12 @@ import type {
   ValueObject,
 } from 'jsonld';
 import type { JSONObject } from './Util';
-import type { SKL } from './Vocabularies';
+import type { RDF, SKL } from './Vocabularies';
+
+export interface RdfList<T> {
+  [RDF.first]: T;
+  [RDF.rest]?: RdfList<T> | typeof RDF.nil | ReferenceNodeObject;
+}
 
 export interface Verb extends NodeObject {
   '@id': string;
@@ -21,7 +26,7 @@ export interface Verb extends NodeObject {
   [SKL.parametersContext]?: ValueObject;
   [SKL.returnValue]?: NodeObject;
   [SKL.returnValueFrame]?: ValueObject;
-  [SKL.series]?: NodeObject;
+  [SKL.series]?: { '@list': VerbMapping[] } | (RdfList<VerbMapping> & NodeObject);
   [SKL.parallel]?: NodeObject;
   [SKL.returnValueMapping]?: OrArray<TriplesMap>;
 }
