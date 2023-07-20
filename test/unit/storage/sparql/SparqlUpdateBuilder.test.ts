@@ -4,9 +4,12 @@ import DataFactory from '@rdfjs/data-model';
 import { SparqlUpdateBuilder } from '../../../../src/storage/sparql/SparqlUpdateBuilder';
 import {
   created,
+  firstPredicate,
   modified,
+  nilPredicate,
   now,
   rdfTypeNamedNode,
+  restPredicate,
 } from '../../../../src/util/SparqlUtil';
 import { DCTERMS, SKL, XSD } from '../../../../src/util/Vocabularies';
 
@@ -172,6 +175,12 @@ describe('A SparqlUpdateBuilder', (): void => {
       'https://example.com/reference': {
         '@id': 'https://example.com/data/3',
       },
+      'https://example.com/list': {
+        '@list': [
+          { '@id': 'https://example.com/data/3' },
+          { '@id': 'https://example.com/data/4' },
+        ],
+      },
     };
     const query = {
       type: 'update',
@@ -237,6 +246,31 @@ describe('A SparqlUpdateBuilder', (): void => {
                   subject: data1,
                   predicate: DataFactory.namedNode('https://example.com/reference'),
                   object: DataFactory.namedNode('https://example.com/data/3'),
+                },
+                {
+                  subject: data1,
+                  predicate: DataFactory.namedNode('https://example.com/list'),
+                  object: DataFactory.blankNode('c2'),
+                },
+                {
+                  subject: DataFactory.blankNode('c2'),
+                  predicate: firstPredicate,
+                  object: DataFactory.namedNode('https://example.com/data/3'),
+                },
+                {
+                  subject: DataFactory.blankNode('c2'),
+                  predicate: restPredicate,
+                  object: DataFactory.blankNode('c3'),
+                },
+                {
+                  subject: DataFactory.blankNode('c3'),
+                  predicate: firstPredicate,
+                  object: DataFactory.namedNode('https://example.com/data/4'),
+                },
+                {
+                  subject: DataFactory.blankNode('c3'),
+                  predicate: restPredicate,
+                  object: nilPredicate,
                 },
               ],
             },
