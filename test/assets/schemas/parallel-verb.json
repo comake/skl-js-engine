@@ -45,7 +45,6 @@
     "rr:datatype": { "@type": "@id" },
     "rr:subject": { "@type": "@id" },
     "rr:class": { "@type": "@id" },
-    "skl:invalidTokenErrorMatcher": { "@type": "@json" },
     "example": "https://example.com/"
   },
   "@graph": [

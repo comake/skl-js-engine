@@ -580,7 +580,7 @@ describe('SKLEngine', (): void => {
         'authorizationCode',
         'tokenUrl',
         { username: 'adlerfaulkner', password: 'abc123', accessToken: 'SPOOFED_TOKEN' },
-        { grant_type: 'refresh_token', refresh_token: 'SPOOFED_REFRESH_TOKEN' },
+        { client_id: 'adlerfaulkner', grant_type: 'refresh_token', refresh_token: 'SPOOFED_REFRESH_TOKEN' },
       );
     });
 
@@ -590,8 +590,8 @@ describe('SKLEngine', (): void => {
       schemas = schemas.map((schemaItem: any): any => {
         if (schemaItem['@id'] === 'https://example.com/integrations/Dropbox') {
           schemaItem[SKL.invalidTokenErrorMatcher] = {
-            '@type': '@json',
-            '@value': { status: 400 },
+            '@type': SKL.InvalidTokenErrorMatcher,
+            [SKL.invalidTokenErrorMatcherStatus]: 400,
           };
         }
         return schemaItem;
@@ -625,7 +625,7 @@ describe('SKLEngine', (): void => {
         'authorizationCode',
         'tokenUrl',
         { username: 'adlerfaulkner', password: 'abc123', accessToken: 'SPOOFED_TOKEN' },
-        { grant_type: 'refresh_token', refresh_token: 'SPOOFED_REFRESH_TOKEN' },
+        { client_id: 'adlerfaulkner', grant_type: 'refresh_token', refresh_token: 'SPOOFED_REFRESH_TOKEN' },
       );
     });
 
@@ -1303,6 +1303,23 @@ describe('SKLEngine', (): void => {
       expect(onVerbEnd).toHaveBeenCalledTimes(1);
       expect(onVerbEnd).toHaveBeenCalledWith('https://example.com/getFile', expectedGetFileResponse);
     });
+
+    it('calls the onVerbStart and onVerbEnd callbacks if they are defined in the verb\'s configuration.',
+      async(): Promise<void> => {
+        const sklEngine = new SKLEngine({ type: 'memory', schemas });
+        const response = await sklEngine.verb.getFile({ account, id: '12345' }, { callbacks });
+        expect(response).toEqual(expectedGetFileResponse);
+        expect(executeOperation).toHaveBeenCalledTimes(1);
+        expect(executeOperation).toHaveBeenCalledWith(
+          'FilesGetMetadata',
+          { accessToken: 'SPOOFED_TOKEN', bearerToken: undefined, apiKey: undefined, basePath: undefined },
+          { path: 'id:12345' },
+        );
+        expect(onVerbStart).toHaveBeenCalledTimes(1);
+        expect(onVerbStart).toHaveBeenCalledWith('https://example.com/getFile', { account, id: '12345' });
+        expect(onVerbEnd).toHaveBeenCalledTimes(1);
+        expect(onVerbEnd).toHaveBeenCalledWith('https://example.com/getFile', expectedGetFileResponse);
+      });
   });
 
   it('throws an error when a noun or account is not supplied with the Verb.', async(): Promise<void> => {

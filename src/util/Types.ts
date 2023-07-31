@@ -12,6 +12,7 @@ import type {
   TypeMap,
   ValueObject,
 } from 'jsonld';
+import type { Callbacks } from '../Callbacks';
 import type { JSONObject } from './Util';
 import type { RDF, SKL } from './Vocabularies';
 
@@ -128,12 +129,11 @@ export interface Entity {
 
 export type OrArray<T> = T | T[];
 
-export interface ErrorMatcher {
-  status: number;
-  messageRegex: string;
-}
-
 export interface OperationResponse extends JSONObject {
   data: JSONObject;
   operationParameters: JSONObject;
+}
+
+export interface VerbConfig {
+  callbacks?: Callbacks;
 }
