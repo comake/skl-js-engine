@@ -38,7 +38,6 @@
     "rr:termType": { "@type": "@id" },
     "rr:subject": { "@type": "@id" },
     "rr:datatype": { "@type": "@id" },
-    "skl:invalidTokenErrorMatcher": { "@type": "@json" },
     "example": "https://example.com/"
   },
   "@graph": [

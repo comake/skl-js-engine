@@ -23,7 +23,6 @@ import type {
   OrArray,
   Entity,
   OperationResponse,
-  ErrorMatcher,
   VerbMapping,
   VerbIntegrationMapping,
   VerbNounMapping,
@@ -36,6 +35,7 @@ import type {
   TriggerVerbMapping,
   MappingWithParameterReference,
   RdfList,
+  VerbConfig,
 } from './util/Types';
 import {
   convertJsonLdToQuads,
@@ -46,7 +46,10 @@ import {
 import type { JSONObject } from './util/Util';
 import { SKL, SHACL, RDFS, SKL_ENGINE, XSD, RDF } from './util/Vocabularies';
 
-export type VerbHandler = <T extends OrArray<NodeObject> = OrArray<NodeObject>>(params: JSONObject) => Promise<T>;
+export type VerbHandler = <T extends OrArray<NodeObject> = OrArray<NodeObject>>(
+  params: JSONObject,
+  verbConfig?: VerbConfig,
+) => Promise<T>;
 export type VerbInterface = Record<string, VerbHandler>;
 
 export type MappingResponseOption<T extends boolean> = T extends true ? JSONObject : NodeObject;
@@ -55,7 +58,7 @@ export class SKLEngine {
   private readonly mapper: Mapper;
   private readonly adapter: QueryAdapter;
   private readonly inputFiles?: Record<string, string>;
-  private readonly callbacks?: Callbacks;
+  private readonly globalCallbacks?: Callbacks;
   public readonly verb: VerbInterface;
 
   public constructor(options: SklEngineOptions) {
@@ -70,14 +73,17 @@ export class SKLEngine {
         throw new Error('No schema source found in setSchema args.');
     }
 
-    this.callbacks = options.callbacks;
+    this.globalCallbacks = options.callbacks;
     this.inputFiles = options.inputFiles;
     this.mapper = new Mapper({ functions: options.functions });
 
     // eslint-disable-next-line func-style
     const getVerbHandler = (getTarget: VerbInterface, property: string): VerbHandler =>
-      async<T extends OrArray<NodeObject> = OrArray<NodeObject>>(verbArgs: JSONObject): Promise<T> =>
-        this.executeVerbByName(property, verbArgs) as Promise<T>;
+      async<T extends OrArray<NodeObject> = OrArray<NodeObject>>(
+        verbArgs: JSONObject,
+        verbConfig?: VerbConfig,
+      ): Promise<T> =>
+        this.executeVerbByName(property, verbArgs, verbConfig) as Promise<T>;
     this.verb = new Proxy({} as VerbInterface, { get: getVerbHandler });
   }
 
@@ -188,9 +194,13 @@ export class SKLEngine {
     }
   }
 
-  private async executeVerbByName(verbName: string, verbArgs: JSONObject): Promise<OrArray<NodeObject>> {
+  private async executeVerbByName(
+    verbName: string,
+    verbArgs: JSONObject,
+    verbConfig?: VerbConfig,
+  ): Promise<OrArray<NodeObject>> {
     const verb = await this.findVerbWithName(verbName);
-    return await this.executeVerb(verb, verbArgs);
+    return await this.executeVerb(verb, verbArgs, verbConfig);
   }
 
   private async findVerbWithName(verbName: string): Promise<Verb> {
@@ -201,8 +211,11 @@ export class SKLEngine {
     }
   }
 
-  private async executeVerb(verb: Verb, verbArgs: JSONObject): Promise<OrArray<NodeObject>> {
-    this.callbacks?.onVerbStart?.(verb['@id'], verbArgs);
+  private async executeVerb(verb: Verb, verbArgs: JSONObject, verbConfig?: VerbConfig): Promise<OrArray<NodeObject>> {
+    this.globalCallbacks?.onVerbStart?.(verb['@id'], verbArgs);
+    if (verbConfig?.callbacks?.onVerbStart) {
+      verbConfig.callbacks.onVerbStart(verb['@id'], verbArgs);
+    }
     let verbReturnValue: any;
     if (SKL.returnValueMapping in verb) {
       verbReturnValue = await this.performReturnValueMappingWithFrame(
@@ -210,9 +223,9 @@ export class SKLEngine {
         verb as MappingWithReturnValueMapping,
       );
     } else if (SKL.series in verb) {
-      verbReturnValue = await this.executeSeriesVerb(verb, verbArgs);
+      verbReturnValue = await this.executeSeriesVerb(verb, verbArgs, verbConfig);
     } else if (SKL.parallel in verb) {
-      verbReturnValue = await this.executeParallelVerb(verb, verbArgs);
+      verbReturnValue = await this.executeParallelVerb(verb, verbArgs, verbConfig);
     } else if (verbArgs.noun) {
       verbReturnValue = await this.executeNounMappingVerb(verb, verbArgs);
     } else if (verbArgs.account) {
@@ -220,15 +233,18 @@ export class SKLEngine {
     } else {
       throw new Error(`Verb must be a composite or its parameters must include either a noun or an account.`);
     }
-    this.callbacks?.onVerbEnd?.(verb['@id'], verbReturnValue);
+    this.globalCallbacks?.onVerbEnd?.(verb['@id'], verbReturnValue);
+    if (verbConfig?.callbacks?.onVerbEnd) {
+      verbConfig.callbacks.onVerbEnd(verb['@id'], verbReturnValue);
+    }
     return verbReturnValue;
   }
 
-  private async executeSeriesVerb(verb: Verb, args: JSONObject): Promise<OrArray<NodeObject>> {
+  private async executeSeriesVerb(verb: Verb, args: JSONObject, verbConfig?: VerbConfig): Promise<OrArray<NodeObject>> {
     await this.assertVerbParamsMatchParameterSchemas(args, verb);
     const seriesVerbMappingsList = this.rdfListToArray(verb[SKL.series]!);
     const seriesVerbArgs = { originalVerbParameters: args, previousVerbReturnValue: {}};
-    const returnValue = await this.executeSeriesFromList(seriesVerbMappingsList, seriesVerbArgs);
+    const returnValue = await this.executeSeriesFromList(seriesVerbMappingsList, seriesVerbArgs, verbConfig);
     await this.assertVerbReturnValueMatchesReturnTypeSchema(returnValue, verb);
     return returnValue;
   }
@@ -248,16 +264,25 @@ export class SKLEngine {
   private async executeSeriesFromList(
     list: VerbMapping[],
     args: SeriesVerbArgs,
+    verbConfig?: VerbConfig,
   ): Promise<OrArray<NodeObject>> {
     const nextVerbMapping = list[0];
-    const returnValue = await this.executeVerbFromVerbMapping(nextVerbMapping, args as JSONObject);
+    const returnValue = await this.executeVerbFromVerbMapping(nextVerbMapping, args as JSONObject, verbConfig);
     if (list.length > 1) {
-      return this.executeSeriesFromList(list.slice(1), { ...args, previousVerbReturnValue: returnValue as JSONObject });
+      return this.executeSeriesFromList(
+        list.slice(1),
+        { ...args, previousVerbReturnValue: returnValue as JSONObject },
+        verbConfig,
+      );
     }
     return returnValue;
   }
 
-  private async executeVerbFromVerbMapping(verbMapping: VerbMapping, args: JSONObject): Promise<OrArray<NodeObject>> {
+  private async executeVerbFromVerbMapping(
+    verbMapping: VerbMapping,
+    args: JSONObject,
+    verbConfig?: VerbConfig,
+  ): Promise<OrArray<NodeObject>> {
     args = await this.addPreProcessingMappingToArgs(verbMapping, args);
     const verbId = await this.performVerbMappingWithArgs(args, verbMapping);
     if (verbId) {
@@ -284,7 +309,7 @@ export class SKLEngine {
       if (verbId === SKL_ENGINE.exists) {
         return await this.existsAndWrapValueFromVerbArgs(verbArgs);
       }
-      const returnValue = await this.findAndExecuteVerb(verbId, verbArgs);
+      const returnValue = await this.findAndExecuteVerb(verbId, verbArgs, verbConfig);
       if (SKL.returnValueMapping in verbMapping) {
         return await this.performReturnValueMappingWithFrame(
           returnValue as JSONObject,
@@ -343,17 +368,21 @@ export class SKLEngine {
     };
   }
 
-  private async findAndExecuteVerb(verbId: string, args: Record<string, any>): Promise<OrArray<NodeObject>> {
+  private async findAndExecuteVerb(
+    verbId: string,
+    args: Record<string, any>,
+    verbConfig?: VerbConfig,
+  ): Promise<OrArray<NodeObject>> {
     const verb = (await this.findBy({ id: verbId })) as Verb;
-    return await this.executeVerb(verb, args);
+    return await this.executeVerb(verb, args, verbConfig);
   }
 
-  private async executeParallelVerb(verb: Verb, args: JSONObject): Promise<NodeObject[]> {
+  private async executeParallelVerb(verb: Verb, args: JSONObject, verbConfig?: VerbConfig): Promise<NodeObject[]> {
     await this.assertVerbParamsMatchParameterSchemas(args, verb);
     const parallelVerbMappings = ensureArray(verb[SKL.parallel] as unknown as OrArray<VerbMapping>);
     const nestedReturnValues = await Promise.all<Promise<OrArray<NodeObject>>>(
       parallelVerbMappings.map((verbMapping): Promise<OrArray<NodeObject>> =>
-        this.executeVerbFromVerbMapping(verbMapping, args)),
+        this.executeVerbFromVerbMapping(verbMapping, args, verbConfig)),
     );
     const allReturnValues = nestedReturnValues.flat();
     await this.assertVerbReturnValueMatchesReturnTypeSchema(allReturnValues, verb);
@@ -412,9 +441,15 @@ export class SKLEngine {
     operationInfo: NodeObject,
     operationArgs: JSONObject,
     account: Entity,
+    securityCredentials?: Entity,
   ): Promise<OperationResponse> {
     if (operationInfo[SKL.schemeName]) {
-      return await this.performOauthSecuritySchemeStageWithCredentials(operationInfo, operationArgs, account);
+      return await this.performOauthSecuritySchemeStageWithCredentials(
+        operationInfo,
+        operationArgs,
+        account,
+        securityCredentials,
+      );
     }
     if (operationInfo[SKL.dataSource]) {
       return await this.getDataFromDataSource(
@@ -582,10 +617,10 @@ export class SKLEngine {
     return await openApiExecutor.executeOperation(operationId, configuration, operationArgs)
       .catch(async(error: Error | AxiosError): Promise<any> => {
         if (axios.isAxiosError(error) && await this.isInvalidTokenError(error, integrationId) && securityCredentials) {
-          const refreshedConfiguration = await this.refreshOauthOpenApiToken(
+          const refreshedConfiguration = await this.refreshSecurityCredentials(
             securityCredentials,
-            openApiExecutor,
             integrationId,
+            account,
           );
           return await openApiExecutor.executeOperation(operationId, refreshedConfiguration, operationArgs);
         }
@@ -595,17 +630,18 @@ export class SKLEngine {
 
   private async isInvalidTokenError(error: AxiosError, integrationId: string): Promise<boolean> {
     const integration = await this.findBy({ id: integrationId });
-    const errorMatcher = getValueIfDefined<ErrorMatcher>(
-      integration[SKL.invalidTokenErrorMatcher],
-    );
-    if (errorMatcher && (error.response?.status === errorMatcher.status)) {
-      if (!errorMatcher.messageRegex) {
+    const errorMatcher = integration[SKL.invalidTokenErrorMatcher] as NodeObject;
+    const errorMatcherStatus = errorMatcher &&
+      getValueIfDefined<string>(errorMatcher[SKL.invalidTokenErrorMatcherStatus]);
+    const errorMatcherRegex = errorMatcher &&
+      getValueIfDefined<string>(errorMatcher[SKL.invalidTokenErrorMatcherMessageRegex])!;
+    if (errorMatcher && (error.response?.status === errorMatcherStatus)) {
+      if (!errorMatcherRegex) {
         return true;
       }
-
       if (
         error.response?.statusText &&
-        new RegExp(errorMatcher.messageRegex, 'u').test(error.response?.statusText)
+        new RegExp(errorMatcherRegex, 'u').test(error.response?.statusText)
       ) {
         return true;
       }
@@ -614,37 +650,40 @@ export class SKLEngine {
     return false;
   }
 
-  private async refreshOauthOpenApiToken(
-    securityCredentialsSchema: Entity,
-    openApiExecutor: OpenApiOperationExecutor,
+  private async refreshSecurityCredentials(
+    securityCredentials: Entity,
     integrationId: string,
+    account: Entity,
   ): Promise<OpenApiClientConfiguration> {
     const getOauthTokenVerb = (await this.findBy({ type: SKL.Verb, [RDFS.label]: 'getOauthTokens' })) as Verb;
     const mapping = await this.findVerbIntegrationMapping(getOauthTokenVerb['@id'], integrationId);
     const operationArgs = await this.performParameterMappingOnArgsIfDefined(
-      { refreshToken: getValueIfDefined<string>(securityCredentialsSchema[SKL.refreshToken])! },
+      {
+        refreshToken: getValueIfDefined<string>(securityCredentials[SKL.refreshToken])!,
+        jwtBearerOptions: getValueIfDefined<string>(securityCredentials[SKL.jwtBearerOptions])!,
+      },
       mapping,
     );
     const operationInfoJsonLd = await this.performOperationMappingWithArgs({}, mapping);
-    const configuration = this.getOauthConfigurationFromSecurityCredentials(securityCredentialsSchema);
-    const rawReturnValue = await openApiExecutor.executeSecuritySchemeStage(
-      getValueIfDefined(operationInfoJsonLd[SKL.schemeName])!,
-      getValueIfDefined(operationInfoJsonLd[SKL.oauthFlow])!,
-      getValueIfDefined(operationInfoJsonLd[SKL.stage])!,
-      configuration,
+    const rawReturnValue = await this.performOperation(
+      operationInfoJsonLd,
       operationArgs,
-    // Assert AxiosResponse here because this cannot be a code authorization url request
-    ) as AxiosResponse;
+      account,
+      securityCredentials,
+    );
     const mappedReturnValue = await this.performReturnValueMappingWithFrame(
-      this.axiosResponseAndParamsToOperationResponse(rawReturnValue, operationArgs),
+      rawReturnValue,
       mapping as MappingWithReturnValueMapping,
       getOauthTokenVerb,
     );
     await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, getOauthTokenVerb);
-    securityCredentialsSchema[SKL.accessToken] = getValueIfDefined(mappedReturnValue[SKL.accessToken]);
-    securityCredentialsSchema[SKL.refreshToken] = getValueIfDefined(mappedReturnValue[SKL.refreshToken]);
-    await this.save(securityCredentialsSchema);
-    return { accessToken: getValueIfDefined(securityCredentialsSchema[SKL.accessToken]) };
+    const bearerToken = getValueIfDefined<string>(mappedReturnValue[SKL.bearerToken]);
+    const accessToken = getValueIfDefined<string>(mappedReturnValue[SKL.accessToken]);
+    securityCredentials[SKL.bearerToken] = bearerToken;
+    securityCredentials[SKL.accessToken] = accessToken;
+    securityCredentials[SKL.refreshToken] = getValueIfDefined<string>(mappedReturnValue[SKL.refreshToken]);
+    await this.save(securityCredentials);
+    return { accessToken, bearerToken };
   }
 
   private getOauthConfigurationFromSecurityCredentials(
@@ -726,14 +765,15 @@ export class SKLEngine {
     operationInfo: NodeObject,
     operationParameters: JSONObject,
     account: Entity,
+    securityCredentials?: Entity,
   ): Promise<OperationResponse> {
     const integrationId = (account[SKL.integration] as ReferenceNodeObject)['@id'];
     const openApiDescription = await this.getOpenApiDescriptionForIntegration(integrationId);
-    const securityCredentialsSchema = await this.findSecurityCredentialsForAccountIfDefined(account['@id']);
+    securityCredentials ||= await this.findSecurityCredentialsForAccountIfDefined(account['@id']);
     let configuration: OpenApiClientConfiguration;
-    if (securityCredentialsSchema) {
-      configuration = this.getOauthConfigurationFromSecurityCredentials(securityCredentialsSchema);
-      operationParameters.client_id = getValueIfDefined<string>(securityCredentialsSchema[SKL.clientId])!;
+    if (securityCredentials) {
+      configuration = this.getOauthConfigurationFromSecurityCredentials(securityCredentials);
+      operationParameters.client_id = getValueIfDefined<string>(securityCredentials[SKL.clientId])!;
     } else {
       configuration = {};
     }
