@@ -44,7 +44,6 @@
     "rr:termType": { "@type": "@id" },
     "rr:datatype": { "@type": "@id" },
     "rr:subject": { "@type": "@id" },
-    "skl:invalidTokenErrorMatcher": { "@type": "@json" },
     "example": "https://example.com/"
   },
   "@graph": [
@@ -986,8 +985,8 @@
       "description": "Dropbox is a modern workspace designed to reduce busywork-so you can focus on the things that matter. Sign in and put your creative energy to work.",
       "label": "Dropbox",
       "skl:invalidTokenErrorMatcher": {
-        "status": 401,
-        "messageRegex": "^Unauthorized$"
+        "skl:invalidTokenErrorMatcherStatus": 401,
+        "skl:invalidTokenErrorMatcherMessageRegex": "^Unauthorized$"
       }
     },
     {

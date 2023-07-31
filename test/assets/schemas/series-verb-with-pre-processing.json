@@ -46,7 +46,6 @@
     "rr:termType": { "@type": "@id" },
     "rr:datatype": { "@type": "@id" },
     "rr:subject": { "@type": "@id" },
-    "skl:invalidTokenErrorMatcher": { "@type": "@json" },
     "example": "https://example.com/",
     "skl:series": { "@container": "@list" }
   },

@@ -83,6 +83,11 @@ export const SKL = createNamespace('https://standardknowledge.com/ontologies/cor
   'verbId',
   'preProcessingMapping',
   'preProcessingMappingFrame',
+  'jwtBearerOptions',
+  'invalidTokenErrorMatcher',
+  'InvalidTokenErrorMatcher',
+  'invalidTokenErrorMatcherStatus',
+  'invalidTokenErrorMatcherMessageRegex',
 ]);
 
 export const SKL_ENGINE = createNamespace('https://standardknowledge.com/ontologies/skl-engine/', [
