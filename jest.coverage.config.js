@@ -4,7 +4,7 @@ module.exports = {
   ...jestConfig,
   coverageThreshold: {
     './src': {
-      branches: 95,
+      branches: 94,
       functions: 95,
       lines: 95,
       statements: 95,

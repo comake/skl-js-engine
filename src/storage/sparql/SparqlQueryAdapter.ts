@@ -27,7 +27,6 @@ import type {
   FindOneOptions,
   FindAllOptions,
   FindOptionsWhere,
-  FindOptionsRelations,
   FindCountOptions,
   FindExistsOptions,
 } from '../FindOptionsTypes';
@@ -108,7 +107,7 @@ export class SparqlQueryAdapter implements QueryAdapter {
       selectionTriples,
       options?.select,
     );
-    return await this.executeEntitySelectQuery(query, options?.skipFraming, options?.relations, entityOrder);
+    return await this.executeEntitySelectQuery(query, options, entityOrder);
   }
 
   private async buildFindAllQueryData(
@@ -155,12 +154,17 @@ export class SparqlQueryAdapter implements QueryAdapter {
 
   private async executeEntitySelectQuery(
     query: ConstructQuery,
-    skipFraming?: boolean,
-    relations?: FindOptionsRelations,
+    options?: FindAllOptions,
     entityOrder?: string[],
   ): Promise<OrArray<NodeObject>> {
     const responseTriples = await this.sparqlQueryExecutor.executeSparqlSelectAndGetData(query);
-    return await triplesToJsonld(responseTriples, skipFraming, relations, entityOrder);
+    return await triplesToJsonld(
+      responseTriples,
+      options?.skipFraming,
+      options?.relations,
+      options?.where,
+      entityOrder,
+    );
   }
 
   public async findAllBy(where: FindOptionsWhere): Promise<Entity[]> {

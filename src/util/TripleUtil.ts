@@ -4,7 +4,8 @@ import type { Quad, Quad_Object, Quad_Subject, Literal } from '@rdfjs/types';
 import * as jsonld from 'jsonld';
 import type { ContextDefinition, GraphObject, NodeObject, ValueObject } from 'jsonld';
 import type { Frame } from 'jsonld/jsonld-spec';
-import type { FindOptionsRelations } from '../storage/FindOptionsTypes';
+import { FindOperator } from '../storage/FindOperator';
+import type { FindOptionsRelations, FindOptionsWhere } from '../storage/FindOptionsTypes';
 import type { InverseRelationOperatorValue } from '../storage/operator/InverseRelation';
 import type { OrArray } from './Types';
 import type { JSONArray, JSONObject } from './Util';
@@ -69,7 +70,7 @@ function toJsonLdSubject(object: Quad_Subject): string {
   return object.value;
 }
 
-function relationsToFrame(relations: FindOptionsRelations): Frame {
+function relationsToFrame(relations: FindOptionsRelations): NodeObject {
   return Object.entries(relations).reduce((obj: NodeObject, [ field, value ]): NodeObject => {
     const fieldFrame: Frame = {};
     let contextAddition: ContextDefinition | undefined;
@@ -101,6 +102,16 @@ function relationsToFrame(relations: FindOptionsRelations): Frame {
       ...fieldFrame,
     };
   }, {});
+}
+
+function whereToFrame(where: FindOptionsWhere): NodeObject {
+  if (where.id && typeof where.id === 'string') {
+    return { '@id': where.id };
+  }
+  if (where.id && FindOperator.isFindOperator(where.id) && (where.id as FindOperator<any>).operator === 'in') {
+    return { '@id': (where.id as FindOperator<any>).value };
+  }
+  return {};
 }
 
 function triplesToNodes(triples: Quad[]): {
@@ -142,12 +153,15 @@ function triplesToNodes(triples: Quad[]): {
 
 async function frameWithRelationsOrNonBlankNodes(
   nodesById: Record<string, NodeObject>,
-  relations?: FindOptionsRelations,
   frame?: Frame,
+  relations?: FindOptionsRelations,
+  where?: FindOptionsWhere,
 ): Promise<NodeObject> {
   if (!frame) {
-    if (relations) {
-      frame = relationsToFrame(relations);
+    const relationsFrame = relations ? relationsToFrame(relations) : {};
+    const whereFrame = where ? whereToFrame(where) : {};
+    frame = { ...relationsFrame, ...whereFrame };
+    if (Object.keys(frame).length > 0) {
       const results = await jsonld.frame(
         { '@graph': Object.values(nodesById) },
         frame,
@@ -161,7 +175,9 @@ async function frameWithRelationsOrNonBlankNodes(
         } else if ('@graph' in results) {
           resultsList = ensureArray(results['@graph']);
         } else {
-          resultsList = ensureArray(results);
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { '@context': unusedContext, ...entityResult } = results;
+          resultsList = [ entityResult ];
         }
         return {
           '@graph': resultsList.filter((result): boolean =>
@@ -200,6 +216,7 @@ export async function triplesToJsonld(
   triples: Quad[],
   skipFraming?: boolean,
   relations?: FindOptionsRelations,
+  where?: FindOptionsWhere,
   orderedNodeIds?: string[],
 ): Promise<OrArray<NodeObject>> {
   if (triples.length === 0) {
@@ -209,7 +226,7 @@ export async function triplesToJsonld(
   if (skipFraming) {
     return Object.values(nodesById);
   }
-  const framed = await frameWithRelationsOrNonBlankNodes(nodesById, relations);
+  const framed = await frameWithRelationsOrNonBlankNodes(nodesById, undefined, relations, where);
   if ('@graph' in framed) {
     return sortNodesByOrder(framed['@graph'] as NodeObject[], orderedNodeIds ?? nodeIdOrder);
   }
@@ -219,10 +236,9 @@ export async function triplesToJsonld(
 export async function triplesToJsonldWithFrame(
   triples: Quad[],
   frame?: Frame,
-  relations?: FindOptionsRelations,
 ): Promise<GraphObject> {
   const { nodeIdOrder, nodesById } = triplesToNodes(triples);
-  const framed = await frameWithRelationsOrNonBlankNodes(nodesById, relations, frame);
+  const framed = await frameWithRelationsOrNonBlankNodes(nodesById, frame);
   if ('@graph' in framed) {
     return sortGraphOfNodeObject(framed as GraphObject, nodeIdOrder);
   }

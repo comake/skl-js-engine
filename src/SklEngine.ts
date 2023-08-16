@@ -227,7 +227,7 @@ export class SKLEngine {
     } else if (SKL.parallel in verb) {
       verbReturnValue = await this.executeParallelVerb(verb, verbArgs, verbConfig);
     } else if (verbArgs.noun) {
-      verbReturnValue = await this.executeNounMappingVerb(verb, verbArgs);
+      verbReturnValue = await this.executeNounMappingVerb(verb, verbArgs, verbConfig);
     } else if (verbArgs.account) {
       verbReturnValue = await this.executeIntegrationMappingVerb(verb, verbArgs);
     } else {
@@ -556,7 +556,7 @@ export class SKLEngine {
     return executor;
   }
 
-  private async executeNounMappingVerb(verb: Entity, args: JSONObject): Promise<NodeObject> {
+  private async executeNounMappingVerb(verb: Entity, args: JSONObject, verbConfig?: VerbConfig): Promise<NodeObject> {
     const mapping = await this.findVerbNounMapping(verb['@id'], args.noun as string);
     if (mapping[SKL.returnValueMapping]) {
       return await this.performReturnValueMappingWithFrame(args, mapping as MappingWithReturnValueMapping, verb);
@@ -564,7 +564,19 @@ export class SKLEngine {
     const verbArgs = await this.performParameterMappingOnArgsIfDefined(args, mapping, false);
     const verbId = await this.performVerbMappingWithArgs(args, mapping);
     const mappedVerb = (await this.findBy({ id: verbId })) as Verb;
-    return this.executeIntegrationMappingVerb(mappedVerb, verbArgs);
+
+    this.globalCallbacks?.onVerbStart?.(verb['@id'], verbArgs);
+    if (verbConfig?.callbacks?.onVerbStart) {
+      verbConfig.callbacks.onVerbStart(verb['@id'], verbArgs);
+    }
+
+    const returnValue = await this.executeIntegrationMappingVerb(mappedVerb, verbArgs);
+
+    this.globalCallbacks?.onVerbEnd?.(verb['@id'], returnValue);
+    if (verbConfig?.callbacks?.onVerbEnd) {
+      verbConfig.callbacks.onVerbEnd(verb['@id'], returnValue);
+    }
+    return returnValue;
   }
 
   private async findVerbNounMapping(verbId: string, noun: string): Promise<VerbNounMapping> {
