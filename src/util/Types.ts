@@ -135,5 +135,13 @@ export interface OperationResponse extends JSONObject {
 }
 
 export interface VerbConfig {
+  /**
+   * Callbacks to execute upon events.
+   */
   callbacks?: Callbacks;
+  /**
+   * When true, disables validation of verb parameters and
+   * return values according to schemas. Overrides the global setting.
+   */
+  readonly disableValidation?: boolean;
 }

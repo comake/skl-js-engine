@@ -15,4 +15,8 @@ export type SklEngineOptions = SklEngineStorageOptions & {
    * Manually defined functions which can be used in mappings.
    */
   readonly functions?: Record<string, (args: any | any[]) => any>;
+  /**
+   * When true, disables validation of verb parameters and return values according to schemas
+   */
+  readonly disableValidation?: boolean;
 };

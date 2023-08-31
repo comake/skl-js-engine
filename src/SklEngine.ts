@@ -59,6 +59,7 @@ export class SKLEngine {
   private readonly adapter: QueryAdapter;
   private readonly inputFiles?: Record<string, string>;
   private readonly globalCallbacks?: Callbacks;
+  private readonly disableValidation?: boolean;
   public readonly verb: VerbInterface;
 
   public constructor(options: SklEngineOptions) {
@@ -73,6 +74,7 @@ export class SKLEngine {
         throw new Error('No schema source found in setSchema args.');
     }
 
+    this.disableValidation = options.disableValidation;
     this.globalCallbacks = options.callbacks;
     this.inputFiles = options.inputFiles;
     this.mapper = new Mapper({ functions: options.functions });
@@ -229,7 +231,7 @@ export class SKLEngine {
     } else if (verbArgs.noun) {
       verbReturnValue = await this.executeNounMappingVerb(verb, verbArgs, verbConfig);
     } else if (verbArgs.account) {
-      verbReturnValue = await this.executeIntegrationMappingVerb(verb, verbArgs);
+      verbReturnValue = await this.executeIntegrationMappingVerb(verb, verbArgs, verbConfig);
     } else {
       throw new Error(`Verb must be a composite or its parameters must include either a noun or an account.`);
     }
@@ -240,12 +242,23 @@ export class SKLEngine {
     return verbReturnValue;
   }
 
+  private shouldValidate(verbConfig?: VerbConfig): boolean {
+    return verbConfig?.disableValidation === undefined
+      ? this.disableValidation !== true
+      : !verbConfig.disableValidation;
+  }
+
   private async executeSeriesVerb(verb: Verb, args: JSONObject, verbConfig?: VerbConfig): Promise<OrArray<NodeObject>> {
-    await this.assertVerbParamsMatchParameterSchemas(args, verb);
+    const shouldValidate = this.shouldValidate(verbConfig);
+    if (shouldValidate) {
+      await this.assertVerbParamsMatchParameterSchemas(args, verb);
+    }
     const seriesVerbMappingsList = this.rdfListToArray(verb[SKL.series]!);
     const seriesVerbArgs = { originalVerbParameters: args, previousVerbReturnValue: {}};
     const returnValue = await this.executeSeriesFromList(seriesVerbMappingsList, seriesVerbArgs, verbConfig);
-    await this.assertVerbReturnValueMatchesReturnTypeSchema(returnValue, verb);
+    if (shouldValidate) {
+      await this.assertVerbReturnValueMatchesReturnTypeSchema(returnValue, verb);
+    }
     return returnValue;
   }
 
@@ -269,7 +282,7 @@ export class SKLEngine {
     const nextVerbMapping = list[0];
     const returnValue = await this.executeVerbFromVerbMapping(nextVerbMapping, args as JSONObject, verbConfig);
     if (list.length > 1) {
-      return this.executeSeriesFromList(
+      return await this.executeSeriesFromList(
         list.slice(1),
         { ...args, previousVerbReturnValue: returnValue as JSONObject },
         verbConfig,
@@ -378,19 +391,31 @@ export class SKLEngine {
   }
 
   private async executeParallelVerb(verb: Verb, args: JSONObject, verbConfig?: VerbConfig): Promise<NodeObject[]> {
-    await this.assertVerbParamsMatchParameterSchemas(args, verb);
+    const shouldValidate = this.shouldValidate(verbConfig);
+    if (shouldValidate) {
+      await this.assertVerbParamsMatchParameterSchemas(args, verb);
+    }
     const parallelVerbMappings = ensureArray(verb[SKL.parallel] as unknown as OrArray<VerbMapping>);
     const nestedReturnValues = await Promise.all<Promise<OrArray<NodeObject>>>(
       parallelVerbMappings.map((verbMapping): Promise<OrArray<NodeObject>> =>
         this.executeVerbFromVerbMapping(verbMapping, args, verbConfig)),
     );
     const allReturnValues = nestedReturnValues.flat();
-    await this.assertVerbReturnValueMatchesReturnTypeSchema(allReturnValues, verb);
+    if (shouldValidate) {
+      await this.assertVerbReturnValueMatchesReturnTypeSchema(allReturnValues, verb);
+    }
     return allReturnValues;
   }
 
-  private async executeIntegrationMappingVerb(verb: Verb, args: JSONObject): Promise<NodeObject> {
-    await this.assertVerbParamsMatchParameterSchemas(args, verb);
+  private async executeIntegrationMappingVerb(
+    verb: Verb,
+    args: JSONObject,
+    verbConfig?: VerbConfig,
+  ): Promise<NodeObject> {
+    const shouldValidate = this.shouldValidate(verbConfig);
+    if (shouldValidate) {
+      await this.assertVerbParamsMatchParameterSchemas(args, verb);
+    }
     const account = await this.findBy({ id: args.account as string });
     const integrationId = (account[SKL.integration] as ReferenceNodeObject)['@id'];
     const mapping = await this.findVerbIntegrationMapping(verb['@id'], integrationId);
@@ -413,7 +438,9 @@ export class SKLEngine {
         mapping as MappingWithReturnValueMapping,
         verb,
       );
-      await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, verb);
+      if (shouldValidate) {
+        await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, verb);
+      }
       return mappedReturnValue;
     }
     return rawReturnValue as unknown as NodeObject;
@@ -570,7 +597,7 @@ export class SKLEngine {
       verbConfig.callbacks.onVerbStart(verb['@id'], verbArgs);
     }
 
-    const returnValue = await this.executeIntegrationMappingVerb(mappedVerb, verbArgs);
+    const returnValue = await this.executeIntegrationMappingVerb(mappedVerb, verbArgs, verbConfig);
 
     this.globalCallbacks?.onVerbEnd?.(verb['@id'], returnValue);
     if (verbConfig?.callbacks?.onVerbEnd) {
