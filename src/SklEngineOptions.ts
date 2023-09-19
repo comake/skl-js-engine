@@ -19,4 +19,8 @@ export type SklEngineOptions = SklEngineStorageOptions & {
    * When true, disables validation of verb parameters and return values according to schemas
    */
   readonly disableValidation?: boolean;
+  /**
+   * An object containing files keyed on their title that can be used in mappings.
+   */
+  readonly inputFiles?: Record<string, string>;
 };

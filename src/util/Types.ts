@@ -137,6 +137,7 @@ export interface OperationResponse extends JSONObject {
 export interface VerbConfig {
   /**
    * Callbacks to execute upon events.
+   * If global callbacks are provided, both are executed.
    */
   callbacks?: Callbacks;
   /**
@@ -144,4 +145,14 @@ export interface VerbConfig {
    * return values according to schemas. Overrides the global setting.
    */
   readonly disableValidation?: boolean;
+  /**
+   * An object containing files keyed on their title that can be used in mappings.
+   * Merged with the global setting. The verb config taking prededence in the case of overlapping names.
+   */
+  readonly inputFiles?: Record<string, string>;
+  /**
+   * Manually defined functions which can be used in mappings.
+   * Merged with the global setting. The verb config taking prededence in the case of overlapping names.
+   */
+  readonly functions?: Record<string, (args: any | any[]) => any>;
 }
