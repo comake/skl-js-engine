@@ -886,7 +886,7 @@ describe('SKLEngine', (): void => {
         './test/assets/schemas/json-file-data-source.json',
       ]);
       schemas = schemas.map((schemaItem: any): any => {
-        if (schemaItem['@id'] === 'https://example.com/data/JsonSourceDataSource') {
+        if (schemaItem['@id'] === 'https://example.com/data/JsonFileDataSource') {
           schemaItem['@type'] = 'https://standardknowledge.com/ontologies/core/CsvDataSource';
         }
         return schemaItem;

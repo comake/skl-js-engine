@@ -55,8 +55,8 @@ export type VerbInterface = Record<string, VerbHandler>;
 export type MappingResponseOption<T extends boolean> = T extends true ? JSONObject : NodeObject;
 
 export class SKLEngine {
-  private readonly mapper: Mapper;
   private readonly adapter: QueryAdapter;
+  private readonly functions?: Record<string, (args: any | any[]) => any>;
   private readonly inputFiles?: Record<string, string>;
   private readonly globalCallbacks?: Callbacks;
   private readonly disableValidation?: boolean;
@@ -77,7 +77,7 @@ export class SKLEngine {
     this.disableValidation = options.disableValidation;
     this.globalCallbacks = options.callbacks;
     this.inputFiles = options.inputFiles;
-    this.mapper = new Mapper({ functions: options.functions });
+    this.functions = options.functions;
 
     // eslint-disable-next-line func-style
     const getVerbHandler = (getTarget: VerbInterface, property: string): VerbHandler =>
@@ -164,8 +164,14 @@ export class SKLEngine {
     args: JSONObject,
     mapping: OrArray<NodeObject>,
     frame?: Record<string, any>,
+    verbConfig?: VerbConfig,
   ): Promise<NodeObject> {
-    return await this.mapper.apply(args, mapping, frame ?? {});
+    const functions = {
+      ...this.functions,
+      ...verbConfig?.functions,
+    };
+    const mapper = new Mapper({ functions });
+    return await mapper.apply(args, mapping, frame ?? {});
   }
 
   public async executeTrigger(
@@ -176,6 +182,7 @@ export class SKLEngine {
     const verbArgs = await this.performParameterMappingOnArgsIfDefined(
       payload,
       triggerToVerbMapping,
+      undefined,
       false,
     );
     const verbId = await this.performVerbMappingWithArgs(payload, triggerToVerbMapping);
@@ -223,6 +230,7 @@ export class SKLEngine {
       verbReturnValue = await this.performReturnValueMappingWithFrame(
         verbArgs,
         verb as MappingWithReturnValueMapping,
+        verbConfig,
       );
     } else if (SKL.series in verb) {
       verbReturnValue = await this.executeSeriesVerb(verb, verbArgs, verbConfig);
@@ -296,10 +304,15 @@ export class SKLEngine {
     args: JSONObject,
     verbConfig?: VerbConfig,
   ): Promise<OrArray<NodeObject>> {
-    args = await this.addPreProcessingMappingToArgs(verbMapping, args);
-    const verbId = await this.performVerbMappingWithArgs(args, verbMapping);
+    args = await this.addPreProcessingMappingToArgs(verbMapping, args, verbConfig);
+    const verbId = await this.performVerbMappingWithArgs(args, verbMapping, verbConfig);
     if (verbId) {
-      const verbArgs = await this.performParameterMappingOnArgsIfDefined({ ...args, verbId }, verbMapping, false);
+      const verbArgs = await this.performParameterMappingOnArgsIfDefined(
+        { ...args, verbId },
+        verbMapping,
+        verbConfig,
+        false,
+      );
       if (verbId === SKL_ENGINE.update) {
         await this.updateEntityFromVerbArgs(verbArgs);
         return {};
@@ -327,6 +340,7 @@ export class SKLEngine {
         return await this.performReturnValueMappingWithFrame(
           returnValue as JSONObject,
           verbMapping as MappingWithReturnValueMapping,
+          verbConfig,
         );
       }
       return returnValue;
@@ -334,12 +348,17 @@ export class SKLEngine {
     return {};
   }
 
-  private async addPreProcessingMappingToArgs(verbMapping: VerbMapping, args: JSONObject): Promise<JSONObject> {
+  private async addPreProcessingMappingToArgs(
+    verbMapping: VerbMapping,
+    args: JSONObject,
+    verbConfig?: VerbConfig,
+  ): Promise<JSONObject> {
     if (SKL.preProcessingMapping in verbMapping) {
       const preMappingArgs = await this.performMapping(
         args,
         verbMapping[SKL.preProcessingMapping] as NodeObject,
         getValueIfDefined(verbMapping[SKL.preProcessingMappingFrame]),
+        verbConfig,
       );
       return { ...args, preProcessedParameters: preMappingArgs as JSONObject };
     }
@@ -422,9 +441,10 @@ export class SKLEngine {
     const operationArgs = await this.performParameterMappingOnArgsIfDefined(
       args,
       mapping as MappingWithParameterMapping,
+      verbConfig,
     );
-    const operationInfo = await this.performOperationMappingWithArgs(args, mapping);
-    const rawReturnValue = await this.performOperation(operationInfo, operationArgs, account);
+    const operationInfo = await this.performOperationMappingWithArgs(args, mapping, verbConfig);
+    const rawReturnValue = await this.performOperation(operationInfo, operationArgs, account, undefined, verbConfig);
     if (operationInfo[SKL.schemeName] && rawReturnValue.data.authorizationUrl) {
       return {
         '@type': '@json',
@@ -436,6 +456,7 @@ export class SKLEngine {
       const mappedReturnValue = await this.performReturnValueMappingWithFrame(
         rawReturnValue,
         mapping as MappingWithReturnValueMapping,
+        verbConfig,
         verb,
       );
       if (shouldValidate) {
@@ -457,11 +478,20 @@ export class SKLEngine {
   private async performOperationMappingWithArgs(
     args: JSONObject,
     mapping: MappingWithOperationMapping,
+    verbConfig?: VerbConfig,
   ): Promise<NodeObject> {
     if (mapping[SKL.operationId]) {
       return { [SKL.operationId]: mapping[SKL.operationId] };
     }
-    return await this.performMapping(args, mapping[SKL.operationMapping] as OrArray<NodeObject>);
+    if (mapping[SKL.dataSource]) {
+      return { [SKL.dataSource]: mapping[SKL.dataSource] };
+    }
+    return await this.performMapping(
+      args,
+      mapping[SKL.operationMapping] as OrArray<NodeObject>,
+      undefined,
+      verbConfig,
+    );
   }
 
   private async performOperation(
@@ -469,6 +499,7 @@ export class SKLEngine {
     operationArgs: JSONObject,
     account: Entity,
     securityCredentials?: Entity,
+    verbConfig?: VerbConfig,
   ): Promise<OperationResponse> {
     if (operationInfo[SKL.schemeName]) {
       return await this.performOauthSecuritySchemeStageWithCredentials(
@@ -480,7 +511,8 @@ export class SKLEngine {
     }
     if (operationInfo[SKL.dataSource]) {
       return await this.getDataFromDataSource(
-        getValueIfDefined(operationInfo[SKL.dataSource])!,
+        getIdFromNodeObjectIfDefined(operationInfo[SKL.dataSource] as string | ReferenceNodeObject)!,
+        verbConfig,
       );
     }
     if (operationInfo[SKL.operationId]) {
@@ -516,6 +548,7 @@ export class SKLEngine {
   private async performReturnValueMappingWithFrame(
     returnValue: JSONObject,
     mapping: MappingWithReturnValueMapping,
+    verbConfig?: VerbConfig,
     verb?: Entity,
   ): Promise<NodeObject> {
     return await this.performMapping(
@@ -525,12 +558,14 @@ export class SKLEngine {
         ...getValueIfDefined<JSONObject>(verb?.[SKL.returnValueFrame]),
         ...getValueIfDefined<JSONObject>(mapping[SKL.returnValueFrame]),
       },
+      verbConfig,
     );
   }
 
   private async performParameterMappingOnArgsIfDefined(
     args: JSONObject,
     mapping: Partial<MappingWithParameterMapping> | Partial<MappingWithParameterReference>,
+    verbConfig?: VerbConfig,
     convertToJsonDeep = true,
   ): Promise<Record<string, any>> {
     if (SKL.parameterReference in mapping) {
@@ -542,6 +577,7 @@ export class SKLEngine {
         args,
         (mapping as MappingWithParameterMapping)[SKL.parameterMapping]!,
         getValueIfDefined(mapping[SKL.parameterMappingFrame]),
+        verbConfig,
       );
       return toJSON(mappedData, convertToJsonDeep);
     }
@@ -586,10 +622,15 @@ export class SKLEngine {
   private async executeNounMappingVerb(verb: Entity, args: JSONObject, verbConfig?: VerbConfig): Promise<NodeObject> {
     const mapping = await this.findVerbNounMapping(verb['@id'], args.noun as string);
     if (mapping[SKL.returnValueMapping]) {
-      return await this.performReturnValueMappingWithFrame(args, mapping as MappingWithReturnValueMapping, verb);
+      return await this.performReturnValueMappingWithFrame(
+        args,
+        mapping as MappingWithReturnValueMapping,
+        verbConfig,
+        verb,
+      );
     }
-    const verbArgs = await this.performParameterMappingOnArgsIfDefined(args, mapping, false);
-    const verbId = await this.performVerbMappingWithArgs(args, mapping);
+    const verbArgs = await this.performParameterMappingOnArgsIfDefined(args, mapping, verbConfig, false);
+    const verbId = await this.performVerbMappingWithArgs(args, mapping, verbConfig);
     const mappedVerb = (await this.findBy({ id: verbId })) as Verb;
 
     this.globalCallbacks?.onVerbStart?.(verb['@id'], verbArgs);
@@ -617,11 +658,17 @@ export class SKLEngine {
   private async performVerbMappingWithArgs(
     args: JSONObject,
     mapping: MappingWithVerbMapping,
+    verbConfig?: VerbConfig,
   ): Promise<string | undefined> {
     if (mapping[SKL.verbId]) {
       return getValueIfDefined<string>(mapping[SKL.verbId])!;
     }
-    const verbInfoJsonLd = await this.performMapping(args, mapping[SKL.verbMapping] as NodeObject);
+    const verbInfoJsonLd = await this.performMapping(
+      args,
+      mapping[SKL.verbMapping] as NodeObject,
+      undefined,
+      verbConfig,
+    );
     return getValueIfDefined<string>(verbInfoJsonLd[SKL.verbId])!;
   }
 
@@ -693,6 +740,7 @@ export class SKLEngine {
     securityCredentials: Entity,
     integrationId: string,
     account: Entity,
+    verbConfig?: VerbConfig,
   ): Promise<OpenApiClientConfiguration> {
     const getOauthTokenVerb = (await this.findBy({ type: SKL.Verb, [RDFS.label]: 'getOauthTokens' })) as Verb;
     const mapping = await this.findVerbIntegrationMapping(getOauthTokenVerb['@id'], integrationId);
@@ -702,17 +750,20 @@ export class SKLEngine {
         jwtBearerOptions: getValueIfDefined<string>(securityCredentials[SKL.jwtBearerOptions])!,
       },
       mapping,
+      verbConfig,
     );
-    const operationInfoJsonLd = await this.performOperationMappingWithArgs({}, mapping);
+    const operationInfoJsonLd = await this.performOperationMappingWithArgs({}, mapping, verbConfig);
     const rawReturnValue = await this.performOperation(
       operationInfoJsonLd,
       operationArgs,
       account,
       securityCredentials,
+      verbConfig,
     );
     const mappedReturnValue = await this.performReturnValueMappingWithFrame(
       rawReturnValue,
       mapping as MappingWithReturnValueMapping,
+      verbConfig,
       getOauthTokenVerb,
     );
     await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, getOauthTokenVerb);
@@ -833,27 +884,34 @@ export class SKLEngine {
     return this.axiosResponseAndParamsToOperationResponse(response, operationParameters);
   }
 
-  private async getDataFromDataSource(dataSourceId: string): Promise<OperationResponse> {
+  private async getDataFromDataSource(dataSourceId: string, verbConfig?: VerbConfig): Promise<OperationResponse> {
     const dataSource = await this.findBy({ id: dataSourceId });
     if (dataSource['@type'] === SKL.JsonDataSource) {
-      const data = this.getDataFromJsonDataSource(dataSource);
+      const data = this.getDataFromJsonDataSource(dataSource, verbConfig);
       return { data, operationParameters: {}};
     }
     throw new Error(`DataSource type ${dataSource['@type']} is not supported.`);
   }
 
-  private getDataFromJsonDataSource(dataSource: NodeObject): JSONObject {
+  private getDataFromJsonDataSource(dataSource: NodeObject, verbConfig?: VerbConfig): JSONObject {
     if (dataSource[SKL.source]) {
       const sourceValue = getValueIfDefined<string>(dataSource[SKL.source])!;
-      return this.getJsonDataFromSource(sourceValue);
+      return this.getJsonDataFromSource(sourceValue, verbConfig);
     }
     return getValueIfDefined<JSONObject>(dataSource[SKL.data])!;
   }
 
-  private getJsonDataFromSource(source: string): JSONObject {
-    if (this.inputFiles && source in this.inputFiles) {
-      const file = this.inputFiles[source];
-      return JSON.parse(file);
+  private getJsonDataFromSource(source: string, verbConfig?: VerbConfig): JSONObject {
+    const inputFiles = {
+      ...this.inputFiles,
+      ...verbConfig?.inputFiles,
+    };
+    if (inputFiles && source in inputFiles) {
+      const file = inputFiles[source];
+      if (typeof file === 'string') {
+        return JSON.parse(file);
+      }
+      return file;
     }
     // eslint-disable-next-line unicorn/expiring-todo-comments
     // TODO add support for remote sources

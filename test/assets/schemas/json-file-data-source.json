@@ -58,10 +58,10 @@
       "label": "JsonSource"
     },
     {
-      "@id": "https://example.com/data/JsonSourceDataSource",
+      "@id": "https://example.com/data/JsonFileDataSource",
       "@type": "https://standardknowledge.com/ontologies/core/JsonDataSource",
       "integration": "https://example.com/integrations/JsonSource",
-       "https://standardknowledge.com/ontologies/core/data": {
+      "https://standardknowledge.com/ontologies/core/data": {
         ".tag": "file",
         "client_modified": "2015-05-12T15:50:38Z",
         "content_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -94,7 +94,7 @@
             "@type": "rr:PredicateObjectMap",
             "rr:objectMap": {
               "@type": "rr:ObjectMap",
-              "rr:constant": "https://example.com/data/JsonSourceDataSource"
+              "rr:constant": "https://example.com/data/JsonFileDataSource"
             },
             "rr:predicate": "skl:dataSource"
           }
