@@ -446,7 +446,14 @@ export class SKLEngine {
       verbConfig,
     );
     const operationInfo = await this.performOperationMappingWithArgs(args, mapping, verbConfig);
-    const rawReturnValue = await this.performOperation(operationInfo, operationArgs, account, undefined, verbConfig);
+    const rawReturnValue = await this.performOperation(
+      operationInfo,
+      operationArgs,
+      args,
+      account,
+      undefined,
+      verbConfig,
+    );
     if (operationInfo[SKL.schemeName] && rawReturnValue.data.authorizationUrl) {
       return {
         '@type': '@json',
@@ -499,6 +506,7 @@ export class SKLEngine {
   private async performOperation(
     operationInfo: NodeObject,
     operationArgs: JSONObject,
+    originalArgs: JSONObject,
     account: Entity,
     securityCredentials?: Entity,
     verbConfig?: VerbConfig,
@@ -523,7 +531,7 @@ export class SKLEngine {
         operationArgs,
         account,
       );
-      return this.axiosResponseAndParamsToOperationResponse(response, operationArgs);
+      return this.axiosResponseAndParamsToOperationResponse(response, operationArgs, originalArgs);
     }
     throw new Error('Operation not supported.');
   }
@@ -531,9 +539,11 @@ export class SKLEngine {
   private axiosResponseAndParamsToOperationResponse(
     response: AxiosResponse,
     operationParameters: JSONObject,
+    originalArgs: JSONObject,
   ): OperationResponse {
     return {
       operationParameters,
+      originalVerbParameters: originalArgs,
       data: response.data,
       status: response.status,
       statusText: response.statusText,
@@ -749,18 +759,16 @@ export class SKLEngine {
   ): Promise<OpenApiClientConfiguration> {
     const getOauthTokenVerb = (await this.findBy({ type: SKL.Verb, [RDFS.label]: 'getOauthTokens' })) as Verb;
     const mapping = await this.findVerbIntegrationMapping(getOauthTokenVerb['@id'], integrationId);
-    const operationArgs = await this.performParameterMappingOnArgsIfDefined(
-      {
-        refreshToken: getValueIfDefined<string>(securityCredentials[SKL.refreshToken])!,
-        jwtBearerOptions: getValueIfDefined<string>(securityCredentials[SKL.jwtBearerOptions])!,
-      },
-      mapping,
-      verbConfig,
-    );
+    const args = {
+      refreshToken: getValueIfDefined<string>(securityCredentials[SKL.refreshToken])!,
+      jwtBearerOptions: getValueIfDefined<string>(securityCredentials[SKL.jwtBearerOptions])!,
+    };
+    const operationArgs = await this.performParameterMappingOnArgsIfDefined(args, mapping, verbConfig);
     const operationInfoJsonLd = await this.performOperationMappingWithArgs({}, mapping, verbConfig);
     const rawReturnValue = await this.performOperation(
       operationInfoJsonLd,
       operationArgs,
+      args,
       account,
       securityCredentials,
       verbConfig,
@@ -886,7 +894,7 @@ export class SKLEngine {
         operationParameters,
       };
     }
-    return this.axiosResponseAndParamsToOperationResponse(response, operationParameters);
+    return this.axiosResponseAndParamsToOperationResponse(response, operationParameters, operationParameters);
   }
 
   private async getDataFromDataSource(dataSourceId: string, verbConfig?: VerbConfig): Promise<OperationResponse> {
@@ -911,7 +919,7 @@ export class SKLEngine {
       ...this.inputFiles,
       ...verbConfig?.inputFiles,
     };
-    if (inputFiles && source in inputFiles) {
+    if (source in inputFiles) {
       const file = inputFiles[source];
       if (typeof file === 'string') {
         return JSON.parse(file);
