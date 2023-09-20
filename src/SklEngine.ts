@@ -17,6 +17,8 @@ import { Mapper } from './mapping/Mapper';
 import type { SklEngineOptions } from './SklEngineOptions';
 import type { FindAllOptions, FindOneOptions, FindOptionsWhere } from './storage/FindOptionsTypes';
 import { MemoryQueryAdapter } from './storage/memory/MemoryQueryAdapter';
+import { InversePath } from './storage/operator/InversePath';
+import { ZeroOrMorePath } from './storage/operator/ZeroOrMorePath';
 import type { QueryAdapter, RawQueryResult } from './storage/QueryAdapter';
 import { SparqlQueryAdapter } from './storage/sparql/SparqlQueryAdapter';
 import type {
@@ -651,7 +653,10 @@ export class SKLEngine {
     return (await this.findBy({
       type: SKL.VerbNounMapping,
       [SKL.verb]: verbId,
-      [SKL.noun]: noun,
+      [SKL.noun]: InversePath({
+        subPath: ZeroOrMorePath({ subPath: RDFS.subClassOf as string }),
+        value: noun,
+      }),
     })) as VerbNounMapping;
   }
 

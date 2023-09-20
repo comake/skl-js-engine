@@ -6,11 +6,13 @@ import { GreaterThan } from '../../../../src/storage/operator/GreaterThan';
 import { GreaterThanOrEqual } from '../../../../src/storage/operator/GreaterThanOrEqual';
 import { In } from '../../../../src/storage/operator/In';
 import { Inverse } from '../../../../src/storage/operator/Inverse';
+import { InversePath } from '../../../../src/storage/operator/InversePath';
 import { InverseRelation } from '../../../../src/storage/operator/InverseRelation';
 import { InverseRelationOrder } from '../../../../src/storage/operator/InverseRelationOrder';
 import { LessThan } from '../../../../src/storage/operator/LessThan';
 import { LessThanOrEqual } from '../../../../src/storage/operator/LessThanOrEqual';
 import { Not } from '../../../../src/storage/operator/Not';
+import { ZeroOrMorePath } from '../../../../src/storage/operator/ZeroOrMorePath';
 import { SparqlQueryBuilder } from '../../../../src/storage/sparql/SparqlQueryBuilder';
 import {
   entityVariable,
@@ -20,7 +22,7 @@ import {
   rdfTypeNamedNode,
   subjectNode,
 } from '../../../../src/util/SparqlUtil';
-import { RDF, SKL, XSD } from '../../../../src/util/Vocabularies';
+import { RDF, RDFS, SKL, XSD } from '../../../../src/util/Vocabularies';
 
 const c1 = DataFactory.variable('c1');
 const c2 = DataFactory.variable('c2');
@@ -1310,7 +1312,8 @@ describe('A SparqlQueryBuilder', (): void => {
             where: {
               id: {
                 type: 'operator',
-                operator: 'and' as FindOperatorType,
+                // Trick to make it think the type is ok
+                operator: 'and' as 'in',
                 value: 'true',
               },
             },
@@ -1600,6 +1603,7 @@ describe('A SparqlQueryBuilder', (): void => {
         ],
       });
     });
+
     it('builds a query with an inverse relation and nested relation inside that.', (): void => {
       expect(builder.buildEntitySelectPatternsFromOptions(
         entityVariable,
@@ -1683,6 +1687,49 @@ describe('A SparqlQueryBuilder', (): void => {
             ],
           },
         ],
+      });
+    });
+
+    it('builds a query with a sequence, inverse, and zero or more path.', (): void => {
+      expect(builder.buildEntitySelectPatternsFromOptions(
+        entityVariable,
+        {
+          where: {
+            'https://example.com/pred': InversePath({
+              subPath: ZeroOrMorePath({ subPath: RDFS.subClassOf as string }),
+              value: 'https://example.com/Class',
+            }),
+          },
+        },
+      )).toEqual({
+        graphSelectionTriples: [],
+        where: [
+          {
+            type: 'bgp',
+            triples: [{
+              subject: entityVariable,
+              predicate: {
+                type: 'path',
+                pathType: '/',
+                items: [
+                  predicate,
+                  {
+                    type: 'path',
+                    pathType: '^',
+                    items: [{
+                      type: 'path',
+                      pathType: '*',
+                      items: [ rdfsSubClassOfNamedNode ],
+                    }],
+                  },
+                ],
+              },
+              object: DataFactory.namedNode('https://example.com/Class'),
+            }],
+          },
+        ],
+        orders: [],
+        graphWhere: [],
       });
     });
   });
