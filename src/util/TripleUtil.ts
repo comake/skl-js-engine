@@ -108,8 +108,8 @@ function whereToFrame(where: FindOptionsWhere): NodeObject {
   if (where.id && typeof where.id === 'string') {
     return { '@id': where.id };
   }
-  if (where.id && FindOperator.isFindOperator(where.id) && (where.id as FindOperator<any>).operator === 'in') {
-    return { '@id': (where.id as FindOperator<any>).value };
+  if (where.id && FindOperator.isFindOperator(where.id) && (where.id as FindOperator<any, any>).operator === 'in') {
+    return { '@id': (where.id as FindOperator<any, any>).value };
   }
   return {};
 }

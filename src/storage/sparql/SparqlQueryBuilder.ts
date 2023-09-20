@@ -35,6 +35,9 @@ import {
   entityVariable,
   entityGraphTriple,
   createSparqlConstructQuery,
+  createSparqlSequencePredicate,
+  createSparqlZeroOrMorePredicate,
+  createSparqlOneOrMorePredicate,
 } from '../../util/SparqlUtil';
 import {
   valueToLiteral,
@@ -51,7 +54,8 @@ import type {
   FindOptionsSelect,
   FindOptionsWhere,
   FindOptionsWhereField,
-  IdOrTypeFindOptionsWhereField,
+  IdFindOptionsWhereField,
+  TypeFindOptionsWhereField,
   ValueObject,
 } from '../FindOptionsTypes';
 import type { InverseRelationOperatorValue } from '../operator/InverseRelation';
@@ -202,14 +206,18 @@ export class SparqlQueryBuilder {
   private createWhereQueryDataForField(
     subject: Variable,
     field: string,
-    value: IdOrTypeFindOptionsWhereField | FindOptionsWhereField,
+    value: IdFindOptionsWhereField | TypeFindOptionsWhereField | FindOptionsWhereField,
     isOnlyField: boolean,
   ): WhereQueryData {
     if (field === 'id') {
-      return this.createWhereQueryDataForIdValue(subject, value as IdOrTypeFindOptionsWhereField, isOnlyField);
+      return this.createWhereQueryDataForIdValue(
+        subject,
+        value as FindOperator<any, any>,
+        isOnlyField,
+      );
     }
     if (field === 'type') {
-      return this.createWhereQueryDataForType(subject, value as IdOrTypeFindOptionsWhereField);
+      return this.createWhereQueryDataForType(subject, value as FindOperator<any, any>);
     }
     const predicate = DataFactory.namedNode(field);
     return this.createWhereQueryDataFromKeyValue(subject, predicate, value);
@@ -217,13 +225,15 @@ export class SparqlQueryBuilder {
 
   private createWhereQueryDataForIdValue(
     term: Variable,
-    value: IdOrTypeFindOptionsWhereField,
+    value: IdFindOptionsWhereField,
     isOnlyField: boolean,
   ): WhereQueryData {
     let filter: OperationExpression | undefined;
     let valuePattern: ValuesPattern | undefined;
+    let triple: Triple | undefined;
     if (FindOperator.isFindOperator(value)) {
-      ({ filter, valuePattern } = this.resolveFindOperatorAsExpressionForId(term, value as FindOperator<string>));
+      ({ filter, valuePattern, triple } =
+        this.resolveFindOperatorAsExpressionForId(term, value as FindOperator<string, any>));
     } else {
       valuePattern = {
         type: 'values',
@@ -239,14 +249,14 @@ export class SparqlQueryBuilder {
         triples: [],
         graphValues: valuePattern ? [ valuePattern ] : [],
         graphFilters: filter ? [ filter ] : [],
-        graphTriples: [],
+        graphTriples: triple ? [ triple ] : [],
       };
     }
 
     return {
       values: valuePattern ? [ valuePattern ] : [],
       filters: filter ? [ filter ] : [],
-      triples: [],
+      triples: triple ? [ triple ] : [],
       graphValues: [],
       graphFilters: [],
       graphTriples: [],
@@ -255,15 +265,15 @@ export class SparqlQueryBuilder {
 
   private createWhereQueryDataForType(
     subject: Variable,
-    value: IdOrTypeFindOptionsWhereField,
+    value: TypeFindOptionsWhereField,
   ): WhereQueryData {
     if (FindOperator.isFindOperator(value)) {
-      if ((value as FindOperator<any>).operator === 'inverse') {
+      if ((value as FindOperator<any, any>).operator === 'inverse') {
         const inversePredicate = createSparqlInversePredicate([ allTypesAndSuperTypesPath ]);
         const inverseWhereQueryData = this.createWhereQueryDataFromKeyValue(
           subject,
           inversePredicate,
-          (value as FindOperator<any>).value,
+          (value as FindOperator<any, any>).value,
         );
         return {
           values: inverseWhereQueryData.values,
@@ -279,7 +289,7 @@ export class SparqlQueryBuilder {
       const triple = { subject, predicate: allTypesAndSuperTypesPath, object: variable };
       const { filter, valuePattern, tripleInFilter } = this.resolveFindOperatorAsExpressionWithMultipleValues(
         variable,
-        value as FindOperator<string>,
+        value as FindOperator<string, any>,
         triple,
       );
       return {
@@ -311,10 +321,10 @@ export class SparqlQueryBuilder {
     value: FindOptionsWhereField,
   ): WhereQueryData {
     if (Array.isArray(value) && FindOperator.isFindOperator(value[0])) {
-      return this.createWhereQueryDataForMultipleFindOperators(subject, predicate, value as FindOperator<any>[]);
+      return this.createWhereQueryDataForMultipleFindOperators(subject, predicate, value as FindOperator<any, any>[]);
     }
     if (FindOperator.isFindOperator(value)) {
-      return this.createWhereQueryDataForFindOperator(subject, predicate, value as FindOperator<any>);
+      return this.createWhereQueryDataForFindOperator(subject, predicate, value as FindOperator<any, any>);
     }
     if (Array.isArray(value)) {
       return (value as FieldPrimitiveValue[]).reduce((obj: WhereQueryData, valueItem): WhereQueryData => {
@@ -349,7 +359,7 @@ export class SparqlQueryBuilder {
   private createWhereQueryDataForFindOperator(
     subject: Variable,
     predicate: IriTerm | PropertyPath,
-    operator: FindOperator<any>,
+    operator: FindOperator<any, any>,
   ): WhereQueryData {
     if (operator.operator === 'inverse') {
       const inversePredicate = createSparqlInversePredicate([ predicate ]);
@@ -362,6 +372,14 @@ export class SparqlQueryBuilder {
         graphTriples: [],
         graphFilters: [],
       };
+    }
+    if (FindOperator.isPathOperator(operator)) {
+      const pathPredicate = this.pathOperatorToPropertyPath(operator);
+      const combinedPredicate = createSparqlSequencePredicate([
+        predicate,
+        pathPredicate,
+      ]);
+      return this.createWhereQueryDataFromKeyValue(subject, combinedPredicate, operator.value.value);
     }
     const variable = this.createVariable();
     const triple = { subject, predicate, object: variable };
@@ -380,10 +398,57 @@ export class SparqlQueryBuilder {
     };
   }
 
+  private pathOperatorToPropertyPath(
+    operator: FindOperator<any, 'inversePath' | 'sequencePath' | 'zeroOrMorePath' | 'oneOrMorePath'>,
+  ): PropertyPath {
+    if (operator.operator === 'inversePath') {
+      let subPredicate: IriTerm | PropertyPath;
+      const { subPath } = operator.value;
+      if (typeof subPath === 'string') {
+        subPredicate = DataFactory.namedNode(subPath);
+      } else {
+        subPredicate = this.pathOperatorToPropertyPath(subPath);
+      }
+      return createSparqlInversePredicate([ subPredicate ]);
+    }
+    if (operator.operator === 'sequencePath') {
+      const { subPath } = operator.value;
+      const subPredicates = subPath
+        .map((sequencePart: string | FindOperator<any, any>): IriTerm | PropertyPath => {
+          if (typeof sequencePart === 'string') {
+            return DataFactory.namedNode(sequencePart);
+          }
+          return this.pathOperatorToPropertyPath(sequencePart);
+        });
+      return createSparqlSequencePredicate(subPredicates);
+    }
+    if (operator.operator === 'zeroOrMorePath') {
+      const { subPath } = operator.value;
+      let subPredicate: IriTerm | PropertyPath;
+      if (typeof subPath === 'string') {
+        subPredicate = DataFactory.namedNode(subPath);
+      } else {
+        subPredicate = this.pathOperatorToPropertyPath(subPath);
+      }
+      return createSparqlZeroOrMorePredicate([ subPredicate ]);
+    }
+    if (operator.operator === 'oneOrMorePath') {
+      const { subPath } = operator.value;
+      let subPredicate: IriTerm | PropertyPath;
+      if (typeof subPath === 'string') {
+        subPredicate = DataFactory.namedNode(subPath);
+      } else {
+        subPredicate = this.pathOperatorToPropertyPath(subPath);
+      }
+      return createSparqlOneOrMorePredicate([ subPredicate ]);
+    }
+    throw new Error(`Operator ${operator.operator} not supported`);
+  }
+
   private createWhereQueryDataForMultipleFindOperators(
     subject: Variable,
     predicate: IriTerm | PropertyPath,
-    operators: FindOperator<any>[],
+    operators: FindOperator<any, any>[],
   ): WhereQueryData {
     const variable = this.createVariable();
     const triple = { subject, predicate, object: variable };
@@ -462,7 +527,7 @@ export class SparqlQueryBuilder {
 
   private resolveFindOperatorAsExpressionWithMultipleValues(
     leftSide: Variable,
-    operator: FindOperator<any>,
+    operator: FindOperator<any, any>,
     triple: Triple,
     dontUseValuePattern = false,
   ): { filter?: OperationExpression; valuePattern?: ValuesPattern; tripleInFilter?: boolean } {
@@ -481,12 +546,9 @@ export class SparqlQueryBuilder {
       };
     }
     if (operator.operator === 'not') {
+      const resolvedExpression = this.resolveValueToExpression(operator.value) as Expression | FindOperator<any, any>;
       return {
-        filter: this.buildNotOperationForMultiValued(
-          leftSide,
-          this.resolveValueToExpression(operator.value) as Expression | FindOperator<any>,
-          triple,
-        ),
+        filter: this.buildNotOperationForMultiValued(leftSide, resolvedExpression, triple),
         tripleInFilter: true,
       };
     }
@@ -509,9 +571,18 @@ export class SparqlQueryBuilder {
 
   private resolveFindOperatorAsExpressionForId(
     leftSide: Variable,
-    operator: FindOperator<any>,
-  ): { filter?: OperationExpression; valuePattern?: ValuesPattern } {
+    operator: FindOperator<any, any>,
+  ): { filter?: OperationExpression; valuePattern?: ValuesPattern; triple?: Triple } {
     switch (operator.operator) {
+      case 'inversePath': {
+        const predicate = this.pathOperatorToPropertyPath(operator);
+        const triple = {
+          subject: leftSide,
+          predicate,
+          object: DataFactory.namedNode(operator.value.value),
+        };
+        return { triple };
+      }
       case 'in': {
         const resolvedValue = this.resolveValueToExpression(operator.value) as NamedNode[];
         return {
@@ -524,7 +595,7 @@ export class SparqlQueryBuilder {
         return {
           filter: this.buildNotOperationForId(
             leftSide,
-            this.resolveValueToExpression(operator.value) as Expression | FindOperator<any>,
+            this.resolveValueToExpression(operator.value) as Expression | FindOperator<any, any>,
           ),
         };
       case 'equal':
@@ -540,8 +611,8 @@ export class SparqlQueryBuilder {
   }
 
   private resolveValueToExpression(
-    value: OrArray<any> | FindOperator<any>,
-  ): FindOperator<any> | OrArray<Term> {
+    value: OrArray<any> | FindOperator<any, any>,
+  ): FindOperator<any, any> | OrArray<Term> {
     if (FindOperator.isFindOperator(value)) {
       return value;
     }
@@ -553,7 +624,7 @@ export class SparqlQueryBuilder {
 
   private buildNotOperationForMultiValued(
     leftSide: Variable,
-    rightSide: Expression | FindOperator<any>,
+    rightSide: Expression | FindOperator<any, any>,
     triple: Triple,
   ): OperationExpression {
     let filterExpression: FilterPattern;
@@ -563,7 +634,7 @@ export class SparqlQueryBuilder {
       try {
         ({ filter: expression } = this.resolveFindOperatorAsExpressionWithMultipleValues(
           leftSide,
-          rightSide as FindOperator<any>,
+          rightSide as FindOperator<any, any>,
           triple,
           true,
         ));
@@ -586,17 +657,17 @@ export class SparqlQueryBuilder {
 
   private buildNotOperationForId(
     leftSide: Expression,
-    rightSide: Expression | FindOperator<any>,
+    rightSide: Expression | FindOperator<any, any>,
   ): OperationExpression {
     if (FindOperator.isFindOperator(rightSide)) {
-      const resolvedValue = this.resolveValueToExpression((rightSide as FindOperator<string>).value) as Expression;
-      switch ((rightSide as FindOperator<string>).operator) {
+      const resolvedValue = this.resolveValueToExpression((rightSide as FindOperator<string, any>).value) as Expression;
+      switch ((rightSide as FindOperator<string, any>).operator) {
         case 'in':
           return createSparqlNotInOperation(leftSide, resolvedValue);
         case 'equal':
           return createSparqlNotEqualOperation(leftSide, resolvedValue);
         default:
-          throw new Error(`Unsupported Not sub operator "${(rightSide as FindOperator<string>).operator}"`);
+          throw new Error(`Unsupported Not sub operator "${(rightSide as FindOperator<string, any>).operator}"`);
       }
     }
     return createSparqlNotEqualOperation(leftSide, rightSide as Expression);
@@ -617,7 +688,7 @@ export class SparqlQueryBuilder {
 
   private createOrderQueryData(
     subject: Variable,
-    order?: FindOptionsOrder | FindOperator<InverseRelationOrderValue>,
+    order?: FindOptionsOrder | FindOperator<InverseRelationOrderValue, 'inverseRelationOrder'>,
     isNested = false,
   ): OrderQueryData {
     if (!order) {
@@ -636,7 +707,7 @@ export class SparqlQueryBuilder {
   private createOrderQueryDataForProperty(
     subject: Variable,
     property: string,
-    orderValue: FindOptionsOrderValue | FindOperator<InverseRelationOrderValue>,
+    orderValue: FindOptionsOrderValue | FindOperator<InverseRelationOrderValue, 'inverseRelationOrder'>,
     isNested = false,
   ): OrderQueryData {
     const predicate = DataFactory.namedNode(property);
@@ -648,7 +719,7 @@ export class SparqlQueryBuilder {
         object: variable,
       };
       const subRelationOperatorValue = (
-        orderValue as FindOperator<InverseRelationOrderValue>
+        orderValue as FindOperator<InverseRelationOrderValue, 'inverseRelationOrder'>
       ).value as InverseRelationOrderValue;
       const subRelationOrderQueryData = this.createOrderQueryData(
         variable,
@@ -706,7 +777,7 @@ export class SparqlQueryBuilder {
             const { patterns, selectionTriples } = this.createRelationsQueryDataForInverseRelation(
               subject,
               predicate,
-              relationsValue as FindOperator<InverseRelationOperatorValue>,
+              relationsValue as FindOperator<InverseRelationOperatorValue, 'inverseRelation'>,
             );
             return {
               patterns: [ ...obj.patterns, ...patterns ],
@@ -746,7 +817,7 @@ export class SparqlQueryBuilder {
   private createRelationsQueryDataForInverseRelation(
     subject: Variable,
     predicate: NamedNode,
-    relationsValue: FindOperator<InverseRelationOperatorValue>,
+    relationsValue: FindOperator<InverseRelationOperatorValue, 'inverseRelation'>,
   ): RelationsQueryData {
     const variable = this.createVariable();
     const graphTriple = {

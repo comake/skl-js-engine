@@ -11,11 +11,15 @@ export * from './storage/operator/GreaterThan';
 export * from './storage/operator/GreaterThanOrEqual';
 export * from './storage/operator/In';
 export * from './storage/operator/Inverse';
+export * from './storage/operator/InversePath';
 export * from './storage/operator/InverseRelation';
 export * from './storage/operator/InverseRelationOrder';
 export * from './storage/operator/LessThan';
 export * from './storage/operator/LessThanOrEqual';
 export * from './storage/operator/Not';
+export * from './storage/operator/OneOrMorePath';
+export * from './storage/operator/SequencePath';
+export * from './storage/operator/ZeroOrMorePath';
 
 // Storage/Sparql
 export * from './storage/sparql/SparqlQueryAdapter';

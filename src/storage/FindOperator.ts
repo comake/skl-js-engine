@@ -8,19 +8,23 @@ export type FindOperatorType =
 | 'lte'
 | 'inverse'
 | 'inverseRelation'
-| 'inverseRelationOrder';
+| 'inverseRelationOrder'
+| 'sequencePath'
+| 'zeroOrMorePath'
+| 'inversePath'
+| 'oneOrMorePath';
 
-export interface FindOperatorArgs<T> {
-  operator: FindOperatorType;
-  value: T | FindOperator<T>;
+export interface FindOperatorArgs<T, TType> {
+  operator: TType;
+  value: T | FindOperator<T, any>;
 }
 
-export class FindOperator<T> {
+export class FindOperator<T, TType extends FindOperatorType> {
   public readonly type = 'operator';
-  public readonly operator: FindOperatorType;
-  public readonly value: T | FindOperator<T>;
+  public readonly operator: TType;
+  public readonly value: T | FindOperator<T, any>;
 
-  public constructor(args: FindOperatorArgs<T>) {
+  public constructor(args: FindOperatorArgs<T, TType>) {
     this.operator = args.operator;
     this.value = args.value;
   }
@@ -29,5 +33,12 @@ export class FindOperator<T> {
     return typeof value === 'object' &&
       'type' in value &&
       value.type === 'operator';
+  }
+
+  public static isPathOperator(operator: FindOperator<any, any>): boolean {
+    return operator.operator === 'inversePath' ||
+      operator.operator === 'zeroOrMorePath' ||
+      operator.operator === 'sequencePath' ||
+      operator.operator === 'zeroOrMorePath';
   }
 }
