@@ -22,12 +22,13 @@ export interface FindOneOptions {
 }
 
 export type FindOptionsRelations = {
-  [k: string]: boolean | FindOptionsRelations | FindOperator<InverseRelationOperatorValue>;
+  [k: string]: boolean | FindOptionsRelations | FindOperator<InverseRelationOperatorValue, 'inverseRelation'>;
 };
 
 export type FindOptionsOrderValue = 'ASC' | 'DESC' | 'asc' | 'desc' | 1 | -1;
 
-export type FindOptionsOrder = Record<string, FindOptionsOrderValue | FindOperator<InverseRelationOrderValue>>;
+export type FindOptionsOrder =
+  Record<string, FindOptionsOrderValue | FindOperator<InverseRelationOrderValue, 'inverseRelationOrder'>>;
 
 export type FieldPrimitiveValue = boolean | number | string | Date;
 
@@ -56,15 +57,19 @@ export type FindOptionsWhereField =
 | OrArray<FieldPrimitiveValue>
 | ValueObject
 | Exclude<FindOptionsWhere, 'search'>
-| OrArray<FindOperator<any>>;
+| OrArray<FindOperator<any, any>>;
 
-export type IdOrTypeFindOptionsWhereField =
+export type IdFindOptionsWhereField =
 | string
-| FindOperator<string | string[] | FindOptionsWhere>;
+| FindOperator<any, 'in' | 'not' | 'equal' | 'inversePath'>;
+
+export type TypeFindOptionsWhereField =
+| string
+| FindOperator<string | string[] | FindOptionsWhere, 'in' | 'not' | 'equal' | 'inverse'>;
 
 export interface FindOptionsWhere {
-  type?: IdOrTypeFindOptionsWhereField;
-  id?: IdOrTypeFindOptionsWhereField;
+  type?: TypeFindOptionsWhereField;
+  id?: IdFindOptionsWhereField;
   [k: string]: FindOptionsWhereField | undefined;
 }
 

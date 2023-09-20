@@ -366,10 +366,26 @@ export function createSparqlOrPredicate(predicates: (IriTerm | PropertyPath)[]):
   };
 }
 
-export function createSparqlPathPredicate(predicates: (IriTerm | PropertyPath)[]): PropertyPath {
+export function createSparqlSequencePredicate(predicates: (IriTerm | PropertyPath)[]): PropertyPath {
   return {
     type: 'path',
     pathType: '/',
+    items: predicates,
+  };
+}
+
+export function createSparqlZeroOrMorePredicate(predicates: (IriTerm | PropertyPath)[]): PropertyPath {
+  return {
+    type: 'path',
+    pathType: '*',
+    items: predicates,
+  };
+}
+
+export function createSparqlOneOrMorePredicate(predicates: (IriTerm | PropertyPath)[]): PropertyPath {
+  return {
+    type: 'path',
+    pathType: '+',
     items: predicates,
   };
 }

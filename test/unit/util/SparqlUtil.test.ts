@@ -20,7 +20,7 @@ import {
   createSparqlOptional,
   createSparqlOptionalGraphSelection,
   createSparqlOrPredicate,
-  createSparqlPathPredicate,
+  createSparqlSequencePredicate,
   createSparqlGraphPattern,
   createSparqlSelectGroup,
   createSparqlSelectQuery,
@@ -470,11 +470,11 @@ describe('SparqlUtil', (): void => {
     });
   });
 
-  describe('#createSparqlPathPredicate', (): void => {
+  describe('#createSparqlSequencePredicate', (): void => {
     it('creates a sparql or predicate.', (): void => {
       const node = DataFactory.namedNode('node');
       expect(
-        createSparqlPathPredicate([ node ]),
+        createSparqlSequencePredicate([ node ]),
       ).toEqual({
         type: 'path',
         pathType: '/',

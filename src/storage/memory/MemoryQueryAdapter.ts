@@ -121,10 +121,10 @@ export class MemoryQueryAdapter implements QueryAdapter {
   ): Promise<boolean> {
     if (FindOperator.isFindOperator(fieldValue)) {
       return await this.handleOperator(
-        (fieldValue as FindOperator<string>).operator,
+        (fieldValue as FindOperator<string, any>).operator,
         {
           in: async(): Promise<boolean> => {
-            const values = (fieldValue as FindOperator<FieldPrimitiveValue[]>).value as FieldPrimitiveValue[];
+            const values = (fieldValue as FindOperator<FieldPrimitiveValue[], 'in'>).value as FieldPrimitiveValue[];
             for (const valueItem of values) {
               if (await this.entityMatchesField(entity, fieldName, valueItem)) {
                 return true;
@@ -133,14 +133,14 @@ export class MemoryQueryAdapter implements QueryAdapter {
             return false;
           },
           not: async(): Promise<boolean> => {
-            if (FindOperator.isFindOperator((fieldValue as FindOperator<string>).value)) {
-              return !await this.entityMatchesField(entity, fieldName, (fieldValue as FindOperator<string>).value);
+            if (FindOperator.isFindOperator((fieldValue as FindOperator<string, 'not'>).value)) {
+              return !await this.entityMatchesField(entity, fieldName, (fieldValue as FindOperator<string, any>).value);
             }
-            const valueItem = (fieldValue as FindOperator<string>).value as string;
+            const valueItem = (fieldValue as FindOperator<string, 'not'>).value as string;
             return !await this.entityMatchesField(entity, fieldName, valueItem);
           },
           equal: async(): Promise<boolean> => {
-            const valueItem = (fieldValue as FindOperator<FieldPrimitiveValue>).value as FieldPrimitiveValue;
+            const valueItem = (fieldValue as FindOperator<FieldPrimitiveValue, 'equal'>).value as FieldPrimitiveValue;
             return this.entityMatchesField(entity, fieldName, valueItem);
           },
           gt: async(): Promise<boolean> => false,
@@ -150,6 +150,10 @@ export class MemoryQueryAdapter implements QueryAdapter {
           inverse: async(): Promise<boolean> => false,
           inverseRelation: async(): Promise<boolean> => false,
           inverseRelationOrder: async(): Promise<boolean> => false,
+          inversePath: async(): Promise<boolean> => false,
+          sequencePath: async(): Promise<boolean> => false,
+          zeroOrMorePath: async(): Promise<boolean> => false,
+          oneOrMorePath: async(): Promise<boolean> => false,
         },
       );
     }

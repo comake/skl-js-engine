@@ -9,8 +9,8 @@ export interface InverseRelationOrderValue {
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function InverseRelationOrder(
   value: InverseRelationOrderValue,
-): FindOperator<InverseRelationOrderValue> {
-  return new FindOperator<InverseRelationOrderValue>({
+): FindOperator<InverseRelationOrderValue, 'inverseRelationOrder'> {
+  return new FindOperator({
     operator: 'inverseRelationOrder',
     value,
   });
