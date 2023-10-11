@@ -5,7 +5,7 @@ import SparqlClient from 'sparql-http-client';
 import { InverseRelation } from '../../../../src/storage/operator/InverseRelation';
 import { SparqlQueryAdapter } from '../../../../src/storage/sparql/SparqlQueryAdapter';
 import { rdfTypeNamedNode } from '../../../../src/util/SparqlUtil';
-import { SKL, XSD } from '../../../../src/util/Vocabularies';
+import { DCTERMS, SKL, XSD } from '../../../../src/util/Vocabularies';
 import { streamFrom } from '../../../util/Util';
 
 const endpointUrl = 'https://example.com/sparql';
@@ -758,6 +758,28 @@ describe('a SparqlQueryAdapter', (): void => {
         'INSERT DATA { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://standardknowledge.com/ontologies/core/File>. } }',
       ]);
     });
+
+    it('saves a single schema with setTimestamps on.', async(): Promise<void> => {
+      adapter = new SparqlQueryAdapter({ type: 'sparql', endpointUrl, setTimestamps: true });
+      const entity = {
+        '@id': 'https://example.com/data/1',
+        '@type': 'https://standardknowledge.com/ontologies/core/File',
+      };
+      await expect(adapter.save(entity)).resolves.toEqual(entity);
+      expect(update).toHaveBeenCalledTimes(1);
+      expect(update.mock.calls[0][0].split('\n')).toEqual([
+        'CLEAR SILENT GRAPH <https://example.com/data/1>;',
+        'INSERT DATA { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://standardknowledge.com/ontologies/core/File>. } };',
+        'INSERT {',
+        '  GRAPH <https://example.com/data/1> {',
+        `    <https://example.com/data/1> <${DCTERMS.created}> ?now.`,
+        `    <https://example.com/data/1> <${DCTERMS.modified}> ?now.`,
+        '  }',
+        '}',
+        'WHERE { BIND(NOW() AS ?now) }',
+      ]);
+    });
+
     it('saves multiple schema.', async(): Promise<void> => {
       const entities = [
         {
@@ -796,6 +818,29 @@ describe('a SparqlQueryAdapter', (): void => {
         `WHERE { OPTIONAL { <https://example.com/data/1> <${SKL.sourceId}> ?c1. } }`,
       ]);
     });
+
+    it('updates a schema with setTimestamps on.', async(): Promise<void> => {
+      adapter = new SparqlQueryAdapter({ type: 'sparql', endpointUrl, setTimestamps: true });
+      await expect(adapter.update(
+        'https://example.com/data/1',
+        { [SKL.sourceId]: 'abc123' },
+      )).resolves.toBeUndefined();
+      expect(update).toHaveBeenCalledTimes(1);
+      expect(update.mock.calls[0][0].split('\n')).toEqual([
+        `DELETE { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <${SKL.sourceId}> ?c1. } }`,
+        `INSERT { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <${SKL.sourceId}> "abc123". } }`,
+        'USING <https://example.com/data/1>',
+        `WHERE { OPTIONAL { <https://example.com/data/1> <${SKL.sourceId}> ?c1. } };`,
+        `DELETE { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <${DCTERMS.modified}> ?c2. } }`,
+        `INSERT { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <${DCTERMS.modified}> ?now. } }`,
+        'USING <https://example.com/data/1>',
+        `WHERE {`,
+        `  OPTIONAL { <https://example.com/data/1> <${DCTERMS.modified}> ?c2. }`,
+        '  BIND(NOW() AS ?now)',
+        '}',
+      ]);
+    });
+
     it('updates multiple schemas by attribute.', async(): Promise<void> => {
       await expect(adapter.update(
         [ 'https://example.com/data/1', 'https://example.com/data/2' ],

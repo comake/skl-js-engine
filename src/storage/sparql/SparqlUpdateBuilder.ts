@@ -39,6 +39,12 @@ import { VariableGenerator } from './VariableGenerator';
 export interface EntityUpdateQueries {
   clear: ClearDropOperation[];
   insertions: GraphQuads[];
+  timestampInsertions: GraphQuads[];
+}
+
+export interface EntityUpdateTriples {
+  entityTriples: Triple[];
+  timestampTriples: Triple[];
 }
 
 export interface SparqlUpdateBuilderArgs {
@@ -62,22 +68,21 @@ export class SparqlUpdateBuilder {
 
   public buildUpdate(entityOrEntities: Entity | Entity[]): Update {
     const entities = ensureArray(entityOrEntities);
-    const { clear, insertions } = this.entitiesToGraphDeletionsAndInsertions(entities);
-    let insertUpdate: InsertDeleteOperation;
-    if (this.setTimestamps) {
-      insertUpdate = {
+    const { clear, insertions, timestampInsertions } = this.entitiesToGraphDeletionsAndInsertions(entities);
+    const insertUpdate: InsertDeleteOperation = {
+      updateType: 'insert',
+      insert: insertions,
+    };
+    const updates = [ ...clear, insertUpdate ];
+    if (timestampInsertions.length > 0) {
+      updates.push({
         updateType: 'insertdelete',
         delete: [],
-        insert: insertions,
+        insert: timestampInsertions,
         where: [ bindNow ],
-      };
-    } else {
-      insertUpdate = {
-        updateType: 'insert',
-        insert: insertions,
-      };
+      });
     }
-    return createSparqlUpdate([ ...clear, insertUpdate ]);
+    return createSparqlUpdate(updates);
   }
 
   public buildDelete(entityOrEntities: Entity | Entity[]): Update {
@@ -94,37 +99,45 @@ export class SparqlUpdateBuilder {
     ids: string[],
     attributes: Partial<Entity>,
   ): InsertDeleteOperation[] {
-    return ids.map((id): InsertDeleteOperation => {
+    return ids.flatMap((id): InsertDeleteOperation[] => {
       const subject = DataFactory.namedNode(id);
       const deletionTriples = this.partialEntityToDeletionTriples(attributes, subject);
       const insertionTriples = this.partialEntityToTriples(subject, attributes);
-      const whereTriples = [ ...deletionTriples ];
-      const whereAdditions: Pattern[] = [];
+      const updates: InsertDeleteOperation[] = [
+        {
+          updateType: 'insertdelete',
+          delete: [ createSparqlGraphQuads(subject, deletionTriples) ],
+          insert: [ createSparqlGraphQuads(subject, insertionTriples) ],
+          where: deletionTriples.map((triple): Pattern =>
+            createSparqlOptional([
+              createSparqlBasicGraphPattern([ triple ]),
+            ])),
+          using: {
+            default: [ subject ],
+          },
+        } as InsertDeleteOperation,
+      ];
       if (this.setTimestamps) {
         const modifiedVariable = DataFactory.variable(this.variableGenerator.getNext());
         const modifiedDeletionTriple = { subject, predicate: modified, object: modifiedVariable };
         const modifiedInsertionTriple = { subject, predicate: modified, object: now };
-        deletionTriples.push(modifiedDeletionTriple);
-        insertionTriples.push(modifiedInsertionTriple);
-        whereTriples.push(modifiedDeletionTriple);
-        whereAdditions.push(bindNow);
-      }
-      const update = {
-        updateType: 'insertdelete',
-        delete: [ createSparqlGraphQuads(subject, deletionTriples) ],
-        insert: [ createSparqlGraphQuads(subject, insertionTriples) ],
-        where: [
-          ...whereTriples.map((triple): Pattern =>
+        updates.push({
+          updateType: 'insertdelete',
+          delete: [ createSparqlGraphQuads(subject, [ modifiedDeletionTriple ]) ],
+          insert: [ createSparqlGraphQuads(subject, [ modifiedInsertionTriple ]) ],
+          where: [
             createSparqlOptional([
-              createSparqlBasicGraphPattern([ triple ]),
-            ])),
-          ...whereAdditions,
-        ],
-        using: {
-          default: [ subject ],
-        },
-      } as InsertDeleteOperation;
-      return update;
+              createSparqlBasicGraphPattern([ modifiedDeletionTriple ]),
+            ]),
+            bindNow,
+          ],
+          using: {
+            default: [ subject ],
+          },
+        } as InsertDeleteOperation);
+      }
+
+      return updates;
     });
   }
 
@@ -134,11 +147,14 @@ export class SparqlUpdateBuilder {
     return entities
       .reduce((obj: EntityUpdateQueries, entity): EntityUpdateQueries => {
         const entityGraphName = DataFactory.namedNode(entity['@id']);
-        const insertionTriples = this.entityToTriples(entity, entityGraphName);
+        const { entityTriples, timestampTriples } = this.entityToTriples(entity, entityGraphName);
         obj.clear.push(createSparqlClearUpdate(entityGraphName));
-        obj.insertions.push(createSparqlGraphQuads(entityGraphName, insertionTriples));
+        obj.insertions.push(createSparqlGraphQuads(entityGraphName, entityTriples));
+        if (timestampTriples.length > 0) {
+          obj.timestampInsertions.push(createSparqlGraphQuads(entityGraphName, timestampTriples));
+        }
         return obj;
-      }, { clear: [], insertions: []});
+      }, { clear: [], insertions: [], timestampInsertions: []});
   }
 
   private entitiesToGraphDropUpdates(
@@ -187,43 +203,37 @@ export class SparqlUpdateBuilder {
     return entityTriples;
   }
 
-  private entityToTriples(entity: NodeObject, subject: BlankNode | NamedNode): Triple[] {
+  private entityToTriples(entity: NodeObject, subject: BlankNode | NamedNode): EntityUpdateTriples {
     const entityTriples = Object.entries(entity).reduce((triples: Triple[], [ key, value ]): Triple[] => {
       const values = ensureArray(value);
       if (key !== '@id') {
-        let predicateTriples: Triple[];
         if (key === '@type') {
-          predicateTriples = this.buildTriplesWithSubjectPredicateAndIriValue(
+          const predicateTriples = this.buildTriplesWithSubjectPredicateAndIriValue(
             subject,
             rdfTypeNamedNode,
             values as string[],
           );
-        } else {
-          predicateTriples = this.buildTriplesForSubjectPredicateAndValues(subject, key, values);
+          return [ ...triples, ...predicateTriples ];
         }
-        return [ ...triples, ...predicateTriples ];
+        if (!(this.setTimestamps && key === DCTERMS.modified)) {
+          const predicateTriples = this.buildTriplesForSubjectPredicateAndValues(subject, key, values);
+          return [ ...triples, ...predicateTriples ];
+        }
       }
       return triples;
     }, []);
 
+    const timestampTriples = [];
     if (this.setTimestamps && subject.termType === 'NamedNode') {
-      if (!entity[DCTERMS.created]) {
-        entityTriples.push({ subject, predicate: created, object: now });
+      if (!(DCTERMS.created in entity)) {
+        timestampTriples.push({ subject, predicate: created, object: now });
       }
-      if (entity[DCTERMS.modified]) {
-        for (const triple of entityTriples) {
-          if (triple.subject.equals(subject) &&
-            'termType' in triple.predicate &&
-            triple.predicate.equals(modified)
-          ) {
-            triple.object = now;
-          }
-        }
-      } else {
-        entityTriples.push({ subject, predicate: modified, object: now });
-      }
+      timestampTriples.push({ subject, predicate: modified, object: now });
     }
-    return entityTriples;
+    return {
+      entityTriples,
+      timestampTriples,
+    };
   }
 
   private buildTriplesForSubjectPredicateAndValues(
@@ -313,9 +323,10 @@ export class SparqlUpdateBuilder {
 
   private buildTriplesForBlankNode(subject: BlankNode | NamedNode, predicate: NamedNode, value: NodeObject): Triple[] {
     const blankNode = DataFactory.blankNode(this.variableGenerator.getNext());
+    const { entityTriples } = this.entityToTriples(value, blankNode);
     return [
       { subject, predicate, object: blankNode },
-      ...this.entityToTriples(value, blankNode),
+      ...entityTriples,
     ];
   }
 }

@@ -91,7 +91,6 @@ describe('A SparqlUpdateBuilder', (): void => {
               name: data1,
               triples: [
                 { subject: data1, predicate, object: c1 },
-                { subject: data1, predicate: modified, object: c2 },
               ],
             },
           ],
@@ -105,7 +104,6 @@ describe('A SparqlUpdateBuilder', (): void => {
                   predicate,
                   object: DataFactory.literal('marshmellow'),
                 },
-                { subject: data1, predicate: modified, object: now },
               ],
             },
           ],
@@ -120,6 +118,32 @@ describe('A SparqlUpdateBuilder', (): void => {
                 triples: [{ subject: data1, predicate, object: c1 }],
               }],
             },
+          ],
+        },
+        {
+          updateType: 'insertdelete',
+          delete: [
+            {
+              type: 'graph',
+              name: data1,
+              triples: [
+                { subject: data1, predicate: modified, object: c2 },
+              ],
+            },
+          ],
+          insert: [
+            {
+              type: 'graph',
+              name: data1,
+              triples: [
+                { subject: data1, predicate: modified, object: now },
+              ],
+            },
+          ],
+          using: {
+            default: [ data1 ],
+          },
+          where: [
             {
               type: 'optional',
               patterns: [{
@@ -351,6 +375,18 @@ describe('A SparqlUpdateBuilder', (): void => {
           },
         },
         {
+          updateType: 'insert',
+          insert: [
+            {
+              type: 'graph',
+              name: data1,
+              triples: [
+                { subject: data1, predicate: rdfTypeNamedNode, object: file },
+              ],
+            },
+          ],
+        },
+        {
           updateType: 'insertdelete',
           delete: [],
           insert: [
@@ -358,7 +394,6 @@ describe('A SparqlUpdateBuilder', (): void => {
               type: 'graph',
               name: data1,
               triples: [
-                { subject: data1, predicate: rdfTypeNamedNode, object: file },
                 { subject: data1, predicate: created, object: now },
                 { subject: data1, predicate: modified, object: now },
               ],
@@ -408,8 +443,7 @@ describe('A SparqlUpdateBuilder', (): void => {
           },
         },
         {
-          updateType: 'insertdelete',
-          delete: [],
+          updateType: 'insert',
           insert: [
             {
               type: 'graph',
@@ -421,6 +455,18 @@ describe('A SparqlUpdateBuilder', (): void => {
                   predicate: created,
                   object: DataFactory.literal('2022-10-12T00:00:00.000Z', XSD.dateTime),
                 },
+              ],
+            },
+          ],
+        },
+        {
+          updateType: 'insertdelete',
+          delete: [],
+          insert: [
+            {
+              type: 'graph',
+              name: data1,
+              triples: [
                 { subject: data1, predicate: modified, object: now },
               ],
             },
