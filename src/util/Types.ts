@@ -10,56 +10,175 @@ import type {
   NodeObject,
   SetObject,
   TypeMap,
-  ValueObject,
 } from 'jsonld';
 import type { Callbacks } from '../Callbacks';
-import type { JSONObject } from './Util';
-import type { RDF, SKL } from './Vocabularies';
+import type { RDF, RDFS, SHACL, SKL } from './Vocabularies';
+
+export type JSONPrimitive =
+  | string
+  | number
+  | boolean
+  | null;
+// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
+export interface JSONObject {
+  [key: string]: JSONValue | undefined;
+}
+export interface JSONArray extends Array<JSONValue> {}
+
+export type JSONValue =
+  | JSONPrimitive
+  | JSONObject
+  | JSONValue[];
 
 export interface RdfList<T> {
   [RDF.first]: T;
   [RDF.rest]?: RdfList<T> | typeof RDF.nil | ReferenceNodeObject;
 }
 
-export interface Verb extends NodeObject {
+export interface ValueObject<T extends string | boolean | number | JSONObject | JSONArray> {
+  ['@type']: string;
+  ['@value']: T;
+  ['@language']?: string;
+  ['@direction']?: string;
+}
+
+export type IRIObject<T extends string = string> = { '@id': T };
+
+export type ShaclIRI = string | IRIObject;
+export type ShaclIRIOrLiteral = ShaclIRI | ValueObject<any>;
+
+export type NodeKindValues =
+| typeof SHACL.Literal
+| typeof SHACL.IRI
+| typeof SHACL.BlankNode
+| typeof SHACL.BlankNodeOrIRI
+| typeof SHACL.BlankNodeOrLiteral
+| typeof SHACL.IRIOrLiteral;
+
+export type BaseShape = NodeObject & {
+  [SHACL.targetNode]?: ShaclIRIOrLiteral;
+  [SHACL.targetClass]?: ShaclIRI;
+  [SHACL.targetSubjectsOf]?: ShaclIRI;
+  [SHACL.targetObjectOf]?: ShaclIRI;
+  [SHACL.severity]?: ShaclIRI;
+  [SHACL.message]?: OrArray<ValueObject<string>>;
+  [SHACL.deactivated]?: ValueObject<boolean>;
+  [SHACL.and]?: ShapesListShape;
+  [SHACL.class]?: OrArray<ShaclIRI>;
+  [SHACL.closed]?: ValueObject<boolean>;
+  [SHACL.ignoredProperties]?: ShaclIRI[];
+  [SHACL.disjoint]?: OrArray<ShaclIRI>;
+  [SHACL.equals]?: OrArray<ShaclIRI>;
+  [SHACL.in]?: ListObject;
+  [SHACL.languageIn]?: string[];
+  [SHACL.maxExclusive]?: ValueObject<number>;
+  [SHACL.maxInclusive]?: ValueObject<number>;
+  [SHACL.maxLength]?: ValueObject<number>;
+  [SHACL.minExclusive]?: ValueObject<number>;
+  [SHACL.minInclusive]?: ValueObject<number>;
+  [SHACL.minLength]?: ValueObject<number>;
+  [SHACL.nodeKind]?: IRIObject<NodeKindValues>;
+  [SHACL.or]?: ShapesListShape;
+  [SHACL.pattern]?: ValueObject<string>;
+  [SHACL.flags]?: ValueObject<string>;
+  [SHACL.xone]?: ShapesListShape;
+};
+
+export type ShapesListShape = (PropertyShape | NodeShape)[];
+
+export interface PropertyShape extends BaseShape {
+  [SHACL.path]: PathTypes;
+  [SHACL.datatype]?: ShaclIRI;
+  [SHACL.node]?: OrArray<NodeShape>;
+  [SHACL.name]?: ValueObject<string>;
+  [SHACL.description]?: ValueObject<string>;
+  [SHACL.minCount]?: ValueObject<number>;
+  [SHACL.maxCount]?: ValueObject<number>;
+  [SHACL.lessThanOrEquals]?: OrArray<ShaclIRI>;
+  [SHACL.lessThan]?: OrArray<ShaclIRI>;
+  [SHACL.qualifiedValueShape]?: OrArray<BaseShape>;
+  [SHACL.qualifiedMaxCount]?: ValueObject<number>;
+  [SHACL.qualifiedMinCount]?: ValueObject<number>;
+  [SHACL.qualifiedValueShapesDisjoint]?: ValueObject<boolean>;
+  [SHACL.uniqueLang]?: ValueObject<boolean>;
+}
+
+export interface NodeShape extends BaseShape {
+  '@type': typeof SHACL.NodeShape;
+  [RDFS.label]?: ValueObject<string>;
+  [SHACL.property]: OrArray<PropertyShape>;
+}
+
+export interface InverseShaclPath extends NodeShape {
+  [SHACL.inversePath]: PathShape;
+}
+
+export interface ZeroOrMoreShaclPath extends NodeShape {
+  [SHACL.zeroOrMorePath]: PathShape;
+}
+
+export interface OneOrMoreShaclPath extends NodeShape {
+  [SHACL.oneOrMorePath]: PathShape;
+}
+
+export interface ZeroOrOneShaclPath extends NodeShape {
+  [SHACL.zeroOrOnePath]: PathShape;
+}
+
+export interface AlternativeShaclPath extends NodeShape {
+  [SHACL.alternativePath]: PathTypes[];
+}
+
+export type PathTypes =
+| ShaclIRI
+| AlternativeShaclPath
+| ZeroOrMoreShaclPath
+| OneOrMoreShaclPath
+| ZeroOrOneShaclPath
+| InverseShaclPath;
+
+export type PathShape = OrArray<PathTypes>;
+
+export type Verb = NodeObject & {
   '@id': string;
   '@type': typeof SKL.Verb;
-  [SKL.parametersContext]?: ValueObject;
+  [SKL.parametersContext]?: ValueObject<JSONObject>;
+  [SKL.parameters]?: NodeShape;
   [SKL.returnValue]?: NodeObject;
-  [SKL.returnValueFrame]?: ValueObject;
+  [SKL.returnValueFrame]?: ValueObject<JSONObject>;
   [SKL.series]?: { '@list': VerbMapping[] } | (RdfList<VerbMapping> & NodeObject);
   [SKL.parallel]?: NodeObject;
   [SKL.returnValueMapping]?: OrArray<TriplesMap>;
-}
+};
 
 export interface SeriesVerbArgs extends JSONObject {
   originalVerbParameters: JSONObject;
   previousVerbReturnValue: JSONObject;
 }
 
-export interface MappingWithParameterMapping extends NodeObject {
+export type MappingWithParameterMapping = NodeObject & {
   [SKL.parameterMapping]: OrArray<TriplesMap>;
-  [SKL.parameterMappingFrame]: NodeObject;
-}
+  [SKL.parameterMappingFrame]: ValueObject<JSONObject>;
+};
 
-export interface MappingWithParameterReference extends NodeObject {
-  [SKL.parameterReference]: string | ValueObject;
-}
+export type MappingWithParameterReference = NodeObject & {
+  [SKL.parameterReference]: string | ValueObject<string>;
+};
 
-export interface MappingWithReturnValueMapping extends NodeObject {
+export type MappingWithReturnValueMapping = NodeObject & {
   [SKL.returnValueMapping]: OrArray<TriplesMap>;
-  [SKL.returnValueFrame]: NodeObject;
-}
+  [SKL.returnValueFrame]: ValueObject<JSONObject>;
+};
 
-export interface MappingWithVerbMapping extends NodeObject {
-  [SKL.verbId]?: ValueObject | string;
+export type MappingWithVerbMapping = NodeObject & {
+  [SKL.verbId]?: ValueObject<string> | string;
   [SKL.verbMapping]?: TriplesMap;
-}
+};
 
-export interface MappingWithOperationMapping extends NodeObject {
-  [SKL.constantOperationId]: ValueObject;
+export type MappingWithOperationMapping = NodeObject & {
+  [SKL.constantOperationId]: ValueObject<string>;
   [SKL.operationMapping]?: TriplesMap;
-}
+};
 
 export interface VerbMapping extends
   MappingWithVerbMapping,
@@ -98,7 +217,7 @@ export type PossibleArrayFieldValues =
   | string
   | NodeObject
   | GraphObject
-  | ValueObject
+  | ValueObject<any>
   | ListObject
   | SetObject;
 
@@ -108,7 +227,7 @@ export type EntityFieldSingularValue =
   | string
   | NodeObject
   | GraphObject
-  | ValueObject
+  | ValueObject<any>
   | ListObject
   | SetObject;
 

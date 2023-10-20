@@ -621,19 +621,6 @@ describe('a SparqlQueryAdapter', (): void => {
         ]);
       });
 
-    it('does not support search.',
-      async(): Promise<void> => {
-        select.mockImplementationOnce(
-          async(): Promise<Readable> => streamFrom([]),
-        );
-        await expect(
-          adapter.findAll({
-            search: 'hello world',
-          }),
-        ).resolves.toEqual([]);
-        expect(select).toHaveBeenCalledTimes(0);
-      });
-
     it('returns unframed json-ld if skipFraming is set to true.',
       async(): Promise<void> => {
         const blankNode = DataFactory.blankNode('c1');

@@ -1,20 +1,7 @@
 import * as jsonld from 'jsonld';
 import type { NodeObject, ValueObject } from 'jsonld';
 import { Parser, Store } from 'n3';
-import type { EntityFieldSingularValue, EntityFieldValue } from './Types';
-
-export type JSONPrimitive =
-  | string
-  | number
-  | boolean
-  | null;
-export type JSONObject = Record<string, JSONValue>;
-export interface JSONArray extends Array<JSONValue> {}
-
-export type JSONValue =
-  | JSONPrimitive
-  | {[x: string]: JSONValue }
-  | JSONValue[];
+import type { EntityFieldSingularValue, EntityFieldValue, JSONObject } from './Types';
 
 export async function convertJsonLdToQuads(jsonldDoc: any): Promise<Store> {
   const nquads = await jsonld.toRDF(jsonldDoc, { format: 'application/n-quads' }) as unknown as string;

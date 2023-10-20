@@ -793,22 +793,6 @@ describe('a MemoryQueryAdapter', (): void => {
         },
       })).resolves.toEqual([]);
     });
-
-    it('does not support search.', async(): Promise<void> => {
-      schemas = [
-        {
-          '@id': 'https://example.com/data/2',
-          '@type': 'https://standardknowledge.com/ontologies/core/File',
-          'https://example.com/name': [
-            { '@value': 'hello world', '@type': XSD.string },
-          ],
-        },
-      ];
-      adapter = new MemoryQueryAdapter({ type: 'memory', schemas });
-      await expect(adapter.findAll({
-        search: 'hello world',
-      })).resolves.toEqual([]);
-    });
   });
 
   describe('findAllBy', (): void => {

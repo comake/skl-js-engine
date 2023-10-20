@@ -38,6 +38,7 @@ import type {
   MappingWithParameterReference,
   RdfList,
   VerbConfig,
+  JSONObject,
 } from './util/Types';
 import {
   convertJsonLdToQuads,
@@ -45,7 +46,6 @@ import {
   getValueIfDefined,
   ensureArray,
 } from './util/Util';
-import type { JSONObject } from './util/Util';
 import { SKL, SHACL, RDFS, SKL_ENGINE, XSD, RDF } from './util/Vocabularies';
 
 export type VerbHandler = <T extends OrArray<NodeObject> = OrArray<NodeObject>>(
@@ -290,7 +290,7 @@ export class SKLEngine {
     verbConfig?: VerbConfig,
   ): Promise<OrArray<NodeObject>> {
     const nextVerbMapping = list[0];
-    const returnValue = await this.executeVerbFromVerbMapping(nextVerbMapping, args as JSONObject, verbConfig);
+    const returnValue = await this.executeVerbFromVerbMapping(nextVerbMapping, args, verbConfig);
     if (list.length > 1) {
       return await this.executeSeriesFromList(
         list.slice(1),

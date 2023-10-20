@@ -94,9 +94,6 @@ export class SparqlQueryAdapter implements QueryAdapter {
   }
 
   private async findAllAsJsonLd(options?: FindAllOptions): Promise<OrArray<NodeObject>> {
-    if (options?.search) {
-      return [];
-    }
     const queryBuilder = new SparqlQueryBuilder();
     const { where, selectionTriples, entityOrder } = await this.buildFindAllQueryData(queryBuilder, options);
     if (entityOrder && entityOrder.length === 0) {

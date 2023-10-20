@@ -7,8 +7,7 @@ import type { Frame } from 'jsonld/jsonld-spec';
 import { FindOperator } from '../storage/FindOperator';
 import type { FindOptionsRelations, FindOptionsWhere } from '../storage/FindOptionsTypes';
 import type { InverseRelationOperatorValue } from '../storage/operator/InverseRelation';
-import type { OrArray } from './Types';
-import type { JSONArray, JSONObject } from './Util';
+import type { OrArray, JSONArray, JSONObject } from './Types';
 import { ensureArray } from './Util';
 import { RDF, XSD } from './Vocabularies';
 

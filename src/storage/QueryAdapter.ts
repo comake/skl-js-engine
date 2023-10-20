@@ -26,13 +26,13 @@ export interface QueryAdapter {
    */
   executeRawEntityQuery(query: string, frame?: Frame): Promise<GraphObject>;
   /**
-   * Finds first entity by a given find options.
-   * If entity was not found in the database - returns null.
+   * Finds the first entity by a given find options.
+   * If entity was not found in the database it returns null.
    */
   find(options?: FindOneOptions): Promise<Entity | null>;
   /**
-   * Finds first entity that matches given where condition.
-   * If entity was not found in the database - returns null.
+   * Finds the first entity that matches given where condition.
+   * If entity was not found in the database it returns null.
    */
   findBy(where: FindOptionsWhere): Promise<Entity | null>;
   /**

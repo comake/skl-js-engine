@@ -4,8 +4,7 @@ import type { ReferenceNodeObject } from '@comake/rmlmapper-js';
 import type { GraphObject } from 'jsonld';
 import type { Frame } from 'jsonld/jsonld-spec';
 import { toJSValueFromDataType } from '../../util/TripleUtil';
-import type { Entity, EntityFieldValue, PossibleArrayFieldValues } from '../../util/Types';
-import type { JSONObject, JSONArray } from '../../util/Util';
+import type { Entity, EntityFieldValue, PossibleArrayFieldValues, JSONObject, JSONArray } from '../../util/Types';
 import { ensureArray } from '../../util/Util';
 import { RDFS } from '../../util/Vocabularies';
 import type { FindOperatorType } from '../FindOperator';
@@ -16,7 +15,7 @@ import type {
   FindOptionsWhere,
   FindOptionsWhereField,
   FieldPrimitiveValue,
-  ValueObject,
+  ValueWhereFieldObject,
   FindCountOptions,
   FindExistsOptions,
 } from '../FindOptionsTypes';
@@ -71,9 +70,6 @@ export class MemoryQueryAdapter implements QueryAdapter {
   }
 
   public async findAll(options?: FindAllOptions): Promise<Entity[]> {
-    if (options?.search) {
-      return [];
-    }
     let results: Entity[] = [];
     if (options?.where?.id && Object.keys(options.where).length === 1 && typeof options.where.id === 'string') {
       const schema = this.schemas[options.where.id];
@@ -214,7 +210,7 @@ export class MemoryQueryAdapter implements QueryAdapter {
       if ((field as ReferenceNodeObject)['@id']) {
         return (field as ReferenceNodeObject)['@id'] === value;
       }
-      if ((field as ValueObject)['@value']) {
+      if ((field as ValueWhereFieldObject)['@value']) {
         const jsValue = toJSValueFromDataType(
           (field as any)['@value'],
           (field as any)['@type'],

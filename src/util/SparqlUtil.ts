@@ -32,7 +32,7 @@ import type {
 import type { RawQueryResult } from '../storage/QueryAdapter';
 import type { SelectVariableQueryResult } from '../storage/sparql/SparqlQueryExecutor';
 import { toJSValueFromDataType } from './TripleUtil';
-import { BDS, DCTERMS, RDF, RDFS } from './Vocabularies';
+import { DCTERMS, RDF, RDFS } from './Vocabularies';
 
 export const rdfTypeNamedNode = DataFactory.namedNode(RDF.type);
 export const rdfsSubClassOfNamedNode = DataFactory.namedNode(RDFS.subClassOf);
@@ -44,7 +44,6 @@ export const countVariable = DataFactory.variable('count');
 export const now = DataFactory.variable('now');
 export const created = DataFactory.namedNode(DCTERMS.created);
 export const modified = DataFactory.namedNode(DCTERMS.modified);
-export const searchPredicate = DataFactory.namedNode(BDS.search);
 export const firstPredicate = DataFactory.namedNode(RDF.first);
 export const restPredicate = DataFactory.namedNode(RDF.rest);
 export const nilPredicate = DataFactory.namedNode(RDF.nil);

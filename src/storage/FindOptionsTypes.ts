@@ -1,28 +1,27 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { OrArray } from '../util/Types';
-import type { JSONArray, JSONObject } from '../util/Util';
+import type { OrArray, JSONArray, JSONObject } from '../util/Types';
 import type { FindOperator } from './FindOperator';
 import type { InverseRelationOperatorValue } from './operator/InverseRelation';
 import type { InverseRelationOrderValue } from './operator/InverseRelationOrder';
 
-export type FindOptionsSelectByString = string[];
-
-export type FindOptionsRelationsByString = string[];
-
-export type FindOptionsSelect = FindOptionsSelectByString | {[key: string]: boolean | FindOptionsSelect };
+export type FindOptionsSelect = string[] | {[key: string]: boolean | FindOptionsSelect };
 
 export interface FindOneOptions {
-  search?: string;
   select?: FindOptionsSelect;
   where?: FindOptionsWhere;
   relations?: FindOptionsRelations;
   order?: FindOptionsOrder;
-  searchRelations?: boolean;
   skipFraming?: boolean;
 }
 
+export type FindOptionsRelationsValue = |
+boolean |
+FindOptionsRelations |
+FindOperator<InverseRelationOperatorValue, 'inverseRelation'>;
+
+// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
 export type FindOptionsRelations = {
-  [k: string]: boolean | FindOptionsRelations | FindOperator<InverseRelationOperatorValue, 'inverseRelation'>;
+  [k: string]: FindOptionsRelationsValue;
 };
 
 export type FindOptionsOrderValue = 'ASC' | 'DESC' | 'asc' | 'desc' | 1 | -1;
@@ -48,15 +47,15 @@ export type NonJsonValueObject = {
   '@type': string;
 };
 
-export type ValueObject =
+export type ValueWhereFieldObject =
   | JsonValueObject
   | LanguageValueObject
   | NonJsonValueObject;
 
 export type FindOptionsWhereField =
 | OrArray<FieldPrimitiveValue>
-| ValueObject
-| Exclude<FindOptionsWhere, 'search'>
+| ValueWhereFieldObject
+| FindOptionsWhere
 | OrArray<FindOperator<any, any>>;
 
 export type IdFindOptionsWhereField =
@@ -79,17 +78,13 @@ export interface FindAllOptions extends FindOneOptions {
 }
 
 export interface FindExistsOptions {
-  search?: string;
   where?: FindOptionsWhere;
   relations?: FindOptionsRelations;
-  searchRelations?: boolean;
 }
 
 export interface FindCountOptions {
-  search?: string;
   where?: FindOptionsWhere;
   relations?: FindOptionsRelations;
   order?: FindOptionsOrder;
   offset?: number;
-  searchRelations?: boolean;
 }

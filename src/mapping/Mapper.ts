@@ -2,8 +2,7 @@
 import * as RmlParser from '@comake/rmlmapper-js';
 import type { NodeObject } from 'jsonld';
 import jsonld from 'jsonld';
-import type { OrArray } from '../util/Types';
-import type { JSONObject } from '../util/Util';
+import type { OrArray, JSONObject } from '../util/Types';
 
 export interface MapperArgs {
   functions?: Record<string, (args: any | any[]) => any>;

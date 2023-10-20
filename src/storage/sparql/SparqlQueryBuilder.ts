@@ -56,7 +56,7 @@ import type {
   FindOptionsWhereField,
   IdFindOptionsWhereField,
   TypeFindOptionsWhereField,
-  ValueObject,
+  ValueWhereFieldObject,
 } from '../FindOptionsTypes';
 import type { InverseRelationOperatorValue } from '../operator/InverseRelation';
 import type { InverseRelationOrderValue } from '../operator/InverseRelationOrder';
@@ -341,7 +341,7 @@ export class SparqlQueryBuilder {
     }
     if (typeof value === 'object') {
       if ('@value' in value) {
-        return this.createWhereQueryDataForValueObject(subject, predicate, value as ValueObject);
+        return this.createWhereQueryDataForValueObject(subject, predicate, value as ValueWhereFieldObject);
       }
       return this.createWhereQueryDataForNestedWhere(subject, predicate, value as FindOptionsWhere);
     }
@@ -499,7 +499,7 @@ export class SparqlQueryBuilder {
   private createWhereQueryDataForValueObject(
     subject: Variable,
     predicate: IriTerm | PropertyPath,
-    valueObject: ValueObject,
+    valueObject: ValueWhereFieldObject,
   ): WhereQueryData {
     const term = this.valueObjectToTerm(valueObject);
     return {
@@ -512,7 +512,7 @@ export class SparqlQueryBuilder {
     };
   }
 
-  private valueObjectToTerm(valueObject: ValueObject): Literal {
+  private valueObjectToTerm(valueObject: ValueWhereFieldObject): Literal {
     let typeOrLanguage: string;
     let value: string;
     if ('@type' in valueObject && valueObject['@type'] === '@json') {
@@ -673,10 +673,10 @@ export class SparqlQueryBuilder {
     return createSparqlNotEqualOperation(leftSide, rightSide as Expression);
   }
 
-  private resolveValueToTerm(value: FieldPrimitiveValue | ValueObject): NamedNode | Literal {
+  private resolveValueToTerm(value: FieldPrimitiveValue | ValueWhereFieldObject): NamedNode | Literal {
     if (typeof value === 'object' && '@value' in value) {
       return valueToLiteral(
-        (value as ValueObject)['@value'],
+        (value as ValueWhereFieldObject)['@value'],
         '@type' in value ? value['@type'] : undefined,
       );
     }
