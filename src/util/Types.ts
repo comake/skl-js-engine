@@ -109,23 +109,23 @@ export interface NodeShape extends BaseShape {
   [SHACL.property]: OrArray<PropertyShape>;
 }
 
-export interface InverseShaclPath extends NodeShape {
+export interface InverseShaclPath extends NodeObject {
   [SHACL.inversePath]: PathShape;
 }
 
-export interface ZeroOrMoreShaclPath extends NodeShape {
+export interface ZeroOrMoreShaclPath extends NodeObject {
   [SHACL.zeroOrMorePath]: PathShape;
 }
 
-export interface OneOrMoreShaclPath extends NodeShape {
+export interface OneOrMoreShaclPath extends NodeObject {
   [SHACL.oneOrMorePath]: PathShape;
 }
 
-export interface ZeroOrOneShaclPath extends NodeShape {
+export interface ZeroOrOneShaclPath extends NodeObject {
   [SHACL.zeroOrOnePath]: PathShape;
 }
 
-export interface AlternativeShaclPath extends NodeShape {
+export interface AlternativeShaclPath extends NodeObject {
   [SHACL.alternativePath]: PathTypes[];
 }
 
@@ -142,6 +142,7 @@ export type PathShape = OrArray<PathTypes>;
 export type Verb = NodeObject & {
   '@id': string;
   '@type': typeof SKL.Verb;
+  [RDFS.label]?: ValueObject<string>;
   [SKL.parametersContext]?: ValueObject<JSONObject>;
   [SKL.parameters]?: NodeShape;
   [SKL.returnValue]?: NodeObject;

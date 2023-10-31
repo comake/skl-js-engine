@@ -62,10 +62,13 @@ import type { InverseRelationOperatorValue } from '../operator/InverseRelation';
 import type { InverseRelationOrderValue } from '../operator/InverseRelationOrder';
 import { VariableGenerator } from './VariableGenerator';
 
-export interface WhereQueryData {
+export interface NonGraphWhereQueryData {
   values: ValuesPattern[];
   triples: Triple[];
   filters: OperationExpression[];
+}
+
+export interface WhereQueryData extends NonGraphWhereQueryData {
   graphValues: ValuesPattern[];
   graphTriples: Triple[];
   graphFilters: OperationExpression[];
@@ -228,35 +231,35 @@ export class SparqlQueryBuilder {
     value: IdFindOptionsWhereField,
     isOnlyField: boolean,
   ): WhereQueryData {
-    let filter: OperationExpression | undefined;
-    let valuePattern: ValuesPattern | undefined;
-    let triple: Triple | undefined;
+    let filters: OperationExpression[] = [];
+    let values: ValuesPattern[] = [];
+    let triples: Triple[] = [];
     if (FindOperator.isFindOperator(value)) {
-      ({ filter, valuePattern, triple } =
+      ({ filters, values, triples } =
         this.resolveFindOperatorAsExpressionForId(term, value as FindOperator<string, any>));
     } else {
-      valuePattern = {
+      values = [{
         type: 'values',
         values: [{
           [`?${term.value}`]: DataFactory.namedNode(value as string),
         }],
-      };
+      }];
     }
     if (isOnlyField) {
       return {
         values: [],
         filters: [],
         triples: [],
-        graphValues: valuePattern ? [ valuePattern ] : [],
-        graphFilters: filter ? [ filter ] : [],
-        graphTriples: triple ? [ triple ] : [],
+        graphValues: values,
+        graphFilters: filters,
+        graphTriples: triples,
       };
     }
 
     return {
-      values: valuePattern ? [ valuePattern ] : [],
-      filters: filter ? [ filter ] : [],
-      triples: triple ? [ triple ] : [],
+      values,
+      filters,
+      triples,
       graphValues: [],
       graphFilters: [],
       graphTriples: [],
@@ -572,38 +575,43 @@ export class SparqlQueryBuilder {
   private resolveFindOperatorAsExpressionForId(
     leftSide: Variable,
     operator: FindOperator<any, any>,
-  ): { filter?: OperationExpression; valuePattern?: ValuesPattern; triple?: Triple } {
+  ): NonGraphWhereQueryData {
     switch (operator.operator) {
       case 'inversePath': {
         const predicate = this.pathOperatorToPropertyPath(operator);
-        const triple = {
-          subject: leftSide,
-          predicate,
-          object: DataFactory.namedNode(operator.value.value),
-        };
-        return { triple };
+        return this.createWhereQueryDataFromKeyValue(leftSide, predicate, operator.value.value);
       }
       case 'in': {
         const resolvedValue = this.resolveValueToExpression(operator.value) as NamedNode[];
         return {
-          valuePattern: {
+          triples: [],
+          filters: [],
+          values: [{
             type: 'values',
             values: resolvedValue.map((value): ValuePatternRow => ({ [`?${leftSide.value}`]: value })),
-          },
+          }],
         };
       } case 'not':
         return {
-          filter: this.buildNotOperationForId(
-            leftSide,
-            this.resolveValueToExpression(operator.value) as Expression | FindOperator<any, any>,
-          ),
+          triples: [],
+          values: [],
+          filters: [
+            this.buildNotOperationForId(
+              leftSide,
+              this.resolveValueToExpression(operator.value) as Expression | FindOperator<any, any>,
+            ),
+          ],
         };
       case 'equal':
         return {
-          filter: createSparqlEqualOperation(
-            leftSide,
-            this.resolveValueToExpression(operator.value) as Expression,
-          ),
+          triples: [],
+          values: [],
+          filters: [
+            createSparqlEqualOperation(
+              leftSide,
+              this.resolveValueToExpression(operator.value) as Expression,
+            ),
+          ],
         };
       default:
         throw new Error(`Unsupported operator "${operator.operator}"`);
