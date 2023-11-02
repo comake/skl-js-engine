@@ -13,7 +13,8 @@ async function run(): Promise<void> {
   ];
   const env = { TICKETMASTER_APIKEY: process.env.TICKETMASTER_APIKEY! };
   const schemas = await frameAndCombineSchemas(schemaFiles, env);
-  const engine = new SKLEngine({ type: 'memory', schemas });
+  const engine = new SKLEngine({ type: 'memory' });
+  await engine.save(schemas);
   const eventsCollection = await engine.verb.getEvents({
     account: 'https://example.com/data/TicketmasterAccount1',
     city: 'Atlanta',
