@@ -4,11 +4,11 @@ import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
 import { RR } from '@comake/rmlmapper-js';
 import { AxiosError } from 'axios';
 import type { NodeObject } from 'jsonld';
-import type { Callbacks } from '../../src/Callbacks';
 import { SKLEngine } from '../../src/SklEngine';
 import type { SklEngineOptions } from '../../src/SklEngineOptions';
-import type { QueryAdapterType } from '../../src/storage/BaseQueryAdapterOptions';
-import { MemoryQueryAdapter } from '../../src/storage/memory/MemoryQueryAdapter';
+import { SparqlQueryAdapter } from '../../src/storage/query-adapter/sparql/SparqlQueryAdapter';
+import type { QueryAdapterType } from '../../src/storage/query-adapter/sparql/SparqlQueryAdapterOptions';
+import type { Callbacks } from '../../src/util/Types';
 import { SKL, RDFS, XSD, SKL_ENGINE } from '../../src/util/Vocabularies';
 import simpleMapping from '../assets/schemas/simple-mapping.json';
 import { frameAndCombineSchemas, expandJsonLd } from '../util/Util';
@@ -92,8 +92,8 @@ describe('SKLEngine', (): void => {
   });
 
   describe('Memory', (): void => {
-    it('sets the schema.', async(): Promise<void> => {
-      expect(new SKLEngine({ type: 'memory', schemas: []})).toBeInstanceOf(SKLEngine);
+    it('initializes.', async(): Promise<void> => {
+      expect(new SKLEngine({ type: 'memory' })).toBeInstanceOf(SKLEngine);
     });
   });
 
@@ -112,7 +112,8 @@ describe('SKLEngine', (): void => {
         '@id': 'https://standardknowledge.com/ontologies/core/Share',
         '@type': 'https://standardknowledge.com/ontologies/core/Verb',
       }];
-      sklEngine = new SKLEngine({ type: 'memory', schemas });
+      sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
     });
 
     afterEach((): void => {
@@ -120,28 +121,28 @@ describe('SKLEngine', (): void => {
     });
 
     it('delegates calls to executeRawQuery to the query adapter.', async(): Promise<void> => {
-      const executeRawQuerySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'executeRawQuery');
+      const executeRawQuerySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'executeRawQuery');
       await expect(sklEngine.executeRawQuery('')).resolves.toEqual([]);
       expect(executeRawQuerySpy).toHaveBeenCalledTimes(1);
       expect(executeRawQuerySpy).toHaveBeenCalledWith('');
     });
 
     it('delegates calls to executeRawEntityQuery to the query adapter.', async(): Promise<void> => {
-      const executeRawEntityQuerySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'executeRawEntityQuery');
+      const executeRawEntityQuerySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'executeRawEntityQuery');
       await expect(sklEngine.executeRawEntityQuery('', {})).resolves.toEqual({ '@graph': []});
       expect(executeRawEntityQuerySpy).toHaveBeenCalledTimes(1);
       expect(executeRawEntityQuerySpy).toHaveBeenCalledWith('', {});
     });
 
     it('delegates calls to find to the query adapter.', async(): Promise<void> => {
-      const findSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'find');
+      const findSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'find');
       await expect(sklEngine.find({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }})).resolves.toEqual(schemas[0]);
       expect(findSpy).toHaveBeenCalledTimes(1);
       expect(findSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }});
     });
 
     it('throws an error if there is no schema matching the query during find.', async(): Promise<void> => {
-      const findSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'find');
+      const findSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'find');
       await expect(sklEngine.find({ where: { id: 'https://standardknowledge.com/ontologies/core/Send' }})).rejects.toThrow(
         'No schema found with fields matching {"where":{"id":"https://standardknowledge.com/ontologies/core/Send"}}',
       );
@@ -150,14 +151,14 @@ describe('SKLEngine', (): void => {
     });
 
     it('delegates calls to findBy to the query adapter.', async(): Promise<void> => {
-      const findBySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'findBy');
+      const findBySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'findBy');
       await expect(sklEngine.findBy({ id: 'https://standardknowledge.com/ontologies/core/Share' })).resolves.toEqual(schemas[0]);
       expect(findBySpy).toHaveBeenCalledTimes(1);
       expect(findBySpy).toHaveBeenCalledWith({ id: 'https://standardknowledge.com/ontologies/core/Share' });
     });
 
     it('throws an error if there is no schema matching the query during findBy.', async(): Promise<void> => {
-      const findBySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'findBy');
+      const findBySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'findBy');
       await expect(sklEngine.findBy({ id: 'https://standardknowledge.com/ontologies/core/Send' })).rejects.toThrow(
         'No schema found with fields matching {"id":"https://standardknowledge.com/ontologies/core/Send"}',
       );
@@ -166,35 +167,35 @@ describe('SKLEngine', (): void => {
     });
 
     it('delegates calls to findAll to the query adapter.', async(): Promise<void> => {
-      const findAllSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'findAll');
+      const findAllSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'findAll');
       await expect(sklEngine.findAll({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }})).resolves.toEqual([ schemas[0] ]);
       expect(findAllSpy).toHaveBeenCalledTimes(1);
       expect(findAllSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }});
     });
 
     it('delegates calls to findAllBy to the query adapter.', async(): Promise<void> => {
-      const findAllBySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'findAllBy');
+      const findAllBySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'findAllBy');
       await expect(sklEngine.findAllBy({ id: 'https://standardknowledge.com/ontologies/core/Share' })).resolves.toEqual([ schemas[0] ]);
       expect(findAllBySpy).toHaveBeenCalledTimes(1);
       expect(findAllBySpy).toHaveBeenCalledWith({ id: 'https://standardknowledge.com/ontologies/core/Share' });
     });
 
     it('delegates calls to exists to the query adapter.', async(): Promise<void> => {
-      const existsSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'exists');
+      const existsSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'exists');
       await expect(sklEngine.exists({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }})).resolves.toBe(true);
       expect(existsSpy).toHaveBeenCalledTimes(1);
       expect(existsSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }});
     });
 
     it('delegates calls to count to the query adapter.', async(): Promise<void> => {
-      const countSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'count');
+      const countSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'count');
       await expect(sklEngine.count({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }})).resolves.toBe(1);
       expect(countSpy).toHaveBeenCalledTimes(1);
       expect(countSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }});
     });
 
     it('delegates calls to save a single entity to the query adapter.', async(): Promise<void> => {
-      const saveSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'save');
+      const saveSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'save');
       const res = await sklEngine.save({
         '@id': 'https://standardknowledge.com/ontologies/core/Share',
         '@type': 'https://standardknowledge.com/ontologies/core/Verb',
@@ -214,7 +215,7 @@ describe('SKLEngine', (): void => {
     });
 
     it('delegates calls to save multiple entities to the query adapter.', async(): Promise<void> => {
-      const saveSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'save');
+      const saveSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'save');
       const entities = [
         {
           '@id': 'https://standardknowledge.com/ontologies/core/Share',
@@ -234,7 +235,7 @@ describe('SKLEngine', (): void => {
     });
 
     it('delegates calls to update a single entity to the query adapter.', async(): Promise<void> => {
-      const updateSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'update');
+      const updateSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'update');
       const res = await sklEngine.update(
         'https://standardknowledge.com/ontologies/core/Share',
         { [RDFS.label]: 'Share' },
@@ -248,7 +249,7 @@ describe('SKLEngine', (): void => {
     });
 
     it('delegates calls to update multiple entities to the query adapter.', async(): Promise<void> => {
-      const updateSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'update');
+      const updateSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'update');
       const res = await sklEngine.update(
         [
           'https://standardknowledge.com/ontologies/core/Share',
@@ -267,8 +268,43 @@ describe('SKLEngine', (): void => {
       );
     });
 
+    it('delegates calls to delete a single entity to the query adapter.', async(): Promise<void> => {
+      const deleteSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'delete');
+      const entity = {
+        '@id': 'https://standardknowledge.com/ontologies/core/Share',
+        '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+      };
+      await sklEngine.save(entity);
+      const res = await sklEngine.delete(entity['@id']);
+      expect(res).toBeUndefined();
+      expect(deleteSpy).toHaveBeenCalledTimes(1);
+      expect(deleteSpy).toHaveBeenCalledWith(entity['@id']);
+    });
+
+    it('delegates calls to delete miltiple entities to the query adapter.', async(): Promise<void> => {
+      const deleteSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'delete');
+      const entities = [
+        {
+          '@id': 'https://standardknowledge.com/ontologies/core/Share',
+          '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+          [RDFS.label]: 'Share',
+        },
+        {
+          '@id': 'https://standardknowledge.com/ontologies/core/Send',
+          '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+          [RDFS.label]: 'Send',
+        },
+      ];
+      const entityIds = entities.map((entity): string => entity['@id']);
+      await sklEngine.save(entities);
+      const res = await sklEngine.delete(entityIds);
+      expect(res).toBeUndefined();
+      expect(deleteSpy).toHaveBeenCalledTimes(1);
+      expect(deleteSpy).toHaveBeenCalledWith(entityIds);
+    });
+
     it('delegates calls to destroy a single entity to the query adapter.', async(): Promise<void> => {
-      const destroySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'destroy');
+      const destroySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'destroy');
       const entity = {
         '@id': 'https://standardknowledge.com/ontologies/core/Share',
         '@type': 'https://standardknowledge.com/ontologies/core/Verb',
@@ -281,7 +317,7 @@ describe('SKLEngine', (): void => {
     });
 
     it('delegates calls to destroy miltiple entities to the query adapter.', async(): Promise<void> => {
-      const destroySpy = jest.spyOn(MemoryQueryAdapter.prototype, 'destroy');
+      const destroySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'destroy');
       const entities = [
         {
           '@id': 'https://standardknowledge.com/ontologies/core/Share',
@@ -302,7 +338,7 @@ describe('SKLEngine', (): void => {
     });
 
     it('delegates calls to destroyAll to the query adapter.', async(): Promise<void> => {
-      const destroyAllSpy = jest.spyOn(MemoryQueryAdapter.prototype, 'destroyAll');
+      const destroyAllSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'destroyAll');
       const res = await sklEngine.destroyAll();
       expect(res).toBeUndefined();
       expect(destroyAllSpy).toHaveBeenCalledTimes(1);
@@ -317,7 +353,8 @@ describe('SKLEngine', (): void => {
         '@id': 'https://standardknowledge.com/ontologies/core/Share',
         '@type': 'https://standardknowledge.com/ontologies/core/Verb',
       }];
-      sklEngine = new SKLEngine({ type: 'memory', schemas });
+      sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
     });
 
     it('maps data with a frame.', async(): Promise<void> => {
@@ -359,7 +396,8 @@ describe('SKLEngine', (): void => {
     });
 
     it('can execute an OpenApi operation defined via an operationMapping.', async(): Promise<void> => {
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       const response = await sklEngine.verb.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(1);
@@ -382,7 +420,8 @@ describe('SKLEngine', (): void => {
         }
         return schemaItem;
       });
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       const response = await sklEngine.verb.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(1);
@@ -402,7 +441,8 @@ describe('SKLEngine', (): void => {
           }
           return schemaItem;
         });
-        const sklEngine = new SKLEngine({ type: 'memory', schemas });
+        const sklEngine = new SKLEngine({ type: 'memory' });
+        await sklEngine.save(schemas);
         const response = await sklEngine.verb.getFile({ account, id: '12345' });
         expect(response).toEqual(
           expect.objectContaining({
@@ -422,7 +462,8 @@ describe('SKLEngine', (): void => {
 
     it('errors if the executed verb is not defined.', async(): Promise<void> => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://example.com/getFile');
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       await expect(sklEngine.verb.getFile({ account, id: '12345' })).rejects.toThrow(
         'Failed to find the verb getFile in the schema',
       );
@@ -430,7 +471,8 @@ describe('SKLEngine', (): void => {
     });
 
     it('errors if the parameters do not conform to the verb parameter schema.', async(): Promise<void> => {
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       await expect(sklEngine.verb.getFile({ account, ids: [ '12345' ]})).rejects.toThrow(
         'getFile parameters do not conform to the schema',
       );
@@ -449,7 +491,8 @@ describe('SKLEngine', (): void => {
           };
         }
       });
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { '@id': id, ...getFileResponseWithoutId } = expectedGetFileResponse;
       await expect(sklEngine.verb.getFile({ account, id: '12345' })).resolves.toEqual(getFileResponseWithoutId);
@@ -467,7 +510,8 @@ describe('SKLEngine', (): void => {
           schemaItem[SKL.returnValueMapping] = incorrectReturnValueMapping;
         }
       });
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       await expect(sklEngine.verb.getFile({ account, id: '12345' })).rejects.toThrow(
         'Return value https://example.com/data/abc123 does not conform to the schema',
       );
@@ -481,7 +525,8 @@ describe('SKLEngine', (): void => {
 
     it('errors if no mapping for the verb and the integration is in the schema.', async(): Promise<void> => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://example.com/data/4');
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       await expect(sklEngine.verb.getFile({ account, id: '12345' })).rejects.toThrow([
         'No schema found with fields matching',
         '{"type":"https://standardknowledge.com/ontologies/core/VerbIntegrationMapping","https://standardknowledge.com/ontologies/core/verb":"https://example.com/getFile","https://standardknowledge.com/ontologies/core/integration":"https://example.com/integrations/Dropbox"}',
@@ -491,7 +536,8 @@ describe('SKLEngine', (): void => {
 
     it('errors if no open api description for the integration is in the schema.', async(): Promise<void> => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://example.com/data/DropboxOpenApiDescription');
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       await expect(sklEngine.verb.getFile({ account, id: '12345' })).rejects.toThrow([
         'No schema found with fields matching',
         '{"type":"https://standardknowledge.com/ontologies/core/OpenApiDescription","https://standardknowledge.com/ontologies/core/integration":"https://example.com/integrations/Dropbox"}',
@@ -503,7 +549,8 @@ describe('SKLEngine', (): void => {
     security credentials for the account are in the schema.`,
     async(): Promise<void> => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://example.com/data/DropboxAccount1SecurityCredentials');
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       const response = await sklEngine.verb.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(1);
@@ -538,7 +585,8 @@ describe('SKLEngine', (): void => {
         return schemaItem;
       });
 
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       const response = await sklEngine.verb.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(1);
@@ -559,7 +607,8 @@ describe('SKLEngine', (): void => {
           statusText: 'Unauthorized',
         },
       });
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       const response = await sklEngine.verb.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(2);
@@ -604,7 +653,8 @@ describe('SKLEngine', (): void => {
           statusText: 'Some other error',
         },
       });
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       const response = await sklEngine.verb.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(2);
@@ -634,7 +684,8 @@ describe('SKLEngine', (): void => {
       executeOperation.mockRejectedValueOnce(
         new AxiosError('Internal Server Error', undefined, undefined, { status: 500 }),
       );
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       await expect(sklEngine.verb.getFile({ account, id: '12345' })).rejects.toThrow('Internal Server Error');
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenNthCalledWith(
@@ -663,7 +714,8 @@ describe('SKLEngine', (): void => {
     });
 
     it('can execute an OpenApiSecuritySchemeVerb that maps to the authorizationUrl stage.', async(): Promise<void> => {
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       await expect(sklEngine.verb.authorizeWithPkceOauth({ account })).resolves.toEqual({
         '@type': '@json',
         '@value': response,
@@ -680,7 +732,8 @@ describe('SKLEngine', (): void => {
 
     it('errors if the executed verb is not defined.', async(): Promise<void> => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://example.com/getFile');
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       await expect(sklEngine.verb.getFile({ account, id: '12345' })).rejects.toThrow(Error);
       await expect(sklEngine.verb.getFile({ account, id: '12345' })).rejects.toThrow(
         'Failed to find the verb getFile in the schema',
@@ -691,7 +744,8 @@ describe('SKLEngine', (): void => {
       response = { data: { access_token: 'abc123' }, config: {}};
       executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       const res = await sklEngine.verb.getOauthTokens<NodeObject>({
         account,
         codeVerifier: 'something',
@@ -720,7 +774,8 @@ describe('SKLEngine', (): void => {
       response = { data: { message: 'Access Denied' }, config: {}};
       executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       const res = await sklEngine.verb.authorizeWithPkceOauth<NodeObject>({ account });
       expect(res[SKL.accessToken]).toBeUndefined();
       expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
@@ -742,7 +797,8 @@ describe('SKLEngine', (): void => {
         response = { data: { access_token: 'abc123' }, config: {}};
         executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
         (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
-        const sklEngine = new SKLEngine({ type: 'memory', schemas });
+        const sklEngine = new SKLEngine({ type: 'memory' });
+        await sklEngine.save(schemas);
         const res = await sklEngine.verb.getOauthTokens<NodeObject>({ account: 'https://example.com/data/StubhubAccount1' });
         expect(res[SKL.accessToken]).toBe('abc123');
         expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
@@ -771,7 +827,8 @@ describe('SKLEngine', (): void => {
     });
 
     it.skip('can execute a Noun mapped Verb defined via a verbMapping.', async(): Promise<void> => {
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       const response = await sklEngine.verb.sync({
         noun: 'https://standardknowledge.com/ontologies/core/File',
         account,
@@ -781,7 +838,8 @@ describe('SKLEngine', (): void => {
     });
 
     it.skip('can execute a Noun mapped Verb with only a mapping.', async(): Promise<void> => {
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       const response = await sklEngine.verb.getName({
         noun: 'https://standardknowledge.com/ontologies/core/File',
         entity: { [RDFS.label]: 'final.jpg', [SKL.sourceId]: 12345 },
@@ -804,7 +862,8 @@ describe('SKLEngine', (): void => {
           }
           return schemaItem;
         });
-        const sklEngine = new SKLEngine({ type: 'memory', schemas });
+        const sklEngine = new SKLEngine({ type: 'memory' });
+        await sklEngine.save(schemas);
         const response = await sklEngine.verb.sync({
           noun: 'https://standardknowledge.com/ontologies/core/File',
           account,
@@ -821,7 +880,8 @@ describe('SKLEngine', (): void => {
         './test/assets/schemas/get-dropbox-file.json',
         './test/assets/schemas/json-file-data-source.json',
       ]);
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       const response = await sklEngine.verb.getFile({
         account: 'https://example.com/data/JsonSourceAccount1',
         id: '12345',
@@ -840,7 +900,6 @@ describe('SKLEngine', (): void => {
       ]);
       const sklEngine = new SKLEngine({
         type: 'memory',
-        schemas,
         inputFiles: {
           'data.json': `{
             ".tag": "file",
@@ -857,6 +916,7 @@ describe('SKLEngine', (): void => {
           }`,
         },
       });
+      await sklEngine.save(schemas);
       const response = await sklEngine.verb.getFile({
         account: 'https://example.com/data/JsonSourceAccount1',
         id: '12345',
@@ -873,7 +933,8 @@ describe('SKLEngine', (): void => {
         './test/assets/schemas/get-dropbox-file.json',
         './test/assets/schemas/json-source-data-source.json',
       ]);
-      const sklEngine = new SKLEngine({ type: 'memory', schemas, inputFiles: {}});
+      const sklEngine = new SKLEngine({ type: 'memory', inputFiles: {}});
+      await sklEngine.save(schemas);
       await expect(sklEngine.verb.getFile({
         account: 'https://example.com/data/JsonSourceAccount1',
         id: '12345',
@@ -893,7 +954,8 @@ describe('SKLEngine', (): void => {
         }
         return schemaItem;
       });
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       await expect(sklEngine.verb.getFile({
         account: 'https://example.com/data/JsonSourceAccount1',
         id: '12345',
@@ -915,7 +977,8 @@ describe('SKLEngine', (): void => {
           return res;
         },
       };
-      const sklEngine = new SKLEngine({ type: 'memory', schemas, functions });
+      const sklEngine = new SKLEngine({ type: 'memory', functions });
+      await sklEngine.save(schemas);
       const entity = {
         '@id': 'https://example.com/data/1',
         '@type': 'https://schema.org/BlogPosting',
@@ -941,7 +1004,8 @@ describe('SKLEngine', (): void => {
             return res;
           },
         };
-        const sklEngine = new SKLEngine({ type: 'memory', schemas, functions });
+        const sklEngine = new SKLEngine({ type: 'memory', functions });
+        await sklEngine.save(schemas);
         const entity = {
           '@id': 'https://example.com/data/1',
           '@type': 'https://schema.org/BlogPosting',
@@ -959,7 +1023,8 @@ describe('SKLEngine', (): void => {
         './test/assets/schemas/core.json',
         './test/assets/schemas/series-verb-no-verbId.json',
       ]);
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       const response = await sklEngine.verb.transformText({ text: 'Hello' });
       expect(response).toEqual(
         expect.objectContaining({
@@ -985,7 +1050,8 @@ describe('SKLEngine', (): void => {
           return res;
         },
       };
-      const sklEngine = new SKLEngine({ type: 'memory', schemas, functions });
+      const sklEngine = new SKLEngine({ type: 'memory', functions });
+      await sklEngine.save(schemas);
       const entity = {
         '@id': 'https://example.com/data/1',
         '@type': 'https://schema.org/BlogPosting',
@@ -1041,7 +1107,8 @@ describe('SKLEngine', (): void => {
         }
         return schemaItem;
       });
-      const sklEngine = new SKLEngine({ type: 'memory', schemas, functions });
+      const sklEngine = new SKLEngine({ type: 'memory', functions });
+      await sklEngine.save(schemas);
       const entity = {
         '@id': 'https://example.com/data/1',
         '@type': 'https://schema.org/BlogPosting',
@@ -1085,7 +1152,8 @@ describe('SKLEngine', (): void => {
         './test/assets/schemas/core.json',
         './test/assets/schemas/count-in-series-verb.json',
       ]);
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       const response = await sklEngine.verb.countEntities({ where: { type: SKL.Verb }});
       expect(response).toEqual(
         expect.objectContaining({
@@ -1102,7 +1170,8 @@ describe('SKLEngine', (): void => {
         './test/assets/schemas/core.json',
         './test/assets/schemas/exists-in-series-verb.json',
       ]);
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       const response = await sklEngine.verb.entitiesExist({ where: { type: SKL.Verb }});
       expect(response).toEqual(
         expect.objectContaining({
@@ -1127,7 +1196,8 @@ describe('SKLEngine', (): void => {
         './test/assets/schemas/core.json',
         './test/assets/schemas/save-in-series-verb.json',
       ]);
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       const response = await sklEngine.verb.saveEntities({ entities });
       expect(response).toEqual(entities[0]);
     });
@@ -1145,7 +1215,8 @@ describe('SKLEngine', (): void => {
         './test/assets/schemas/core.json',
         './test/assets/schemas/destroy-in-series-verb.json',
       ]);
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       await sklEngine.save(entities);
       const response = await sklEngine.verb.destroyEntities({ entities });
       expect(response).toEqual(entities[0]);
@@ -1164,7 +1235,8 @@ describe('SKLEngine', (): void => {
         './test/assets/schemas/core.json',
         './test/assets/schemas/find-in-series-verb.json',
       ]);
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       await sklEngine.save(entity);
       const response = await sklEngine.verb.findEntity({ where: { id: entity['@id'] }});
       expect(response).toEqual(entity);
@@ -1185,7 +1257,8 @@ describe('SKLEngine', (): void => {
         './test/assets/schemas/core.json',
         './test/assets/schemas/findAll-in-series-verb.json',
       ]);
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       await sklEngine.save(entities);
       const response = await sklEngine.verb.findAllEntities({ where: { type: 'https://schema.org/BlogPosting' }});
       expect(response).toEqual(entities);
@@ -1198,7 +1271,8 @@ describe('SKLEngine', (): void => {
         './test/assets/schemas/core.json',
         './test/assets/schemas/exists-with-parameter-reference.json',
       ]);
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       const response = await sklEngine.verb.entitiesExist({ where: { type: SKL.Verb }});
       expect(response).toEqual(
         expect.objectContaining({
@@ -1230,7 +1304,8 @@ describe('SKLEngine', (): void => {
         executeOperation,
         setOpenapiSpec,
       });
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       await sklEngine.executeTrigger(
         'https://example.com/integrations/Dropbox',
         {},
@@ -1240,7 +1315,7 @@ describe('SKLEngine', (): void => {
       expect(executeOperation).toHaveBeenCalledWith(
         'FilesListFolderGetLatestCursor',
         { accessToken: 'SPOOFED_TOKEN', bearerToken: undefined, apiKey: undefined, basePath: undefined },
-        {},
+        { path: '' },
       );
     });
 
@@ -1251,7 +1326,8 @@ describe('SKLEngine', (): void => {
         executeOperation,
         setOpenapiSpec,
       });
-      const sklEngine = new SKLEngine({ type: 'memory', schemas });
+      const sklEngine = new SKLEngine({ type: 'memory' });
+      await sklEngine.save(schemas);
       await expect(sklEngine.executeTrigger(
         'https://example.com/integrations/GoogleDrive',
         {},
@@ -1291,7 +1367,8 @@ describe('SKLEngine', (): void => {
     });
 
     it('calls the onVerbStart and onVerbEnd callbacks if they are defined.', async(): Promise<void> => {
-      const sklEngine = new SKLEngine({ type: 'memory', schemas, callbacks });
+      const sklEngine = new SKLEngine({ type: 'memory', callbacks });
+      await sklEngine.save(schemas);
       const response = await sklEngine.verb.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(1);
@@ -1308,7 +1385,8 @@ describe('SKLEngine', (): void => {
 
     it('calls the onVerbStart and onVerbEnd callbacks if they are defined in the verb\'s configuration.',
       async(): Promise<void> => {
-        const sklEngine = new SKLEngine({ type: 'memory', schemas });
+        const sklEngine = new SKLEngine({ type: 'memory' });
+        await sklEngine.save(schemas);
         const response = await sklEngine.verb.getFile({ account, id: '12345' }, { callbacks });
         expect(response).toEqual(expectedGetFileResponse);
         expect(executeOperation).toHaveBeenCalledTimes(1);
@@ -1329,7 +1407,8 @@ describe('SKLEngine', (): void => {
       './test/assets/schemas/core.json',
       './test/assets/schemas/get-dropbox-file.json',
     ]);
-    const sklEngine = new SKLEngine({ type: 'memory', schemas });
+    const sklEngine = new SKLEngine({ type: 'memory' });
+    await sklEngine.save(schemas);
     await expect(sklEngine.verb.getName({ entity: { [RDFS.label]: 'final.jpg' }}))
       .rejects.toThrow('Verb must be a composite or its parameters must include either a noun or an account.');
   });
@@ -1354,7 +1433,8 @@ describe('SKLEngine', (): void => {
       }
       return schemaItem;
     });
-    const sklEngine = new SKLEngine({ type: 'memory', schemas });
+    const sklEngine = new SKLEngine({ type: 'memory' });
+    await sklEngine.save(schemas);
     await expect(sklEngine.verb.getFile({ account, id: '12345' }))
       .rejects.toThrow('Operation not supported.');
   });

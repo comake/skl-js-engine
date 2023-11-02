@@ -11,7 +11,6 @@ import type {
   SetObject,
   TypeMap,
 } from 'jsonld';
-import type { Callbacks } from '../Callbacks';
 import type { RDF, RDFS, SHACL, SKL } from './Vocabularies';
 
 export type JSONPrimitive =
@@ -275,4 +274,15 @@ export interface VerbConfig {
    * Merged with the global setting. The verb config taking prededence in the case of overlapping names.
    */
   readonly functions?: Record<string, (args: any | any[]) => any>;
+}
+
+export interface Callbacks {
+  /**
+   * Callback run when a Verb starts being executed
+   */
+  onVerbStart?: (verb: string, args: Record<string, any>) => void;
+  /**
+   * Callback run when a Verb is finished being executed
+   */
+  onVerbEnd?: (verb: string, returnValue: Record<string, any>) => void;
 }

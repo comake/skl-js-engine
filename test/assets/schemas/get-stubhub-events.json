@@ -67,9 +67,9 @@
     {
       "@id": "https://example.com/data/StubhubAccount1SecurityCredentials",
       "@type": "https://standardknowledge.com/ontologies/core/SecurityCredentials",
-      "https://standardknowledge.com/ontologies/core/clientId": "adlerfaulkner",
-      "https://standardknowledge.com/ontologies/core/clientSecret": "abc123",
-      "https://standardknowledge.com/ontologies/core/account": "https://example.com/data/StubhubAccount1"
+      "skl:clientId": "adlerfaulkner",
+      "skl:clientSecret": "abc123",
+      "skl:account": "https://example.com/data/StubhubAccount1"
     },
     {
       "@id": "https://example.com/getOauthTokens",
@@ -911,8 +911,8 @@
     {
       "@id": "https://example.com/data/StubhubOpenApiDescription",
       "@type": "https://standardknowledge.com/ontologies/core/OpenApiDescription",
-       "https://standardknowledge.com/ontologies/core/integration": "https://example.com/integrations/Stubhub",
-       "https://standardknowledge.com/ontologies/core/openApiDescription": {
+      "skl:integration": "https://example.com/integrations/Stubhub",
+      "skl:openApiDescription": {
         "openapi": "3.0.0",
         "info": {
           "title": "StubHub Catalog API",

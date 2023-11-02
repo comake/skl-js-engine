@@ -38,14 +38,14 @@ import {
   createSparqlSequencePredicate,
   createSparqlZeroOrMorePredicate,
   createSparqlOneOrMorePredicate,
-} from '../../util/SparqlUtil';
+} from '../../../util/SparqlUtil';
 import {
   valueToLiteral,
-} from '../../util/TripleUtil';
-import type { OrArray } from '../../util/Types';
-import { isUrl } from '../../util/Util';
-import { RDF } from '../../util/Vocabularies';
-import { FindOperator } from '../FindOperator';
+} from '../../../util/TripleUtil';
+import type { OrArray } from '../../../util/Types';
+import { isUrl } from '../../../util/Util';
+import { RDF } from '../../../util/Vocabularies';
+import { FindOperator } from '../../FindOperator';
 import type {
   FieldPrimitiveValue,
   FindOptionsOrder,
@@ -57,9 +57,9 @@ import type {
   IdFindOptionsWhereField,
   TypeFindOptionsWhereField,
   ValueWhereFieldObject,
-} from '../FindOptionsTypes';
-import type { InverseRelationOperatorValue } from '../operator/InverseRelation';
-import type { InverseRelationOrderValue } from '../operator/InverseRelationOrder';
+} from '../../FindOptionsTypes';
+import type { InverseRelationOperatorValue } from '../../operator/InverseRelation';
+import type { InverseRelationOrderValue } from '../../operator/InverseRelationOrder';
 import { VariableGenerator } from './VariableGenerator';
 
 export interface NonGraphWhereQueryData {

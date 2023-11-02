@@ -1,4 +1,4 @@
-import { VariableGenerator } from '../../../../src/storage/sparql/VariableGenerator';
+import { VariableGenerator } from '../../../../../src/storage/query-adapter/sparql/VariableGenerator';
 
 describe('A VariableGenerator', (): void => {
   let generator: VariableGenerator;

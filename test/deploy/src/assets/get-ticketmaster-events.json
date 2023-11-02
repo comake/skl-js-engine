@@ -17,11 +17,9 @@
     "skos": "http://www.w3.org/2004/02/skos/core#",
     "dcterms": "http://purl.org/dc/elements/1.1/",
     "description": "dcterms:description",
-     "https://standardknowledge.com/ontologies/core/integration": { "@type": "@id" },
     "https://standardknowledge.com/ontologies/core/account": { "@type": "@id" },
-     "https://standardknowledge.com/ontologies/core/openApiDescription": { "@type": "@json" },
+    "skl:openApiDescription": { "@type": "@json" },
     "skl": "https://standardknowledge.com/ontologies/core/",
-    "https://standardknowledge.com/ontologies/core/parametersContext": { "@type": "@json" },
     "https://standardknowledge.com/ontologies/core/returnValueFrame": { "@type": "@json" },
     "parameterMapping": {
       "@id": "skl:parameterMapping",
@@ -29,6 +27,10 @@
     },
     "parameterMappingFrame": {
       "@id": "skl:parameterMappingFrame",
+      "@type": "@json"
+    },
+    "parametersContext": {
+      "@id": "skl:parametersContext",
       "@type": "@json"
     },
     "returnValueMapping": {
@@ -40,6 +42,7 @@
       "@type": "@id"
     },
     "integration": { "@id": "skl:integration", "@type": "@id" },
+    "account": { "@id": "skl:account", "@type": "@id" },
     "verb": { "@id": "skl:verb", "@type": "@id" },
     "rml:referenceFormulation": { "@type": "@id" },
     "rr:parentTriplesMap": { "@type": "@id" },
@@ -61,14 +64,14 @@
     {
       "@id": "https://example.com/data/TicketmasterAccount1",
       "@type": "https://standardknowledge.com/ontologies/core/Account",
-       "https://standardknowledge.com/ontologies/core/integration": "https://example.com/integrations/Ticketmaster",
+      "integration": "https://example.com/integrations/Ticketmaster",
       "rdfs:label": "Ticketmaster Account"
     },
     {
       "@id": "https://example.com/data/TicketmasterAccount1SecurityCredentials",
       "@type": "https://standardknowledge.com/ontologies/core/SecurityCredentials",
       "https://standardknowledge.com/ontologies/core/apiKey": "ENV_TICKETMASTER_APIKEY",
-      "https://standardknowledge.com/ontologies/core/account": "https://example.com/data/TicketmasterAccount1"
+      "account": "https://example.com/data/TicketmasterAccount1"
     },
     {
       "@id": "https://example.com/integrations/Ticketmaster",
@@ -80,7 +83,7 @@
       "@id": "https://example.com/getEvents",
       "@type": "https://standardknowledge.com/ontologies/core/Verb",
       "rdfs:label": "getEvents",
-      "https://standardknowledge.com/ontologies/core/parametersContext": {
+      "parametersContext": {
         "city": {
           "@id": "https://example.com/city",
           "@type": "http://www.w3.org/2001/XMLSchema#string"
@@ -726,8 +729,8 @@
     {
       "@id": "https://example.com/data/TicketmasterOpenApiDescription",
       "@type": "https://standardknowledge.com/ontologies/core/OpenApiDescription",
-       "https://standardknowledge.com/ontologies/core/integration": "https://example.com/integrations/Ticketmaster",
-       "https://standardknowledge.com/ontologies/core/openApiDescription": {
+      "integration": "https://example.com/integrations/Ticketmaster",
+      "skl:openApiDescription": {
         "openapi": "3.0.0",
         "servers": [
           {

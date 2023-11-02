@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { RDF } from '@comake/rmlmapper-js';
 import DataFactory from '@rdfjs/data-model';
-import { SparqlUpdateBuilder } from '../../../../src/storage/sparql/SparqlUpdateBuilder';
+import { SparqlUpdateBuilder } from '../../../../../src/storage/query-adapter/sparql/SparqlUpdateBuilder';
 import {
   created,
   firstPredicate,
@@ -10,8 +10,8 @@ import {
   now,
   rdfTypeNamedNode,
   restPredicate,
-} from '../../../../src/util/SparqlUtil';
-import { DCTERMS, SKL, XSD } from '../../../../src/util/Vocabularies';
+} from '../../../../../src/util/SparqlUtil';
+import { DCTERMS, SKL, XSD } from '../../../../../src/util/Vocabularies';
 
 const c1 = DataFactory.variable('c1');
 const c2 = DataFactory.variable('c2');
@@ -484,6 +484,53 @@ describe('A SparqlUpdateBuilder', (): void => {
       ],
     };
     expect(builder.buildUpdate(entity)).toEqual(query);
+  });
+
+  it('builds a delete query for an entity by id.', (): void => {
+    const entityId = 'https://example.com/data/1';
+    const query = {
+      type: 'update',
+      prefixes: {},
+      updates: [{
+        type: 'drop',
+        silent: true,
+        graph: {
+          type: 'graph',
+          name: data1,
+        },
+      }],
+    };
+    expect(builder.buildDeleteById(entityId)).toEqual(query);
+  });
+
+  it('builds a delete query for multiple entities by id.', (): void => {
+    const entityIds = [
+      'https://example.com/data/1',
+      'https://example.com/data/2',
+    ];
+    const query = {
+      type: 'update',
+      prefixes: {},
+      updates: [
+        {
+          type: 'drop',
+          silent: true,
+          graph: {
+            type: 'graph',
+            name: data1,
+          },
+        },
+        {
+          type: 'drop',
+          silent: true,
+          graph: {
+            type: 'graph',
+            name: data2,
+          },
+        },
+      ],
+    };
+    expect(builder.buildDeleteById(entityIds)).toEqual(query);
   });
 
   it('builds a delete query for an entity.', (): void => {

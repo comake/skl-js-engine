@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '16.x'
-      - run: npm ci --ignore-scripts
+      - run: npm ci --ignore-scripts --legacy-peer-deps
       - run: npm run lint
   test-unit:
     runs-on: ${{ matrix.operating-system }}
@@ -43,7 +43,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Install dependencies and run build scripts
-        run: npm ci
+        run: npm ci --legacy-peer-deps
       - name: Type-check tests
         run: npm run test:ts
       - name: Run unit tests
@@ -78,7 +78,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Install dependencies and run build scripts
-        run: npm ci
+        run: npm ci --legacy-peer-deps
       - name: Run integration tests
         run: npm run test:integration
   test-integration-windows:
@@ -99,7 +99,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Install dependencies and run build scripts
-        run: npm ci
+        run: npm ci --legacy-peer-deps
       - name: Run integration tests
         run: npm run test:integration
   test-package:
@@ -122,7 +122,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Install dependencies and run build scripts
-        run: npm ci
+        run: npm ci --legacy-peer-deps
       - name: Run package tests
         run: npm run test:package
   coveralls:

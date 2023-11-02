@@ -27,13 +27,13 @@ import {
   now,
   rdfTypeNamedNode,
   restPredicate,
-} from '../../util/SparqlUtil';
+} from '../../../util/SparqlUtil';
 import {
   valueToLiteral,
-} from '../../util/TripleUtil';
-import type { Entity } from '../../util/Types';
-import { ensureArray } from '../../util/Util';
-import { DCTERMS } from '../../util/Vocabularies';
+} from '../../../util/TripleUtil';
+import type { Entity } from '../../../util/Types';
+import { ensureArray } from '../../../util/Util';
+import { DCTERMS } from '../../../util/Vocabularies';
 import { VariableGenerator } from './VariableGenerator';
 
 export interface EntityUpdateQueries {
@@ -83,6 +83,12 @@ export class SparqlUpdateBuilder {
       });
     }
     return createSparqlUpdate(updates);
+  }
+
+  public buildDeleteById(idOrIds: string | string[]): Update {
+    const ids = ensureArray(idOrIds);
+    const drops = this.idsToGraphDropUpdates(ids);
+    return createSparqlUpdate(drops);
   }
 
   public buildDelete(entityOrEntities: Entity | Entity[]): Update {
@@ -155,6 +161,15 @@ export class SparqlUpdateBuilder {
         }
         return obj;
       }, { clear: [], insertions: [], timestampInsertions: []});
+  }
+
+  private idsToGraphDropUpdates(
+    ids: string[],
+  ): UpdateOperation[] {
+    return ids.map((id): UpdateOperation => {
+      const entityGraphName = DataFactory.namedNode(id);
+      return createSparqlDropUpdate(entityGraphName);
+    });
   }
 
   private entitiesToGraphDropUpdates(
