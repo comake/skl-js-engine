@@ -1,12 +1,7 @@
-import type { Callbacks } from './Callbacks';
-import type { MemoryQueryAdapterOptions } from './storage/memory/MemoryQueryAdapterOptions';
-import type { SparqlQueryAdapterOptions } from './storage/sparql/SparqlQueryAdapterOptions';
+import type { SparqlQueryAdapterOptions } from './storage/query-adapter/sparql/SparqlQueryAdapterOptions';
+import type { Callbacks } from './util/Types';
 
-export type SklEngineStorageOptions =
-| MemoryQueryAdapterOptions
-| SparqlQueryAdapterOptions;
-
-export type SklEngineOptions = SklEngineStorageOptions & {
+export type SklEngineOptions = SparqlQueryAdapterOptions & {
   /**
    * Callbacks to execute upon events.
    */

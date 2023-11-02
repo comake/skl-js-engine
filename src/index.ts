@@ -1,10 +1,6 @@
 // Mapping
 export * from './mapping/Mapper';
 
-// Storage/Memory
-export * from './storage/memory/MemoryQueryAdapter';
-export * from './storage/memory/MemoryQueryAdapterOptions';
-
 // Storage/Operator
 export * from './storage/operator/Equal';
 export * from './storage/operator/GreaterThan';
@@ -22,16 +18,17 @@ export * from './storage/operator/SequencePath';
 export * from './storage/operator/ZeroOrMorePath';
 
 // Storage/Sparql
-export * from './storage/sparql/SparqlQueryAdapter';
-export * from './storage/sparql/SparqlQueryBuilder';
-export * from './storage/sparql/SparqlQueryExecutor';
-export * from './storage/sparql/SparqlUpdateBuilder';
-export * from './storage/sparql/VariableGenerator';
+export * from './storage/query-adapter/sparql/SparqlQueryAdapter';
+export * from './storage/query-adapter/sparql/SparqlQueryBuilder';
+export * from './storage/query-adapter/sparql/SparqlUpdateBuilder';
+export * from './storage/query-adapter/sparql/VariableGenerator';
+export * from './storage/query-adapter/sparql/query-executor/InMemorySparqlQueryExecutor';
+export * from './storage/query-adapter/sparql/query-executor/SparqlEndpointQueryExecutor';
 
 // Storage
 export * from './storage/FindOperator';
 export * from './storage/FindOptionsTypes';
-export * from './storage/QueryAdapter';
+export * from './storage/query-adapter/QueryAdapter';
 
 // Util
 export * from './util/TripleUtil';

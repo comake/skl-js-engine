@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/method-signature-style */
 import type { GraphObject } from 'jsonld';
 import type { Frame } from 'jsonld/jsonld-spec';
-import type { Entity } from '../util/Types';
+import type { Entity } from '../../util/Types';
 import type {
   FindAllOptions,
   FindCountOptions,
   FindExistsOptions,
   FindOneOptions,
   FindOptionsWhere,
-} from './FindOptionsTypes';
+} from '../FindOptionsTypes';
 
 export type RawQueryResult = Record<string, number | boolean | string>;
 
@@ -69,6 +69,14 @@ export interface QueryAdapter {
    * Updates multiple entities partially.
    */
   update(ids: string[], attributes: Partial<Entity>): Promise<void>;
+  /**
+   * Removes an entity from the database by id.
+   */
+  delete(id: string): Promise<void>;
+  /**
+   * Removes multiple entities from the database by id.
+   */
+  delete(ids: string[]): Promise<void>;
   /**
    * Removes a given entity from the database.
    */

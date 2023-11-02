@@ -1,4 +1,4 @@
-import type { Quad, Literal, NamedNode } from '@rdfjs/types';
+import type { Quad, Literal } from '@rdfjs/types';
 import SparqlClient from 'sparql-http-client';
 import type {
   Update,
@@ -8,10 +8,9 @@ import type {
   ConstructQuery,
 } from 'sparqljs';
 import { Generator } from 'sparqljs';
+import type { QueryExecutor, SelectVariableQueryResult } from './SparqlQueryExecutor';
 
-export type SelectVariableQueryResult<T> = Record<keyof T, NamedNode | Literal>;
-
-export interface SparqlQueryExecutorOptions {
+export interface SparqlEndpointQueryExecutorOptions {
   /**
    * The location of the SPARQL endpoint. This value is required.
    */
@@ -22,11 +21,11 @@ export interface SparqlQueryExecutorOptions {
   readonly updateUrl?: string;
 }
 
-export class SparqlQueryExecutor {
+export class SparqlEndpointQueryExecutor implements QueryExecutor {
   private readonly sparqlClient: SparqlClient;
   private readonly sparqlGenerator: SparqlGenerator;
 
-  public constructor(options: SparqlQueryExecutorOptions) {
+  public constructor(options: SparqlEndpointQueryExecutorOptions) {
     this.sparqlClient = new SparqlClient({
       endpointUrl: options.endpointUrl,
       updateUrl: options.updateUrl ?? options.endpointUrl,

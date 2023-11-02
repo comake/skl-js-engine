@@ -2,11 +2,11 @@
 import type { Readable } from 'stream';
 import DataFactory from '@rdfjs/data-model';
 import SparqlClient from 'sparql-http-client';
-import { InverseRelation } from '../../../../src/storage/operator/InverseRelation';
-import { SparqlQueryAdapter } from '../../../../src/storage/sparql/SparqlQueryAdapter';
-import { rdfTypeNamedNode } from '../../../../src/util/SparqlUtil';
-import { DCTERMS, SKL, XSD } from '../../../../src/util/Vocabularies';
-import { streamFrom } from '../../../util/Util';
+import { InverseRelation } from '../../../../../src/storage/operator/InverseRelation';
+import { SparqlQueryAdapter } from '../../../../../src/storage/query-adapter/sparql/SparqlQueryAdapter';
+import { rdfTypeNamedNode } from '../../../../../src/util/SparqlUtil';
+import { DCTERMS, SKL, XSD } from '../../../../../src/util/Vocabularies';
+import { streamFrom } from '../../../../util/Util';
 
 const endpointUrl = 'https://example.com/sparql';
 const file = DataFactory.namedNode(SKL.File);
@@ -843,6 +843,30 @@ describe('a SparqlQueryAdapter', (): void => {
         `INSERT { GRAPH <https://example.com/data/2> { <https://example.com/data/2> <${SKL.sourceId}> "abc123". } }`,
         'USING <https://example.com/data/2>',
         `WHERE { OPTIONAL { <https://example.com/data/2> <${SKL.sourceId}> ?c2. } }`,
+      ]);
+    });
+  });
+
+  describe('delete', (): void => {
+    it('deletes a single schema.', async(): Promise<void> => {
+      const entityId = 'https://example.com/data/1';
+      await expect(adapter.delete(entityId)).resolves.toBeUndefined();
+      expect(update).toHaveBeenCalledTimes(1);
+      expect(update.mock.calls[0][0].split('\n')).toEqual([
+        `DROP SILENT GRAPH <${entityId}>`,
+      ]);
+    });
+
+    it('deletes multiple schema.', async(): Promise<void> => {
+      const entityIds = [
+        'https://example.com/data/1',
+        'https://example.com/data/2',
+      ];
+      await expect(adapter.delete(entityIds)).resolves.toBeUndefined();
+      expect(update).toHaveBeenCalledTimes(1);
+      expect(update.mock.calls[0][0].split('\n')).toEqual([
+        `DROP SILENT GRAPH <${entityIds[0]}>;`,
+        `DROP SILENT GRAPH <${entityIds[1]}>`,
       ]);
     });
   });

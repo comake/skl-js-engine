@@ -29,8 +29,10 @@ import type {
   InsertDeleteOperation,
   Grouping,
 } from 'sparqljs';
-import type { RawQueryResult } from '../storage/QueryAdapter';
-import type { SelectVariableQueryResult } from '../storage/sparql/SparqlQueryExecutor';
+import type { RawQueryResult } from '../storage/query-adapter/QueryAdapter';
+import type {
+  SelectVariableQueryResult,
+} from '../storage/query-adapter/sparql/query-executor/SparqlQueryExecutor';
 import { toJSValueFromDataType } from './TripleUtil';
 import { DCTERMS, RDF, RDFS } from './Vocabularies';
 

@@ -1,19 +1,21 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import DataFactory from '@rdfjs/data-model';
-import type { FindOperatorType } from '../../../../src/storage/FindOperator';
-import { Equal } from '../../../../src/storage/operator/Equal';
-import { GreaterThan } from '../../../../src/storage/operator/GreaterThan';
-import { GreaterThanOrEqual } from '../../../../src/storage/operator/GreaterThanOrEqual';
-import { In } from '../../../../src/storage/operator/In';
-import { Inverse } from '../../../../src/storage/operator/Inverse';
-import { InversePath } from '../../../../src/storage/operator/InversePath';
-import { InverseRelation } from '../../../../src/storage/operator/InverseRelation';
-import { InverseRelationOrder } from '../../../../src/storage/operator/InverseRelationOrder';
-import { LessThan } from '../../../../src/storage/operator/LessThan';
-import { LessThanOrEqual } from '../../../../src/storage/operator/LessThanOrEqual';
-import { Not } from '../../../../src/storage/operator/Not';
-import { ZeroOrMorePath } from '../../../../src/storage/operator/ZeroOrMorePath';
-import { SparqlQueryBuilder } from '../../../../src/storage/sparql/SparqlQueryBuilder';
+import type { FindOperatorType } from '../../../../../src/storage/FindOperator';
+import { Equal } from '../../../../../src/storage/operator/Equal';
+import { GreaterThan } from '../../../../../src/storage/operator/GreaterThan';
+import { GreaterThanOrEqual } from '../../../../../src/storage/operator/GreaterThanOrEqual';
+import { In } from '../../../../../src/storage/operator/In';
+import { Inverse } from '../../../../../src/storage/operator/Inverse';
+import { InversePath } from '../../../../../src/storage/operator/InversePath';
+import { InverseRelation } from '../../../../../src/storage/operator/InverseRelation';
+import { InverseRelationOrder } from '../../../../../src/storage/operator/InverseRelationOrder';
+import { LessThan } from '../../../../../src/storage/operator/LessThan';
+import { LessThanOrEqual } from '../../../../../src/storage/operator/LessThanOrEqual';
+import { Not } from '../../../../../src/storage/operator/Not';
+import { ZeroOrMorePath } from '../../../../../src/storage/operator/ZeroOrMorePath';
+import {
+  SparqlQueryBuilder,
+} from '../../../../../src/storage/query-adapter/sparql/SparqlQueryBuilder';
 import {
   entityVariable,
   objectNode,
@@ -21,8 +23,8 @@ import {
   rdfsSubClassOfNamedNode,
   rdfTypeNamedNode,
   subjectNode,
-} from '../../../../src/util/SparqlUtil';
-import { RDF, RDFS, SKL, XSD } from '../../../../src/util/Vocabularies';
+} from '../../../../../src/util/SparqlUtil';
+import { RDF, RDFS, SKL, XSD } from '../../../../../src/util/Vocabularies';
 
 const c1 = DataFactory.variable('c1');
 const c2 = DataFactory.variable('c2');

@@ -12,16 +12,15 @@ import type { Frame } from 'jsonld/jsonld-spec';
 import { JSONPath } from 'jsonpath-plus';
 import SHACLValidator from 'rdf-validate-shacl';
 import type ValidationReport from 'rdf-validate-shacl/src/validation-report';
-import type { Callbacks } from './Callbacks';
 import { Mapper } from './mapping/Mapper';
 import type { SklEngineOptions } from './SklEngineOptions';
 import type { FindAllOptions, FindOneOptions, FindOptionsWhere } from './storage/FindOptionsTypes';
-import { MemoryQueryAdapter } from './storage/memory/MemoryQueryAdapter';
 import { InversePath } from './storage/operator/InversePath';
 import { ZeroOrMorePath } from './storage/operator/ZeroOrMorePath';
-import type { QueryAdapter, RawQueryResult } from './storage/QueryAdapter';
-import { SparqlQueryAdapter } from './storage/sparql/SparqlQueryAdapter';
+import type { QueryAdapter, RawQueryResult } from './storage/query-adapter/QueryAdapter';
+import { SparqlQueryAdapter } from './storage/query-adapter/sparql/SparqlQueryAdapter';
 import type {
+  Callbacks,
   OrArray,
   Entity,
   OperationResponse,
@@ -57,7 +56,7 @@ export type VerbInterface = Record<string, VerbHandler>;
 export type MappingResponseOption<T extends boolean> = T extends true ? JSONObject : NodeObject;
 
 export class SKLEngine {
-  private readonly adapter: QueryAdapter;
+  private readonly queryAdapter: QueryAdapter;
   private readonly functions?: Record<string, (args: any | any[]) => any>;
   private readonly inputFiles?: Record<string, string>;
   private readonly globalCallbacks?: Callbacks;
@@ -65,17 +64,7 @@ export class SKLEngine {
   public readonly verb: VerbInterface;
 
   public constructor(options: SklEngineOptions) {
-    switch (options.type) {
-      case 'memory':
-        this.adapter = new MemoryQueryAdapter(options);
-        break;
-      case 'sparql':
-        this.adapter = new SparqlQueryAdapter(options);
-        break;
-      default:
-        throw new Error('No schema source found in setSchema args.');
-    }
-
+    this.queryAdapter = new SparqlQueryAdapter(options);
     this.disableValidation = options.disableValidation;
     this.globalCallbacks = options.callbacks;
     this.inputFiles = options.inputFiles;
@@ -92,15 +81,15 @@ export class SKLEngine {
   }
 
   public async executeRawQuery<T extends RawQueryResult>(query: string): Promise<T[]> {
-    return await this.adapter.executeRawQuery<T>(query);
+    return await this.queryAdapter.executeRawQuery<T>(query);
   }
 
   public async executeRawEntityQuery(query: string, frame?: Frame): Promise<GraphObject> {
-    return await this.adapter.executeRawEntityQuery(query, frame);
+    return await this.queryAdapter.executeRawEntityQuery(query, frame);
   }
 
   public async find(options?: FindOneOptions): Promise<Entity> {
-    const entity = await this.adapter.find(options);
+    const entity = await this.queryAdapter.find(options);
     if (entity) {
       return entity;
     }
@@ -108,7 +97,7 @@ export class SKLEngine {
   }
 
   public async findBy(where: FindOptionsWhere): Promise<Entity> {
-    const entity = await this.adapter.findBy(where);
+    const entity = await this.queryAdapter.findBy(where);
     if (entity) {
       return entity;
     }
@@ -116,50 +105,59 @@ export class SKLEngine {
   }
 
   public async findAll(options?: FindAllOptions): Promise<Entity[]> {
-    return await this.adapter.findAll(options);
+    return await this.queryAdapter.findAll(options);
   }
 
   public async findAllBy(where: FindOptionsWhere): Promise<Entity[]> {
-    return await this.adapter.findAllBy(where);
+    return await this.queryAdapter.findAllBy(where);
   }
 
   public async exists(options?: FindAllOptions): Promise<boolean> {
-    return await this.adapter.exists(options);
+    return await this.queryAdapter.exists(options);
   }
 
   public async count(options?: FindAllOptions): Promise<number> {
-    return await this.adapter.count(options);
+    return await this.queryAdapter.count(options);
   }
 
   public async save(entity: Entity): Promise<Entity>;
   public async save(entities: Entity[]): Promise<Entity[]>;
   public async save(entityOrEntities: Entity | Entity[]): Promise<Entity | Entity[]> {
     if (Array.isArray(entityOrEntities)) {
-      return await this.adapter.save(entityOrEntities);
+      return await this.queryAdapter.save(entityOrEntities);
     }
-    return await this.adapter.save(entityOrEntities);
+    return await this.queryAdapter.save(entityOrEntities);
   }
 
   public async update(id: string, attributes: Partial<Entity>): Promise<void>;
   public async update(ids: string[], attributes: Partial<Entity>): Promise<void>;
   public async update(idOrIds: string | string[], attributes: Partial<Entity>): Promise<void> {
     if (Array.isArray(idOrIds)) {
-      return await this.adapter.update(idOrIds, attributes);
+      return await this.queryAdapter.update(idOrIds, attributes);
     }
-    return await this.adapter.update(idOrIds, attributes);
+    return await this.queryAdapter.update(idOrIds, attributes);
+  }
+
+  public async delete(id: string): Promise<void>;
+  public async delete(ids: string[]): Promise<void>;
+  public async delete(idOrIds: string | string[]): Promise<void> {
+    if (Array.isArray(idOrIds)) {
+      return await this.queryAdapter.delete(idOrIds);
+    }
+    return await this.queryAdapter.delete(idOrIds);
   }
 
   public async destroy(entity: Entity): Promise<Entity>;
   public async destroy(entities: Entity[]): Promise<Entity[]>;
   public async destroy(entityOrEntities: Entity | Entity[]): Promise<Entity | Entity[]> {
     if (Array.isArray(entityOrEntities)) {
-      return await this.adapter.destroy(entityOrEntities);
+      return await this.queryAdapter.destroy(entityOrEntities);
     }
-    return await this.adapter.destroy(entityOrEntities);
+    return await this.queryAdapter.destroy(entityOrEntities);
   }
 
   public async destroyAll(): Promise<void> {
-    return await this.adapter.destroyAll();
+    return await this.queryAdapter.destroyAll();
   }
 
   public async performMapping(

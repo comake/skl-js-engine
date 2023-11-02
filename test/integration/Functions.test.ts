@@ -18,7 +18,8 @@ describe('An SKL engine with user supplied functions', (): void => {
         return numerator / denominator;
       },
     };
-    const engine = new SKLEngine({ type: 'memory', schemas, functions });
+    const engine = new SKLEngine({ type: 'memory', functions });
+    await engine.save(schemas);
     const response = await engine.verb.divide<NodeObject>({
       noun: 'https://standardknowledge.com/ontologies/core/Equation',
       numerator: 10,
