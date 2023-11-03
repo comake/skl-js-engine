@@ -215,15 +215,18 @@ export class SKLEngine {
   ): Promise<void> {
     const nounIds = Array.isArray(entity['@type']) ? entity['@type'] : [ entity['@type'] ];
     const directNouns = await this.findAllBy({ id: In(nounIds) });
-    const parentNouns = await this.getSuperClassesOfNouns(nounIds);
-    for (const currentNoun of [ ...directNouns, ...parentNouns ]) {
-      const nounSchemaWithTarget = {
-        ...currentNoun,
-        [SHACL.targetNode]: { '@id': entity['@id'] },
-      };
-      const report = await this.convertToQuadsAndValidateAgainstShape(entity, nounSchemaWithTarget);
-      if (!report.conforms) {
-        throw new Error(`Entity ${entity['@id']} does not conform to the ${currentNoun['@id']} schema.`);
+    if (directNouns.length > 0) {
+      const existingNounIds = directNouns.map((noun): string => noun['@id']);
+      const parentNouns = await this.getSuperClassesOfNouns(existingNounIds);
+      for (const currentNoun of [ ...directNouns, ...parentNouns ]) {
+        const nounSchemaWithTarget = {
+          ...currentNoun,
+          [SHACL.targetNode]: { '@id': entity['@id'] },
+        };
+        const report = await this.convertToQuadsAndValidateAgainstShape(entity, nounSchemaWithTarget);
+        if (!report.conforms) {
+          throw new Error(`Entity ${entity['@id']} does not conform to the ${currentNoun['@id']} schema.`);
+        }
       }
     }
   }
