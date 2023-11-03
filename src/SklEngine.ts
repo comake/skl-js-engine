@@ -171,7 +171,10 @@ export class SKLEngine {
           };
           const report = await this.convertToQuadsAndValidateAgainstShape(entitiesOfType, nounSchemaWithTarget);
           if (!report.conforms) {
-            throw new Error(`An entity does not conform to the ${currentNoun['@id']} schema.`);
+            this.throwValidationReportError(
+              report,
+              `An entity does not conform to the ${currentNoun['@id']} schema.`,
+            );
           }
         }
       }
@@ -225,7 +228,10 @@ export class SKLEngine {
         };
         const report = await this.convertToQuadsAndValidateAgainstShape(entity, nounSchemaWithTarget);
         if (!report.conforms) {
-          throw new Error(`Entity ${entity['@id']} does not conform to the ${currentNoun['@id']} schema.`);
+          this.throwValidationReportError(
+            report,
+            `Entity ${entity['@id']} does not conform to the ${currentNoun['@id']} schema.`,
+          );
         }
       }
     }
@@ -281,7 +287,10 @@ export class SKLEngine {
           const attributesWithId = { ...attributes, '@id': id };
           const report = await this.convertToQuadsAndValidateAgainstShape(attributesWithId, nounSchemaWithTarget);
           if (!report.conforms) {
-            throw new Error(`Entity ${id} does not conform to the ${currentNoun['@id']} schema.`);
+            this.throwValidationReportError(
+              report,
+              `Entity ${id} does not conform to the ${currentNoun['@id']} schema.`,
+            );
           }
         }
       }
@@ -835,7 +844,10 @@ export class SKLEngine {
     const parametersSchema = verb[SKL.parameters] as NodeObject;
     const report = await this.convertToQuadsAndValidateAgainstShape(verbParamsAsJsonLd, parametersSchema);
     if (!report.conforms) {
-      throw new Error(`${getValueIfDefined(verb[RDFS.label])} parameters do not conform to the schema`);
+      this.throwValidationReportError(
+        report,
+        `${getValueIfDefined(verb[RDFS.label])} parameters do not conform to the schema`,
+      );
     }
   }
 
@@ -1075,5 +1087,30 @@ export class SKLEngine {
     // eslint-disable-next-line unicorn/expiring-todo-comments
     // TODO add support for remote sources
     throw new Error(`Failed to get data from source ${source}`);
+  }
+
+  private throwValidationReportError(report: ValidationReport, errorMessage: string): void {
+    const reportMessages = this.validationReportToMessages(report);
+    throw new Error(
+      `${errorMessage}\n\n${reportMessages.join('\n')}`,
+    );
+  }
+
+  private validationReportToMessages(report: ValidationReport): string[] {
+    const reportMessages = [];
+    for (const result of report.results) {
+      const pathValue = result.path?.value;
+      if (result.message.length === 0) {
+        const message = `${pathValue}: Invalid due to ${result.sourceConstraintComponent?.value}`;
+        reportMessages.push(message);
+      } else {
+        const resultMessages = result.message
+          .map((message): string => `${message.value}`)
+          .join(', ');
+        const message = `${pathValue}: ${resultMessages}`;
+        reportMessages.push(message);
+      }
+    }
+    return reportMessages;
   }
 }
