@@ -68,11 +68,13 @@ export class InMemorySparqlQueryExecutor implements QueryExecutor {
   }
 
   public async executeSparqlUpdate(query: Update): Promise<void> {
-    const generatedQuery = this.sparqlGenerator.stringify(query);
-    await this.engine.queryVoid(
-      generatedQuery,
-      this.queryContext,
-    );
+    if ((query?.updates?.length ?? 0) > 0) {
+      const generatedQuery = this.sparqlGenerator.stringify(query);
+      await this.engine.queryVoid(
+        generatedQuery,
+        this.queryContext,
+      );
+    }
   }
 
   public async executeAskQueryAndGetResponse(query: AskQuery): Promise<boolean> {

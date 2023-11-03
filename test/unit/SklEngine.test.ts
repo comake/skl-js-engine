@@ -1,4 +1,3 @@
-/* eslint-disable jest/no-disabled-tests */
 /* eslint-disable @typescript-eslint/naming-convention */
 import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
 import { RR } from '@comake/rmlmapper-js';
@@ -120,228 +119,407 @@ describe('SKLEngine', (): void => {
       jest.restoreAllMocks();
     });
 
-    it('delegates calls to executeRawQuery to the query adapter.', async(): Promise<void> => {
-      const executeRawQuerySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'executeRawQuery');
-      await expect(sklEngine.executeRawQuery('')).resolves.toEqual([]);
-      expect(executeRawQuerySpy).toHaveBeenCalledTimes(1);
-      expect(executeRawQuerySpy).toHaveBeenCalledWith('');
-    });
-
-    it('delegates calls to executeRawEntityQuery to the query adapter.', async(): Promise<void> => {
-      const executeRawEntityQuerySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'executeRawEntityQuery');
-      await expect(sklEngine.executeRawEntityQuery('', {})).resolves.toEqual({ '@graph': []});
-      expect(executeRawEntityQuerySpy).toHaveBeenCalledTimes(1);
-      expect(executeRawEntityQuerySpy).toHaveBeenCalledWith('', {});
-    });
-
-    it('delegates calls to find to the query adapter.', async(): Promise<void> => {
-      const findSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'find');
-      await expect(sklEngine.find({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }})).resolves.toEqual(schemas[0]);
-      expect(findSpy).toHaveBeenCalledTimes(1);
-      expect(findSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }});
-    });
-
-    it('throws an error if there is no schema matching the query during find.', async(): Promise<void> => {
-      const findSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'find');
-      await expect(sklEngine.find({ where: { id: 'https://standardknowledge.com/ontologies/core/Send' }})).rejects.toThrow(
-        'No schema found with fields matching {"where":{"id":"https://standardknowledge.com/ontologies/core/Send"}}',
-      );
-      expect(findSpy).toHaveBeenCalledTimes(1);
-      expect(findSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Send' }});
-    });
-
-    it('delegates calls to findBy to the query adapter.', async(): Promise<void> => {
-      const findBySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'findBy');
-      await expect(sklEngine.findBy({ id: 'https://standardknowledge.com/ontologies/core/Share' })).resolves.toEqual(schemas[0]);
-      expect(findBySpy).toHaveBeenCalledTimes(1);
-      expect(findBySpy).toHaveBeenCalledWith({ id: 'https://standardknowledge.com/ontologies/core/Share' });
-    });
-
-    it('throws an error if there is no schema matching the query during findBy.', async(): Promise<void> => {
-      const findBySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'findBy');
-      await expect(sklEngine.findBy({ id: 'https://standardknowledge.com/ontologies/core/Send' })).rejects.toThrow(
-        'No schema found with fields matching {"id":"https://standardknowledge.com/ontologies/core/Send"}',
-      );
-      expect(findBySpy).toHaveBeenCalledTimes(1);
-      expect(findBySpy).toHaveBeenCalledWith({ id: 'https://standardknowledge.com/ontologies/core/Send' });
-    });
-
-    it('delegates calls to findAll to the query adapter.', async(): Promise<void> => {
-      const findAllSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'findAll');
-      await expect(sklEngine.findAll({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }})).resolves.toEqual([ schemas[0] ]);
-      expect(findAllSpy).toHaveBeenCalledTimes(1);
-      expect(findAllSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }});
-    });
-
-    it('delegates calls to findAllBy to the query adapter.', async(): Promise<void> => {
-      const findAllBySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'findAllBy');
-      await expect(sklEngine.findAllBy({ id: 'https://standardknowledge.com/ontologies/core/Share' })).resolves.toEqual([ schemas[0] ]);
-      expect(findAllBySpy).toHaveBeenCalledTimes(1);
-      expect(findAllBySpy).toHaveBeenCalledWith({ id: 'https://standardknowledge.com/ontologies/core/Share' });
-    });
-
-    it('delegates calls to exists to the query adapter.', async(): Promise<void> => {
-      const existsSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'exists');
-      await expect(sklEngine.exists({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }})).resolves.toBe(true);
-      expect(existsSpy).toHaveBeenCalledTimes(1);
-      expect(existsSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }});
-    });
-
-    it('delegates calls to count to the query adapter.', async(): Promise<void> => {
-      const countSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'count');
-      await expect(sklEngine.count({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }})).resolves.toBe(1);
-      expect(countSpy).toHaveBeenCalledTimes(1);
-      expect(countSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }});
-    });
-
-    it('delegates calls to save a single entity to the query adapter.', async(): Promise<void> => {
-      const saveSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'save');
-      const res = await sklEngine.save({
-        '@id': 'https://standardknowledge.com/ontologies/core/Share',
-        '@type': 'https://standardknowledge.com/ontologies/core/Verb',
-        [RDFS.label]: 'Share',
-      });
-      expect(res).toEqual({
-        '@id': 'https://standardknowledge.com/ontologies/core/Share',
-        '@type': 'https://standardknowledge.com/ontologies/core/Verb',
-        [RDFS.label]: 'Share',
-      });
-      expect(saveSpy).toHaveBeenCalledTimes(1);
-      expect(saveSpy).toHaveBeenCalledWith({
-        '@id': 'https://standardknowledge.com/ontologies/core/Share',
-        '@type': 'https://standardknowledge.com/ontologies/core/Verb',
-        [RDFS.label]: 'Share',
+    describe('executeRawQuery', (): void => {
+      it('delegates calls to executeRawQuery to the query adapter.', async(): Promise<void> => {
+        const executeRawQuerySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'executeRawQuery');
+        await expect(sklEngine.executeRawQuery('')).resolves.toEqual([]);
+        expect(executeRawQuerySpy).toHaveBeenCalledTimes(1);
+        expect(executeRawQuerySpy).toHaveBeenCalledWith('');
       });
     });
 
-    it('delegates calls to save multiple entities to the query adapter.', async(): Promise<void> => {
-      const saveSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'save');
-      const entities = [
-        {
+    describe('executeRawEntityQuery', (): void => {
+      it('delegates calls to executeRawEntityQuery to the query adapter.', async(): Promise<void> => {
+        const executeRawEntityQuerySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'executeRawEntityQuery');
+        await expect(sklEngine.executeRawEntityQuery('', {})).resolves.toEqual({ '@graph': []});
+        expect(executeRawEntityQuerySpy).toHaveBeenCalledTimes(1);
+        expect(executeRawEntityQuerySpy).toHaveBeenCalledWith('', {});
+      });
+    });
+
+    describe('find', (): void => {
+      it('delegates calls to find to the query adapter.', async(): Promise<void> => {
+        const findSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'find');
+        await expect(sklEngine.find({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }})).resolves.toEqual(schemas[0]);
+        expect(findSpy).toHaveBeenCalledTimes(1);
+        expect(findSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }});
+      });
+
+      it('throws an error if there is no schema matching the query during find.', async(): Promise<void> => {
+        const findSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'find');
+        await expect(sklEngine.find({ where: { id: 'https://standardknowledge.com/ontologies/core/Send' }})).rejects.toThrow(
+          'No schema found with fields matching {"where":{"id":"https://standardknowledge.com/ontologies/core/Send"}}',
+        );
+        expect(findSpy).toHaveBeenCalledTimes(1);
+        expect(findSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Send' }});
+      });
+    });
+
+    describe('findBy', (): void => {
+      it('delegates calls to findBy to the query adapter.', async(): Promise<void> => {
+        const findBySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'findBy');
+        await expect(sklEngine.findBy({ id: 'https://standardknowledge.com/ontologies/core/Share' })).resolves.toEqual(schemas[0]);
+        expect(findBySpy).toHaveBeenCalledTimes(1);
+        expect(findBySpy).toHaveBeenCalledWith({ id: 'https://standardknowledge.com/ontologies/core/Share' });
+      });
+
+      it('throws an error if there is no schema matching the query during findBy.', async(): Promise<void> => {
+        const findBySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'findBy');
+        await expect(sklEngine.findBy({ id: 'https://standardknowledge.com/ontologies/core/Send' })).rejects.toThrow(
+          'No schema found with fields matching {"id":"https://standardknowledge.com/ontologies/core/Send"}',
+        );
+        expect(findBySpy).toHaveBeenCalledTimes(1);
+        expect(findBySpy).toHaveBeenCalledWith({ id: 'https://standardknowledge.com/ontologies/core/Send' });
+      });
+    });
+
+    describe('findAll', (): void => {
+      it('delegates calls to findAll to the query adapter.', async(): Promise<void> => {
+        const findAllSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'findAll');
+        await expect(sklEngine.findAll({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }})).resolves.toEqual([ schemas[0] ]);
+        expect(findAllSpy).toHaveBeenCalledTimes(1);
+        expect(findAllSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }});
+      });
+    });
+
+    describe('findAllBy', (): void => {
+      it('delegates calls to findAllBy to the query adapter.', async(): Promise<void> => {
+        const findAllBySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'findAllBy');
+        await expect(sklEngine.findAllBy({ id: 'https://standardknowledge.com/ontologies/core/Share' })).resolves.toEqual([ schemas[0] ]);
+        expect(findAllBySpy).toHaveBeenCalledTimes(1);
+        expect(findAllBySpy).toHaveBeenCalledWith({ id: 'https://standardknowledge.com/ontologies/core/Share' });
+      });
+    });
+
+    describe('exists', (): void => {
+      it('delegates calls to exists to the query adapter.', async(): Promise<void> => {
+        const existsSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'exists');
+        await expect(sklEngine.exists({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }})).resolves.toBe(true);
+        expect(existsSpy).toHaveBeenCalledTimes(1);
+        expect(existsSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }});
+      });
+    });
+
+    describe('count', (): void => {
+      it('delegates calls to count to the query adapter.', async(): Promise<void> => {
+        const countSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'count');
+        await expect(sklEngine.count({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }})).resolves.toBe(1);
+        expect(countSpy).toHaveBeenCalledTimes(1);
+        expect(countSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }});
+      });
+    });
+
+    describe('save', (): void => {
+      beforeEach(async(): Promise<void> => {
+        schemas = await frameAndCombineSchemas([ './test/assets/schemas/core.json' ]);
+        await sklEngine.save(schemas);
+      });
+
+      it('delegates calls to save a single entity to the query adapter.', async(): Promise<void> => {
+        const saveSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'save');
+        const res = await sklEngine.save({
           '@id': 'https://standardknowledge.com/ontologies/core/Share',
           '@type': 'https://standardknowledge.com/ontologies/core/Verb',
           [RDFS.label]: 'Share',
-        },
-        {
-          '@id': 'https://standardknowledge.com/ontologies/core/Send',
-          '@type': 'https://standardknowledge.com/ontologies/core/Verb',
-          [RDFS.label]: 'Send',
-        },
-      ];
-      const res = await sklEngine.save(entities);
-      expect(res).toEqual(entities);
-      expect(saveSpy).toHaveBeenCalledTimes(1);
-      expect(saveSpy).toHaveBeenCalledWith(entities);
-    });
-
-    it('delegates calls to update a single entity to the query adapter.', async(): Promise<void> => {
-      const updateSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'update');
-      const res = await sklEngine.update(
-        'https://standardknowledge.com/ontologies/core/Share',
-        { [RDFS.label]: 'Share' },
-      );
-      expect(res).toBeUndefined();
-      expect(updateSpy).toHaveBeenCalledTimes(1);
-      expect(updateSpy).toHaveBeenCalledWith(
-        'https://standardknowledge.com/ontologies/core/Share',
-        { [RDFS.label]: 'Share' },
-      );
-    });
-
-    it('delegates calls to update multiple entities to the query adapter.', async(): Promise<void> => {
-      const updateSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'update');
-      const res = await sklEngine.update(
-        [
-          'https://standardknowledge.com/ontologies/core/Share',
-          'https://standardknowledge.com/ontologies/core/Send',
-        ],
-        { [RDFS.label]: 'Share' },
-      );
-      expect(res).toBeUndefined();
-      expect(updateSpy).toHaveBeenCalledTimes(1);
-      expect(updateSpy).toHaveBeenCalledWith(
-        [
-          'https://standardknowledge.com/ontologies/core/Share',
-          'https://standardknowledge.com/ontologies/core/Send',
-        ],
-        { [RDFS.label]: 'Share' },
-      );
-    });
-
-    it('delegates calls to delete a single entity to the query adapter.', async(): Promise<void> => {
-      const deleteSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'delete');
-      const entity = {
-        '@id': 'https://standardknowledge.com/ontologies/core/Share',
-        '@type': 'https://standardknowledge.com/ontologies/core/Verb',
-      };
-      await sklEngine.save(entity);
-      const res = await sklEngine.delete(entity['@id']);
-      expect(res).toBeUndefined();
-      expect(deleteSpy).toHaveBeenCalledTimes(1);
-      expect(deleteSpy).toHaveBeenCalledWith(entity['@id']);
-    });
-
-    it('delegates calls to delete miltiple entities to the query adapter.', async(): Promise<void> => {
-      const deleteSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'delete');
-      const entities = [
-        {
+        });
+        expect(res).toEqual({
           '@id': 'https://standardknowledge.com/ontologies/core/Share',
           '@type': 'https://standardknowledge.com/ontologies/core/Verb',
           [RDFS.label]: 'Share',
+        });
+        expect(saveSpy).toHaveBeenCalledTimes(1);
+        expect(saveSpy).toHaveBeenCalledWith({
+          '@id': 'https://standardknowledge.com/ontologies/core/Share',
+          '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+          [RDFS.label]: 'Share',
+        });
+      });
+
+      it('delegates calls to save multiple entities to the query adapter.', async(): Promise<void> => {
+        const saveSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'save');
+        const entities = [
+          {
+            '@id': 'https://standardknowledge.com/ontologies/core/Share',
+            '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+            [RDFS.label]: 'Share',
+          },
+          {
+            '@id': 'https://standardknowledge.com/ontologies/core/Send',
+            '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+            [RDFS.label]: 'Send',
+          },
+        ];
+        const res = await sklEngine.save(entities);
+        expect(res).toEqual(entities);
+        expect(saveSpy).toHaveBeenCalledTimes(1);
+        expect(saveSpy).toHaveBeenCalledWith(entities);
+      });
+
+      it('throws an error if the entity does not conform to the schema.', async(): Promise<void> => {
+        const saveSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'save');
+        const entity = {
+          '@id': 'https://example.com/data/1',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
+        };
+        await expect(sklEngine.save(entity)).rejects.toThrow(
+          'Entity https://example.com/data/1 does not conform to the https://standardknowledge.com/ontologies/core/File schema',
+        );
+        expect(saveSpy).toHaveBeenCalledTimes(0);
+      });
+
+      it('throws an error if the entity does not conform to the parent schema.', async(): Promise<void> => {
+        const saveSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'save');
+        const entity = {
+          '@id': 'https://example.com/data/1',
+          '@type': 'https://standardknowledge.com/ontologies/core/Folder',
+        };
+        await expect(sklEngine.save(entity)).rejects.toThrow(
+          'Entity https://example.com/data/1 does not conform to the https://standardknowledge.com/ontologies/core/File schema',
+        );
+        expect(saveSpy).toHaveBeenCalledTimes(0);
+      });
+
+      it('throws an error if one of the entities does not conform to the schema.', async(): Promise<void> => {
+        const saveSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'save');
+        const entities = [
+          {
+            '@id': 'https://example.com/data/1',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
+          },
+          {
+            '@id': 'https://example.com/data/2',
+            '@type': 'https://standardknowledge.com/ontologies/core/File',
+          },
+        ];
+        await expect(sklEngine.save(entities)).rejects.toThrow(
+          'An entity does not conform to the https://standardknowledge.com/ontologies/core/File schema',
+        );
+        expect(saveSpy).toHaveBeenCalledTimes(0);
+      });
+
+      it('throws an error if one of the entities does not conform to the parent schema.', async(): Promise<void> => {
+        const saveSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'save');
+        const entities = [
+          {
+            '@id': 'https://example.com/data/1',
+            '@type': 'https://standardknowledge.com/ontologies/core/Folder',
+          },
+          {
+            '@id': 'https://example.com/data/2',
+            '@type': 'https://standardknowledge.com/ontologies/core/Folder',
+          },
+        ];
+        await expect(sklEngine.save(entities)).rejects.toThrow(
+          'An entity does not conform to the https://standardknowledge.com/ontologies/core/File schema',
+        );
+        expect(saveSpy).toHaveBeenCalledTimes(0);
+      });
+    });
+
+    describe('update', (): void => {
+      let entities = [
+        {
+          '@id': 'https://example.com/data/1',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
+          [RDFS.label]: {
+            '@type': XSD.string,
+            '@value': 'fileA',
+          },
+          [SKL.sourceId]: {
+            '@type': XSD.string,
+            '@value': '12345',
+          },
+          [SKL.integration]: {
+            '@id': 'https://example.com/integrations/Dropbox',
+          },
         },
         {
-          '@id': 'https://standardknowledge.com/ontologies/core/Send',
-          '@type': 'https://standardknowledge.com/ontologies/core/Verb',
-          [RDFS.label]: 'Send',
+          '@id': 'https://example.com/data/2',
+          '@type': 'https://standardknowledge.com/ontologies/core/File',
+          [RDFS.label]: {
+            '@type': XSD.string,
+            '@value': 'fileB',
+          },
+          [SKL.sourceId]: {
+            '@type': XSD.string,
+            '@value': '12346',
+          },
+          [SKL.integration]: {
+            '@id': 'https://example.com/integrations/Dropbox',
+          },
         },
       ];
       const entityIds = entities.map((entity): string => entity['@id']);
-      await sklEngine.save(entities);
-      const res = await sklEngine.delete(entityIds);
-      expect(res).toBeUndefined();
-      expect(deleteSpy).toHaveBeenCalledTimes(1);
-      expect(deleteSpy).toHaveBeenCalledWith(entityIds);
-    });
-
-    it('delegates calls to destroy a single entity to the query adapter.', async(): Promise<void> => {
-      const destroySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'destroy');
-      const entity = {
-        '@id': 'https://standardknowledge.com/ontologies/core/Share',
-        '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+      const badAttributes = {
+        [RDFS.label]: [
+          'file1',
+          'file2',
+        ],
       };
-      await sklEngine.save(entity);
-      const res = await sklEngine.destroy(entity);
-      expect(res).toEqual(entity);
-      expect(destroySpy).toHaveBeenCalledTimes(1);
-      expect(destroySpy).toHaveBeenCalledWith(entity);
+
+      beforeEach(async(): Promise<void> => {
+        schemas = await frameAndCombineSchemas([ './test/assets/schemas/core.json' ]);
+        await sklEngine.save(schemas);
+        await sklEngine.save(entities);
+      });
+
+      it('delegates calls to update a single entity to the query adapter.', async(): Promise<void> => {
+        const updateSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'update');
+        const res = await sklEngine.update(
+          entities[0]['@id'],
+          { [RDFS.label]: 'file1' },
+        );
+        expect(res).toBeUndefined();
+        expect(updateSpy).toHaveBeenCalledTimes(1);
+        expect(updateSpy).toHaveBeenCalledWith(
+          entities[0]['@id'],
+          { [RDFS.label]: 'file1' },
+        );
+      });
+
+      it('delegates calls to update multiple entities to the query adapter.', async(): Promise<void> => {
+        const updateSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'update');
+        const res = await sklEngine.update(
+          entityIds,
+          { [RDFS.label]: 'file1' },
+        );
+        expect(res).toBeUndefined();
+        expect(updateSpy).toHaveBeenCalledTimes(1);
+        expect(updateSpy).toHaveBeenCalledWith(
+          entityIds,
+          { [RDFS.label]: 'file1' },
+        );
+      });
+
+      it('throws an error if the entity does not conform to the schema.', async(): Promise<void> => {
+        const updateSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'update');
+        await expect(sklEngine.update(entities[0]['@id'], badAttributes)).rejects.toThrow(
+          'Entity https://example.com/data/1 does not conform to the https://standardknowledge.com/ontologies/core/File schema',
+        );
+        expect(updateSpy).toHaveBeenCalledTimes(0);
+      });
+
+      it('throws an error if the entity does not conform to the parent schema.', async(): Promise<void> => {
+        const updateSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'update');
+        const entity = {
+          ...entities[0],
+          '@type': 'https://standardknowledge.com/ontologies/core/Folder',
+        };
+        await sklEngine.save(entity);
+        await expect(sklEngine.update(entity['@id'], badAttributes)).rejects.toThrow(
+          'Entity https://example.com/data/1 does not conform to the https://standardknowledge.com/ontologies/core/File schema',
+        );
+        expect(updateSpy).toHaveBeenCalledTimes(0);
+      });
+
+      it('throws an error if one of the entities does not conform to the schema.', async(): Promise<void> => {
+        const updateSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'update');
+        await expect(sklEngine.update(entityIds, badAttributes)).rejects.toThrow(
+          'Entity https://example.com/data/1 does not conform to the https://standardknowledge.com/ontologies/core/File schema',
+        );
+        expect(updateSpy).toHaveBeenCalledTimes(0);
+      });
+
+      it('throws an error if one of the entities does not conform to the parent schema.', async(): Promise<void> => {
+        const updateSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'update');
+        entities = [
+          {
+            ...entities[0],
+            '@type': 'https://standardknowledge.com/ontologies/core/Folder',
+          },
+          {
+            ...entities[0],
+            '@type': 'https://standardknowledge.com/ontologies/core/Folder',
+          },
+        ];
+        await sklEngine.save(entities);
+        await expect(sklEngine.update(entityIds, badAttributes)).rejects.toThrow(
+          'Entity https://example.com/data/1 does not conform to the https://standardknowledge.com/ontologies/core/File schema',
+        );
+        expect(updateSpy).toHaveBeenCalledTimes(0);
+      });
     });
 
-    it('delegates calls to destroy miltiple entities to the query adapter.', async(): Promise<void> => {
-      const destroySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'destroy');
-      const entities = [
-        {
+    describe('delete', (): void => {
+      it('delegates calls to delete a single entity to the query adapter.', async(): Promise<void> => {
+        const deleteSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'delete');
+        const entity = {
           '@id': 'https://standardknowledge.com/ontologies/core/Share',
           '@type': 'https://standardknowledge.com/ontologies/core/Verb',
-          [RDFS.label]: 'Share',
-        },
-        {
-          '@id': 'https://standardknowledge.com/ontologies/core/Send',
-          '@type': 'https://standardknowledge.com/ontologies/core/Verb',
-          [RDFS.label]: 'Send',
-        },
-      ];
-      await sklEngine.save(entities);
-      const res = await sklEngine.destroy(entities);
-      expect(res).toEqual(entities);
-      expect(destroySpy).toHaveBeenCalledTimes(1);
-      expect(destroySpy).toHaveBeenCalledWith(entities);
+        };
+        await sklEngine.save(entity);
+        const res = await sklEngine.delete(entity['@id']);
+        expect(res).toBeUndefined();
+        expect(deleteSpy).toHaveBeenCalledTimes(1);
+        expect(deleteSpy).toHaveBeenCalledWith(entity['@id']);
+      });
+
+      it('delegates calls to delete miltiple entities to the query adapter.', async(): Promise<void> => {
+        const deleteSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'delete');
+        const entities = [
+          {
+            '@id': 'https://standardknowledge.com/ontologies/core/Share',
+            '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+            [RDFS.label]: 'Share',
+          },
+          {
+            '@id': 'https://standardknowledge.com/ontologies/core/Send',
+            '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+            [RDFS.label]: 'Send',
+          },
+        ];
+        const entityIds = entities.map((entity): string => entity['@id']);
+        await sklEngine.save(entities);
+        const res = await sklEngine.delete(entityIds);
+        expect(res).toBeUndefined();
+        expect(deleteSpy).toHaveBeenCalledTimes(1);
+        expect(deleteSpy).toHaveBeenCalledWith(entityIds);
+      });
     });
 
-    it('delegates calls to destroyAll to the query adapter.', async(): Promise<void> => {
-      const destroyAllSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'destroyAll');
-      const res = await sklEngine.destroyAll();
-      expect(res).toBeUndefined();
-      expect(destroyAllSpy).toHaveBeenCalledTimes(1);
+    describe('destroy', (): void => {
+      it('delegates calls to destroy a single entity to the query adapter.', async(): Promise<void> => {
+        const destroySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'destroy');
+        const entity = {
+          '@id': 'https://standardknowledge.com/ontologies/core/Share',
+          '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+        };
+        await sklEngine.save(entity);
+        const res = await sklEngine.destroy(entity);
+        expect(res).toEqual(entity);
+        expect(destroySpy).toHaveBeenCalledTimes(1);
+        expect(destroySpy).toHaveBeenCalledWith(entity);
+      });
+
+      it('delegates calls to destroy miltiple entities to the query adapter.', async(): Promise<void> => {
+        const destroySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'destroy');
+        const entities = [
+          {
+            '@id': 'https://standardknowledge.com/ontologies/core/Share',
+            '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+            [RDFS.label]: 'Share',
+          },
+          {
+            '@id': 'https://standardknowledge.com/ontologies/core/Send',
+            '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+            [RDFS.label]: 'Send',
+          },
+        ];
+        await sklEngine.save(entities);
+        const res = await sklEngine.destroy(entities);
+        expect(res).toEqual(entities);
+        expect(destroySpy).toHaveBeenCalledTimes(1);
+        expect(destroySpy).toHaveBeenCalledWith(entities);
+      });
+    });
+
+    describe('destroyAll', (): void => {
+      it('delegates calls to destroyAll to the query adapter.', async(): Promise<void> => {
+        const destroyAllSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'destroyAll');
+        const res = await sklEngine.destroyAll();
+        expect(res).toBeUndefined();
+        expect(destroyAllSpy).toHaveBeenCalledTimes(1);
+      });
     });
   });
 
@@ -826,7 +1004,7 @@ describe('SKLEngine', (): void => {
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeOperation, setOpenapiSpec });
     });
 
-    it.skip('can execute a Noun mapped Verb defined via a verbMapping.', async(): Promise<void> => {
+    it('can execute a Noun mapped Verb defined via a verbMapping.', async(): Promise<void> => {
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
       const response = await sklEngine.verb.sync({
@@ -837,7 +1015,7 @@ describe('SKLEngine', (): void => {
       expect(response).toEqual(expectedGetFileResponse);
     });
 
-    it.skip('can execute a Noun mapped Verb with only a mapping.', async(): Promise<void> => {
+    it('can execute a Noun mapped Verb with only a mapping.', async(): Promise<void> => {
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
       const response = await sklEngine.verb.getName({
@@ -849,7 +1027,7 @@ describe('SKLEngine', (): void => {
       });
     });
 
-    it.skip('can execute a Noun mapped Verb through a mapping that defines a constant verbId.',
+    it('can execute a Noun mapped Verb through a mapping that defines a constant verbId.',
       async(): Promise<void> => {
         schemas = schemas.map((schemaItem: any): any => {
           if (schemaItem['@id'] === 'https://example.com/data/34') {
@@ -965,7 +1143,7 @@ describe('SKLEngine', (): void => {
   });
 
   describe('calling Verbs which specify a series sub Verb execution', (): void => {
-    it.skip('can execute multiple Verbs in series.', async(): Promise<void> => {
+    it('can execute multiple Verbs in series.', async(): Promise<void> => {
       schemas = await frameAndCombineSchemas([
         './test/assets/schemas/core.json',
         './test/assets/schemas/series-verb.json',
@@ -991,7 +1169,7 @@ describe('SKLEngine', (): void => {
       expect(response).toEqual({});
     });
 
-    it.skip('runs a preProcessingMapping and adds preProcessedParameters to the series verb arguments.',
+    it('runs a preProcessingMapping and adds preProcessedParameters to the series verb arguments.',
       async(): Promise<void> => {
         schemas = await frameAndCombineSchemas([
           './test/assets/schemas/core.json',
@@ -1042,7 +1220,7 @@ describe('SKLEngine', (): void => {
       ]);
     });
 
-    it.skip('can execute multiple Verbs in parallel.', async(): Promise<void> => {
+    it('can execute multiple Verbs in parallel.', async(): Promise<void> => {
       const functions = {
         'https://example.com/functions/parseLinksFromText'(data: any): string[] {
           const text = data['https://example.com/functions/text'];
@@ -1088,7 +1266,7 @@ describe('SKLEngine', (): void => {
       ]);
     });
 
-    it.skip('can execute multiple Verbs in with return values that have ids.', async(): Promise<void> => {
+    it('can execute multiple Verbs in with return values that have ids.', async(): Promise<void> => {
       const functions = {
         'https://example.com/functions/parseLinksFromText'(data: any): string[] {
           const text = data['https://example.com/functions/text'];

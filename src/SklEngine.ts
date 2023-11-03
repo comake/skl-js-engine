@@ -14,8 +14,12 @@ import SHACLValidator from 'rdf-validate-shacl';
 import type ValidationReport from 'rdf-validate-shacl/src/validation-report';
 import { Mapper } from './mapping/Mapper';
 import type { SklEngineOptions } from './SklEngineOptions';
+import type { FindOperator } from './storage/FindOperator';
 import type { FindAllOptions, FindOneOptions, FindOptionsWhere } from './storage/FindOptionsTypes';
+import { In } from './storage/operator/In';
 import { InversePath } from './storage/operator/InversePath';
+import { OneOrMorePath } from './storage/operator/OneOrMorePath';
+import { SequencePath } from './storage/operator/SequencePath';
 import { ZeroOrMorePath } from './storage/operator/ZeroOrMorePath';
 import type { QueryAdapter, RawQueryResult } from './storage/query-adapter/QueryAdapter';
 import { SparqlQueryAdapter } from './storage/query-adapter/sparql/SparqlQueryAdapter';
@@ -96,12 +100,21 @@ export class SKLEngine {
     throw new Error(`No schema found with fields matching ${JSON.stringify(options)}`);
   }
 
-  public async findBy(where: FindOptionsWhere): Promise<Entity> {
+  public async findBy(where: FindOptionsWhere, notFoundErrorMessage?: string): Promise<Entity> {
     const entity = await this.queryAdapter.findBy(where);
     if (entity) {
       return entity;
     }
-    throw new Error(`No schema found with fields matching ${JSON.stringify(where)}`);
+    throw new Error(notFoundErrorMessage ?? `No schema found with fields matching ${JSON.stringify(where)}`);
+  }
+
+  public async findByIfExists(options: FindOptionsWhere): Promise<Entity | undefined> {
+    try {
+      const entity = await this.findBy(options);
+      return entity;
+    } catch {
+      return undefined;
+    }
   }
 
   public async findAll(options?: FindAllOptions): Promise<Entity[]> {
@@ -124,8 +137,10 @@ export class SKLEngine {
   public async save(entities: Entity[]): Promise<Entity[]>;
   public async save(entityOrEntities: Entity | Entity[]): Promise<Entity | Entity[]> {
     if (Array.isArray(entityOrEntities)) {
+      await this.validateEntitiesConformToNounSchema(entityOrEntities);
       return await this.queryAdapter.save(entityOrEntities);
     }
+    await this.validateEntityConformsToNounSchema(entityOrEntities);
     return await this.queryAdapter.save(entityOrEntities);
   }
 
@@ -133,9 +148,141 @@ export class SKLEngine {
   public async update(ids: string[], attributes: Partial<Entity>): Promise<void>;
   public async update(idOrIds: string | string[], attributes: Partial<Entity>): Promise<void> {
     if (Array.isArray(idOrIds)) {
+      await this.validateEntitiesWithIdsConformsToNounSchemaForAttributes(idOrIds, attributes);
       return await this.queryAdapter.update(idOrIds, attributes);
     }
+    await this.validateEntityWithIdConformsToNounSchemaForAttributes(idOrIds, attributes);
     return await this.queryAdapter.update(idOrIds, attributes);
+  }
+
+  private async validateEntitiesConformToNounSchema(
+    entities: Entity[],
+  ): Promise<void> {
+    const entitiesByType = this.groupEntitiesByType(entities);
+    for (const type of Object.keys(entitiesByType)) {
+      const noun = await this.findByIfExists({ id: type });
+      if (noun) {
+        const parentNouns = await this.getSuperClassesOfNoun(type);
+        for (const currentNoun of [ noun, ...parentNouns ]) {
+          const entitiesOfType = entitiesByType[type];
+          const nounSchemaWithTarget = {
+            ...currentNoun,
+            [SHACL.targetNode]: entitiesOfType.map((entity): ReferenceNodeObject => ({ '@id': entity['@id'] })),
+          };
+          const report = await this.convertToQuadsAndValidateAgainstShape(entitiesOfType, nounSchemaWithTarget);
+          if (!report.conforms) {
+            throw new Error(`An entity does not conform to the ${currentNoun['@id']} schema.`);
+          }
+        }
+      }
+    }
+  }
+
+  private groupEntitiesByType(entities: Entity[]): Record<string, Entity[]> {
+    return entities.reduce((groupedEntities: Record<string, Entity[]>, entity): Record<string, Entity[]> => {
+      const entityTypes = Array.isArray(entity['@type']) ? entity['@type'] : [ entity['@type'] ];
+      for (const type of entityTypes) {
+        if (!groupedEntities[type]) {
+          groupedEntities[type] = [];
+        }
+        groupedEntities[type].push(entity);
+      }
+      return groupedEntities;
+    }, {});
+  }
+
+  private async getSuperClassesOfNoun(noun: string): Promise<Entity[]> {
+    return await this.getParentsOfSelector(noun);
+  }
+
+  private async getSuperClassesOfNouns(nouns: string[]): Promise<Entity[]> {
+    return await this.getParentsOfSelector(In(nouns));
+  }
+
+  private async getParentsOfSelector(selector: string | FindOperator<any, any>): Promise<Entity[]> {
+    return await this.findAll({
+      where: {
+        id: InversePath({
+          subPath: OneOrMorePath({ subPath: RDFS.subClassOf as string }),
+          value: selector,
+        }),
+      },
+    });
+  }
+
+  private async validateEntityConformsToNounSchema(
+    entity: Entity,
+  ): Promise<void> {
+    const nounIds = Array.isArray(entity['@type']) ? entity['@type'] : [ entity['@type'] ];
+    const directNouns = await this.findAllBy({ id: In(nounIds) });
+    const parentNouns = await this.getSuperClassesOfNouns(nounIds);
+    for (const currentNoun of [ ...directNouns, ...parentNouns ]) {
+      const nounSchemaWithTarget = {
+        ...currentNoun,
+        [SHACL.targetNode]: { '@id': entity['@id'] },
+      };
+      const report = await this.convertToQuadsAndValidateAgainstShape(entity, nounSchemaWithTarget);
+      if (!report.conforms) {
+        throw new Error(`Entity ${entity['@id']} does not conform to the ${currentNoun['@id']} schema.`);
+      }
+    }
+  }
+
+  private async validateEntitiesWithIdsConformsToNounSchemaForAttributes(
+    ids: string[],
+    attributes: Partial<Entity>,
+  ): Promise<void> {
+    for (const id of ids) {
+      await this.validateEntityWithIdConformsToNounSchemaForAttributes(id, attributes);
+    }
+  }
+
+  private async getNounsAndParentNounsOfEntity(id: string): Promise<Entity[]> {
+    return await this.findAllBy({
+      id: InversePath({
+        subPath: SequencePath({
+          subPath: [
+            RDF.type,
+            ZeroOrMorePath({ subPath: RDFS.subClassOf as string }),
+          ],
+        }),
+        value: id,
+      }),
+    });
+  }
+
+  private async validateEntityWithIdConformsToNounSchemaForAttributes(
+    id: string,
+    attributes: Partial<Entity>,
+  ): Promise<void> {
+    const nouns = await this.getNounsAndParentNounsOfEntity(id);
+    for (const currentNoun of nouns) {
+      if (SHACL.property in currentNoun) {
+        const nounProperties = ensureArray(currentNoun[SHACL.property] as OrArray<NodeObject>)
+          .filter((property): boolean => {
+            const path = property[SHACL.path];
+            if (typeof path === 'string' && path in attributes) {
+              return true;
+            }
+            if (typeof path === 'object' && '@id' in path! && (path['@id'] as string) in attributes) {
+              return true;
+            }
+            return false;
+          });
+        if (nounProperties.length > 0) {
+          const nounSchemaWithTarget = {
+            '@type': SHACL.NodeShape,
+            [SHACL.targetNode]: { '@id': id },
+            [SHACL.property]: nounProperties,
+          };
+          const attributesWithId = { ...attributes, '@id': id };
+          const report = await this.convertToQuadsAndValidateAgainstShape(attributesWithId, nounSchemaWithTarget);
+          if (!report.conforms) {
+            throw new Error(`Entity ${id} does not conform to the ${currentNoun['@id']} schema.`);
+          }
+        }
+      }
+    }
   }
 
   public async delete(id: string): Promise<void>;
@@ -193,14 +340,13 @@ export class SKLEngine {
   }
 
   private async findTriggerVerbMapping(integration: string): Promise<TriggerVerbMapping> {
-    try {
-      return (await this.findBy({
+    return (await this.findBy(
+      {
         type: SKL.TriggerVerbMapping,
         [SKL.integration]: integration,
-      })) as TriggerVerbMapping;
-    } catch {
-      throw new Error(`Failed to find a Trigger Verb mapping for integration ${integration}`);
-    }
+      },
+      `Failed to find a Trigger Verb mapping for integration ${integration}`,
+    )) as TriggerVerbMapping;
   }
 
   private async executeVerbByName(
@@ -213,11 +359,10 @@ export class SKLEngine {
   }
 
   private async findVerbWithName(verbName: string): Promise<Verb> {
-    try {
-      return (await this.findBy({ type: SKL.Verb, [RDFS.label]: verbName })) as Verb;
-    } catch {
-      throw new Error(`Failed to find the verb ${verbName} in the schema.`);
-    }
+    return (await this.findBy(
+      { type: SKL.Verb, [RDFS.label]: verbName },
+      `Failed to find the verb ${verbName} in the schema.`,
+    )) as Verb;
   }
 
   private async executeVerb(verb: Verb, verbArgs: JSONObject, verbConfig?: VerbConfig): Promise<OrArray<NodeObject>> {
@@ -366,10 +511,7 @@ export class SKLEngine {
   }
 
   private async updateEntityFromVerbArgs(args: Record<string, any>): Promise<void> {
-    if (args.id) {
-      await this.update(args.id, args.attributes);
-    }
-    await this.update(args.ids, args.attributes);
+    await this.update(args.id ?? args.ids, args.attributes);
   }
 
   private async saveEntityOrEntitiesFromVerbArgs(args: Record<string, any>): Promise<OrArray<Entity>> {
@@ -613,14 +755,10 @@ export class SKLEngine {
   }
 
   private async findSecurityCredentialsForAccountIfDefined(accountId: string): Promise<Entity | undefined> {
-    try {
-      return await this.findBy({
-        type: SKL.SecurityCredentials,
-        [SKL.account]: accountId,
-      });
-    } catch {
-      return undefined;
-    }
+    return await this.findByIfExists({
+      type: SKL.SecurityCredentials,
+      [SKL.account]: accountId,
+    });
   }
 
   private async createOpenApiOperationExecutorWithSpec(openApiDescription: OpenApi): Promise<OpenApiOperationExecutor> {
@@ -780,9 +918,16 @@ export class SKLEngine {
     await this.assertVerbReturnValueMatchesReturnTypeSchema(mappedReturnValue, getOauthTokenVerb);
     const bearerToken = getValueIfDefined<string>(mappedReturnValue[SKL.bearerToken]);
     const accessToken = getValueIfDefined<string>(mappedReturnValue[SKL.accessToken]);
-    securityCredentials[SKL.bearerToken] = bearerToken;
-    securityCredentials[SKL.accessToken] = accessToken;
-    securityCredentials[SKL.refreshToken] = getValueIfDefined<string>(mappedReturnValue[SKL.refreshToken]);
+    const refreshToken = getValueIfDefined<string>(mappedReturnValue[SKL.refreshToken]);
+    if (bearerToken) {
+      securityCredentials[SKL.bearerToken] = bearerToken;
+    }
+    if (accessToken) {
+      securityCredentials[SKL.accessToken] = accessToken;
+    }
+    if (refreshToken) {
+      securityCredentials[SKL.refreshToken] = refreshToken;
+    }
     await this.save(securityCredentials);
     return { accessToken, bearerToken };
   }

@@ -12,6 +12,10 @@ import type {
 
 export type RawQueryResult = Record<string, number | boolean | string>;
 
+export interface UpdateOptions {
+  validate?: boolean;
+}
+
 /**
  * Adapts CRUD operations to a specific persistence layer.
  */
