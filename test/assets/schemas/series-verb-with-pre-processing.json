@@ -232,6 +232,7 @@
                 "rr:predicate": "example:id",
                 "rr:objectMap": {
                   "@type": "rr:ObjectMap",
+                  "rr:datatype": "xsd:string",
                   "rml:reference": "originalVerbParameters.entity[`@id]"
                 }
               },

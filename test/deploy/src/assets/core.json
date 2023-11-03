@@ -23,13 +23,11 @@
   "@graph": [
     {
       "@id": "https://standardknowledge.com/ontologies/core/Account",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
       "rdfs:label": "Account",
-      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Noun",
       "shacl:closed": false,
       "shacl:property": [
         {
-          "shacl:class": "https://standardknowledge.com/ontologies/core/Integration",
           "shacl:maxCount": 1,
           "shacl:nodeKind": { "@id": "shacl:IRI" },
           "shacl:path": "https://standardknowledge.com/ontologies/core/integration"
@@ -39,9 +37,8 @@
     },
     {
       "@id": "https://standardknowledge.com/ontologies/core/File",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
       "rdfs:label": "File",
-      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Noun",
       "skos:definition": "An electronic document.",
       "shacl:closed": false,
       "shacl:property": [
@@ -89,7 +86,7 @@
     },
     {
       "@id": "https://standardknowledge.com/ontologies/core/Folder",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
       "rdfs:label": "Folder",
       "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/File",
       "skos:definition": "An electronic folder that stores electronic documents.",
@@ -97,9 +94,8 @@
     },
     {
       "@id": "https://standardknowledge.com/ontologies/core/Integration",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
       "rdfs:label": "Integration",
-      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Noun",
       "shacl:closed": false,
       "shacl:property": [
         {
@@ -111,7 +107,6 @@
           "shacl:path": "http://purl.org/dc/elements/1.1/description"
         },
         {
-          "shacl:class": "https://standardknowledge.com/ontologies/core/File",
           "shacl:nodeKind": { "@id": "shacl:IRI" },
           "shacl:path": "https://standardknowledge.com/ontologies/core/icons"
         }
@@ -119,9 +114,8 @@
     },
     {
       "@id": "https://standardknowledge.com/ontologies/core/Mapping",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
       "rdfs:label": "Mapping",
-      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Noun",
       "shacl:closed": false,
       "shacl:property": {
         "shacl:maxCount": 1,
@@ -130,7 +124,7 @@
     },
     {
       "@id": "https://standardknowledge.com/ontologies/core/Noun",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
       "rdfs:label": "Noun",
       "shacl:closed": false,
       "shacl:property": {
@@ -140,9 +134,8 @@
     },
     {
       "@id": "https://standardknowledge.com/ontologies/core/SecurityCredentials",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
       "rdfs:label": "Security Credentials",
-      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Noun",
       "shacl:closed": false,
       "shacl:property": [
         {
@@ -150,7 +143,6 @@
           "shacl:path": "https://standardknowledge.com/ontologies/core/refreshToken"
         },
         {
-          "shacl:class": "https://standardknowledge.com/ontologies/core/Account",
           "shacl:maxCount": 1,
           "shacl:nodeKind": { "@id": "shacl:IRI" },
           "shacl:path": "https://standardknowledge.com/ontologies/core/account"
@@ -167,13 +159,11 @@
     },
     {
       "@id": "https://standardknowledge.com/ontologies/core/OpenApiDescription",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
       "rdfs:label": "OpenApiDescription",
-      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Noun",
       "shacl:closed": false,
       "shacl:property": [
         {
-          "shacl:class": "https://standardknowledge.com/ontologies/core/Integration",
           "shacl:maxCount": 1,
           "shacl:nodeKind": { "@id": "shacl:IRI" },
           "shacl:path": "https://standardknowledge.com/ontologies/core/integration"
@@ -186,9 +176,8 @@
     },
     {
       "@id": "https://standardknowledge.com/ontologies/core/TokenPaginatedCollection",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
       "rdfs:label": "Token Paginated Collection",
-      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Noun",
       "shacl:closed": false,
       "shacl:property": [
         {
@@ -203,8 +192,7 @@
     },
     {
       "@id": "https://standardknowledge.com/ontologies/core/Verb",
-      "@type": ["owl:Class", "shacl:NodeShape"],
-      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Noun",
+      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
       "rdfs:label": "Verb",
       "shacl:closed": false,
       "shacl:property": [
@@ -235,17 +223,17 @@
     },
     {
       "@id": "https://standardknowledge.com/ontologies/core/NounMappedVerb",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
       "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Verb"
     },
     {
       "@id": "https://standardknowledge.com/ontologies/core/OpenApiSecuritySchemeVerb",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
       "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Verb"
     },
     {
       "@id": "https://standardknowledge.com/ontologies/core/VerbIntegrationMapping",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
       "rdfs:label": "Verb to Integration Mapping",
       "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Mapping",
       "shacl:closed": false,
@@ -256,7 +244,6 @@
           "shacl:path": "https://standardknowledge.com/ontologies/core/parameterMapping"
         },
         {
-          "shacl:class": "https://standardknowledge.com/ontologies/core/Verb",
           "shacl:maxCount": 1,
           "shacl:nodeKind": { "@id": "shacl:IRI" },
           "shacl:path": "https://standardknowledge.com/ontologies/core/verb"
@@ -272,7 +259,6 @@
           "shacl:path": "https://standardknowledge.com/ontologies/core/returnValueMapping"
         },
         {
-          "shacl:class": "https://standardknowledge.com/ontologies/core/Integration",
           "shacl:maxCount": 1,
           "shacl:nodeKind": { "@id": "shacl:IRI" },
           "shacl:path": "https://standardknowledge.com/ontologies/core/integration"
@@ -281,20 +267,18 @@
     },
     {
       "@id": "https://standardknowledge.com/ontologies/core/VerbNounMapping",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
       "rdfs:label": "Verb to Noun Mapping",
       "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Mapping",
       "shacl:closed": false,
       "shacl:property": [
         {
-          "shacl:class": "https://standardknowledge.com/ontologies/core/Verb",
           "shacl:maxCount": 1,
           "shacl:minCount": 1,
           "shacl:nodeKind": { "@id": "shacl:IRI" },
           "shacl:path": "https://standardknowledge.com/ontologies/core/verb"
         },
         {
-          "shacl:class": "https://standardknowledge.com/ontologies/core/Noun",
           "shacl:maxCount": 1,
           "shacl:minCount": 1,
           "shacl:nodeKind": { "@id": "shacl:IRI" },

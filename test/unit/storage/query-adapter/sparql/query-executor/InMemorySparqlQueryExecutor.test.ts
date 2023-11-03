@@ -146,11 +146,12 @@ describe('a MemoryQueryAdapter', (): void => {
 
   describe('executeSparqlUpdate', (): void => {
     it('executes a void query and returns undefined.', async(): Promise<void> => {
+      const updateQuery = { type: 'update', updates: [{}]} as any;
       await expect(
-        executor.executeSparqlUpdate({} as any),
+        executor.executeSparqlUpdate(updateQuery),
       ).resolves.toBeUndefined();
       expect(stringify).toHaveBeenCalledTimes(1);
-      expect(stringify).toHaveBeenCalledWith({});
+      expect(stringify).toHaveBeenCalledWith(updateQuery);
       expect(queryVoid).toHaveBeenCalledTimes(1);
       expect(queryVoid).toHaveBeenCalledWith(
         'query',

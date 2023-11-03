@@ -1,14 +1,15 @@
 import { FindOperator } from '../FindOperator';
 
-export interface ZeroOrMorePathValue {
+export interface ZeroOrMorePathValue<T> {
   subPath: string | FindOperator<any, 'sequencePath' | 'inversePath'>;
-  value?: string;
+  value?: string | FindOperator<T, any>;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function ZeroOrMorePath<
-  T extends ZeroOrMorePathValue
->(value: T): FindOperator<T, 'zeroOrMorePath'> {
+  T,
+  TI extends ZeroOrMorePathValue<T>
+>(value: TI): FindOperator<TI, 'zeroOrMorePath'> {
   return new FindOperator({
     operator: 'zeroOrMorePath',
     value,
