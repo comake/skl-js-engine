@@ -78,6 +78,12 @@ export class SparqlQueryAdapter implements QueryAdapter {
     return await triplesToJsonldWithFrame(response, frame);
   }
 
+  public async executeRawUpdate(
+    query: string,
+  ): Promise<void> {
+    await this.queryExecutor.executeRawSparqlUpdate(query);
+  }
+
   public async find(options?: FindOneOptions): Promise<Entity | null> {
     const jsonld = await this.findAllAsJsonLd({ ...options, limit: 1 });
     if (Array.isArray(jsonld) && !options?.skipFraming) {

@@ -26,6 +26,10 @@ export interface QueryAdapter {
    */
   executeRawQuery<T extends RawQueryResult>(query: string): Promise<T[]>;
   /**
+   * Performs a raw query for data matching the query.
+   */
+  executeRawUpdate(query: string): Promise<void>;
+  /**
    * Performs a raw query for entities matching the query. The query must be a CONSTRUCT query.
    */
   executeRawEntityQuery(query: string, frame?: Frame): Promise<GraphObject>;

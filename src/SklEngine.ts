@@ -88,6 +88,10 @@ export class SKLEngine {
     return await this.queryAdapter.executeRawQuery<T>(query);
   }
 
+  public async executeRawUpdate(query: string): Promise<void> {
+    return await this.queryAdapter.executeRawUpdate(query);
+  }
+
   public async executeRawEntityQuery(query: string, frame?: Frame): Promise<GraphObject> {
     return await this.queryAdapter.executeRawEntityQuery(query, frame);
   }

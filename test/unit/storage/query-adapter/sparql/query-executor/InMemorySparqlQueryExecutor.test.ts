@@ -160,6 +160,19 @@ describe('a MemoryQueryAdapter', (): void => {
     });
   });
 
+  describe('executeRawSparqlUpdate', (): void => {
+    it('executes a void query and returns undefined.', async(): Promise<void> => {
+      await expect(
+        executor.executeRawSparqlUpdate('query'),
+      ).resolves.toBeUndefined();
+      expect(queryVoid).toHaveBeenCalledTimes(1);
+      expect(queryVoid).toHaveBeenCalledWith(
+        'query',
+        { sources: [ store ], unionDefaultGraph: true },
+      );
+    });
+  });
+
   describe('executeAskQueryAndGetResponse', (): void => {
     it('executes a boolean query and returns a boolean.', async(): Promise<void> => {
       await expect(

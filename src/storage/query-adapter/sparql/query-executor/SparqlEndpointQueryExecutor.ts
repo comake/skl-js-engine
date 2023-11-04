@@ -62,7 +62,11 @@ export class SparqlEndpointQueryExecutor implements QueryExecutor {
 
   public async executeSparqlUpdate(query: Update): Promise<void> {
     const generatedQuery = this.sparqlGenerator.stringify(query);
-    await this.sparqlClient.query.update(generatedQuery);
+    await this.executeRawSparqlUpdate(generatedQuery);
+  }
+
+  public async executeRawSparqlUpdate(query: string): Promise<void> {
+    await this.sparqlClient.query.update(query);
   }
 
   public async executeAskQueryAndGetResponse(query: AskQuery): Promise<boolean> {

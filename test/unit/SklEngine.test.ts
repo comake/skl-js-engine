@@ -128,6 +128,17 @@ describe('SKLEngine', (): void => {
       });
     });
 
+    describe('executeRawUpdate', (): void => {
+      it('delegates calls to executeRawUpdate to the query adapter.', async(): Promise<void> => {
+        const executeRawUpdateSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'executeRawUpdate');
+        await expect(
+          sklEngine.executeRawUpdate(`DELETE { ?s ?p ?o } WHERE { ?s ?p ?o }`),
+        ).resolves.toBeUndefined();
+        expect(executeRawUpdateSpy).toHaveBeenCalledTimes(1);
+        expect(executeRawUpdateSpy).toHaveBeenCalledWith(`DELETE { ?s ?p ?o } WHERE { ?s ?p ?o }`);
+      });
+    });
+
     describe('executeRawEntityQuery', (): void => {
       it('delegates calls to executeRawEntityQuery to the query adapter.', async(): Promise<void> => {
         const executeRawEntityQuerySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'executeRawEntityQuery');

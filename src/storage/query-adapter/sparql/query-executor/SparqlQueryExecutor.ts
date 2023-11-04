@@ -27,6 +27,10 @@ export interface QueryExecutor {
    */
   executeSparqlUpdate(query: Update): Promise<void>;
   /**
+   * Executes a raw SPARQL update query.
+   */
+  executeRawSparqlUpdate(query: string,): Promise<void>;
+  /**
    * Executes a SPARQL ask query.
    */
   executeAskQueryAndGetResponse(query: AskQuery): Promise<boolean>;

@@ -92,6 +92,19 @@ describe('a SparqlQueryAdapter', (): void => {
     });
   });
 
+  describe('executeRawUpdate', (): void => {
+    it('executes a an update query.', async(): Promise<void> => {
+      await expect(
+        adapter.executeRawUpdate([
+          `DELETE { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <${SKL.sourceId}> ?c1. } }`,
+          `INSERT { GRAPH <https://example.com/data/1> { <https://example.com/data/1> <${SKL.sourceId}> "abc123". } }`,
+          'USING <https://example.com/data/1>',
+          `WHERE { OPTIONAL { <https://example.com/data/1> <${SKL.sourceId}> ?c1. } }`,
+        ].join('\n')),
+      ).resolves.toBeUndefined();
+    });
+  });
+
   describe('executeRawEntityQuery', (): void => {
     it('executes a sparql construct query and returns an empty GraphObject if no triples are found.',
       async(): Promise<void> => {
