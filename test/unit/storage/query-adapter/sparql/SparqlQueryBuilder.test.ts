@@ -561,6 +561,25 @@ describe('A SparqlQueryBuilder', (): void => {
               },
             ],
           },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: 'exists',
+              args: [{
+                type: 'graph',
+                name: entityVariable,
+                patterns: [{
+                  type: 'bgp',
+                  triples: [{
+                    subject: entityVariable,
+                    predicate: c2,
+                    object: c3,
+                  }],
+                }],
+              }],
+            },
+          },
         ],
         orders: [],
         graphWhere: [],
@@ -605,6 +624,25 @@ describe('A SparqlQueryBuilder', (): void => {
                 object: c1,
               },
             ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: 'exists',
+              args: [{
+                type: 'graph',
+                name: entityVariable,
+                patterns: [{
+                  type: 'bgp',
+                  triples: [{
+                    subject: entityVariable,
+                    predicate: c2,
+                    object: c3,
+                  }],
+                }],
+              }],
+            },
           },
         ],
         orders: [],

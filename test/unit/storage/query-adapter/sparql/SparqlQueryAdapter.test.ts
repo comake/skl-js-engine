@@ -484,7 +484,12 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  { SELECT DISTINCT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
+          '  {',
+          '    SELECT DISTINCT ?entity WHERE {',
+          '      ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>.',
+          '      FILTER(EXISTS { GRAPH ?entity { ?entity ?c1 ?c2. } })',
+          '    }',
+          '  }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
@@ -524,7 +529,12 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  { SELECT DISTINCT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
+          '  {',
+          '    SELECT DISTINCT ?entity WHERE {',
+          '      ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>.',
+          '      FILTER(EXISTS { GRAPH ?entity { ?entity ?c1 ?c2. } })',
+          '    }',
+          '  }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
@@ -551,7 +561,12 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  { SELECT DISTINCT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
+          '  {',
+          '    SELECT DISTINCT ?entity WHERE {',
+          '      ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>.',
+          '      FILTER(EXISTS { GRAPH ?entity { ?entity ?c1 ?c2. } })',
+          '    }',
+          '  }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
@@ -676,7 +691,12 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  { SELECT DISTINCT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
+          '  {',
+          '    SELECT DISTINCT ?entity WHERE {',
+          '      ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>.',
+          '      FILTER(EXISTS { GRAPH ?entity { ?entity ?c1 ?c2. } })',
+          '    }',
+          '  }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
@@ -693,7 +713,12 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  { SELECT DISTINCT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
+          '  {',
+          '    SELECT DISTINCT ?entity WHERE {',
+          '      ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>.',
+          '      FILTER(EXISTS { GRAPH ?entity { ?entity ?c1 ?c2. } })',
+          '    }',
+          '  }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);
@@ -729,7 +754,12 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
           'WHERE {',
-          '  { SELECT DISTINCT ?entity WHERE { ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>. } }',
+          '  {',
+          '    SELECT DISTINCT ?entity WHERE {',
+          '      ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://standardknowledge.com/ontologies/core/File>.',
+          '      FILTER(EXISTS { GRAPH ?entity { ?entity ?c1 ?c2. } })',
+          '    }',
+          '  }',
           '  GRAPH ?entity { ?subject ?predicate ?object. }',
           '}',
         ]);

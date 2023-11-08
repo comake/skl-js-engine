@@ -131,7 +131,7 @@ export class SparqlQueryBuilder {
     )) {
       const entityGraphFilterPattern = this.createEntityGraphFilterPattern(subject);
       patterns.push(entityGraphFilterPattern);
-    } else if (!options?.where?.id && !options?.where?.type) {
+    } else if (!options?.where?.id) {
       const entityGraphFilterPattern = this.createEntityGraphFilterPattern(subject);
       const entityIsGraphFilter = createSparqlExistsOperation([ entityGraphFilterPattern ]);
       whereQueryData.filters.push(entityIsGraphFilter);
