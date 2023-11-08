@@ -192,7 +192,6 @@ describe('a SparqlQueryAdapter', (): void => {
         '  VALUES ?entity {',
         '    <https://example.com/data/1>',
         '  }',
-        '  GRAPH ?entity { ?entity ?predicate ?object. }',
         '}',
       ]);
     });
@@ -208,7 +207,7 @@ describe('a SparqlQueryAdapter', (): void => {
       expect(select.mock.calls[0][0].split('\n')).toEqual([
         'SELECT (COUNT(DISTINCT ?entity) AS ?count) WHERE {',
         '  ?entity <https://example.com/pred> <https://example.com/data/1>.',
-        '  GRAPH ?entity { ?entity ?predicate ?object. }',
+        '  FILTER(EXISTS { GRAPH ?entity { ?entity ?c1 ?c2. } })',
         '}',
       ]);
     });
@@ -226,7 +225,6 @@ describe('a SparqlQueryAdapter', (): void => {
         '  VALUES ?entity {',
         '    <https://example.com/data/1>',
         '  }',
-        '  GRAPH ?entity { ?entity ?predicate ?object. }',
         '}',
       ]);
     });
@@ -595,7 +593,7 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select).toHaveBeenCalledTimes(2);
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'SELECT DISTINCT ?entity WHERE {',
-          '  ?entity ?c2 ?c3.',
+          '  GRAPH ?entity { ?entity ?c2 ?c3. }',
           '  OPTIONAL { ?entity <https://example.com/pred> ?c1. }',
           '}',
           'ORDER BY (?c1)',
@@ -627,7 +625,7 @@ describe('a SparqlQueryAdapter', (): void => {
         expect(select).toHaveBeenCalledTimes(1);
         expect(select.mock.calls[0][0].split('\n')).toEqual([
           'SELECT DISTINCT ?entity WHERE {',
-          '  ?entity ?c2 ?c3.',
+          '  GRAPH ?entity { ?entity ?c2 ?c3. }',
           '  OPTIONAL { ?entity <https://example.com/pred> ?c1. }',
           '}',
           'ORDER BY (?c1)',

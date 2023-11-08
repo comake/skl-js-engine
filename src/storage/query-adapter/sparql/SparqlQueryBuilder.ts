@@ -12,6 +12,7 @@ import type {
   ValuesPattern,
   Pattern,
   ConstructQuery,
+  GraphPattern,
 } from 'sparqljs';
 import {
   allTypesAndSuperTypesPath,
@@ -38,6 +39,7 @@ import {
   createSparqlSequencePredicate,
   createSparqlZeroOrMorePredicate,
   createSparqlOneOrMorePredicate,
+  createSparqlExistsOperation,
 } from '../../../util/SparqlUtil';
 import {
   valueToLiteral,
@@ -117,6 +119,7 @@ export class SparqlQueryBuilder {
     const whereQueryData = this.createWhereQueryData(subject, options?.where);
     const orderQueryData = this.createOrderQueryData(subject, options?.order);
     const relationsQueryData = this.createRelationsQueryData(subject, relations);
+    const patterns: Pattern[] = whereQueryData.values;
     if (whereQueryData.triples.length === 0 && (
       whereQueryData.filters.length > 0 ||
       orderQueryData.triples.length > 0 ||
@@ -126,15 +129,16 @@ export class SparqlQueryBuilder {
         whereQueryData.graphTriples.length === 0
       )
     )) {
-      whereQueryData.triples.push({
-        subject,
-        predicate: this.createVariable(),
-        object: this.createVariable(),
-      });
+      const entityGraphFilterPattern = this.createEntityGraphFilterPattern(subject);
+      patterns.push(entityGraphFilterPattern);
+    } else if (!options?.where?.id && !options?.where?.type) {
+      const entityGraphFilterPattern = this.createEntityGraphFilterPattern(subject);
+      const entityIsGraphFilter = createSparqlExistsOperation([ entityGraphFilterPattern ]);
+      whereQueryData.filters.push(entityIsGraphFilter);
     }
 
     const wherePatterns = this.createWherePatternsFromQueryData(
-      whereQueryData.values,
+      patterns,
       whereQueryData.triples,
       whereQueryData.filters,
       orderQueryData.triples,
@@ -146,7 +150,6 @@ export class SparqlQueryBuilder {
       whereQueryData.graphFilters,
       undefined,
       undefined,
-      undefined,
       relationsQueryData.patterns,
     );
     return {
@@ -156,6 +159,14 @@ export class SparqlQueryBuilder {
       graphWhere: graphWherePatterns,
       graphSelectionTriples: relationsQueryData.selectionTriples,
     };
+  }
+
+  private createEntityGraphFilterPattern(subject: Variable): GraphPattern {
+    const entityFilterTriple = { subject, predicate: this.createVariable(), object: this.createVariable() };
+    return createSparqlGraphPattern(
+      subject,
+      [ createSparqlBasicGraphPattern([ entityFilterTriple ]) ],
+    );
   }
 
   public buildConstructFromEntitySelectQuery(
@@ -924,15 +935,15 @@ export class SparqlQueryBuilder {
   }
 
   private createWherePatternsFromQueryData(
-    values: ValuesPattern[],
+    initialPatterns: Pattern[],
     triples: Triple[],
     filters: OperationExpression[],
     orderTriples?: Triple[],
     orderFilters?: OperationExpression[],
-    serviceTriples?: Record<string, Triple[]>,
     additionalPatterns?: Pattern[],
+    serviceTriples?: Record<string, Triple[]>,
   ): Pattern[] {
-    let patterns: Pattern[] = values;
+    let patterns = initialPatterns;
     if (triples.length > 0) {
       patterns.push(createSparqlBasicGraphPattern(triples));
     }

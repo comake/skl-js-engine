@@ -56,14 +56,16 @@ describe('A SparqlQueryBuilder', (): void => {
         graphSelectionTriples: [],
         where: [
           {
-            type: 'bgp',
-            triples: [
-              {
+            type: 'graph',
+            name: entityVariable,
+            patterns: [{
+              type: 'bgp',
+              triples: [{
                 subject: entityVariable,
                 predicate: c1,
                 object: c2,
-              },
-            ],
+              }],
+            }],
           },
         ],
         orders: [],
@@ -178,13 +180,35 @@ describe('A SparqlQueryBuilder', (): void => {
               args: [
                 {
                   type: 'operation',
-                  operator: '>',
-                  args: [ c1, DataFactory.literal('1', XSD.integer) ],
+                  operator: '&&',
+                  args: [
+                    {
+                      type: 'operation',
+                      operator: '>',
+                      args: [ c1, DataFactory.literal('1', XSD.integer) ],
+                    },
+                    {
+                      type: 'operation',
+                      operator: '<',
+                      args: [ c2, DataFactory.literal('1', XSD.integer) ],
+                    },
+                  ],
                 },
                 {
                   type: 'operation',
-                  operator: '<',
-                  args: [ c2, DataFactory.literal('1', XSD.integer) ],
+                  operator: 'exists',
+                  args: [{
+                    type: 'graph',
+                    name: entityVariable,
+                    patterns: [{
+                      type: 'bgp',
+                      triples: [{
+                        subject: entityVariable,
+                        predicate: c3,
+                        object: c4,
+                      }],
+                    }],
+                  }],
                 },
               ],
             },
@@ -224,13 +248,35 @@ describe('A SparqlQueryBuilder', (): void => {
               args: [
                 {
                   type: 'operation',
-                  operator: '>',
-                  args: [ c1, DataFactory.literal('1', XSD.integer) ],
+                  operator: '&&',
+                  args: [
+                    {
+                      type: 'operation',
+                      operator: '>',
+                      args: [ c1, DataFactory.literal('1', XSD.integer) ],
+                    },
+                    {
+                      type: 'operation',
+                      operator: '<',
+                      args: [ c1, DataFactory.literal('5', XSD.integer) ],
+                    },
+                  ],
                 },
                 {
                   type: 'operation',
-                  operator: '<',
-                  args: [ c1, DataFactory.literal('5', XSD.integer) ],
+                  operator: 'exists',
+                  args: [{
+                    type: 'graph',
+                    name: entityVariable,
+                    patterns: [{
+                      type: 'bgp',
+                      triples: [{
+                        subject: entityVariable,
+                        predicate: c2,
+                        object: c3,
+                      }],
+                    }],
+                  }],
                 },
               ],
             },
@@ -325,6 +371,25 @@ describe('A SparqlQueryBuilder', (): void => {
               },
             ],
           },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: 'exists',
+              args: [{
+                type: 'graph',
+                name: entityVariable,
+                patterns: [{
+                  type: 'bgp',
+                  triples: [{
+                    subject: entityVariable,
+                    predicate: c1,
+                    object: c2,
+                  }],
+                }],
+              }],
+            },
+          },
         ],
         orders: [],
         graphWhere: [],
@@ -351,6 +416,25 @@ describe('A SparqlQueryBuilder', (): void => {
                 object: DataFactory.namedNode('https://example.com/object'),
               },
             ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: 'exists',
+              args: [{
+                type: 'graph',
+                name: entityVariable,
+                patterns: [{
+                  type: 'bgp',
+                  triples: [{
+                    subject: entityVariable,
+                    predicate: c1,
+                    object: c2,
+                  }],
+                }],
+              }],
+            },
           },
         ],
         orders: [],
@@ -383,6 +467,25 @@ describe('A SparqlQueryBuilder', (): void => {
                 object: DataFactory.literal('2', XSD.integer),
               },
             ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: 'exists',
+              args: [{
+                type: 'graph',
+                name: entityVariable,
+                patterns: [{
+                  type: 'bgp',
+                  triples: [{
+                    subject: entityVariable,
+                    predicate: c1,
+                    object: c2,
+                  }],
+                }],
+              }],
+            },
           },
         ],
         orders: [],
@@ -521,12 +624,18 @@ describe('A SparqlQueryBuilder', (): void => {
         graphSelectionTriples: [],
         where: [
           {
-            type: 'bgp',
-            triples: [
+            type: 'graph',
+            name: entityVariable,
+            patterns: [
               {
-                subject: entityVariable,
-                predicate: c2,
-                object: c3,
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate: c2,
+                    object: c3,
+                  },
+                ],
               },
             ],
           },
@@ -607,6 +716,25 @@ describe('A SparqlQueryBuilder', (): void => {
               },
             ],
           },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: 'exists',
+              args: [{
+                type: 'graph',
+                name: entityVariable,
+                patterns: [{
+                  type: 'bgp',
+                  triples: [{
+                    subject: entityVariable,
+                    predicate: c2,
+                    object: c3,
+                  }],
+                }],
+              }],
+            },
+          },
         ],
         orders: [],
         graphWhere: [],
@@ -625,12 +753,18 @@ describe('A SparqlQueryBuilder', (): void => {
         graphSelectionTriples: [],
         where: [
           {
-            type: 'bgp',
-            triples: [
+            type: 'graph',
+            name: entityVariable,
+            patterns: [
               {
-                subject: entityVariable,
-                predicate: c1,
-                object: c2,
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate: c1,
+                    object: c2,
+                  },
+                ],
               },
             ],
           },
@@ -661,12 +795,18 @@ describe('A SparqlQueryBuilder', (): void => {
         graphSelectionTriples: [],
         where: [
           {
-            type: 'bgp',
-            triples: [
+            type: 'graph',
+            name: entityVariable,
+            patterns: [
               {
-                subject: entityVariable,
-                predicate: c1,
-                object: c2,
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate: c1,
+                    object: c2,
+                  },
+                ],
               },
             ],
           },
@@ -750,12 +890,18 @@ describe('A SparqlQueryBuilder', (): void => {
         graphSelectionTriples: [],
         where: [
           {
-            type: 'bgp',
-            triples: [
+            type: 'graph',
+            name: entityVariable,
+            patterns: [
               {
-                subject: entityVariable,
-                predicate: c1,
-                object: c2,
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate: c1,
+                    object: c2,
+                  },
+                ],
               },
             ],
           },
@@ -786,12 +932,18 @@ describe('A SparqlQueryBuilder', (): void => {
         graphSelectionTriples: [],
         where: [
           {
-            type: 'bgp',
-            triples: [
+            type: 'graph',
+            name: entityVariable,
+            patterns: [
               {
-                subject: entityVariable,
-                predicate: c1,
-                object: c2,
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate: c1,
+                    object: c2,
+                  },
+                ],
               },
             ],
           },
@@ -835,31 +987,53 @@ describe('A SparqlQueryBuilder', (): void => {
             type: 'filter',
             expression: {
               type: 'operation',
-              operator: 'notexists',
-              args: [{
-                type: 'group',
-                patterns: [
-                  {
-                    type: 'bgp',
-                    triples: [{
-                      subject: entityVariable,
-                      predicate,
-                      object: c1,
+              operator: '&&',
+              args: [
+                {
+                  type: 'operation',
+                  operator: 'notexists',
+                  args: [{
+                    type: 'group',
+                    patterns: [
+                      {
+                        type: 'bgp',
+                        triples: [{
+                          subject: entityVariable,
+                          predicate,
+                          object: c1,
+                        }],
+                      },
+                      {
+                        type: 'filter',
+                        expression: {
+                          type: 'operation',
+                          operator: '=',
+                          args: [
+                            c1,
+                            DataFactory.literal('1', XSD.integer),
+                          ],
+                        },
+                      },
+                    ],
+                  }],
+                },
+                {
+                  type: 'operation',
+                  operator: 'exists',
+                  args: [{
+                    type: 'graph',
+                    name: entityVariable,
+                    patterns: [{
+                      type: 'bgp',
+                      triples: [{
+                        subject: entityVariable,
+                        predicate: c2,
+                        object: c3,
+                      }],
                     }],
-                  },
-                  {
-                    type: 'filter',
-                    expression: {
-                      type: 'operation',
-                      operator: '=',
-                      args: [
-                        c1,
-                        DataFactory.literal('1', XSD.integer),
-                      ],
-                    },
-                  },
-                ],
-              }],
+                  }],
+                },
+              ],
             },
           },
         ],
@@ -893,34 +1067,56 @@ describe('A SparqlQueryBuilder', (): void => {
             type: 'filter',
             expression: {
               type: 'operation',
-              operator: 'notexists',
-              args: [{
-                type: 'group',
-                patterns: [
-                  {
-                    type: 'bgp',
-                    triples: [{
-                      subject: entityVariable,
-                      predicate,
-                      object: c1,
+              operator: '&&',
+              args: [
+                {
+                  type: 'operation',
+                  operator: 'notexists',
+                  args: [{
+                    type: 'group',
+                    patterns: [
+                      {
+                        type: 'bgp',
+                        triples: [{
+                          subject: entityVariable,
+                          predicate,
+                          object: c1,
+                        }],
+                      },
+                      {
+                        type: 'filter',
+                        expression: {
+                          type: 'operation',
+                          operator: 'in',
+                          args: [
+                            c1,
+                            [
+                              DataFactory.literal('1', XSD.integer),
+                              DataFactory.literal('2', XSD.integer),
+                            ],
+                          ],
+                        },
+                      },
+                    ],
+                  }],
+                },
+                {
+                  type: 'operation',
+                  operator: 'exists',
+                  args: [{
+                    type: 'graph',
+                    name: entityVariable,
+                    patterns: [{
+                      type: 'bgp',
+                      triples: [{
+                        subject: entityVariable,
+                        predicate: c2,
+                        object: c3,
+                      }],
                     }],
-                  },
-                  {
-                    type: 'filter',
-                    expression: {
-                      type: 'operation',
-                      operator: 'in',
-                      args: [
-                        c1,
-                        [
-                          DataFactory.literal('1', XSD.integer),
-                          DataFactory.literal('2', XSD.integer),
-                        ],
-                      ],
-                    },
-                  },
-                ],
-              }],
+                  }],
+                },
+              ],
             },
           },
         ],
@@ -954,31 +1150,53 @@ describe('A SparqlQueryBuilder', (): void => {
             type: 'filter',
             expression: {
               type: 'operation',
-              operator: 'notexists',
-              args: [{
-                type: 'group',
-                patterns: [
-                  {
-                    type: 'bgp',
-                    triples: [{
-                      subject: entityVariable,
-                      predicate,
-                      object: c1,
+              operator: '&&',
+              args: [
+                {
+                  type: 'operation',
+                  operator: 'notexists',
+                  args: [{
+                    type: 'group',
+                    patterns: [
+                      {
+                        type: 'bgp',
+                        triples: [{
+                          subject: entityVariable,
+                          predicate,
+                          object: c1,
+                        }],
+                      },
+                      {
+                        type: 'filter',
+                        expression: {
+                          type: 'operation',
+                          operator: '=',
+                          args: [
+                            c1,
+                            DataFactory.literal('1', XSD.integer),
+                          ],
+                        },
+                      },
+                    ],
+                  }],
+                },
+                {
+                  type: 'operation',
+                  operator: 'exists',
+                  args: [{
+                    type: 'graph',
+                    name: entityVariable,
+                    patterns: [{
+                      type: 'bgp',
+                      triples: [{
+                        subject: entityVariable,
+                        predicate: c2,
+                        object: c3,
+                      }],
                     }],
-                  },
-                  {
-                    type: 'filter',
-                    expression: {
-                      type: 'operation',
-                      operator: '=',
-                      args: [
-                        c1,
-                        DataFactory.literal('1', XSD.integer),
-                      ],
-                    },
-                  },
-                ],
-              }],
+                  }],
+                },
+              ],
             },
           },
         ],
@@ -1012,10 +1230,32 @@ describe('A SparqlQueryBuilder', (): void => {
             type: 'filter',
             expression: {
               type: 'operation',
-              operator: '=',
+              operator: '&&',
               args: [
-                c1,
-                DataFactory.literal('1', XSD.integer),
+                {
+                  type: 'operation',
+                  operator: '=',
+                  args: [
+                    c1,
+                    DataFactory.literal('1', XSD.integer),
+                  ],
+                },
+                {
+                  type: 'operation',
+                  operator: 'exists',
+                  args: [{
+                    type: 'graph',
+                    name: entityVariable,
+                    patterns: [{
+                      type: 'bgp',
+                      triples: [{
+                        subject: entityVariable,
+                        predicate: c2,
+                        object: c3,
+                      }],
+                    }],
+                  }],
+                },
               ],
             },
           },
@@ -1050,10 +1290,32 @@ describe('A SparqlQueryBuilder', (): void => {
             type: 'filter',
             expression: {
               type: 'operation',
-              operator: '>',
+              operator: '&&',
               args: [
-                c1,
-                DataFactory.literal('1', XSD.integer),
+                {
+                  type: 'operation',
+                  operator: '>',
+                  args: [
+                    c1,
+                    DataFactory.literal('1', XSD.integer),
+                  ],
+                },
+                {
+                  type: 'operation',
+                  operator: 'exists',
+                  args: [{
+                    type: 'graph',
+                    name: entityVariable,
+                    patterns: [{
+                      type: 'bgp',
+                      triples: [{
+                        subject: entityVariable,
+                        predicate: c2,
+                        object: c3,
+                      }],
+                    }],
+                  }],
+                },
               ],
             },
           },
@@ -1088,10 +1350,32 @@ describe('A SparqlQueryBuilder', (): void => {
             type: 'filter',
             expression: {
               type: 'operation',
-              operator: '>=',
+              operator: '&&',
               args: [
-                c1,
-                DataFactory.literal('1', XSD.integer),
+                {
+                  type: 'operation',
+                  operator: '>=',
+                  args: [
+                    c1,
+                    DataFactory.literal('1', XSD.integer),
+                  ],
+                },
+                {
+                  type: 'operation',
+                  operator: 'exists',
+                  args: [{
+                    type: 'graph',
+                    name: entityVariable,
+                    patterns: [{
+                      type: 'bgp',
+                      triples: [{
+                        subject: entityVariable,
+                        predicate: c2,
+                        object: c3,
+                      }],
+                    }],
+                  }],
+                },
               ],
             },
           },
@@ -1126,10 +1410,32 @@ describe('A SparqlQueryBuilder', (): void => {
             type: 'filter',
             expression: {
               type: 'operation',
-              operator: '<',
+              operator: '&&',
               args: [
-                c1,
-                DataFactory.literal('1', XSD.integer),
+                {
+                  type: 'operation',
+                  operator: '<',
+                  args: [
+                    c1,
+                    DataFactory.literal('1', XSD.integer),
+                  ],
+                },
+                {
+                  type: 'operation',
+                  operator: 'exists',
+                  args: [{
+                    type: 'graph',
+                    name: entityVariable,
+                    patterns: [{
+                      type: 'bgp',
+                      triples: [{
+                        subject: entityVariable,
+                        predicate: c2,
+                        object: c3,
+                      }],
+                    }],
+                  }],
+                },
               ],
             },
           },
@@ -1164,10 +1470,32 @@ describe('A SparqlQueryBuilder', (): void => {
             type: 'filter',
             expression: {
               type: 'operation',
-              operator: '<=',
+              operator: '&&',
               args: [
-                c1,
-                DataFactory.literal('1', XSD.integer),
+                {
+                  type: 'operation',
+                  operator: '<=',
+                  args: [
+                    c1,
+                    DataFactory.literal('1', XSD.integer),
+                  ],
+                },
+                {
+                  type: 'operation',
+                  operator: 'exists',
+                  args: [{
+                    type: 'graph',
+                    name: entityVariable,
+                    patterns: [{
+                      type: 'bgp',
+                      triples: [{
+                        subject: entityVariable,
+                        predicate: c2,
+                        object: c3,
+                      }],
+                    }],
+                  }],
+                },
               ],
             },
           },
@@ -1205,10 +1533,32 @@ describe('A SparqlQueryBuilder', (): void => {
             type: 'filter',
             expression: {
               type: 'operation',
-              operator: '>=',
+              operator: '&&',
               args: [
-                c1,
-                DataFactory.literal('2023-03-05T07:28:51Z', XSD.dateTime),
+                {
+                  type: 'operation',
+                  operator: '>=',
+                  args: [
+                    c1,
+                    DataFactory.literal('2023-03-05T07:28:51Z', XSD.dateTime),
+                  ],
+                },
+                {
+                  type: 'operation',
+                  operator: 'exists',
+                  args: [{
+                    type: 'graph',
+                    name: entityVariable,
+                    patterns: [{
+                      type: 'bgp',
+                      triples: [{
+                        subject: entityVariable,
+                        predicate: c2,
+                        object: c3,
+                      }],
+                    }],
+                  }],
+                },
               ],
             },
           },
@@ -1245,10 +1595,32 @@ describe('A SparqlQueryBuilder', (): void => {
             type: 'filter',
             expression: {
               type: 'operation',
-              operator: '>=',
+              operator: '&&',
               args: [
-                c1,
-                DataFactory.literal('2023-03-05T07:28:51Z', XSD.string),
+                {
+                  type: 'operation',
+                  operator: '>=',
+                  args: [
+                    c1,
+                    DataFactory.literal('2023-03-05T07:28:51Z', XSD.string),
+                  ],
+                },
+                {
+                  type: 'operation',
+                  operator: 'exists',
+                  args: [{
+                    type: 'graph',
+                    name: entityVariable,
+                    patterns: [{
+                      type: 'bgp',
+                      triples: [{
+                        subject: entityVariable,
+                        predicate: c2,
+                        object: c3,
+                      }],
+                    }],
+                  }],
+                },
               ],
             },
           },
@@ -1282,6 +1654,25 @@ describe('A SparqlQueryBuilder', (): void => {
                 object: DataFactory.literal('1', XSD.integer),
               },
             ],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: 'exists',
+              args: [{
+                type: 'graph',
+                name: entityVariable,
+                patterns: [{
+                  type: 'bgp',
+                  triples: [{
+                    subject: entityVariable,
+                    predicate: c1,
+                    object: c2,
+                  }],
+                }],
+              }],
+            },
           },
         ],
         orders: [],
@@ -1369,12 +1760,18 @@ describe('A SparqlQueryBuilder', (): void => {
         graphSelectionTriples: [],
         where: [
           {
-            type: 'bgp',
-            triples: [
+            type: 'graph',
+            name: entityVariable,
+            patterns: [
               {
-                subject: entityVariable,
-                predicate: c2,
-                object: c3,
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate: c2,
+                    object: c3,
+                  },
+                ],
               },
             ],
           },
@@ -1406,12 +1803,18 @@ describe('A SparqlQueryBuilder', (): void => {
         graphSelectionTriples: [],
         where: [
           {
-            type: 'bgp',
-            triples: [
+            type: 'graph',
+            name: entityVariable,
+            patterns: [
               {
-                subject: entityVariable,
-                predicate: c1,
-                object: c2,
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate: c1,
+                    object: c2,
+                  },
+                ],
               },
             ],
           },
@@ -1443,12 +1846,18 @@ describe('A SparqlQueryBuilder', (): void => {
         graphSelectionTriples: [],
         where: [
           {
-            type: 'bgp',
-            triples: [
+            type: 'graph',
+            name: entityVariable,
+            patterns: [
               {
-                subject: entityVariable,
-                predicate: c4,
-                object: c5,
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate: c4,
+                    object: c5,
+                  },
+                ],
               },
             ],
           },
@@ -1544,9 +1953,19 @@ describe('A SparqlQueryBuilder', (): void => {
         ],
         where: [
           {
-            type: 'bgp',
-            triples: [
-              { subject: entityVariable, predicate: c9, object: c10 },
+            type: 'graph',
+            name: entityVariable,
+            patterns: [
+              {
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate: c9,
+                    object: c10,
+                  },
+                ],
+              },
             ],
           },
         ],
@@ -1626,9 +2045,19 @@ describe('A SparqlQueryBuilder', (): void => {
         ],
         where: [
           {
-            type: 'bgp',
-            triples: [
-              { subject: entityVariable, predicate: c9, object: c10 },
+            type: 'graph',
+            name: entityVariable,
+            patterns: [
+              {
+                type: 'bgp',
+                triples: [
+                  {
+                    subject: entityVariable,
+                    predicate: c9,
+                    object: c10,
+                  },
+                ],
+              },
             ],
           },
         ],
@@ -1728,6 +2157,25 @@ describe('A SparqlQueryBuilder', (): void => {
               },
               object: DataFactory.namedNode('https://example.com/Class'),
             }],
+          },
+          {
+            type: 'filter',
+            expression: {
+              type: 'operation',
+              operator: 'exists',
+              args: [{
+                type: 'graph',
+                name: entityVariable,
+                patterns: [{
+                  type: 'bgp',
+                  triples: [{
+                    subject: entityVariable,
+                    predicate: c1,
+                    object: c2,
+                  }],
+                }],
+              }],
+            },
           },
         ],
         orders: [],

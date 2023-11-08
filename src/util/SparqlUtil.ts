@@ -163,19 +163,7 @@ export function createSparqlCountSelectQuery(
       } as AggregateExpression,
       variable: countVariable,
     }],
-    where: [
-      ...where,
-      createSparqlGraphPattern(subject, [{
-        type: 'bgp',
-        triples: [
-          {
-            subject,
-            predicate: predicateNode,
-            object: objectNode,
-          } as Triple,
-        ],
-      }]),
-    ],
+    where,
     order: order.length > 0 ? order : undefined,
     offset,
     prefixes: {},
@@ -347,6 +335,14 @@ export function createSparqlNotExistsOperation(args: Expression[]): OperationExp
   return {
     type: 'operation',
     operator: 'notexists',
+    args,
+  };
+}
+
+export function createSparqlExistsOperation(args: Expression[]): OperationExpression {
+  return {
+    type: 'operation',
+    operator: 'exists',
     args,
   };
 }

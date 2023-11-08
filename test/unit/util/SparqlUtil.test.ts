@@ -29,8 +29,6 @@ import {
   creteSparqlAskQuery,
   getEntityVariableValuesFromVariables,
   groupSelectQueryResultsByKey,
-  objectNode,
-  predicateNode,
   selectQueryResultsAsJSValues,
 } from '../../../src/util/SparqlUtil';
 import { XSD } from '../../../src/util/Vocabularies';
@@ -82,20 +80,7 @@ describe('SparqlUtil', (): void => {
         }],
         order: undefined,
         offset: undefined,
-        where: [
-          {
-            type: 'graph',
-            name: node,
-            patterns: [{
-              type: 'bgp',
-              triples: [{
-                subject: node,
-                predicate: predicateNode,
-                object: objectNode,
-              }],
-            }],
-          },
-        ],
+        where: [],
         prefixes: {},
       });
     });
