@@ -116,7 +116,7 @@ export class SparqlQueryBuilder {
     options?: SparqlQueryBuilderOptions,
   ): EntitySelectQueryData {
     const relations = options?.select ? undefined : options?.relations;
-    const whereQueryData = this.createWhereQueryData(subject, options?.where);
+    const whereQueryData = this.createWhereQueryData(subject, options?.where, true);
     const orderQueryData = this.createOrderQueryData(subject, options?.order);
     const relationsQueryData = this.createRelationsQueryData(subject, relations);
     const patterns: Pattern[] = whereQueryData.values;
@@ -200,34 +200,45 @@ export class SparqlQueryBuilder {
   private createWhereQueryData(
     subject: Variable,
     where?: FindOptionsWhere,
-    baseTriples: Triple[] = [],
+    isTopLevel = false,
   ): WhereQueryData {
-    const hasSingleKey = Object.keys(where ?? {}).length === 1;
-    const whereQueryData = Object.entries(where ?? {}).reduce((obj: WhereQueryData, [ key, value ]): WhereQueryData => {
-      const whereQueryDataForField = this.createWhereQueryDataForField(subject, key, value!, hasSingleKey);
+    if (isTopLevel && Object.keys(where ?? {}).length === 1 && 'id' in where!) {
+      const { values, filters, triples } = this.createWhereQueryDataForIdValue(subject, where.id!);
       return {
-        values: [ ...obj.values, ...whereQueryDataForField.values ],
-        triples: [ ...obj.triples, ...whereQueryDataForField.triples ],
-        filters: [ ...obj.filters, ...whereQueryDataForField.filters ],
-        graphValues: [ ...obj.graphValues, ...whereQueryDataForField.graphValues ],
-        graphTriples: [ ...obj.graphTriples, ...whereQueryDataForField.graphTriples ],
-        graphFilters: [ ...obj.graphFilters, ...whereQueryDataForField.graphFilters ],
+        values: [],
+        filters: [],
+        triples: [],
+        graphValues: values,
+        graphFilters: filters,
+        graphTriples: triples,
       };
-    }, { values: [], triples: baseTriples, filters: [], graphValues: [], graphTriples: [], graphFilters: []});
-    return whereQueryData;
+    }
+    const whereQueryData = Object.entries(where ?? {})
+      .reduce((obj: NonGraphWhereQueryData, [ key, value ]): NonGraphWhereQueryData => {
+        const whereQueryDataForField = this.createWhereQueryDataForField(subject, key, value!);
+        return {
+          values: [ ...obj.values, ...whereQueryDataForField.values ],
+          triples: [ ...obj.triples, ...whereQueryDataForField.triples ],
+          filters: [ ...obj.filters, ...whereQueryDataForField.filters ],
+        };
+      }, { values: [], triples: [], filters: []});
+    return {
+      ...whereQueryData,
+      graphValues: [],
+      graphFilters: [],
+      graphTriples: [],
+    };
   }
 
   private createWhereQueryDataForField(
     subject: Variable,
     field: string,
     value: IdFindOptionsWhereField | TypeFindOptionsWhereField | FindOptionsWhereField,
-    isOnlyField: boolean,
-  ): WhereQueryData {
+  ): NonGraphWhereQueryData {
     if (field === 'id') {
       return this.createWhereQueryDataForIdValue(
         subject,
         value as FindOperator<any, any>,
-        isOnlyField,
       );
     }
     if (field === 'type') {
@@ -240,8 +251,7 @@ export class SparqlQueryBuilder {
   private createWhereQueryDataForIdValue(
     term: Variable,
     value: IdFindOptionsWhereField,
-    isOnlyField: boolean,
-  ): WhereQueryData {
+  ): NonGraphWhereQueryData {
     let filters: OperationExpression[] = [];
     let values: ValuesPattern[] = [];
     let triples: Triple[] = [];
@@ -256,31 +266,17 @@ export class SparqlQueryBuilder {
         }],
       }];
     }
-    if (isOnlyField) {
-      return {
-        values: [],
-        filters: [],
-        triples: [],
-        graphValues: values,
-        graphFilters: filters,
-        graphTriples: triples,
-      };
-    }
-
     return {
       values,
       filters,
       triples,
-      graphValues: [],
-      graphFilters: [],
-      graphTriples: [],
-    } as WhereQueryData;
+    };
   }
 
   private createWhereQueryDataForType(
     subject: Variable,
     value: TypeFindOptionsWhereField,
-  ): WhereQueryData {
+  ): NonGraphWhereQueryData {
     if (FindOperator.isFindOperator(value)) {
       if ((value as FindOperator<any, any>).operator === 'inverse') {
         const inversePredicate = createSparqlInversePredicate([ allTypesAndSuperTypesPath ]);
@@ -293,9 +289,6 @@ export class SparqlQueryBuilder {
           values: inverseWhereQueryData.values,
           filters: inverseWhereQueryData.filters,
           triples: inverseWhereQueryData.triples,
-          graphValues: [],
-          graphTriples: [],
-          graphFilters: [],
         };
       }
 
@@ -310,9 +303,6 @@ export class SparqlQueryBuilder {
         values: valuePattern ? [ valuePattern ] : [],
         filters: filter ? [ filter ] : [],
         triples: tripleInFilter ? [] : [ triple ],
-        graphValues: [],
-        graphFilters: [],
-        graphTriples: [],
       };
     }
     return {
@@ -323,9 +313,6 @@ export class SparqlQueryBuilder {
         predicate: allTypesAndSuperTypesPath,
         object: DataFactory.namedNode(value as string),
       }],
-      graphValues: [],
-      graphFilters: [],
-      graphTriples: [],
     };
   }
 
@@ -333,7 +320,7 @@ export class SparqlQueryBuilder {
     subject: Variable,
     predicate: IriTerm | PropertyPath,
     value: FindOptionsWhereField,
-  ): WhereQueryData {
+  ): NonGraphWhereQueryData {
     if (Array.isArray(value) && FindOperator.isFindOperator(value[0])) {
       return this.createWhereQueryDataForMultipleFindOperators(subject, predicate, value as FindOperator<any, any>[]);
     }
@@ -341,17 +328,15 @@ export class SparqlQueryBuilder {
       return this.createWhereQueryDataForFindOperator(subject, predicate, value as FindOperator<any, any>);
     }
     if (Array.isArray(value)) {
-      return (value as FieldPrimitiveValue[]).reduce((obj: WhereQueryData, valueItem): WhereQueryData => {
-        const valueWhereQueryData = this.createWhereQueryDataFromKeyValue(subject, predicate, valueItem);
-        return {
-          values: [ ...obj.values, ...valueWhereQueryData.values ],
-          filters: [ ...obj.filters, ...valueWhereQueryData.filters ],
-          triples: [ ...obj.triples, ...valueWhereQueryData.triples ],
-          graphValues: [ ...obj.graphValues, ...valueWhereQueryData.graphValues ],
-          graphFilters: [ ...obj.graphFilters, ...valueWhereQueryData.graphFilters ],
-          graphTriples: [ ...obj.graphTriples, ...valueWhereQueryData.graphTriples ],
-        };
-      }, { values: [], filters: [], triples: [], graphTriples: [], graphValues: [], graphFilters: []});
+      return (value as FieldPrimitiveValue[])
+        .reduce((obj: NonGraphWhereQueryData, valueItem): NonGraphWhereQueryData => {
+          const valueWhereQueryData = this.createWhereQueryDataFromKeyValue(subject, predicate, valueItem);
+          return {
+            values: [ ...obj.values, ...valueWhereQueryData.values ],
+            filters: [ ...obj.filters, ...valueWhereQueryData.filters ],
+            triples: [ ...obj.triples, ...valueWhereQueryData.triples ],
+          };
+        }, { values: [], filters: [], triples: []});
     }
     if (typeof value === 'object') {
       if ('@value' in value) {
@@ -364,9 +349,6 @@ export class SparqlQueryBuilder {
       values: [],
       filters: [],
       triples: [{ subject, predicate, object: term }],
-      graphValues: [],
-      graphFilters: [],
-      graphTriples: [],
     };
   }
 
@@ -374,18 +356,10 @@ export class SparqlQueryBuilder {
     subject: Variable,
     predicate: IriTerm | PropertyPath,
     operator: FindOperator<any, any>,
-  ): WhereQueryData {
+  ): NonGraphWhereQueryData {
     if (operator.operator === 'inverse') {
       const inversePredicate = createSparqlInversePredicate([ predicate ]);
-      const inverseWhereQueryData = this.createWhereQueryDataFromKeyValue(subject, inversePredicate, operator.value);
-      return {
-        values: inverseWhereQueryData.values,
-        filters: inverseWhereQueryData.filters,
-        triples: inverseWhereQueryData.triples,
-        graphValues: [],
-        graphTriples: [],
-        graphFilters: [],
-      };
+      return this.createWhereQueryDataFromKeyValue(subject, inversePredicate, operator.value);
     }
     if (FindOperator.isPathOperator(operator)) {
       const pathPredicate = this.pathOperatorToPropertyPath(operator);
@@ -406,9 +380,6 @@ export class SparqlQueryBuilder {
       values: valuePattern ? [ valuePattern ] : [],
       filters: filter ? [ filter ] : [],
       triples: [ triple ],
-      graphValues: [],
-      graphTriples: [],
-      graphFilters: [],
     };
   }
 
@@ -463,18 +434,15 @@ export class SparqlQueryBuilder {
     subject: Variable,
     predicate: IriTerm | PropertyPath,
     operators: FindOperator<any, any>[],
-  ): WhereQueryData {
+  ): NonGraphWhereQueryData {
     const variable = this.createVariable();
     const triple = { subject, predicate, object: variable };
     const whereQueryData = {
       values: [],
       filters: [],
       triples: [ triple ],
-      graphValues: [],
-      graphTriples: [],
-      graphFilters: [],
     };
-    return operators.reduce((obj: WhereQueryData, operator): WhereQueryData => {
+    return operators.reduce((obj: NonGraphWhereQueryData, operator): NonGraphWhereQueryData => {
       const { filter, valuePattern } = this.resolveFindOperatorAsExpressionWithMultipleValues(
         variable,
         operator,
@@ -494,7 +462,7 @@ export class SparqlQueryBuilder {
     subject: Variable,
     predicate: IriTerm | PropertyPath,
     where: FindOptionsWhere,
-  ): WhereQueryData {
+  ): NonGraphWhereQueryData {
     const subNodeVariable = this.createVariable();
     const subWhereQueryData = this.createWhereQueryData(subNodeVariable, where);
     return {
@@ -504,9 +472,6 @@ export class SparqlQueryBuilder {
         { subject, predicate, object: subNodeVariable },
         ...subWhereQueryData.triples,
       ],
-      graphValues: [],
-      graphFilters: [],
-      graphTriples: [],
     };
   }
 
@@ -514,15 +479,12 @@ export class SparqlQueryBuilder {
     subject: Variable,
     predicate: IriTerm | PropertyPath,
     valueObject: ValueWhereFieldObject,
-  ): WhereQueryData {
+  ): NonGraphWhereQueryData {
     const term = this.valueObjectToTerm(valueObject);
     return {
       values: [],
       filters: [],
       triples: [{ subject, predicate, object: term }],
-      graphValues: [],
-      graphFilters: [],
-      graphTriples: [],
     };
   }
 
@@ -747,7 +709,11 @@ export class SparqlQueryBuilder {
       );
       const subRelationWhereQueryData = this.createWhereQueryData(variable, subRelationOperatorValue.where);
       return {
-        triples: [ inverseRelationTriple, ...subRelationOrderQueryData.triples, ...subRelationWhereQueryData.triples ],
+        triples: [
+          inverseRelationTriple,
+          ...subRelationOrderQueryData.triples,
+          ...subRelationWhereQueryData.triples,
+        ],
         filters: subRelationWhereQueryData.filters,
         orders: subRelationOrderQueryData.orders,
         groupByParent: true,
