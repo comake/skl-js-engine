@@ -71,6 +71,27 @@
           }
         ]
       },
+      "skl:returnValue": {
+        "@type": "shacl:NodeShape",
+        "shacl:closed": false,
+        "shacl:property": [
+          {
+            "shacl:name": "links",
+            "shacl:datatype": "xsd:string",
+            "shacl:path": "example:links"
+          },
+          {
+            "shacl:name": "length",
+            "shacl:datatype": "xsd:integer",
+            "shacl:path": "example:length"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "https://example.com/parseLinksAndCountCharactersFromEntityMapping",
+      "@type": "https://standardknowledge.com/ontologies/core/CompositeMapping",
+      "verb": "https://example.com/parseLinksAndCountCharactersFromEntity",
       "skl:parallel": [
         {
           "skl:parameterMapping": {
@@ -301,23 +322,7 @@
             }
           }
         }
-      ],
-      "skl:returnValue": {
-        "@type": "shacl:NodeShape",
-        "shacl:closed": false,
-        "shacl:property": [
-          {
-            "shacl:name": "links",
-            "shacl:datatype": "xsd:string",
-            "shacl:path": "example:links"
-          },
-          {
-            "shacl:name": "length",
-            "shacl:datatype": "xsd:integer",
-            "shacl:path": "example:length"
-          }
-        ]
-      }
+      ]
     },
     {
       "@id": "https://example.com/getTextBody",
@@ -363,14 +368,6 @@
             "shacl:path": "https://example.com/text"
           }
         ]
-      },
-      "skl:returnValueFrame": {
-        "@context": {
-          "text": {
-            "@id": "https://example.com/text",
-            "@type": "http://www.w3.org/2001/XMLSchema#string"
-          }
-        }
       }
     },
     {

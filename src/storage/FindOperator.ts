@@ -2,6 +2,7 @@ export type FindOperatorType =
 | 'in'
 | 'not'
 | 'equal'
+| 'exists'
 | 'gt'
 | 'gte'
 | 'lt'
@@ -16,13 +17,13 @@ export type FindOperatorType =
 
 export interface FindOperatorArgs<T, TType> {
   operator: TType;
-  value: T | FindOperator<T, any>;
+  value?: T | FindOperator<T, any>;
 }
 
 export class FindOperator<T, TType extends FindOperatorType> {
   public readonly type = 'operator';
   public readonly operator: TType;
-  public readonly value: T | FindOperator<T, any>;
+  public readonly value?: T | FindOperator<T, any>;
 
   public constructor(args: FindOperatorArgs<T, TType>) {
     this.operator = args.operator;

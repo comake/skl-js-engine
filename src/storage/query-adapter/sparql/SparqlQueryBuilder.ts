@@ -371,7 +371,7 @@ export class SparqlQueryBuilder {
     }
     const variable = this.createVariable();
     const triple = { subject, predicate, object: variable };
-    const { filter, valuePattern } = this.resolveFindOperatorAsExpressionWithMultipleValues(
+    const { filter, valuePattern, tripleInFilter } = this.resolveFindOperatorAsExpressionWithMultipleValues(
       variable,
       operator,
       triple,
@@ -379,7 +379,7 @@ export class SparqlQueryBuilder {
     return {
       values: valuePattern ? [ valuePattern ] : [],
       filters: filter ? [ filter ] : [],
-      triples: [ triple ],
+      triples: tripleInFilter ? [] : [ triple ],
     };
   }
 
@@ -528,6 +528,14 @@ export class SparqlQueryBuilder {
         tripleInFilter: true,
       };
     }
+    if (operator.operator === 'exists') {
+      return {
+        filter: createSparqlExistsOperation([
+          createSparqlBasicGraphPattern([ triple ]),
+        ]),
+        tripleInFilter: true,
+      };
+    }
     const resolvedExpression = this.resolveValueToExpression(operator.value) as Expression;
     switch (operator.operator) {
       case 'equal':
@@ -609,8 +617,13 @@ export class SparqlQueryBuilder {
     triple: Triple,
   ): OperationExpression {
     let filterExpression: FilterPattern;
-    const rightSideIsOperation = typeof rightSide === 'object' && 'operator' in rightSide;
-    if (rightSideIsOperation) {
+    const isFindOperator = FindOperator.isFindOperator(rightSide);
+    if (isFindOperator && (rightSide as FindOperator<any, any>).operator === 'exists') {
+      return createSparqlNotExistsOperation([
+        createSparqlBasicGraphPattern([ triple ]),
+      ]);
+    }
+    if (isFindOperator) {
       let expression: OperationExpression | undefined;
       try {
         ({ filter: expression } = this.resolveFindOperatorAsExpressionWithMultipleValues(
@@ -620,7 +633,7 @@ export class SparqlQueryBuilder {
           true,
         ));
       } catch {
-        throw new Error(`Unsupported Not sub operator "${rightSide.operator}"`);
+        throw new Error(`Unsupported Not sub operator "${(rightSide as FindOperator<any, any>).operator}"`);
       }
       filterExpression = createSparqlFilterWithExpression(expression!);
     } else {

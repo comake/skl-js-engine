@@ -621,7 +621,7 @@ describe('SKLEngine', (): void => {
       );
     });
 
-    it('returns the raw operation response if the openapi operation mapping does not have a return value mapping.',
+    it('returns the raw operation response if the verb integration mapping does not have a return value mapping.',
       async(): Promise<void> => {
         schemas = schemas.map((schemaItem: any): any => {
           if (schemaItem['@id'] === 'https://example.com/data/4') {
@@ -906,8 +906,11 @@ describe('SKLEngine', (): void => {
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
       await expect(sklEngine.verb.authorizeWithPkceOauth({ account })).resolves.toEqual({
-        '@type': '@json',
-        '@value': response,
+        data: response,
+        operationParameters: {
+          account,
+          client_id: 'adlerfaulkner',
+        },
       });
       expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
       expect(executeSecuritySchemeStage).toHaveBeenCalledWith(
@@ -999,6 +1002,37 @@ describe('SKLEngine', (): void => {
           { grant_type: 'client_credentials', scope: 'read:events', client_id: 'adlerfaulkner' },
         );
       });
+  });
+
+  describe('calling Verbs with a specific mapping', (): void => {
+    it('can execute the verb with the mapping.', async(): Promise<void> => {
+      schemas = await frameAndCombineSchemas([
+        './test/assets/schemas/core.json',
+        './test/assets/schemas/series-verb.json',
+      ]);
+      const functions = {
+        'https://example.com/functions/parseLinksFromText'(data: any): string[] {
+          const text = data['https://example.com/functions/text'];
+          const res = text.match(URI_REGEXP);
+          return res;
+        },
+      };
+      const sklEngine = new SKLEngine({ type: 'memory', functions });
+      await sklEngine.save(schemas);
+      const entity = {
+        '@id': 'https://example.com/data/1',
+        '@type': 'https://schema.org/BlogPosting',
+        'https://schema.org/articleBody': {
+          '@value': 'Hello world https://example.com/test',
+          '@type': XSD.string,
+        },
+      };
+      const response = await sklEngine.verb.parseAndSaveLinksFromEntity({
+        entity,
+        mapping: 'https://example.com/parseAndSaveLinksFromEntityMapping',
+      });
+      expect(response).toEqual({});
+    });
   });
 
   describe('calling Verbs which map a Noun to another Verb', (): void => {
@@ -1153,7 +1187,7 @@ describe('SKLEngine', (): void => {
     });
   });
 
-  describe('calling Verbs which specify a series sub Verb execution', (): void => {
+  describe('calling Verbs which specify series composite mapping', (): void => {
     it('can execute multiple Verbs in series.', async(): Promise<void> => {
       schemas = await frameAndCombineSchemas([
         './test/assets/schemas/core.json',
@@ -1180,7 +1214,7 @@ describe('SKLEngine', (): void => {
       expect(response).toEqual({});
     });
 
-    it('runs a preProcessingMapping and adds preProcessedParameters to the series verb arguments.',
+    it('runs a preProcessingMapping and adds preProcessedParameters to the series mapping arguments.',
       async(): Promise<void> => {
         schemas = await frameAndCombineSchemas([
           './test/assets/schemas/core.json',
@@ -1207,23 +1241,24 @@ describe('SKLEngine', (): void => {
         expect(response).toEqual({});
       });
 
-    it('does not run a verb in the series if its verbMapping does not return a verbId.', async(): Promise<void> => {
-      schemas = await frameAndCombineSchemas([
-        './test/assets/schemas/core.json',
-        './test/assets/schemas/series-verb-no-verbId.json',
-      ]);
-      const sklEngine = new SKLEngine({ type: 'memory' });
-      await sklEngine.save(schemas);
-      const response = await sklEngine.verb.transformText({ text: 'Hello' });
-      expect(response).toEqual(
-        expect.objectContaining({
-          text: 'Hello',
-        }),
-      );
-    });
+    it('does not run a verb from a series mapping if its verbMapping does not return a verbId.',
+      async(): Promise<void> => {
+        schemas = await frameAndCombineSchemas([
+          './test/assets/schemas/core.json',
+          './test/assets/schemas/series-verb-no-verbId.json',
+        ]);
+        const sklEngine = new SKLEngine({ type: 'memory' });
+        await sklEngine.save(schemas);
+        const response = await sklEngine.verb.transformText({ text: 'Hello' });
+        expect(response).toEqual(
+          expect.objectContaining({
+            text: 'Hello',
+          }),
+        );
+      });
   });
 
-  describe('calling Verbs which specify a parallel sub Verb execution', (): void => {
+  describe('calling Verbs which use a parallel composite mapping', (): void => {
     beforeEach(async(): Promise<void> => {
       schemas = await frameAndCombineSchemas([
         './test/assets/schemas/core.json',
@@ -1286,7 +1321,7 @@ describe('SKLEngine', (): void => {
         },
       };
       schemas = schemas.map((schemaItem: any): any => {
-        if (schemaItem['@id'] === 'https://example.com/parseLinksAndCountCharactersFromEntity') {
+        if (schemaItem['@id'] === 'https://example.com/parseLinksAndCountCharactersFromEntityMapping') {
           // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
           delete schemaItem[SKL.parallel][0][SKL.returnValueMapping][RR.subjectMap][RR.class];
           schemaItem[SKL.parallel][0][SKL.returnValueMapping][RR.subjectMap][RR.constant] = 'https://example.com/res/1';
@@ -1591,7 +1626,7 @@ describe('SKLEngine', (): void => {
       });
   });
 
-  it('throws an error when a noun or account is not supplied with the Verb.', async(): Promise<void> => {
+  it('throws an error when a valid mapping cannot be found.', async(): Promise<void> => {
     schemas = await frameAndCombineSchemas([
       './test/assets/schemas/core.json',
       './test/assets/schemas/get-dropbox-file.json',
@@ -1599,7 +1634,7 @@ describe('SKLEngine', (): void => {
     const sklEngine = new SKLEngine({ type: 'memory' });
     await sklEngine.save(schemas);
     await expect(sklEngine.verb.getName({ entity: { [RDFS.label]: 'final.jpg' }}))
-      .rejects.toThrow('Verb must be a composite or its parameters must include either a noun or an account.');
+      .rejects.toThrow('No mapping found.');
   });
 
   it('throws an error if the operation is not supported.', async(): Promise<void> => {
