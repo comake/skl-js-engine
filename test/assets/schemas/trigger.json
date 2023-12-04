@@ -28,7 +28,6 @@
     "skl:account": { "@type": "@id" },
     "skl:openApiDescription": { "@type": "@json" },
     "skl:parametersContext": { "@type": "@json" },
-    "skl:returnValueFrame": { "@type": "@json" },
     "skl:noun": { "@type": "@id" },
     "skl:parameterMapping": { "@type": "@id" },
     "skl:parameterMappingFrame": { "@type": "@json" },

@@ -2,7 +2,7 @@
 import * as RmlParser from '@comake/rmlmapper-js';
 import type { NodeObject } from 'jsonld';
 import jsonld from 'jsonld';
-import type { OrArray, JSONObject } from '../util/Types';
+import type { OrArray, JSONValue } from '../util/Types';
 
 export interface MapperArgs {
   functions?: Record<string, (args: any | any[]) => any>;
@@ -16,7 +16,7 @@ export class Mapper {
   }
 
   public async apply(
-    data: JSONObject,
+    data: JSONValue,
     mapping: OrArray<NodeObject>,
     frame: Record<string, any>,
   ): Promise<NodeObject> {
@@ -24,7 +24,7 @@ export class Mapper {
     return await this.frame(result, frame);
   }
 
-  private async doMapping(data: JSONObject, mapping: OrArray<NodeObject>): Promise<NodeObject[]> {
+  private async doMapping(data: JSONValue, mapping: OrArray<NodeObject>): Promise<NodeObject[]> {
     const sources = { 'input.json': JSON.stringify(data) };
     const options = { functions: this.functions };
     const mappingNodeObject = Array.isArray(mapping)

@@ -145,10 +145,6 @@ export type Verb = NodeObject & {
   [SKL.parametersContext]?: ValueObject<JSONObject>;
   [SKL.parameters]?: NodeShape;
   [SKL.returnValue]?: NodeObject;
-  [SKL.returnValueFrame]?: ValueObject<JSONObject>;
-  [SKL.series]?: { '@list': VerbMapping[] } | (RdfList<VerbMapping> & NodeObject);
-  [SKL.parallel]?: NodeObject;
-  [SKL.returnValueMapping]?: OrArray<TriplesMap>;
 };
 
 export interface SeriesVerbArgs extends JSONObject {
@@ -156,60 +152,46 @@ export interface SeriesVerbArgs extends JSONObject {
   previousVerbReturnValue: JSONObject;
 }
 
-export type MappingWithParameterMapping = NodeObject & {
-  [SKL.parameterMapping]: OrArray<TriplesMap>;
-  [SKL.parameterMappingFrame]: ValueObject<JSONObject>;
-};
-
-export type MappingWithParameterReference = NodeObject & {
-  [SKL.parameterReference]: string | ValueObject<string>;
-};
-
-export type MappingWithReturnValueMapping = NodeObject & {
-  [SKL.returnValueMapping]: OrArray<TriplesMap>;
-  [SKL.returnValueFrame]: ValueObject<JSONObject>;
-};
-
-export type MappingWithVerbMapping = NodeObject & {
+export type Mapping = NodeObject & {
+  [SKL.preProcessingMapping]?: OrArray<TriplesMap>;
+  [SKL.preProcessingMappingFrame]?: ValueObject<JSONObject>;
+  [SKL.parameterMapping]?: OrArray<TriplesMap>;
+  [SKL.parameterMappingFrame]?: ValueObject<JSONObject>;
+  [SKL.parameterReference]?: string | ValueObject<string>;
+  [SKL.operationId]?: ValueObject<string>;
+  [SKL.operationMapping]?: TriplesMap;
   [SKL.verbId]?: ValueObject<string> | string;
   [SKL.verbMapping]?: TriplesMap;
+  [SKL.returnValueMapping]?: OrArray<TriplesMap>;
+  [SKL.returnValueFrame]?: ValueObject<JSONObject>;
+  [SKL.series]?: { '@list': VerbMapping[] } | (RdfList<VerbMapping> & NodeObject);
+  [SKL.parallel]?: OrArray<VerbMapping>;
 };
 
-export type MappingWithOperationMapping = NodeObject & {
-  [SKL.constantOperationId]: ValueObject<string>;
-  [SKL.operationMapping]?: TriplesMap;
+export type VerbMapping = Mapping & {
+  [SKL.verb]: ReferenceNodeObject;
+  [SKL.noun]?: ReferenceNodeObject;
+  [SKL.integration]?: ReferenceNodeObject;
 };
 
-export interface VerbMapping extends
-  MappingWithVerbMapping,
-  Partial<MappingWithParameterMapping>,
-  Partial<MappingWithParameterReference>,
-  Partial<MappingWithReturnValueMapping> {}
+export type MappingWithParameterMapping = VerbMapping &
+Required<Pick<VerbMapping, typeof SKL.parameterMapping | typeof SKL.parameterMappingFrame>>;
 
-export interface VerbIntegrationMapping extends
-  Partial<MappingWithParameterReference>,
-  Partial<MappingWithParameterMapping>,
-  MappingWithOperationMapping,
-  Partial<MappingWithReturnValueMapping> {
-  [SKL.verb]: ReferenceNodeObject;
+export type MappingWithParameterReference = VerbMapping &
+Required<Pick<VerbMapping, typeof SKL.parameterReference>>;
+
+export type MappingWithReturnValueMapping = VerbMapping &
+Required<Pick<VerbMapping, typeof SKL.returnValueMapping | typeof SKL.returnValueFrame>>;
+
+export type MappingWithSeries = VerbMapping &
+Required<Pick<VerbMapping, typeof SKL.series>>;
+
+export type MappingWithParallel = VerbMapping &
+Required<Pick<VerbMapping, typeof SKL.parallel>>;
+
+export type TriggerMapping = Mapping & {
   [SKL.integration]: ReferenceNodeObject;
-}
-
-export interface VerbNounMapping extends
-  Partial<MappingWithParameterReference>,
-  Partial<MappingWithParameterMapping>,
-  MappingWithVerbMapping,
-  Partial<MappingWithReturnValueMapping> {
-  [SKL.verb]: ReferenceNodeObject;
-  [SKL.noun]: ReferenceNodeObject;
-}
-
-export interface TriggerVerbMapping extends
-  MappingWithVerbMapping,
-  Partial<MappingWithParameterReference>,
-  Partial<MappingWithParameterMapping> {
-  [SKL.integration]: ReferenceNodeObject;
-}
+};
 
 export type PossibleArrayFieldValues =
   | boolean

@@ -3,6 +3,7 @@ export * from './mapping/Mapper';
 
 // Storage/Operator
 export * from './storage/operator/Equal';
+export * from './storage/operator/Exists';
 export * from './storage/operator/GreaterThan';
 export * from './storage/operator/GreaterThanOrEqual';
 export * from './storage/operator/In';

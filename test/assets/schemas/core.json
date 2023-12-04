@@ -235,14 +235,26 @@
           "shacl:path": "skl:returnValue",
           "shacl:name": "returnValue",
           "shacl:description": "A SHACL NodeShape specifying the format and constraints that the return value of a Verb must conform to."
-        },
-        {
-          "shacl:maxCount": 1,
-          "shacl:path": "skl:returnValueFrame",
-          "shacl:name": "returnValueFrame",
-          "shacl:datatype": "rdf:JSON",
-          "shacl:description": "A JSON-LD Frame used to transform the JSON-LD returned by a Mapping to this Verb."
-        },
+        }
+      ]
+    },
+    {
+      "@id": "https://standardknowledge.com/ontologies/core/NounMappedVerb",
+      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
+      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Verb"
+    },
+    {
+      "@id": "https://standardknowledge.com/ontologies/core/OpenApiSecuritySchemeVerb",
+      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
+      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Verb"
+    },
+    {
+      "@id": "https://standardknowledge.com/ontologies/core/CompositeMapping",
+      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
+      "rdfs:label": "Composite Mapping",
+      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Mapping",
+      "shacl:closed": false,
+      "shacl:property": [
         {
           "shacl:maxCount": 1,
           "shacl:path": "skl:series",
@@ -334,7 +346,7 @@
           "shacl:maxCount": 1,
           "shacl:name": "returnValueFrame",
           "shacl:datatype": "rdf:JSON",
-          "shacl:description": "A JSON-LD Frame used to transform the JSON-LD returned by the returnValueMapping into a prefered format. This field overrides the returnValueFrame of the Verb. If not supplied, the Verb's returnValueFrame will be used instead."
+          "shacl:description": "A JSON-LD Frame used to transform the JSON-LD returned by the returnValueMapping into a prefered format."
         },
         {
           "shacl:path": "skl:parallel",
@@ -380,16 +392,6 @@
       ]
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/NounMappedVerb",
-      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
-      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Verb"
-    },
-    {
-      "@id": "https://standardknowledge.com/ontologies/core/OpenApiSecuritySchemeVerb",
-      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
-      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Verb"
-    },
-    {
       "@id": "https://standardknowledge.com/ontologies/core/VerbIntegrationMapping",
       "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
       "rdfs:label": "Verb to Integration Mapping",
@@ -409,8 +411,8 @@
         {
           "shacl:maxCount": 1,
           "shacl:datatype": "xsd:string",
-          "shacl:name": "constantOperationId",
-          "shacl:path": "https://standardknowledge.com/ontologies/core/constantOperationId"
+          "shacl:name": "operationId",
+          "shacl:path": "https://standardknowledge.com/ontologies/core/operationId"
         },
         {
           "shacl:maxCount": 1,
@@ -422,6 +424,13 @@
           "shacl:class": "rr:TriplesMap",
           "shacl:nodeKind": "shacl:IRI",
           "shacl:path": "https://standardknowledge.com/ontologies/core/returnValueMapping"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "skl:returnValueFrame",
+          "shacl:name": "returnValueFrame",
+          "shacl:datatype": "rdf:JSON",
+          "shacl:description": "A JSON-LD Frame used to transform the JSON-LD returned by a Mapping to this Verb."
         },
         {
           "shacl:maxCount": 1,
