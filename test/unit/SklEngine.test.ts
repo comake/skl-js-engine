@@ -716,10 +716,9 @@ describe('SKLEngine', (): void => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://example.com/data/4');
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      await expect(sklEngine.verb.getFile({ account, id: '12345' })).rejects.toThrow([
-        'No schema found with fields matching',
-        '{"type":"https://standardknowledge.com/ontologies/core/VerbIntegrationMapping","https://standardknowledge.com/ontologies/core/verb":"https://example.com/getFile","https://standardknowledge.com/ontologies/core/integration":"https://example.com/integrations/Dropbox"}',
-      ].join(' '));
+      await expect(sklEngine.verb.getFile({ account, id: '12345' })).rejects.toThrow(
+        'Mapping between account https://example.com/data/DropboxAccount1 and verb https://example.com/getFile not found.',
+      );
       expect(executeOperation).toHaveBeenCalledTimes(0);
     });
 
