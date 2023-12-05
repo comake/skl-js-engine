@@ -71,7 +71,12 @@
             "shacl:datatype": "xsd:string"
           }
         ]
-      },
+      }
+    },
+    {
+      "@id": "https://example.com/transformTextMapping",
+      "@type": "https://standardknowledge.com/ontologies/core/CompositeMapping",
+      "verb": "https://example.com/transformText",
       "skl:series": [
         {
           "skl:parameterMapping": {
@@ -183,7 +188,10 @@
                 }
               }
             ],
-            "rr:subject": "https://example.com/mappingSubject"
+            "rr:subjectMap": {
+              "@type": "rr:SubjectMap",
+              "rr:termType": "rr:BlankNode"
+            }
           },
           "skl:parameterMappingFrame": {
             "@context": {
@@ -191,8 +199,7 @@
                 "@id": "https://example.com/value",
                 "@type": "http://www.w3.org/2001/XMLSchema#string"
               }
-            },
-            "@id": "https://example.com/mappingSubject"
+            }
           },
           "skl:verbId": "https://example.com/getText"
         }
@@ -220,7 +227,12 @@
             "shacl:name": "value"
           }
         ]
-      },
+      }
+    },
+    {
+      "@id": "https://example.com/getTextMapping",
+      "@type": "https://standardknowledge.com/ontologies/core/Mapping",
+      "verb": "https://example.com/getText",
       "skl:returnValueMapping": {
         "@type": "rr:TriplesMap",
         "rml:logicalSource": {

@@ -81,9 +81,6 @@
       },
       "skl:returnValue": {
         "@id": "https://standardknowledge.com/ontologies/core/File"
-      },
-      "skl:returnValueFrame": {
-        "@type": ["https://standardknowledge.com/ontologies/core/File", "https://standardknowledge.com/ontologies/core/Folder"]
       }
     },
     {
@@ -524,6 +521,12 @@
           }
         ],
         "rr:subject": "https://example.com/data/abc123"
+      },
+      "skl:returnValueFrame": {
+        "@type": [
+          "https://standardknowledge.com/ontologies/core/File",
+          "https://standardknowledge.com/ontologies/core/Folder"
+        ]
       }
     },
     {
@@ -780,9 +783,6 @@
             "shacl:path": "https://standardknowledge.com/ontologies/core/accessToken"
           }
         ]
-      },
-      "skl:returnValueFrame": {
-        "@id": "https://example.com/getOauthTokensReturnValueSubject"
       }
     },
     {
@@ -962,6 +962,9 @@
           }
         ],
         "rr:subject": "https://example.com/getOauthTokensReturnValueSubject"
+      },
+      "skl:returnValueFrame": {
+        "@id": "https://example.com/getOauthTokensReturnValueSubject"
       }
     },
     {

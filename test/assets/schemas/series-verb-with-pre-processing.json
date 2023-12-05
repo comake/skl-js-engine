@@ -72,7 +72,12 @@
             "shacl:nodeKind": { "@id": "shacl:IRI" }
           }
         ]
-      },
+      }
+    },
+    {
+      "@id": "https://example.com/parseAndSaveLinksFromEntityMapping",
+      "@type": "https://standardknowledge.com/ontologies/core/CompositeMapping",
+      "verb": "https://example.com/parseAndSaveLinksFromEntity",
       "skl:series": [
         {
           "skl:preProcessingMapping": {
@@ -83,7 +88,10 @@
               "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
               "rml:source": "input.json"
             },
-            "rr:subject": "https://example.com/mappingSubject",
+            "rr:subjectMap": {
+              "@type": "rr:SubjectMap",
+              "rr:termType": "rr:BlankNode"
+            },
             "rr:predicateObjectMap": [
               {
                 "@type": "rr:PredicateObjectMap",
@@ -353,14 +361,6 @@
             "shacl:path": "https://example.com/text"
           }
         ]
-      },
-      "skl:returnValueFrame": {
-        "@context": {
-          "text": {
-            "@id": "https://example.com/text",
-            "@type": "http://www.w3.org/2001/XMLSchema#string"
-          }
-        }
       }
     },
     {

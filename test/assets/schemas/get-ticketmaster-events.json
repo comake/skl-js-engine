@@ -150,9 +150,6 @@
       },
       "https://standardknowledge.com/ontologies/core/returnValue": {
         "@id": "https://standardknowledge.com/ontologies/core/TokenPaginatedCollection"
-      },
-      "https://standardknowledge.com/ontologies/core/returnValueFrame": {
-        "@type": "https://standardknowledge.com/ontologies/core/TokenPaginatedCollection"
       }
     },
     {
@@ -721,7 +718,10 @@
             "rr:template": "https://example.com/data/venues/{id}"
           }
         }
-      ]
+      ],
+      "https://standardknowledge.com/ontologies/core/returnValueFrame": {
+        "@type": "https://standardknowledge.com/ontologies/core/TokenPaginatedCollection"
+      }
     },
     {
       "@id": "https://example.com/data/TicketmasterOpenApiDescription",

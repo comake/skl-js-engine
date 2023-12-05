@@ -28,11 +28,9 @@
     "skl:account": { "@type": "@id" },
     "skl:openApiDescription": { "@type": "@json" },
     "skl:parametersContext": { "@type": "@json" },
-    "skl:returnValueFrame": { "@type": "@json" },
     "skl:noun": { "@type": "@id" },
     "skl:parameterMapping": { "@type": "@id" },
     "skl:parameterMappingFrame": { "@type": "@json" },
-    "skl:returnValueMapping": { "@type": "@id" },
     "skl:operationMapping": { "@type": "@id" },
     "skl:verbMapping": { "@type": "@id" },
     "integration": { "@id": "skl:integration", "@type": "@id" },
@@ -70,7 +68,12 @@
             "shacl:datatype": "rdf:JSON"
           }
         ]
-      },
+      }
+    },
+    {
+      "@id": "https://example.com/findEntityMapping",
+      "@type": "https://standardknowledge.com/ontologies/core/CompositeMapping",
+      "verb": "https://example.com/findEntity",
       "skl:series": [
         {
           "skl:verbId": "https://standardknowledge.com/ontologies/skl-engine/find",

@@ -104,9 +104,6 @@
             "shacl:path": "https://standardknowledge.com/ontologies/core/accessToken"
           }
         ]
-      },
-      "skl:returnValueFrame": {
-        "@id": "https://example.com/getOauthTokensReturnValueSubject"
       }
     },
     {
@@ -210,6 +207,9 @@
           }
         ],
         "rr:subject": "https://example.com/getOauthTokensReturnValueSubject"
+      },
+      "skl:returnValueFrame": {
+        "@id": "https://example.com/getOauthTokensReturnValueSubject"
       }
     },
     {

@@ -28,11 +28,9 @@
     "skl:account": { "@type": "@id" },
     "skl:openApiDescription": { "@type": "@json" },
     "skl:parametersContext": { "@type": "@json" },
-    "skl:returnValueFrame": { "@type": "@json" },
     "skl:noun": { "@type": "@id" },
     "skl:parameterMapping": { "@type": "@id" },
     "skl:parameterMappingFrame": { "@type": "@json" },
-    "skl:returnValueMapping": { "@type": "@id" },
     "skl:operationMapping": { "@type": "@id" },
     "skl:verbMapping": { "@type": "@id" },
     "integration": { "@id": "skl:integration", "@type": "@id" },
@@ -70,7 +68,12 @@
             "shacl:datatype": "rdf:JSON"
           }
         ]
-      },
+      }
+    },
+    {
+      "@id": "https://example.com/countEntitiesMapping",
+      "@type": "https://standardknowledge.com/ontologies/core/CompositeMapping",
+      "verb": "https://example.com/countEntities",
       "skl:series": [
         {
           "skl:verbId": "https://standardknowledge.com/ontologies/skl-engine/count",
@@ -82,7 +85,10 @@
               "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
               "rml:source": "input.json"
             },
-            "rr:subject": "https://example.com/mappingSubject",
+            "rr:subjectMap": {
+              "@type": "rr:SubjectMap",
+              "rr:termType": "rr:BlankNode"
+            },
             "rr:predicateObjectMap": [
               {
                 "@type": "rr:PredicateObjectMap",
@@ -101,8 +107,7 @@
                 "@id": "https://example.com/where",
                 "@type": "@json"
               }
-            },
-            "@id": "https://example.com/mappingSubject"
+            }
           }
         }
       ]
