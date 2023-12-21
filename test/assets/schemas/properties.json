@@ -480,7 +480,7 @@
         },
         { 
           "shacl:maxCount": 1,
-          "shacl:path": "http://schema.org/email"
+          "shacl:path": "https://schema.org/email"
         },
         { 
           "shacl:path": "skl:syncStepConfiguration",

@@ -216,7 +216,7 @@ export const SHACL = createNamespace(SHACL_NAMESPACE, [
   'node',
 ]);
 
-export const SDO_NAMESPACE = 'http://schema.org/';
+export const SDO_NAMESPACE = 'https://schema.org/';
 export const SDO = createNamespace(SDO_NAMESPACE, [
   'Event',
 ]);
