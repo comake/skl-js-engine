@@ -33,9 +33,13 @@ export class SparqlEndpointQueryExecutor implements QueryExecutor {
     this.sparqlGenerator = new Generator();
   }
 
-  public async executeSparqlSelectAndGetData<T extends Quad | SelectVariableQueryResult<any> = Quad>(
-    query: SelectQuery | ConstructQuery,
-  ): Promise<T[]> {
+  public async executeSparqlSelectAndGetData<
+    TQuery extends SelectQuery | ConstructQuery,
+    TReturn extends SelectVariableQueryResult<any> | Quad =
+    TQuery extends SelectQuery ? SelectVariableQueryResult<any> : Quad
+  >(
+    query: TQuery,
+  ): Promise<TReturn[]> {
     const generatedQuery = this.sparqlGenerator.stringify(query);
     return this.executeSparqlSelectAndGetDataRaw(generatedQuery);
   }
@@ -58,6 +62,10 @@ export class SparqlEndpointQueryExecutor implements QueryExecutor {
         reject(error);
       });
     });
+  }
+
+  public async executeSparqlConstructAndGetDataRaw(query: string): Promise<Quad[]> {
+    return await this.executeSparqlSelectAndGetDataRaw(query);
   }
 
   public async executeSparqlUpdate(query: Update): Promise<void> {

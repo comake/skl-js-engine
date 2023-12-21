@@ -12,7 +12,8 @@ function createNamespace<T extends string, TBase extends string>(
   ), {} as Namespace<T, TBase>);
 }
 
-export const SKL = createNamespace('https://standardknowledge.com/ontologies/core/', [
+export const SKL_NAMESPACE = 'https://standardknowledge.com/ontologies/core/';
+export const SKL = createNamespace(SKL_NAMESPACE, [
   'Verb',
   'Noun',
   'Mapping',
@@ -27,6 +28,7 @@ export const SKL = createNamespace('https://standardknowledge.com/ontologies/cor
   'OpenApiSecuritySchemeVerb',
   'NounMappedVerb',
   'VerbNounMapping',
+  'CompositeVerbMapping',
   'JsonDataSource',
   'Integration',
   'verb',
@@ -88,9 +90,13 @@ export const SKL = createNamespace('https://standardknowledge.com/ontologies/cor
   'InvalidTokenErrorMatcher',
   'invalidTokenErrorMatcherStatus',
   'invalidTokenErrorMatcherMessageRegex',
+  'Dataview',
+  'Entity',
+  'query',
 ]);
 
-export const SKL_ENGINE = createNamespace('https://standardknowledge.com/ontologies/skl-engine/', [
+export const SKL_ENGINE_NAMESPACE = 'https://standardknowledge.com/ontologies/skl-engine/';
+export const SKL_ENGINE = createNamespace(SKL_ENGINE_NAMESPACE, [
   'update',
   'findAll',
   'findAllBy',
@@ -104,7 +110,8 @@ export const SKL_ENGINE = createNamespace('https://standardknowledge.com/ontolog
   'destroy',
 ]);
 
-export const XSD = createNamespace('http://www.w3.org/2001/XMLSchema#', [
+export const XSD_NAMESPACE = 'http://www.w3.org/2001/XMLSchema#';
+export const XSD = createNamespace(XSD_NAMESPACE, [
   'boolean',
   'integer',
   'double',
@@ -119,7 +126,9 @@ export const XSD = createNamespace('http://www.w3.org/2001/XMLSchema#', [
   'dateTime',
 ]);
 
-export const RDF = createNamespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#', [
+export const RDF_NAMESPACE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
+export const RDF = createNamespace(RDF_NAMESPACE, [
+  'Property',
   'type',
   'datatype',
   'JSON',
@@ -128,13 +137,15 @@ export const RDF = createNamespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#'
   'nil',
 ]);
 
-export const RDFS = createNamespace('http://www.w3.org/2000/01/rdf-schema#', [
+export const RDFS_NAMESPACE = 'http://www.w3.org/2000/01/rdf-schema#';
+export const RDFS = createNamespace(RDFS_NAMESPACE, [
   'subClassOf',
   'label',
   'range',
 ]);
 
-export const OWL = createNamespace('http://www.w3.org/2002/07/owl#', [
+export const OWL_NAMESPACE = 'http://www.w3.org/2002/07/owl#';
+export const OWL = createNamespace(OWL_NAMESPACE, [
   'Restriction',
   'onProperty',
   'allValuesFrom',
@@ -144,7 +155,8 @@ export const OWL = createNamespace('http://www.w3.org/2002/07/owl#', [
   'ObjectProperty',
 ]);
 
-export const SHACL = createNamespace('http://www.w3.org/ns/shacl#', [
+export const SHACL_NAMESPACE = 'http://www.w3.org/ns/shacl#';
+export const SHACL = createNamespace(SHACL_NAMESPACE, [
   'NodeShape',
   'PropertyShape',
   'Literal',
@@ -204,11 +216,18 @@ export const SHACL = createNamespace('http://www.w3.org/ns/shacl#', [
   'node',
 ]);
 
-export const SCHEMA = createNamespace('https://schema.org/', [
+export const SDO_NAMESPACE = 'http://schema.org/';
+export const SDO = createNamespace(SDO_NAMESPACE, [
   'Event',
 ]);
 
-export const DCTERMS = createNamespace('http://purl.org/dc/terms/', [
+export const DCELEMENTS_NAMESPACE = 'http://purl.org/dc/elements/1.1/';
+export const DCELEMENTS = createNamespace(DCELEMENTS_NAMESPACE, [
+  'description',
+]);
+
+export const DCTERMS_NAMESPACE = 'http://purl.org/dc/terms/';
+export const DCTERMS = createNamespace(DCTERMS_NAMESPACE, [
   'created',
   'modified',
 ]);

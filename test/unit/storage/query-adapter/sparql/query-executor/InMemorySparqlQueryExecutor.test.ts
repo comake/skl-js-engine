@@ -105,19 +105,6 @@ describe('a MemoryQueryAdapter', (): void => {
   });
 
   describe('executeSparqlSelectAndGetDataRaw', (): void => {
-    it('executes a quads query if the query is a construct.', async(): Promise<void> => {
-      const promise = executor.executeSparqlSelectAndGetDataRaw('query', true);
-      await new Promise((resolve): any => setImmediate(resolve));
-      mockStream.emit('data', quad);
-      mockStream.emit('end');
-      await expect(promise).resolves.toEqual([ quad ]);
-      expect(queryQuads).toHaveBeenCalledTimes(1);
-      expect(queryQuads).toHaveBeenCalledWith(
-        'query',
-        { sources: [ store ], unionDefaultGraph: true },
-      );
-    });
-
     it('executes a bindings query if the query is a select.', async(): Promise<void> => {
       const promise = executor.executeSparqlSelectAndGetDataRaw('query');
       await new Promise((resolve): any => setImmediate(resolve));
@@ -138,6 +125,21 @@ describe('a MemoryQueryAdapter', (): void => {
       await expect(promise).rejects.toThrow('error');
       expect(queryBindings).toHaveBeenCalledTimes(1);
       expect(queryBindings).toHaveBeenCalledWith(
+        'query',
+        { sources: [ store ], unionDefaultGraph: true },
+      );
+    });
+  });
+
+  describe('executeSparqlConstructAndGetDataRaw', (): void => {
+    it('executes a quads query if the query is a construct.', async(): Promise<void> => {
+      const promise = executor.executeSparqlConstructAndGetDataRaw('query');
+      await new Promise((resolve): any => setImmediate(resolve));
+      mockStream.emit('data', quad);
+      mockStream.emit('end');
+      await expect(promise).resolves.toEqual([ quad ]);
+      expect(queryQuads).toHaveBeenCalledTimes(1);
+      expect(queryQuads).toHaveBeenCalledWith(
         'query',
         { sources: [ store ], unionDefaultGraph: true },
       );

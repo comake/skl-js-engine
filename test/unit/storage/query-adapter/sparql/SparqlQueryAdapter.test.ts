@@ -105,11 +105,11 @@ describe('a SparqlQueryAdapter', (): void => {
     });
   });
 
-  describe('executeRawEntityQuery', (): void => {
+  describe('executeRawConstructQuery', (): void => {
     it('executes a sparql construct query and returns an empty GraphObject if no triples are found.',
       async(): Promise<void> => {
         await expect(
-          adapter.executeRawEntityQuery([
+          adapter.executeRawConstructQuery([
             'CONSTRUCT { ?subject ?predicate ?object. }',
             'WHERE {',
             '  {',
@@ -144,7 +144,7 @@ describe('a SparqlQueryAdapter', (): void => {
           object: file,
         }];
         await expect(
-          adapter.executeRawEntityQuery([
+          adapter.executeRawConstructQuery([
             'CONSTRUCT { ?subject ?predicate ?object. }',
             'WHERE {',
             '  {',

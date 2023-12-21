@@ -26,13 +26,13 @@ export interface QueryAdapter {
    */
   executeRawQuery<T extends RawQueryResult>(query: string): Promise<T[]>;
   /**
+   * Performs a raw query for entities matching the query. The query must be a CONSTRUCT query.
+   */
+  executeRawConstructQuery(query: string, frame?: Frame): Promise<GraphObject>;
+  /**
    * Performs a raw query for data matching the query.
    */
   executeRawUpdate(query: string): Promise<void>;
-  /**
-   * Performs a raw query for entities matching the query. The query must be a CONSTRUCT query.
-   */
-  executeRawEntityQuery(query: string, frame?: Frame): Promise<GraphObject>;
   /**
    * Finds the first entity by a given find options.
    * If entity was not found in the database it returns null.

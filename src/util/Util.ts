@@ -1,7 +1,10 @@
+import type { ReferenceNodeObject } from '@comake/rmlmapper-js';
+import { getIdFromNodeObjectIfDefined } from '@comake/rmlmapper-js';
 import * as jsonld from 'jsonld';
 import type { NodeObject, ValueObject } from 'jsonld';
 import { Parser, Store } from 'n3';
-import type { EntityFieldSingularValue, EntityFieldValue, JSONObject } from './Types';
+import type { EntityFieldSingularValue, EntityFieldValue, JSONObject, RdfList } from './Types';
+import { RDF } from './Vocabularies';
 
 export async function convertJsonLdToQuads(jsonldDoc: any): Promise<Store> {
   const nquads = await jsonld.toRDF(jsonldDoc, { format: 'application/n-quads' }) as unknown as string;
@@ -65,4 +68,17 @@ export function isUrl(value: any): boolean {
   } catch {
     return false;
   }
+}
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function rdfListToArray<T extends NodeObject>(list: { '@list': T[] } | RdfList<T>): T[] {
+  if (!('@list' in list)) {
+    return [
+      list[RDF.first],
+      ...getIdFromNodeObjectIfDefined(list[RDF.rest] as ReferenceNodeObject) === RDF.nil
+        ? []
+        : rdfListToArray(list[RDF.rest] as RdfList<T>),
+    ];
+  }
+  return list['@list'];
 }

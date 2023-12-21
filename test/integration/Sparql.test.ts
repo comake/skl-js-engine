@@ -5,7 +5,7 @@ import { SKLEngine } from '../../src/SklEngine';
 import { In } from '../../src/storage/operator/In';
 import type { Entity } from '../../src/util/Types';
 import { getValueIfDefined } from '../../src/util/Util';
-import { SCHEMA, SKL, OWL, RDFS, DCTERMS } from '../../src/util/Vocabularies';
+import { SDO, SKL, OWL, RDFS, DCTERMS } from '../../src/util/Vocabularies';
 import { describeIf, frameAndCombineSchemas } from '../util/Util';
 
 const endpointUrl = 'http://localhost:9999/blazegraph/namespace/kb/sparql';
@@ -42,7 +42,7 @@ describeIf('docker', 'An SKL engine backed by a sparql query adapter', (): void 
       pageSize: 20,
     });
     expect(eventsCollection[SKL.records]).toBeInstanceOf(Array);
-    expect((eventsCollection[SKL.records] as NodeObject[])[0]['@type']).toBe(SCHEMA.Event);
+    expect((eventsCollection[SKL.records] as NodeObject[])[0]['@type']).toBe(SDO.Event);
   });
 
   it('can find one entity.', async(): Promise<void> => {
