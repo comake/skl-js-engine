@@ -2,7 +2,7 @@
 import type { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
 import type { NodeObject } from 'jsonld';
 import { SKLEngine } from '../../src/SklEngine';
-import { SCHEMA, SKL } from '../../src/util/Vocabularies';
+import { SDO, SKL } from '../../src/util/Vocabularies';
 import { describeIf, frameAndCombineSchemas } from '../util/Util';
 
 let executeOperationSpy: any;
@@ -45,6 +45,6 @@ describeIf('docker', 'An SKL engine backed by a memory query adapter', (): void 
       },
     );
     expect(eventsCollection[SKL.records]).toBeInstanceOf(Array);
-    expect((eventsCollection[SKL.records] as NodeObject[])[0]['@type']).toBe(SCHEMA.Event);
+    expect((eventsCollection[SKL.records] as NodeObject[])[0]['@type']).toBe(SDO.Event);
   });
 });

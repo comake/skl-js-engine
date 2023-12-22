@@ -33,7 +33,7 @@ import type {
 import type { QueryAdapter, RawQueryResult } from '../QueryAdapter';
 import { InMemorySparqlQueryExecutor } from './query-executor/InMemorySparqlQueryExecutor';
 import { SparqlEndpointQueryExecutor } from './query-executor/SparqlEndpointQueryExecutor';
-import type { QueryExecutor, SelectVariableQueryResult } from './query-executor/SparqlQueryExecutor';
+import type { QueryExecutor } from './query-executor/SparqlQueryExecutor';
 import type { SparqlQueryAdapterOptions } from './SparqlQueryAdapterOptions';
 import { SparqlQueryBuilder } from './SparqlQueryBuilder';
 import { SparqlUpdateBuilder } from './SparqlUpdateBuilder';
@@ -59,19 +59,17 @@ export class SparqlQueryAdapter implements QueryAdapter {
     }
   }
 
-  public async executeRawQuery<T extends RawQueryResult>(
-    query: string,
-  ): Promise<T[]> {
+  public async executeRawQuery<T extends RawQueryResult>(query: string): Promise<T[]> {
     const response =
-      await this.queryExecutor.executeSparqlSelectAndGetDataRaw<SelectVariableQueryResult<T>>(query);
+      await this.queryExecutor.executeSparqlSelectAndGetDataRaw(query);
     if (response.length === 0) {
       return [] as T[];
     }
     return selectQueryResultsAsJSValues<T>(response);
   }
 
-  public async executeRawEntityQuery(query: string, frame?: Frame): Promise<GraphObject> {
-    const response = await this.queryExecutor.executeSparqlSelectAndGetDataRaw(query);
+  public async executeRawConstructQuery(query: string, frame?: Frame): Promise<GraphObject> {
+    const response = await this.queryExecutor.executeSparqlConstructAndGetDataRaw(query);
     if (response.length === 0) {
       return { '@graph': []};
     }
@@ -142,7 +140,7 @@ export class SparqlQueryAdapter implements QueryAdapter {
     let entityOrder: string[] | undefined;
     if (queryData.orders.length > 0 && options?.limit !== 1 && entitySelectQuery) {
       const entitySelectResponse =
-      await this.queryExecutor.executeSparqlSelectAndGetData<SelectVariableQueryResult<any>>(entitySelectQuery);
+      await this.queryExecutor.executeSparqlSelectAndGetData(entitySelectQuery);
       const valuesByVariable = groupSelectQueryResultsByKey(entitySelectResponse);
       entityOrder = getEntityVariableValuesFromVariables(valuesByVariable);
       if (entityOrder.length === 0) {

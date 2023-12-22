@@ -28,33 +28,52 @@ export class InMemorySparqlQueryExecutor implements QueryExecutor {
     };
   }
 
-  public async executeSparqlSelectAndGetData<T extends Quad | SelectVariableQueryResult<any> = Quad>(
-    query: SelectQuery | ConstructQuery,
-  ): Promise<T[]> {
+  public async executeSparqlSelectAndGetData<
+    TQuery extends SelectQuery | ConstructQuery,
+    TReturn extends Quad | SelectVariableQueryResult<any> =
+    TQuery extends SelectQuery ? SelectVariableQueryResult<any> : Quad
+  >(
+    query: TQuery,
+  ): Promise<TReturn[]> {
     const generatedQuery = this.sparqlGenerator.stringify(query);
-    return this.executeSparqlSelectAndGetDataRaw(generatedQuery, query.queryType === 'CONSTRUCT');
+    if (query.queryType === 'CONSTRUCT') {
+      return (await this.executeSparqlConstructAndGetDataRaw(generatedQuery)) as TReturn[];
+    }
+    return (await this.executeSparqlSelectAndGetDataRaw(generatedQuery)) as TReturn[];
   }
 
-  public async executeSparqlSelectAndGetDataRaw<T extends Quad | SelectVariableQueryResult<any> = Quad>(
+  public async executeSparqlSelectAndGetDataRaw(
     query: string,
-    isConstruct = false,
+  ): Promise<SelectVariableQueryResult<any>[]> {
+    const stream = await this.engine.queryBindings(query, this.queryContext);
+    return this.getDataFromStream(stream, (row, data): void => {
+      if (row.entries.size > 0) {
+        const bindingRow: SelectVariableQueryResult<any> = {};
+        for (const [ key, value ] of row.entries) {
+          bindingRow[key] = value;
+        }
+        data.push(bindingRow);
+      }
+    });
+  }
+
+  public async executeSparqlConstructAndGetDataRaw(
+    query: string,
+  ): Promise<Quad[]> {
+    const stream = await this.engine.queryQuads(query, this.queryContext);
+    return this.getDataFromStream(stream, (row, data): void => {
+      data.push(row);
+    });
+  }
+
+  private async getDataFromStream<T extends Quad | SelectVariableQueryResult<any> = Quad>(
+    stream: NodeJS.EventEmitter,
+    dataCallback: (row: any, data: T[]) => void,
   ): Promise<T[]> {
-    const stream = await this.engine[isConstruct ? 'queryQuads' : 'queryBindings'](
-      query,
-      this.queryContext,
-    );
     return new Promise((resolve, reject): void => {
       const data: T[] = [];
       stream.on('data', (row): void => {
-        if (row.termType === 'Quad') {
-          data.push(row);
-        } else if (row.type === 'bindings' && row.entries.size > 0) {
-          const bindingRow: SelectVariableQueryResult<any> = {};
-          for (const [ key, value ] of row.entries) {
-            bindingRow[key] = value;
-          }
-          data.push(bindingRow as T);
-        }
+        dataCallback(row, data);
       });
 
       stream.on('end', (): void => {

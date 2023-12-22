@@ -13,15 +13,25 @@ export interface QueryExecutor {
   /**
    * Executes a SPARQL select or construct query.
    */
-  executeSparqlSelectAndGetData<T extends Quad | SelectVariableQueryResult<any> = Quad>(
-    query: SelectQuery | ConstructQuery,
-  ): Promise<T[]>;
+  executeSparqlSelectAndGetData<
+    TQuery extends SelectQuery | ConstructQuery,
+    TReturn extends SelectVariableQueryResult<any> | Quad =
+    TQuery extends SelectQuery ? SelectVariableQueryResult<any> : Quad
+  >(
+    query: TQuery,
+  ): Promise<TReturn[]>;
   /**
    * Executes a raw SPARQL select query.
    */
-  executeSparqlSelectAndGetDataRaw<T extends Quad | SelectVariableQueryResult<any> = Quad>(
+  executeSparqlSelectAndGetDataRaw(
     query: string,
-  ): Promise<T[]>;
+  ): Promise<SelectVariableQueryResult<any>[]>;
+  /**
+   * Executes a raw SPARQL construct query.
+   */
+  executeSparqlConstructAndGetDataRaw(
+    query: string,
+  ): Promise<Quad[]>;
   /**
    * Executes a SPARQL update query.
    */

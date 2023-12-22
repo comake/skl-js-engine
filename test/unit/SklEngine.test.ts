@@ -139,12 +139,15 @@ describe('SKLEngine', (): void => {
       });
     });
 
-    describe('executeRawEntityQuery', (): void => {
-      it('delegates calls to executeRawEntityQuery to the query adapter.', async(): Promise<void> => {
-        const executeRawEntityQuerySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'executeRawEntityQuery');
-        await expect(sklEngine.executeRawEntityQuery('', {})).resolves.toEqual({ '@graph': []});
-        expect(executeRawEntityQuerySpy).toHaveBeenCalledTimes(1);
-        expect(executeRawEntityQuerySpy).toHaveBeenCalledWith('', {});
+    describe('executeRawConstructQuery', (): void => {
+      it('delegates calls to executeRawConstructQuery to the query adapter.', async(): Promise<void> => {
+        const executeRawConstructQuerySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'executeRawConstructQuery');
+        await expect(sklEngine.executeRawConstructQuery(
+          'CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o}',
+          {},
+        )).resolves.toEqual({ '@graph': schemas });
+        expect(executeRawConstructQuerySpy).toHaveBeenCalledTimes(1);
+        expect(executeRawConstructQuerySpy).toHaveBeenCalledWith('CONSTRUCT { ?s ?p ?o } WHERE { ?s ?p ?o}', {});
       });
     });
 
