@@ -32,7 +32,7 @@
           "shacl:nodeKind": { "@id": "shacl:IRI" },
           "shacl:path": "https://standardknowledge.com/ontologies/core/integration"
         },
-        { "shacl:maxCount": 1, "shacl:path": "http://schema.org/email" }
+        { "shacl:maxCount": 1, "shacl:path": "https://schema.org/email" }
       ]
     },
     {
@@ -379,7 +379,7 @@
       "@type": "owl:ObjectProperty",
       "rdfs:label": "mimeType",
       "rdfs:range": "xsd:string",
-      "skos:exactMatch": { "@id": "http://schema.org/fileFormat" }
+      "skos:exactMatch": { "@id": "https://schema.org/fileFormat" }
     },
     {
       "@id": "https://standardknowledge.com/ontologies/core/nextPageToken",
@@ -527,7 +527,7 @@
       "@type": "owl:ObjectProperty",
       "rdfs:label": "url",
       "rdfs:range": "xsd:string",
-      "skos:exactMatch": { "@id": "http://schema.org/url" }
+      "skos:exactMatch": { "@id": "https://schema.org/url" }
     },
     {
       "@id": "https://standardknowledge.com/ontologies/core/urlDomainMatchers",

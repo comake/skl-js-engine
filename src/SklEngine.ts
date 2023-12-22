@@ -94,8 +94,8 @@ export class SKLEngine {
     return await this.queryAdapter.executeRawUpdate(query);
   }
 
-  public async executeRawEntityQuery(query: string, frame?: Frame): Promise<GraphObject> {
-    return await this.queryAdapter.executeRawEntityQuery(query, frame);
+  public async executeRawConstructQuery(query: string, frame?: Frame): Promise<GraphObject> {
+    return await this.queryAdapter.executeRawConstructQuery(query, frame);
   }
 
   public async find(options?: FindOneOptions): Promise<Entity> {
@@ -845,19 +845,24 @@ export class SKLEngine {
     return getValueIfDefined<string>(verbInfoJsonLd[SKL.verbId])!;
   }
 
-  private async assertVerbParamsMatchParameterSchemas(verbParams: any, verb: Entity): Promise<void> {
-    const verbParamsAsJsonLd = {
-      '@context': getValueIfDefined<ContextDefinition>(verb[SKL.parametersContext]),
-      '@type': SKL.Parameters,
-      ...verbParams,
-    };
-    const parametersSchema = verb[SKL.parameters] as NodeObject;
-    const report = await this.convertToQuadsAndValidateAgainstShape(verbParamsAsJsonLd, parametersSchema);
-    if (!report.conforms) {
-      this.throwValidationReportError(
-        report,
-        `${getValueIfDefined(verb[RDFS.label])} parameters do not conform to the schema`,
-      );
+  private async assertVerbParamsMatchParameterSchemas(verbParams: any, verb: Verb): Promise<void> {
+    let parametersSchemaObject = verb[SKL.parameters];
+    if (parametersSchemaObject?.['@id'] && Object.keys(parametersSchemaObject).length === 1) {
+      parametersSchemaObject = await this.findBy({ id: parametersSchemaObject['@id'] });
+    }
+    if (verbParams && parametersSchemaObject) {
+      const verbParamsAsJsonLd = {
+        '@context': getValueIfDefined<ContextDefinition>(verb[SKL.parametersContext]),
+        '@type': SKL.Parameters,
+        ...verbParams,
+      };
+      const report = await this.convertToQuadsAndValidateAgainstShape(verbParamsAsJsonLd, parametersSchemaObject);
+      if (!report.conforms) {
+        this.throwValidationReportError(
+          report,
+          `${getValueIfDefined(verb[RDFS.label])} parameters do not conform to the schema`,
+        );
+      }
     }
   }
 

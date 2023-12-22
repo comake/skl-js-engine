@@ -143,8 +143,8 @@ export type Verb = NodeObject & {
   '@type': typeof SKL.Verb;
   [RDFS.label]?: ValueObject<string>;
   [SKL.parametersContext]?: ValueObject<JSONObject>;
-  [SKL.parameters]?: NodeShape;
-  [SKL.returnValue]?: NodeObject;
+  [SKL.parameters]?: NodeShape | ReferenceNodeObject;
+  [SKL.returnValue]?: NodeShape | ReferenceNodeObject;
 };
 
 export interface SeriesVerbArgs extends JSONObject {
