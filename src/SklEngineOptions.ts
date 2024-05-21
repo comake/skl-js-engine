@@ -1,5 +1,5 @@
-import type { SparqlQueryAdapterOptions } from './storage/query-adapter/sparql/SparqlQueryAdapterOptions';
-import type { Callbacks } from './util/Types';
+import type { SparqlQueryAdapterOptions } from "./storage/query-adapter/sparql/SparqlQueryAdapterOptions";
+import type { Callbacks } from "./util/Types";
 
 export type SklEngineOptions = SparqlQueryAdapterOptions & {
   /**
@@ -18,4 +18,6 @@ export type SklEngineOptions = SparqlQueryAdapterOptions & {
    * An object containing files keyed on their title that can be used in mappings.
    */
   readonly inputFiles?: Record<string, string>;
+
+  readonly debugMode?: boolean;
 };
