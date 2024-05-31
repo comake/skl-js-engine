@@ -1,4 +1,4 @@
-[![npm version](https://badge.fury.io/js/@comake%2Fskl-js-engine.svg)](https://badge.fury.io/js/@comake%2Fskl-js-engine) [![License](https://img.shields.io/badge/License-BSD_4--Clause-blue.svg)](https://spdx.org/licenses/BSD-4-Clause.html)
+[![npm version](https://badge.fury.io/js/@comake%2Fskl-js-engine.svg)](https://badge.fury.io/js/@comake%2Fskl-js-engine)
 
 # SKL Javascript Engine
 
