@@ -36,7 +36,7 @@ npm ci
 
 # License & Copyright
 
-SKL Javascript Engine is open-source with certain limitations. See the [LICENSE](LICENSE) file for more info.
+SKL Javascript Engine is open-source with certain limitations. See the [LICENSE](LICENSE.md) file for more info.
 
 Copyright (c) 2024, Comake, Inc.
 
