@@ -38,7 +38,7 @@ npm ci
 
 SKL Javascript Engine is open-source with certain limitations. See the [LICENSE](LICENSE) file for more info.
 
-Copyright (c) 2022, Comake, Inc.
+Copyright (c) 2024, Comake, Inc.
 
 # TODO
 
