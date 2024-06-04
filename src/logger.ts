@@ -1,6 +1,6 @@
 export class Logger {
   private static instance: Logger;
-  private isDebug: boolean;
+  private readonly isDebug: boolean;
 
   private constructor(isDebug: boolean) {
     this.isDebug = isDebug;
@@ -15,6 +15,7 @@ export class Logger {
 
   public log(...args: any[]): void {
     if (this.isDebug) {
+      // eslint-disable-next-line no-console
       console.log(...args);
     }
   }

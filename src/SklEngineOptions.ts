@@ -1,5 +1,5 @@
-import type { SparqlQueryAdapterOptions } from "./storage/query-adapter/sparql/SparqlQueryAdapterOptions";
-import type { Callbacks } from "./util/Types";
+import type { SparqlQueryAdapterOptions } from './storage/query-adapter/sparql/SparqlQueryAdapterOptions';
+import type { Callbacks } from './util/Types';
 
 export type SklEngineOptions = SparqlQueryAdapterOptions & {
   /**
