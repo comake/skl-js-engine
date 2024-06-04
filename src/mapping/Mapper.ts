@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import * as RmlParser from "@comake/rmlmapper-js";
-import type { NodeObject } from "jsonld";
-import jsonld from "jsonld";
-import type { OrArray, JSONValue } from "../util/Types";
-import { Logger } from "../logger";
+import * as RmlParser from '@comake/rmlmapper-js';
+import type { NodeObject } from 'jsonld';
+import jsonld from 'jsonld';
+import { Logger } from '../logger';
+import type { OrArray, JSONValue } from '../util/Types';
 
 export interface MapperArgs {
   functions?: Record<string, (args: any | any[]) => any>;
@@ -19,28 +19,28 @@ export class Mapper {
   public async apply(
     data: JSONValue,
     mapping: OrArray<NodeObject>,
-    frame: Record<string, any>
+    frame: Record<string, any>,
   ): Promise<NodeObject> {
     const result = await this.doMapping(data, mapping);
-    Logger.getInstance().log("Mapping result", JSON.stringify(result));
+    Logger.getInstance().log('Mapping result', JSON.stringify(result));
     const frameResult = await this.frame(result, frame);
-    Logger.getInstance().log("Frame Result", frameResult);
+    Logger.getInstance().log('Frame Result', JSON.stringify(frameResult));
     return frameResult;
   }
 
   private async doMapping(
     data: JSONValue,
-    mapping: OrArray<NodeObject>
+    mapping: OrArray<NodeObject>,
   ): Promise<NodeObject[]> {
-    const sources = { "input.json": JSON.stringify(data) };
+    const sources = { 'input.json': JSON.stringify(data) };
     const options = { functions: this.functions };
     const mappingNodeObject = Array.isArray(mapping)
-      ? { "@graph": mapping }
+      ? { '@graph': mapping }
       : mapping;
     const rmlResult = (await RmlParser.parseJsonLd(
       mappingNodeObject,
       sources,
-      options
+      options,
     )) as NodeObject[];
 
     return rmlResult;
@@ -48,16 +48,16 @@ export class Mapper {
 
   private async frame(
     jsonldDoc: any[],
-    overrideFrame: Record<string, any>
+    overrideFrame: Record<string, any>,
   ): Promise<NodeObject> {
     let frame: Record<string, any> = {
-      "@context": {},
-      "@embed": "@always",
+      '@context': {},
+      '@embed': '@always',
     };
     frame = {
       ...frame,
       ...overrideFrame,
-      "@context": { ...frame["@context"], ...overrideFrame?.["@context"] },
+      '@context': { ...frame['@context'], ...overrideFrame?.['@context'] },
     };
     return await jsonld.frame(jsonldDoc, frame);
   }
