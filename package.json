@@ -29,7 +29,7 @@
 		"test:integration": "jest --coverageReporters text-summary -- test/integration",
 		"test:unit": "jest --config=./jest.coverage.config.js test/unit",
 		"test:package": "chmod +x test/deploy/validate-package.sh && test/deploy/validate-package.sh",
-		"prepare": "npm run build"
+		"prepare": "husky && npm run build"
 	},
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
