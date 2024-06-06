@@ -12,6 +12,7 @@ import type { Frame } from 'jsonld/jsonld-spec';
 import { JSONPath } from 'jsonpath-plus';
 import SHACLValidator from 'rdf-validate-shacl';
 import type ValidationReport from 'rdf-validate-shacl/src/validation-report';
+import { Logger } from './logger';
 import { Mapper } from './mapping/Mapper';
 import type { SklEngineOptions } from './SklEngineOptions';
 import type { FindOperator } from './storage/FindOperator';
@@ -68,6 +69,7 @@ export class SKLEngine {
   private readonly globalCallbacks?: Callbacks;
   private readonly disableValidation?: boolean;
   public readonly verb: VerbInterface;
+  private readonly isDebugMode: boolean;
 
   public constructor(options: SklEngineOptions) {
     this.queryAdapter = new SparqlQueryAdapter(options);
@@ -75,6 +77,8 @@ export class SKLEngine {
     this.globalCallbacks = options.callbacks;
     this.inputFiles = options.inputFiles;
     this.functions = options.functions;
+    this.isDebugMode = options.debugMode ?? false;
+    Logger.getInstance(this.isDebugMode);
 
     // eslint-disable-next-line func-style
     const getVerbHandler = (getTarget: VerbInterface, property: string): VerbHandler =>
@@ -381,9 +385,11 @@ export class SKLEngine {
   private async executeVerb(verb: Verb, verbArgs: JSONObject, verbConfig?: VerbConfig): Promise<OrArray<NodeObject>> {
     this.globalCallbacks?.onVerbStart?.(verb['@id'], verbArgs);
     if (verbConfig?.callbacks?.onVerbStart) {
+      Logger.getInstance().log('Verb arguments', verbArgs);
       verbConfig.callbacks.onVerbStart(verb['@id'], verbArgs);
     }
     const { mapping, account } = await this.findMappingForVerbContextually(verb['@id'], verbArgs);
+    Logger.getInstance().log('Mapping', JSON.stringify(mapping));
     const shouldValidate = this.shouldValidate(verbConfig);
     if (shouldValidate) {
       await this.assertVerbParamsMatchParameterSchemas(verbArgs, verb);
@@ -461,6 +467,7 @@ export class SKLEngine {
         mapping as MappingWithParameterMapping,
         verbConfig,
       );
+      Logger.getInstance().log('Mapped args', mappedArgs);
       returnValue = await this.executeVerbMapping(mapping, args, mappedArgs, verbConfig);
     } else {
       const mappedArgs = await this.performParameterMappingOnArgsIfDefined(
@@ -468,6 +475,7 @@ export class SKLEngine {
         mapping as MappingWithParameterMapping,
         verbConfig,
       );
+      Logger.getInstance().log('Mapped args', mappedArgs);
       if (SKL.operationId in mapping || SKL.operationMapping in mapping) {
         returnValue = await this.executeOperationMapping(
           mapping,
@@ -513,13 +521,15 @@ export class SKLEngine {
     verbConfig?: VerbConfig,
   ): Promise<OperationResponse> {
     const operationInfo = await this.performOperationMappingWithArgs(originalArgs, mapping, verbConfig);
-    return await this.performOperation(
+    const response = await this.performOperation(
       operationInfo,
       mappedArgs,
       originalArgs,
       account,
       verbConfig,
     );
+    Logger.getInstance().log('Original response', JSON.stringify(response));
+    return response;
   }
 
   private async executeSeriesMapping(
@@ -875,13 +885,16 @@ export class SKLEngine {
     const openApiDescription = await this.getOpenApiDescriptionForIntegration(integrationId);
     const openApiExecutor = await this.createOpenApiOperationExecutorWithSpec(openApiDescription);
     const securityCredentials = await this.findSecurityCredentialsForAccountIfDefined(account['@id']);
+    Logger.getInstance().log('Security Credentials', securityCredentials);
     const configuration = {
       accessToken: getValueIfDefined<string>(securityCredentials?.[SKL.accessToken]),
       bearerToken: getValueIfDefined<string>(securityCredentials?.[SKL.bearerToken]),
       apiKey: getValueIfDefined<string>(securityCredentials?.[SKL.apiKey]),
       basePath: getValueIfDefined<string>(account[SKL.overrideBasePath]),
+      username: getValueIfDefined<string>(securityCredentials?.[SKL.clientId]),
+      password: getValueIfDefined<string>(securityCredentials?.[SKL.clientSecret]),
     };
-    return await openApiExecutor.executeOperation(operationId, configuration, operationArgs)
+    const response = await openApiExecutor.executeOperation(operationId, configuration, operationArgs)
       .catch(async(error: Error | AxiosError): Promise<any> => {
         if (axios.isAxiosError(error) && await this.isInvalidTokenError(error, integrationId) && securityCredentials) {
           const refreshedConfiguration = await this.refreshSecurityCredentials(
@@ -893,6 +906,7 @@ export class SKLEngine {
         }
         throw error;
       });
+    return response;
   }
 
   private async isInvalidTokenError(error: AxiosError, integrationId: string): Promise<boolean> {

@@ -18,4 +18,6 @@ export type SklEngineOptions = SparqlQueryAdapterOptions & {
    * An object containing files keyed on their title that can be used in mappings.
    */
   readonly inputFiles?: Record<string, string>;
+
+  readonly debugMode?: boolean;
 };
