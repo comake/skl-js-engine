@@ -28,22 +28,13 @@ export class Mapper {
     return frameResult;
   }
 
-  private async doMapping(
-    data: JSONValue,
-    mapping: OrArray<NodeObject>,
-  ): Promise<NodeObject[]> {
+  private async doMapping(data: JSONValue, mapping: OrArray<NodeObject>): Promise<NodeObject[]> {
     const sources = { 'input.json': JSON.stringify(data) };
     const options = { functions: this.functions };
     const mappingNodeObject = Array.isArray(mapping)
       ? { '@graph': mapping }
       : mapping;
-    const rmlResult = (await RmlParser.parseJsonLd(
-      mappingNodeObject,
-      sources,
-      options,
-    )) as NodeObject[];
-
-    return rmlResult;
+    return await RmlParser.parseJsonLd(mappingNodeObject, sources, options) as NodeObject[];
   }
 
   private async frame(
