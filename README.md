@@ -39,8 +39,3 @@ npm ci
 SKL Javascript Engine is open-source with certain limitations. See the [LICENSE](LICENSE.md) file for more info.
 
 Copyright (c) 2024, Comake, Inc.
-
-# TODO
-
-- [ ] add SKDS schema source
-- [ ] Add reference to examples in readme
