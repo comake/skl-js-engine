@@ -267,6 +267,14 @@ export function createFilterPatternFromFilters(filters: Expression[]): FilterPat
   return createSparqlFilterWithExpression(filters[0]);
 }
 
+export function createSparqlLcaseOperation(expression: Expression): OperationExpression {
+  return {
+    type: 'operation',
+    operator: 'lcase',
+    args: [ expression ],
+  };
+}
+
 export function createSparqlEqualOperation(leftSide: Expression, rightSide: Expression): OperationExpression {
   return {
     type: 'operation',
@@ -319,6 +327,14 @@ export function createSparqlInOperation(leftSide: Expression, rightSide: Express
   return {
     type: 'operation',
     operator: 'in',
+    args: [ leftSide, rightSide ],
+  };
+}
+
+export function createSparqlContainsOperation(leftSide: Expression, rightSide: Expression): OperationExpression {
+  return {
+    type: 'operation',
+    operator: 'contains',
     args: [ leftSide, rightSide ],
   };
 }

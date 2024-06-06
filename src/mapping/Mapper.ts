@@ -2,6 +2,7 @@
 import * as RmlParser from '@comake/rmlmapper-js';
 import type { NodeObject } from 'jsonld';
 import jsonld from 'jsonld';
+import { Logger } from '../logger';
 import type { OrArray, JSONValue } from '../util/Types';
 
 export interface MapperArgs {
@@ -21,16 +22,28 @@ export class Mapper {
     frame: Record<string, any>,
   ): Promise<NodeObject> {
     const result = await this.doMapping(data, mapping);
-    return await this.frame(result, frame);
+    Logger.getInstance().log('Mapping result', JSON.stringify(result));
+    const frameResult = await this.frame(result, frame);
+    Logger.getInstance().log('Frame Result', JSON.stringify(frameResult));
+    return frameResult;
   }
 
-  private async doMapping(data: JSONValue, mapping: OrArray<NodeObject>): Promise<NodeObject[]> {
+  private async doMapping(
+    data: JSONValue,
+    mapping: OrArray<NodeObject>,
+  ): Promise<NodeObject[]> {
     const sources = { 'input.json': JSON.stringify(data) };
     const options = { functions: this.functions };
     const mappingNodeObject = Array.isArray(mapping)
       ? { '@graph': mapping }
       : mapping;
-    return await RmlParser.parseJsonLd(mappingNodeObject, sources, options) as NodeObject[];
+    const rmlResult = (await RmlParser.parseJsonLd(
+      mappingNodeObject,
+      sources,
+      options,
+    )) as NodeObject[];
+
+    return rmlResult;
   }
 
   private async frame(
