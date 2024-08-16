@@ -40,6 +40,8 @@ import {
   createSparqlZeroOrMorePredicate,
   createSparqlOneOrMorePredicate,
   createSparqlExistsOperation,
+  createSparqlContainsOperation,
+  createSparqlLcaseOperation,
 } from '../../../util/SparqlUtil';
 import {
   valueToLiteral,
@@ -534,6 +536,18 @@ export class SparqlQueryBuilder {
           createSparqlBasicGraphPattern([ triple ]),
         ]),
         tripleInFilter: true,
+      };
+    }
+
+    if (operator.operator === 'contains') {
+      const searchString = this.resolveValueToExpression(operator.value) as Literal;
+      const filter = createSparqlContainsOperation(
+        // Directly use the variable as an expression
+        createSparqlLcaseOperation(DataFactory.variable(leftSide.value)),
+        createSparqlLcaseOperation(DataFactory.literal(searchString.value.toLowerCase())),
+      );
+      return {
+        filter,
       };
     }
     const resolvedExpression = this.resolveValueToExpression(operator.value) as Expression;

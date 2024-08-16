@@ -275,6 +275,22 @@ export function createSparqlEqualOperation(leftSide: Expression, rightSide: Expr
   };
 }
 
+export function createSparqlLcaseOperation(expression: Expression): OperationExpression {
+  return {
+    type: 'operation',
+    operator: 'lcase',
+    args: [ expression ],
+  };
+}
+
+export function createSparqlContainsOperation(leftSide: Expression, rightSide: Expression): OperationExpression {
+  return {
+    type: 'operation',
+    operator: 'contains',
+    args: [ leftSide, rightSide ],
+  };
+}
+
 export function createSparqlGtOperation(leftSide: Expression, rightSide: Expression): OperationExpression {
   return {
     type: 'operation',
