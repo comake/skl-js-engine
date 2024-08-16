@@ -7,6 +7,7 @@ export * from './storage/operator/Exists';
 export * from './storage/operator/GreaterThan';
 export * from './storage/operator/GreaterThanOrEqual';
 export * from './storage/operator/In';
+export * from './storage/operator/Contains';
 export * from './storage/operator/Inverse';
 export * from './storage/operator/InversePath';
 export * from './storage/operator/InverseRelation';

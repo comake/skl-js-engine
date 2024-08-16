@@ -60,11 +60,11 @@ export type FindOptionsWhereField =
 
 export type IdFindOptionsWhereField =
 | string
-| FindOperator<any, 'in' | 'not' | 'equal' | 'inversePath'>;
+| FindOperator<any, 'in' | 'not' | 'equal' | 'inversePath' | 'contains'>;
 
 export type TypeFindOptionsWhereField =
 | string
-| FindOperator<string | string[] | FindOptionsWhere, 'in' | 'not' | 'equal' | 'inverse'>;
+| FindOperator<string | string[] | FindOptionsWhere, 'in' | 'not' | 'equal' | 'inverse' | 'contains'>;
 
 export interface FindOptionsWhere {
   type?: TypeFindOptionsWhereField;
