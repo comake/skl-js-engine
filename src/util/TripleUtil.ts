@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import DataFactory from '@rdfjs/data-model';
-import type { Quad, Quad_Object, Quad_Subject, Literal } from '@rdfjs/types';
+import type { Quad, Quad_Object, Quad_Subject, Literal, Variable } from '@rdfjs/types';
 import * as jsonld from 'jsonld';
 import type { ContextDefinition, GraphObject, NodeObject, ValueObject } from 'jsonld';
 import type { Frame } from 'jsonld/jsonld-spec';
@@ -254,7 +254,7 @@ export async function triplesToJsonldWithFrame(
 export function valueToLiteral(
   value: string | boolean | number | Date | JSONObject | JSONArray,
   datatype?: string,
-): Literal {
+): Literal | Variable {
   if (datatype) {
     if (datatype === '@json' || datatype === RDF.JSON) {
       return DataFactory.literal(JSON.stringify(value), RDF.JSON);
@@ -269,6 +269,9 @@ export function valueToLiteral(
   }
   if (typeof value === 'boolean') {
     return DataFactory.literal(value.toString(), XSD.boolean);
+  }
+  if (typeof value === 'string' && value.startsWith('?') && value.length > 1) {
+    return DataFactory.variable(value.slice(1));
   }
   if (value instanceof Date) {
     return DataFactory.literal(value.toISOString(), XSD.dateTime);

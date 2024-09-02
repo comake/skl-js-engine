@@ -701,6 +701,39 @@ describe('a SparqlQueryAdapter', (): void => {
           '}',
         ]);
       });
+
+    it('executes a group by query with custom entity select variable.', async(): Promise<void> => {
+      await adapter.findAll({
+        where: {
+          type: 'https://schema.org/Place',
+          'https://standardknowledge.com/ontologies/core/deduplicationGroup': '?deduplicationGroup'
+        },
+        group: DataFactory.variable('deduplicationGroup'),
+        entitySelectVariable: {
+          variable: DataFactory.variable('entity'),
+          expression: {
+            type: 'aggregate',
+            aggregation: 'MIN',
+            expression: DataFactory.variable('entity'),
+          },
+        },
+      });
+      expect(select).toHaveBeenCalledTimes(1);
+      expect(select.mock.calls[0][0].split('\n')).toEqual([
+        'CONSTRUCT { ?subject ?predicate ?object. }',
+        'WHERE {',
+        '  {',
+        '    SELECT DISTINCT (MIN(?entity) AS ?entity) WHERE {',
+        '      ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://schema.org/Place>;',
+        '        <https://standardknowledge.com/ontologies/core/deduplicationGroup> ?deduplicationGroup.',
+        '      FILTER(EXISTS { GRAPH ?entity { ?entity ?c1 ?c2. } })',
+        '    }',
+        '    GROUP BY ?deduplicationGroup',
+        '  }',
+        '  GRAPH ?entity { ?subject ?predicate ?object. }',
+        '}',
+      ]);
+    });
   });
 
   describe('findAllBy', (): void => {

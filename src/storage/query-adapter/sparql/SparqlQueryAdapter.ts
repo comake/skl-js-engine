@@ -128,10 +128,11 @@ export class SparqlQueryAdapter implements QueryAdapter {
     const queryData = queryBuilder.buildEntitySelectPatternsFromOptions(entityVariable, options);
     const entitySelectQuery = queryData.where.length > 0
       ? createSparqlSelectQuery(
-        entityVariable,
+        options?.entitySelectVariable ?? entityVariable,
         queryData.where,
         queryData.orders,
-        queryData.group,
+        // FIXME: This will not work if queryData.group is defined, figure out what can make it defined.
+        queryData.group ?? options?.group,
         options?.limit,
         options?.offset,
       )
