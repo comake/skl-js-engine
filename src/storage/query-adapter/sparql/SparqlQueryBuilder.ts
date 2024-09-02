@@ -681,7 +681,7 @@ export class SparqlQueryBuilder {
     return createSparqlNotEqualOperation(leftSide, rightSide as Expression);
   }
 
-  private resolveValueToTerm(value: FieldPrimitiveValue | ValueWhereFieldObject): NamedNode | Literal {
+  private resolveValueToTerm(value: FieldPrimitiveValue | ValueWhereFieldObject): NamedNode | Literal | Variable {
     if (typeof value === 'object' && '@value' in value) {
       return valueToLiteral(
         (value as ValueWhereFieldObject)['@value'],

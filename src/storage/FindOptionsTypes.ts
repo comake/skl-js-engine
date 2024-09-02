@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import type { Variable } from 'sparqljs';
 import type { OrArray, JSONArray, JSONObject } from '../util/Types';
 import type { FindOperator } from './FindOperator';
 import type { InverseRelationOperatorValue } from './operator/InverseRelation';
@@ -12,6 +13,8 @@ export interface FindOneOptions {
   relations?: FindOptionsRelations;
   order?: FindOptionsOrder;
   skipFraming?: boolean;
+  group?: Variable;
+  entitySelectVariable?: Variable;
 }
 
 export type FindOptionsRelationsValue = |
