@@ -75,9 +75,18 @@ export interface FindOptionsWhere {
   [k: string]: FindOptionsWhereField | undefined;
 }
 
+// Add these new types
+export interface SubQuery {
+  select: Variable[];
+  where: FindOptionsWhere;
+  groupBy?: string[];
+  having?: FindOptionsWhere;
+}
+
 export interface FindAllOptions extends FindOneOptions {
   offset?: number;
   limit?: number;
+  subQueries?: SubQuery[];
 }
 
 export interface FindExistsOptions {
