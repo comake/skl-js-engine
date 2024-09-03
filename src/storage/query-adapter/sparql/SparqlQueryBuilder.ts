@@ -1,7 +1,3 @@
-/* eslint-disable max-len */
-/* eslint-disable id-length */
-/* eslint-disable arrow-parens */
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import DataFactory from '@rdfjs/data-model';
 import type { Variable, NamedNode, Term, Literal } from '@rdfjs/types';
 import type {
@@ -179,6 +175,14 @@ export class SparqlQueryBuilder {
   private createSubQueryPatterns(subQueries: SubQuery[]): Pattern[] {
     return subQueries.map((subQuery: SubQuery): Pattern => {
       const subQueryWhere = this.createWhereQueryData(entityVariable, subQuery.where);
+      const queryGroup: Grouping[] = [];
+      if (subQuery.groupBy && Array.isArray(subQuery.groupBy)) {
+        subQuery.groupBy.forEach((group: string): void => {
+          queryGroup.push({
+            expression: DataFactory.variable(group),
+          });
+        });
+      }
       const selectQuery: SelectQuery = {
         type: 'query',
         queryType: 'SELECT',
@@ -188,7 +192,7 @@ export class SparqlQueryBuilder {
           subQueryWhere.triples,
           subQueryWhere.filters,
         ),
-        group: subQuery.groupBy ? subQuery.groupBy.map((g) => ({ expression: DataFactory.variable(g) } as Grouping)) : undefined,
+        group: queryGroup.length > 0 ? queryGroup : undefined,
         having: subQuery.having ? this.createWhereQueryData(entityVariable, subQuery.having).filters : undefined,
         prefixes: {},
       };
