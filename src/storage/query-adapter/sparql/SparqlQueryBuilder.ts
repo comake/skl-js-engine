@@ -1,3 +1,7 @@
+/* eslint-disable max-len */
+/* eslint-disable id-length */
+/* eslint-disable arrow-parens */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import DataFactory from '@rdfjs/data-model';
 import type { Variable, NamedNode, Term, Literal } from '@rdfjs/types';
 import type {
@@ -13,6 +17,8 @@ import type {
   Pattern,
   ConstructQuery,
   GraphPattern,
+  Grouping,
+  SelectQuery,
 } from 'sparqljs';
 import {
   allTypesAndSuperTypesPath,
@@ -59,6 +65,7 @@ import type {
   FindOptionsWhere,
   FindOptionsWhereField,
   IdFindOptionsWhereField,
+  SubQuery,
   TypeFindOptionsWhereField,
   ValueWhereFieldObject,
 } from '../../FindOptionsTypes';
@@ -104,6 +111,7 @@ export interface SparqlQueryBuilderOptions {
   select?: FindOptionsSelect;
   order?: FindOptionsOrder;
   relations?: FindOptionsRelations;
+  subQueries?: SubQuery[];
 }
 
 export class SparqlQueryBuilder {
@@ -121,6 +129,11 @@ export class SparqlQueryBuilder {
     const whereQueryData = this.createWhereQueryData(subject, options?.where, true);
     const orderQueryData = this.createOrderQueryData(subject, options?.order);
     const relationsQueryData = this.createRelationsQueryData(subject, relations);
+    // Handle subqueries
+    if (options?.subQueries && options.subQueries.length > 0) {
+      const subQueryPatterns = this.createSubQueryPatterns(options.subQueries);
+      whereQueryData.values.unshift(...subQueryPatterns as ValuesPattern[]);
+    }
     const patterns: Pattern[] = whereQueryData.values;
     if (whereQueryData.triples.length === 0 && (
       whereQueryData.filters.length > 0 ||
@@ -161,6 +174,26 @@ export class SparqlQueryBuilder {
       graphWhere: graphWherePatterns,
       graphSelectionTriples: relationsQueryData.selectionTriples,
     };
+  }
+
+  private createSubQueryPatterns(subQueries: SubQuery[]): Pattern[] {
+    return subQueries.map((subQuery: SubQuery): Pattern => {
+      const subQueryWhere = this.createWhereQueryData(entityVariable, subQuery.where);
+      const selectQuery: SelectQuery = {
+        type: 'query',
+        queryType: 'SELECT',
+        variables: subQuery.select,
+        where: this.createWherePatternsFromQueryData(
+          subQueryWhere.values,
+          subQueryWhere.triples,
+          subQueryWhere.filters,
+        ),
+        group: subQuery.groupBy ? subQuery.groupBy.map((g) => ({ expression: DataFactory.variable(g) } as Grouping)) : undefined,
+        having: subQuery.having ? this.createWhereQueryData(entityVariable, subQuery.having).filters : undefined,
+        prefixes: {},
+      };
+      return createSparqlSelectGroup([ selectQuery ]);
+    });
   }
 
   private createEntityGraphFilterPattern(subject: Variable): GraphPattern {

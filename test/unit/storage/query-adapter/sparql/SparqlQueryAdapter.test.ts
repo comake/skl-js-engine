@@ -706,7 +706,7 @@ describe('a SparqlQueryAdapter', (): void => {
       await adapter.findAll({
         where: {
           type: 'https://schema.org/Place',
-          'https://standardknowledge.com/ontologies/core/deduplicationGroup': '?deduplicationGroup'
+          'https://standardknowledge.com/ontologies/core/deduplicationGroup': '?deduplicationGroup',
         },
         group: DataFactory.variable('deduplicationGroup'),
         entitySelectVariable: {
@@ -734,6 +734,46 @@ describe('a SparqlQueryAdapter', (): void => {
         '}',
       ]);
     });
+  });
+
+  it('executes a subquery.', async(): Promise<void> => {
+    await adapter.findAll({
+      where: {
+        type: 'https://schema.org/Place',
+      },
+      subQueries: [
+        {
+          select: [ DataFactory.variable('deduplicationGroup'), {
+            variable: DataFactory.variable('entity'),
+            expression: {
+              type: 'aggregate',
+              aggregation: 'MIN',
+              expression: DataFactory.variable('entity'),
+            },
+          }],
+          where: {
+            'https://standardknowledge.com/ontologies/core/deduplicationGroup': '?deduplicationGroup',
+          },
+          groupBy: [ 'deduplicationGroup' ],
+        },
+      ],
+    });
+    expect(select.mock.calls[0][0].split('\n')).toEqual([
+      'CONSTRUCT { ?subject ?predicate ?object. }',
+      'WHERE {',
+      '  {',
+      '    SELECT DISTINCT ?entity WHERE {',
+      '      {',
+      '        SELECT ?deduplicationGroup (MIN(?entity) AS ?entity) WHERE { ?entity <https://standardknowledge.com/ontologies/core/deduplicationGroup> ?deduplicationGroup. }',
+      '        GROUP BY ?deduplicationGroup',
+      '      }',
+      '      ?entity (<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>/(<http://www.w3.org/2000/01/rdf-schema#subClassOf>*)) <https://schema.org/Place>.',
+      '      FILTER(EXISTS { GRAPH ?entity { ?entity ?c1 ?c2. } })',
+      '    }',
+      '  }',
+      '  GRAPH ?entity { ?subject ?predicate ?object. }',
+      '}',
+    ]);
   });
 
   describe('findAllBy', (): void => {
