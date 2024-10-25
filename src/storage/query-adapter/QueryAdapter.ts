@@ -9,6 +9,7 @@ import type {
   FindOneOptions,
   FindOptionsWhere,
 } from '../FindOptionsTypes';
+import { GroupByOptions, GroupByResponse } from '../GroupOptionTypes';
 
 export type RawQueryResult = Record<string, number | boolean | string>;
 
@@ -102,4 +103,8 @@ export interface QueryAdapter {
    * Removes all entities from the database.
    */
   destroyAll(): Promise<void>;
+  /**
+   * Groups entities by a given options.
+   */
+  groupBy(options: GroupByOptions): Promise<GroupByResponse>;
 }

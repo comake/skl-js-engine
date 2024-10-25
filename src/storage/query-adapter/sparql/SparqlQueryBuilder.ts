@@ -44,6 +44,7 @@ import {
   createSparqlExistsOperation,
   createSparqlContainsOperation,
   createSparqlLcaseOperation,
+  createSparqlSelectQuery,
 } from '../../../util/SparqlUtil';
 import {
   valueToLiteral,
@@ -68,6 +69,7 @@ import type {
 import type { InverseRelationOperatorValue } from '../../operator/InverseRelation';
 import type { InverseRelationOrderValue } from '../../operator/InverseRelationOrder';
 import { VariableGenerator } from './VariableGenerator';
+import { GroupByOptions, GroupByResponse } from '../../GroupOptionTypes';
 
 export interface NonGraphWhereQueryData {
   values: ValuesPattern[];
@@ -996,5 +998,253 @@ export class SparqlQueryBuilder {
       patterns = [ ...patterns, ...additionalPatterns ];
     }
     return patterns;
+  }
+
+  private createGroupPatternForPath(entityVariable: Variable, path: string): { 
+    variable: Variable; 
+    patterns: Pattern[];
+  } {
+    const segments = path.split('~');
+    let currentSubject = entityVariable;
+    const patterns: Pattern[] = [];
+    
+    // Create a chain of patterns for each segment
+    segments.forEach((predicate, index) => {
+      const object = this.createVariable();
+      patterns.push({
+        type: 'bgp',
+        triples: [{
+          subject: currentSubject,
+          predicate: DataFactory.namedNode(predicate),
+          object: object
+        }]
+      });
+      currentSubject = object;
+    });
+
+    // Return the final variable (last object) and all patterns
+    return {
+      variable: currentSubject,
+      patterns
+    };
+  }
+
+  public async buildGroupByQuery(options: GroupByOptions): Promise<{ query: SelectQuery; variableMapping: Record<string, string> }> {
+    const entityVariable = DataFactory.variable('entity');
+    const queryData = this.buildEntitySelectPatternsFromOptions(
+      entityVariable,
+      {
+        where: options.where || {},
+      }
+    );
+  
+    // Add group variables and patterns with mapping
+    const groupVariables: Variable[] = [];
+    const groupPatterns: Pattern[] = [];
+    const variableMapping: Record<string, string> = {};
+    
+    if (options.groupBy) {
+      options.groupBy.forEach((path) => {
+        const { variable: groupVar, patterns } = this.createGroupPatternForPath(entityVariable, path);
+        groupVariables.push(groupVar);
+        variableMapping[groupVar.value] = path;
+        groupPatterns.push(...patterns);
+      });
+    }
+  
+    // Add date handling if specified
+    if (options.dateRange) {
+      const dateVar = this.createVariable();
+      variableMapping[dateVar.value] = 'date';
+      
+      const datePattern:Pattern = {
+        type: 'bgp',
+        triples: [{
+          subject: entityVariable,
+          predicate: DataFactory.namedNode('http://purl.org/dc/terms/created'),
+          object: dateVar
+        }]
+      };
+  
+      const dateFilter: FilterPattern = {
+        type: 'filter',
+        expression: {
+          type: 'operation',
+          operator: '&&',
+          args: [
+            {
+              type: 'operation',
+              operator: '>=',
+              args: [dateVar, DataFactory.literal(options.dateRange.start, 'http://www.w3.org/2001/XMLSchema#dateTime')]
+            },
+            {
+              type: 'operation',
+              operator: '<=',
+              args: [dateVar, DataFactory.literal(options.dateRange.end, 'http://www.w3.org/2001/XMLSchema#dateTime')]
+            }
+          ]
+        }
+      };
+  
+      groupPatterns.push(datePattern, dateFilter);
+  
+      if (options.dateGrouping) {
+        const dateGroupVar = this.createVariable();
+        groupVariables.push(dateGroupVar);
+        variableMapping[dateGroupVar.value] = 'dateGroup';
+        
+        const dateGroupBind = this.createDateGroupingBind(dateVar, dateGroupVar, options.dateGrouping);
+        groupPatterns.push(dateGroupBind);
+      }
+    }
+  
+    // Create count and entityIds variables
+    const countVar = this.createVariable();
+    const entityIdsVar = this.createVariable();
+    variableMapping[countVar.value] = 'count';
+    variableMapping[entityIdsVar.value] = 'entityIds';
+    
+    // Combine all patterns
+    const combinedWhere = [
+      ...queryData.where,
+      ...groupPatterns
+    ];
+  
+    // Create select query with aggregations
+    const selectQuery = createSparqlSelectQuery(
+      [
+        ...groupVariables,
+        {
+          expression: {
+            type: 'aggregate',
+            aggregation: 'count',
+            distinct: true,
+            expression: entityVariable
+          },
+          variable: countVar
+        },
+        {
+          expression: {
+            type: 'aggregate',
+            aggregation: 'group_concat',
+            distinct: true,
+            separator: ' ',
+            expression: entityVariable
+          },
+          variable: entityIdsVar
+        }
+      ],
+      combinedWhere,
+      [], // orders
+      groupVariables, // group by
+      options.limit,
+      options.offset
+    );
+
+    return { query: selectQuery, variableMapping };
+  }
+
+  // Helper function for date grouping
+  private createDateGroupingBind(
+    dateVar: Variable,
+    dateGroupVar: Variable,
+    grouping: 'month' | 'day'
+  ): Pattern {
+    return {
+      type: 'bind',
+      expression: {
+        type: 'operation',
+        operator: 'CONCAT',
+        args: [
+          this.createYearExpression(dateVar),
+          DataFactory.literal('-'),
+          this.createMonthExpression(dateVar),
+          ...this.createDayExpressionParts(dateVar, grouping)
+        ]
+      },
+      variable: dateGroupVar
+    };
+  }
+
+  private createYearExpression(dateVar: Variable): Expression {
+    return {
+      type: 'operation',
+      operator: 'STR',
+      args: [{
+        type: 'operation',
+        operator: 'YEAR',
+        args: [dateVar]
+      }]
+    };
+  }
+
+  private createMonthExpression(dateVar: Variable): Expression {
+    return this.createPaddedDatePartExpression(dateVar, 'MONTH');
+  }
+
+  private createDayExpression(dateVar: Variable): Expression {
+    return this.createPaddedDatePartExpression(dateVar, 'DAY');
+  }
+
+  private createPaddedDatePartExpression(dateVar: Variable, datePart: 'MONTH' | 'DAY'): Expression {
+    const comparisonValue = DataFactory.literal('10', DataFactory.namedNode('http://www.w3.org/2001/XMLSchema#integer'));
+    
+    return {
+      type: 'operation',
+      operator: 'IF',
+      args: [
+        this.createLessThanComparison(dateVar, datePart, comparisonValue),
+        this.createPaddedStringExpression(dateVar, datePart),
+        this.createUnpaddedStringExpression(dateVar, datePart)
+      ]
+    };
+  }
+
+  private createLessThanComparison(dateVar: Variable, datePart: 'MONTH' | 'DAY', comparisonValue: Term): Expression {
+    return {
+      type: 'operation',
+      operator: '<',
+      args: [
+        {
+          type: 'operation',
+          operator: datePart,
+          args: [dateVar]
+        } as Expression,
+        comparisonValue as Expression
+      ]
+    };
+  }
+
+  private createPaddedStringExpression(dateVar: Variable, datePart: 'MONTH' | 'DAY'): Expression {
+    return {
+      type: 'operation',
+      operator: 'CONCAT',
+      args: [
+        DataFactory.literal('0'),
+        this.createUnpaddedStringExpression(dateVar, datePart)
+      ]
+    };
+  }
+
+  private createUnpaddedStringExpression(dateVar: Variable, datePart: 'MONTH' | 'DAY'): Expression {
+    return {
+      type: 'operation',
+      operator: 'STR',
+      args: [{
+        type: 'operation',
+        operator: datePart,
+        args: [dateVar]
+      }]
+    };
+  }
+
+  private createDayExpressionParts(dateVar: Variable, grouping: 'month' | 'day'): Expression[] {
+    if (grouping === 'day') {
+      return [
+        DataFactory.literal('-'),
+        this.createDayExpression(dateVar)
+      ];
+    }
+    return [DataFactory.literal('')];
   }
 }
