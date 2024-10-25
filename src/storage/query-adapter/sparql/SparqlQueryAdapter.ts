@@ -37,6 +37,7 @@ import type { QueryExecutor } from './query-executor/SparqlQueryExecutor';
 import type { SparqlQueryAdapterOptions } from './SparqlQueryAdapterOptions';
 import { SparqlQueryBuilder } from './SparqlQueryBuilder';
 import { SparqlUpdateBuilder } from './SparqlUpdateBuilder';
+import { GroupByOptions, GroupByResponse, GroupResult } from '../../GroupOptionTypes';
 
 /**
  * A {@link QueryAdapter} that stores data in a database through a sparql endpoint.
@@ -211,6 +212,58 @@ export class SparqlQueryAdapter implements QueryAdapter {
     const query = queryBuilder.buildUpdate(entityOrEntities);
     await this.queryExecutor.executeSparqlUpdate(query);
     return entityOrEntities;
+  }
+
+  public async groupBy(options: GroupByOptions): Promise<GroupByResponse> {
+    const queryBuilder = new SparqlQueryBuilder();
+    const { query: selectQuery, variableMapping } = await queryBuilder.buildGroupByQuery(options);
+    const results = await this.queryExecutor.executeSparqlSelectAndGetData(
+      selectQuery
+    );
+
+    // Create reverse mapping from path to variable name
+    const reverseMapping = Object.entries(variableMapping).reduce((acc, [varName, path]) => {
+      acc[path] = varName;
+      return acc;
+    }, {} as Record<string, string>);
+
+    // Transform results
+    const groupResults: GroupResult[] = results.map((result) => {
+      const group: Record<string, string | number> = {};
+
+      options.groupBy?.forEach((path) => {
+        const varName = reverseMapping[path];
+        if (!varName) {
+          throw new Error(`No variable mapping found for path: ${path}`);
+        }
+        const value = result[varName].value;
+        // Try to convert to number if possible
+        group[path] = isNaN(Number(value)) ? value : Number(value);
+      });
+
+      if (options.dateGrouping) {
+        const dateGroupVarName = reverseMapping['dateGroup'];
+        group.dateGroup = result[dateGroupVarName].value;
+      }
+
+      const countVarName = reverseMapping['count'];
+      const entityIdsVarName = reverseMapping['entityIds'];
+
+      return {
+        group,
+        count: parseInt(result[countVarName].value, 10),
+        entityIds: result[entityIdsVarName].value.split(" "),
+      };
+    });
+
+    return {
+      results: groupResults,
+      meta: {
+        totalCount: groupResults.reduce((sum, curr) => sum + curr.count, 0),
+        dateRange: options.dateRange,
+        groupings: options.groupBy || [],
+      },
+    };
   }
 
   public async update(id: string, attributes: Partial<Entity>): Promise<void>;

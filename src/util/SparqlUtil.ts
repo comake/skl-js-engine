@@ -218,23 +218,44 @@ export function createSparqlServicePattern(serviceName: string, triples: Triple[
   };
 }
 
+export function ensureVariable(variableLike: string | Variable): Variable {
+  if (typeof variableLike === "string" && variableLike.startsWith("?")) {
+    return DataFactory.variable(variableLike.slice(1));
+  }
+  return variableLike as Variable;
+}
+
+export function ensureGrouping(variableLike: Variable | string): Grouping {
+  return {
+    expression: ensureVariable(variableLike)
+  } as Grouping;
+}
+
 export function createSparqlSelectQuery(
-  variable: Variable,
+  variable: Variable | Variable[],
   where: Pattern[],
   order: Ordering[],
-  group?: Variable,
+  group?: Variable | Variable[],
   limit?: number,
   offset?: number,
 ): SelectQuery {
+  let groupings: Grouping[] | undefined = [];
+  if (group) {
+    if (Array.isArray(group)) {
+      groupings = group.map(g => ensureGrouping(g));
+    } else {
+      groupings = [ensureGrouping(group)];
+    }
+  }
   return {
-    type: 'query',
-    queryType: 'SELECT',
-    variables: [ variable ],
+    type: "query",
+    queryType: "SELECT",
+    variables: Array.isArray(variable)
+      ? variable.map(ensureVariable)
+      : [ensureVariable(variable)],
     distinct: true,
     where,
-    group: group
-      ? [ { expression: group } as Grouping ]
-      : undefined,
+    group: groupings,
     order: order.length > 0 ? order : undefined,
     limit,
     offset,

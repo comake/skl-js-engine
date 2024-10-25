@@ -53,6 +53,7 @@ import {
   ensureArray,
 } from './util/Util';
 import { SKL, SHACL, RDFS, SKL_ENGINE, XSD, RDF } from './util/Vocabularies';
+import { GroupByOptions, GroupByResponse } from './storage/GroupOptionTypes';
 
 export type VerbHandler = <T extends OrArray<NodeObject> = OrArray<NodeObject>>(
   params: JSONObject,
@@ -129,6 +130,10 @@ export class SKLEngine {
 
   public async findAll(options?: FindAllOptions): Promise<Entity[]> {
     return await this.queryAdapter.findAll(options);
+  }
+
+  public async groupBy(options: GroupByOptions): Promise<GroupByResponse> {
+    return await this.queryAdapter.groupBy(options);
   }
 
   public async findAllBy(where: FindOptionsWhere): Promise<Entity[]> {

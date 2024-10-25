@@ -1,6 +1,6 @@
 {
 	"name": "@comake/skl-js-engine",
-	"version": "0.21.0",
+	"version": "0.22.0",
 	"description": "Standard Knowledge Language Javascript Engine",
 	"keywords": [
 		"skl",
@@ -83,7 +83,7 @@
 		"eslint-plugin-tsdoc": "^0.2.16",
 		"eslint-plugin-unused-imports": "^2.0.0",
 		"fs": "^0.0.1-security",
-		"husky": "^8.0.0",
+		"husky": "^8.0.3",
 		"jest": "^29.5.0",
 		"jsdom": "^20.0.0",
 		"ts-jest": "^29.1.0",
