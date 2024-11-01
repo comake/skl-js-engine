@@ -1136,7 +1136,7 @@ export class SparqlQueryBuilder {
       ],
       combinedWhere,
       [], // orders
-      groupVariables, // group by
+      groupVariables.length > 0 ? groupVariables : undefined, // group by
       options.limit,
       options.offset
     );

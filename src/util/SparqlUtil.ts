@@ -239,7 +239,7 @@ export function createSparqlSelectQuery(
   limit?: number,
   offset?: number,
 ): SelectQuery {
-  let groupings: Grouping[] | undefined = [];
+  let groupings: Grouping[] | undefined;
   if (group) {
     if (Array.isArray(group)) {
       groupings = group.map(g => ensureGrouping(g));
