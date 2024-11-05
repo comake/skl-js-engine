@@ -93,6 +93,8 @@ export const SKL = createNamespace(SKL_NAMESPACE, [
   'Dataview',
   'Entity',
   'query',
+  'getOpenApiRuntimeAuthorization',
+  'headers',
 ]);
 
 export const SKL_ENGINE_NAMESPACE = 'https://standardknowledge.com/ontologies/skl-engine/';
