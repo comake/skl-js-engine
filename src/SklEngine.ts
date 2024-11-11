@@ -835,7 +835,7 @@ export class SKLEngine {
     })) as Verb;
   }
 
-  private async getRuntimeCredentialsWithSecurityCredentials(securityCredentials: Entity, integrationId: string, openApiOperationInformation: OperationWithPathInfo): Promise<JSONObject> {
+  private async getRuntimeCredentialsWithSecurityCredentials(securityCredentials: Entity, integrationId: string, openApiOperationInformation: OperationWithPathInfo, operationArgs: JSONObject): Promise<JSONObject> {
     const getOpenApiRuntimeAuthorizationVerb = await this.findgetOpenApiRuntimeAuthorizationVerbIfDefined();
     if (!getOpenApiRuntimeAuthorizationVerb) {
       return {};
@@ -847,6 +847,7 @@ export class SKLEngine {
     const args = {
       securityCredentials,
       openApiExecutorOperationWithPathInfo: openApiOperationInformation,
+      operationArgs,
     } as JSONObject;
     const operationInfoJsonLd = await this.performParameterMappingOnArgsIfDefined(args, mapping, undefined, true);
     const headers = getValueIfDefined<JSONObject>(operationInfoJsonLd[SKL.headers]);
@@ -924,6 +925,7 @@ export class SKLEngine {
         securityCredentials,
         integrationId,
         openApiOperationInformation,
+        operationArgs
       );
       if (generatedRuntimeCredentials && Object.keys(generatedRuntimeCredentials).length > 0) {
         runtimeAuthorization = generatedRuntimeCredentials;

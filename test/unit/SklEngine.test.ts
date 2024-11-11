@@ -39,6 +39,8 @@ const mockDropboxFile = {
 // });
 
 import { OpenApiOperationExecutor } from "@comake/openapi-operation-executor";
+import { getValueIfDefined } from "../../src/util/Util";
+import { generateAwsSignatureV4 } from "../util/generateAwsSignaturev4";
 // import { getValueIfDefined } from "../../src/util/Util";
 // import { generateAwsSignatureV4 } from "../util/generateAwsSignaturev4";
 
