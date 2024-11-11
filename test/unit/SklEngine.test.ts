@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
-import { RR } from '@comake/rmlmapper-js';
+import { RR } from "@comake/rmlmapper-js";
 import { AxiosError } from 'axios';
 import type { NodeObject } from 'jsonld';
 import { SKLEngine } from '../../src/SklEngine';
@@ -30,6 +29,20 @@ const mockDropboxFile = {
   server_modified: '2015-05-12T15:50:38Z',
   size: 7212,
 };
+
+// jest.mock("@comake/openapi-operation-executor", (): any => {
+//   const actual = jest.requireActual("@comake/openapi-operation-executor");
+//   return {
+//     ...actual,
+//     OpenApiOperationExecutor: actual.OpenApiOperationExecutor,
+//   };
+// });
+
+import { OpenApiOperationExecutor } from "@comake/openapi-operation-executor";
+import { getValueIfDefined } from "../../src/util/Util";
+import { generateAwsSignatureV4 } from "../util/generateAwsSignaturev4";
+// import { getValueIfDefined } from "../../src/util/Util";
+// import { generateAwsSignatureV4 } from "../util/generateAwsSignaturev4";
 
 const expectedGetFileResponse = {
   '@id': 'https://example.com/data/abc123',
@@ -76,8 +89,87 @@ const incorrectReturnValueMapping = {
   },
 };
 
-describe('SKLEngine', (): void => {
+describe("SKLEngine", (): void => {
   let schemas: any[];
+
+  describe.skip("lambda integration", (): void => {
+    let executeOperation: any;
+    let setOpenapiSpec: any;
+    let executeSecuritySchemeStage: any;
+
+    beforeEach(async (): Promise<void> => {
+      schemas = await frameAndCombineSchemas([
+        "./test/assets/schemas/core.json",
+        "./test/assets/schemas/get-lambda-functions.json",
+        "./test/assets/schemas/lambda-openapi-spec.json",
+      ]);
+      executeOperation = jest.fn().mockResolvedValue({ data: {}, config: {} });
+      executeSecuritySchemeStage = jest
+        .fn()
+        .mockResolvedValue({ data: { access_token: "newToken" }, config: {} });
+    });
+
+    it("gets the runtime credentials for a lambda integration.", async (): Promise<void> => {
+      const functions = {
+        // @ts-ignore
+        "https://example.com/calculateAws4Header": async (args: any) => {
+          const generateSklStringWithSuffix = (suffix: string): string =>
+            `https://standardknowledge.com/ontologies/core/${suffix}`;
+          const getSklPropertyBySuffix = (suffix: string): any => {
+            return args[generateSklStringWithSuffix(suffix)];
+          };
+          const securityCredentials = getSklPropertyBySuffix(
+            "securityCredentials"
+          );
+          const accessKeyId = getValueIfDefined(
+            securityCredentials[generateSklStringWithSuffix("accessKeyId")]
+          );
+          const secretAccessKey = getValueIfDefined(
+            securityCredentials[generateSklStringWithSuffix("secretAccessKey")]
+          );
+          const region = getValueIfDefined(
+            securityCredentials[generateSklStringWithSuffix("region")]
+          );
+          const service = getValueIfDefined(
+            securityCredentials[generateSklStringWithSuffix("service")]
+          );
+          const openApiExecutorOperationWithPathInfo = getSklPropertyBySuffix(
+            "openApiExecutorOperationWithPathInfo"
+          );
+          const pathName = getValueIfDefined(
+            openApiExecutorOperationWithPathInfo["pathName"]
+          );
+          const pathReqMethod = getValueIfDefined(
+            openApiExecutorOperationWithPathInfo["pathReqMethod"]
+          );
+          const awsSignature = generateAwsSignatureV4(
+            (pathReqMethod as string).toUpperCase(),
+            pathName as string,
+            {},
+            {
+              host: `${service}.${region}.amazonaws.com`,
+            },
+            "",
+            {
+              accessKeyId: accessKeyId as string,
+              secretAccessKey: secretAccessKey as string,
+              region: region as string,
+              service: service as string,
+            }
+          );
+          return {
+            headers: awsSignature,
+          };
+        },
+      };
+      const sklEngine = new SKLEngine({ type: "memory", functions });
+      await sklEngine.save(schemas);
+      const response = await sklEngine.verb.getFunctions({
+        account: "https://example.com/data/AwsLambdaAccount1",
+      });
+      expect(response).toEqual({});
+    }, 1000000);
+  });
 
   it('throws an error if schemas or a sparql endpoint are not supplied.', async(): Promise<void> => {
     expect((): void => {
@@ -571,6 +663,7 @@ describe('SKLEngine', (): void => {
     let executeOperation: any;
     let setOpenapiSpec: any;
     let executeSecuritySchemeStage: any;
+    let getOperationWithPathInfoMatchingOperationId: any;
 
     beforeEach(async(): Promise<void> => {
       schemas = await frameAndCombineSchemas([
@@ -580,10 +673,12 @@ describe('SKLEngine', (): void => {
       executeOperation = jest.fn().mockResolvedValue({ data: mockDropboxFile, config: {}});
       executeSecuritySchemeStage = jest.fn().mockResolvedValue({ data: { access_token: 'newToken' }, config: {}});
       setOpenapiSpec = jest.fn();
+      getOperationWithPathInfoMatchingOperationId = jest.fn();
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({
         executeOperation,
         setOpenapiSpec,
         executeSecuritySchemeStage,
+        getOperationWithPathInfoMatchingOperationId,
       });
     });
 
@@ -736,7 +831,7 @@ describe('SKLEngine', (): void => {
       expect(executeOperation).toHaveBeenCalledTimes(0);
     });
 
-    it(`sends the request with undefined security credentials if no 
+    it(`sends the request with undefined security credentials if no
     security credentials for the account are in the schema.`,
     async(): Promise<void> => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://example.com/data/DropboxAccount1SecurityCredentials');
@@ -788,7 +883,7 @@ describe('SKLEngine', (): void => {
       );
     });
 
-    it(`refreshes the access token and retries the operation if it fails 
+    it(`refreshes the access token and retries the operation if it fails
     with an invalid token error matching the integration configuration.`,
     async(): Promise<void> => {
       executeOperation.mockRejectedValueOnce({
@@ -825,7 +920,7 @@ describe('SKLEngine', (): void => {
       );
     });
 
-    it(`refreshes the access token and retries the operation if it fails 
+    it(`refreshes the access token and retries the operation if it fails
     with an invalid token error matching the integration configuration with no messageRegex.`,
     async(): Promise<void> => {
       schemas = schemas.map((schemaItem: any): any => {
@@ -891,6 +986,7 @@ describe('SKLEngine', (): void => {
   describe('calling Verbs which execute OpenApi security schemes', (): void => {
     let executeSecuritySchemeStage: any;
     let setOpenapiSpec: any;
+    let getOperationWithPathInfoMatchingOperationId: any;
     let response: any;
 
     beforeEach(async(): Promise<void> => {
@@ -901,7 +997,12 @@ describe('SKLEngine', (): void => {
       response = { authorizationUrl: 'https://example.com/auth', codeVerifier: 'something' };
       executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
       setOpenapiSpec = jest.fn();
-      (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
+      getOperationWithPathInfoMatchingOperationId = jest.fn();
+      (OpenApiOperationExecutor as jest.Mock).mockReturnValue({
+        executeSecuritySchemeStage,
+        setOpenapiSpec,
+        getOperationWithPathInfoMatchingOperationId,
+      });
     });
 
     it('can execute an OpenApiSecuritySchemeVerb that maps to the authorizationUrl stage.', async(): Promise<void> => {
@@ -937,7 +1038,11 @@ describe('SKLEngine', (): void => {
     it('can execute an OpenApiSecuritySchemeVerb that maps to the tokenUrl stage.', async(): Promise<void> => {
       response = { data: { access_token: 'abc123' }, config: {}};
       executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
-      (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
+      (OpenApiOperationExecutor as jest.Mock).mockReturnValue({
+        executeSecuritySchemeStage,
+        setOpenapiSpec,
+        getOperationWithPathInfoMatchingOperationId,
+      });
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
       const res = await sklEngine.verb.getOauthTokens<NodeObject>({
@@ -961,13 +1066,17 @@ describe('SKLEngine', (): void => {
       );
     });
 
-    it(`can execute an OpenApiSecuritySchemeVerb with empty configuration 
+    it(`can execute an OpenApiSecuritySchemeVerb with empty configuration
     if no SecurityCredentialsSchema exists for the account.`,
     async(): Promise<void> => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://example.com/data/DropboxAccount1SecurityCredentials');
       response = { data: { message: 'Access Denied' }, config: {}};
       executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
-      (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
+      (OpenApiOperationExecutor as jest.Mock).mockReturnValue({
+        executeSecuritySchemeStage,
+        setOpenapiSpec,
+        getOperationWithPathInfoMatchingOperationId,
+      });
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
       const res = await sklEngine.verb.authorizeWithPkceOauth<NodeObject>({ account });
@@ -990,7 +1099,11 @@ describe('SKLEngine', (): void => {
         ]);
         response = { data: { access_token: 'abc123' }, config: {}};
         executeSecuritySchemeStage = jest.fn().mockResolvedValue(response);
-        (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeSecuritySchemeStage, setOpenapiSpec });
+        (OpenApiOperationExecutor as jest.Mock).mockReturnValue({
+          executeSecuritySchemeStage,
+          setOpenapiSpec,
+          getOperationWithPathInfoMatchingOperationId,
+        });
         const sklEngine = new SKLEngine({ type: 'memory' });
         await sklEngine.save(schemas);
         const res = await sklEngine.verb.getOauthTokens<NodeObject>({ account: 'https://example.com/data/StubhubAccount1' });
@@ -1040,6 +1153,7 @@ describe('SKLEngine', (): void => {
   describe('calling Verbs which map a Noun to another Verb', (): void => {
     let executeOperation: any;
     let setOpenapiSpec: any;
+    let getOperationWithPathInfoMatchingOperationId: any;
 
     beforeEach(async(): Promise<void> => {
       schemas = await frameAndCombineSchemas([
@@ -1048,7 +1162,12 @@ describe('SKLEngine', (): void => {
       ]);
       executeOperation = jest.fn().mockResolvedValue({ data: mockDropboxFile, config: {}});
       setOpenapiSpec = jest.fn();
-      (OpenApiOperationExecutor as jest.Mock).mockReturnValue({ executeOperation, setOpenapiSpec });
+      getOperationWithPathInfoMatchingOperationId = jest.fn();
+      (OpenApiOperationExecutor as jest.Mock).mockReturnValue({
+        executeOperation,
+        setOpenapiSpec,
+        getOperationWithPathInfoMatchingOperationId,
+      });
     });
 
     it('can execute a Noun mapped Verb defined via a verbMapping.', async(): Promise<void> => {
@@ -1514,7 +1633,7 @@ describe('SKLEngine', (): void => {
   describe('calling Triggers', (): void => {
     let executeOperation: any;
     let setOpenapiSpec: any;
-
+    let getOperationWithPathInfoMatchingOperationId: any;
     beforeEach(async(): Promise<void> => {
       schemas = await frameAndCombineSchemas([
         './test/assets/schemas/core.json',
@@ -1526,9 +1645,11 @@ describe('SKLEngine', (): void => {
     it('can execute a Verb as result of a trigger.', async(): Promise<void> => {
       executeOperation = jest.fn().mockResolvedValue({ data: { cursor: 'abc123' }, config: {}});
       setOpenapiSpec = jest.fn();
+      getOperationWithPathInfoMatchingOperationId = jest.fn();
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({
         executeOperation,
         setOpenapiSpec,
+        getOperationWithPathInfoMatchingOperationId,
       });
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
@@ -1548,9 +1669,11 @@ describe('SKLEngine', (): void => {
     it('throws an error when no Trigger Verb Mapping exists for the integration.', async(): Promise<void> => {
       executeOperation = jest.fn();
       setOpenapiSpec = jest.fn();
+      getOperationWithPathInfoMatchingOperationId = jest.fn();
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({
         executeOperation,
         setOpenapiSpec,
+        getOperationWithPathInfoMatchingOperationId,
       });
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
@@ -1567,6 +1690,7 @@ describe('SKLEngine', (): void => {
     let executeOperation: any;
     let setOpenapiSpec: any;
     let executeSecuritySchemeStage: any;
+    let getOperationWithPathInfoMatchingOperationId: any;
     let callbacks: Callbacks;
     let onVerbEnd: any;
     let onVerbStart: any;
@@ -1578,11 +1702,13 @@ describe('SKLEngine', (): void => {
       ]);
       executeOperation = jest.fn().mockResolvedValue({ data: mockDropboxFile, config: {}});
       executeSecuritySchemeStage = jest.fn().mockResolvedValue({ data: { access_token: 'newToken' }, config: {}});
+      getOperationWithPathInfoMatchingOperationId = jest.fn();
       setOpenapiSpec = jest.fn();
       (OpenApiOperationExecutor as jest.Mock).mockReturnValue({
         executeOperation,
         setOpenapiSpec,
         executeSecuritySchemeStage,
+        getOperationWithPathInfoMatchingOperationId,
       });
       onVerbEnd = jest.fn();
       onVerbStart = jest.fn();
@@ -1600,8 +1726,16 @@ describe('SKLEngine', (): void => {
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
         'FilesGetMetadata',
-        { accessToken: 'SPOOFED_TOKEN', bearerToken: undefined, apiKey: undefined, basePath: undefined },
+        {
+          accessToken: 'SPOOFED_TOKEN',
+          bearerToken: undefined,
+          apiKey: undefined,
+          basePath: undefined,
+          password: 'abc123',
+          username: 'adlerfaulkner',
+        },
         { path: 'id:12345' },
+        undefined
       );
       expect(onVerbStart).toHaveBeenCalledTimes(1);
       expect(onVerbStart).toHaveBeenCalledWith('https://example.com/getFile', { account, id: '12345' });

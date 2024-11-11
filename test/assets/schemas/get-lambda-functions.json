@@ -1,0 +1,325 @@
+{
+  "@context": {
+    "shacl": "http://www.w3.org/ns/shacl#",
+    "fnml": "http://semweb.mmlab.be/ns/fnml#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "label": "rdfs:label",
+    "rdfs:subClassOf": { "@type": "@id" },
+    "rdfs:range": { "@type": "@id" },
+    "rdfs:domain": { "@type": "@id" },
+    "boolean": "http://www.w3.org/2001/XMLSchema#boolean",
+    "integer": "http://www.w3.org/2001/XMLSchema#integer",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "rr": "http://www.w3.org/ns/r2rml#",
+    "rml": "http://semweb.mmlab.be/ns/rml#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "dcterms": "http://purl.org/dc/elements/1.1/",
+    "description": "dcterms:description",
+    "shacl:class": { "@type": "@id" },
+    "shacl:datatype": { "@type": "@id" },
+    "shacl:maxCount": { "@type": "xsd:integer" },
+    "shacl:minCount": { "@type": "xsd:integer" },
+    "shacl:targetClass": { "@type": "@id" },
+    "shacl:path": { "@type": "@id" },
+    "skl": "https://standardknowledge.com/ontologies/core/",
+    "skl:integration": { "@type": "@id" },
+    "skl:account": { "@type": "@id" },
+    "skl:openApiDescription": { "@type": "@json" },
+    "skl:parametersContext": { "@type": "@json" },
+    "skl:returnValueFrame": { "@type": "@json" },
+    "skl:noun": { "@type": "@id" },
+    "skl:parameterMapping": { "@type": "@id" },
+    "skl:parameterMappingFrame": { "@type": "@json" },
+    "skl:returnValueMapping": { "@type": "@id" },
+    "skl:operationMapping": { "@type": "@id" },
+    "skl:verbMapping": { "@type": "@id" },
+    "integration": { "@id": "skl:integration", "@type": "@id" },
+    "verb": { "@id": "skl:verb", "@type": "@id" },
+    "rml:referenceFormulation": { "@type": "@id" },
+    "rr:parentTriplesMap": { "@type": "@id" },
+    "rr:predicate": { "@type": "@id" },
+    "rr:object": { "@type": "@id" },
+    "rr:termType": { "@type": "@id" },
+    "rr:datatype": { "@type": "@id" },
+    "rr:subject": { "@type": "@id" },
+    "example": "https://example.com/"
+  },
+  "@graph": [
+    {
+      "@id": "https://example.com/getFunctions",
+      "@type": "https://standardknowledge.com/ontologies/core/Verb",
+      "label": "getFunctions",
+      "skl:parametersContext": {
+        "account": {
+          "@id": "https://example.com/account",
+          "@type": "@id"
+        }
+      },
+      "skl:parameters": {
+        "@type": "shacl:NodeShape",
+        "shacl:targetClass": "https://standardknowledge.com/ontologies/core/Parameters",
+        "shacl:property": [
+          {
+            "shacl:maxCount": 1,
+            "shacl:minCount": 1,
+            "shacl:path": "https://example.com/account",
+            "shacl:nodeKind": { "@id": "shacl:IRI" }
+          }
+        ]
+      },
+      "skl:returnValue": {
+        "@type": "shacl:NodeShape",
+        "shacl:targetClass": "https://standardknowledge.com/ontologies/core/ReturnValue",
+        "shacl:property": [
+          {
+            "shacl:path": "skl:functions",
+            "shacl:node": {
+              "@type": "shacl:NodeShape",
+              "shacl:property": [
+                {
+                  "shacl:path": "skl:function",
+                  "shacl:minCount": 0,
+                  "shacl:node": {
+                    "@type": "shacl:NodeShape",
+                    "shacl:property": [
+                      {
+                        "shacl:path": "skl:functionName",
+                        "shacl:datatype": "xsd:string",
+                        "shacl:minCount": 1,
+                        "shacl:maxCount": 1
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "@id": "https://example.com/data/getFunctionsToLambda",
+      "@type": "https://standardknowledge.com/ontologies/core/VerbIntegrationMapping",
+      "integration": "https://example.com/integrations/AwsLambda",
+      "verb": "https://example.com/getFunctions",
+      "label": "getFunctionsToLambda",
+      "skl:operationMapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
+        },
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rr:constant": "ListFunctions"
+            },
+            "rr:predicate": "skl:operationId"
+          }
+        ],
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
+      },
+      "skl:returnValueMapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$.data",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
+        },
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rr:parentTriplesMap": {
+                "@type": "rr:TriplesMap",
+                "rml:logicalSource": {
+                  "@type": "rml:LogicalSource",
+                  "rml:iterator": "$.data.Functions[*]",
+                  "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+                  "rml:source": "input.json"
+                },
+                "rr:predicateObjectMap": [
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "rml:reference": "FunctionName"
+                    },
+                    "rr:predicate": "skl:functionName"
+                  }
+                ],
+                "rr:subjectMap": {
+                  "@type": "rr:SubjectMap",
+                  "rr:termType": "rr:BlankNode"
+                }
+              }
+            },
+            "rr:predicate": "skl:functions"
+          }
+        ],
+        "rr:subject": "https://example.com/getFunctionsReturnValueSubject"
+      },
+      "skl:returnValueFrame": {
+        "@id": "https://example.com/getFunctionsReturnValueSubject"
+      }
+    },
+    {
+      "@id": "https://example.com/getOpenApiRuntimeAuthorization",
+      "@type": "https://standardknowledge.com/ontologies/core/Verb",
+      "rdfs:label": "getOpenApiRuntimeAuthorization",
+      "skl:parametersContext": {
+        "securityCredentials": {
+          "@id": "https://example.com/data/AwsLambdaAccount1SecurityCredentials",
+          "@type": "@json"
+        },
+        "openApiExecutorOperationWithPathInfo": {
+          "@id": "https://example.com/openApiExecutorOperationWithPathInfo",
+          "@type": "@json"
+        }
+      },
+      "skl:parameters": {
+        "@type": "shacl:NodeShape",
+        "shacl:targetClass": "https://standardknowledge.com/ontologies/core/Parameters",
+        "shacl:property": [
+          {
+            "shacl:maxCount": 1,
+            "shacl:minCount": 1,
+            "shacl:name": "securityCredentials",
+            "shacl:path": "https://example.com/data/AwsLambdaAccount1SecurityCredentials"
+          },
+          {
+            "shacl:maxCount": 1,
+            "shacl:minCount": 1,
+            "shacl:name": "openApiExecutorOperationWithPathInfo",
+            "shacl:path": "https://example.com/openApiExecutorOperationWithPathInfo"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "https://example.com/data/getOpenApiRuntimeAuthorization/1",
+      "@type": "https://standardknowledge.com/ontologies/core/VerbIntegrationMapping",
+      "rdfs:label": "getOpenApiRuntimeAuthorizationToAwsLambda",
+      "integration": "https://example.com/integrations/AwsLambda",
+      "verb": "https://example.com/getOpenApiRuntimeAuthorization",
+      "label": "getOpenApiRuntimeAuthorizationToAwsLambda",
+      "operationId": "getOpenApiRuntimeAuthorization",
+      "skl:parameterMapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
+        },
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rr:datatype": "http://www.w3.org/1999/02/22-rdf-syntax-ns#JSON",
+              "fnml:functionValue": {
+                "@type": "fnml:FunctionValue",
+                "rr:predicateObjectMap": [
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:object": "https://example.com/calculateAws4Header",
+                    "rr:predicate": "https://w3id.org/function/ontology#executes"
+                  },
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "rml:reference": "securityCredentials"
+                    },
+                    "rr:predicate": "skl:securityCredentials"
+                  },
+                  {
+                    "@type": "rr:PredicateObjectMap",
+                    "rr:objectMap": {
+                      "@type": "rr:ObjectMap",
+                      "rml:reference": "openApiExecutorOperationWithPathInfo"
+                    },
+                    "rr:predicate": "skl:openApiExecutorOperationWithPathInfo"
+                  }
+                ]
+              }
+            },
+            "rr:predicate": "skl:headers"
+          }
+        ],
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
+        }
+      },
+      "skl:parameterMappingFrame": {
+        "@context": {
+          "securityCredentials": {
+            "@id": "https://example.com/data/AwsLambdaAccount1SecurityCredentials",
+            "@type": "@json"
+          },
+          "openApiExecutorOperationWithPathInfo": {
+            "@id": "https://example.com/openApiExecutorOperationWithPathInfo",
+            "@type": "@json"
+          }
+        }
+      },
+      "returnValueMapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
+        },
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rml:reference": "headers"
+            },
+            "rr:predicate": "skl:headers"
+          }
+        ]
+      }
+    },
+    {
+      "@id": "https://example.com/data/AwsLambdaAccount1",
+      "@type": "https://example.com/Account",
+      "skl:integration": "https://example.com/integrations/AwsLambda",
+      "label": "Aws Lambda Account"
+    },
+    {
+      "@id": "https://example.com/data/AwsLambdaAccount1SecurityCredentials",
+      "@type": "https://standardknowledge.com/ontologies/core/SecurityCredentials",
+      "skl:accessKeyId": "xxxxxx",
+      "skl:secretAccessKey": "xxxxxx",
+      "skl:region": "us-east-1",
+      "skl:service": "lambda",
+      "skl:account": "https://example.com/data/AwsLambdaAccount1"
+    },
+    {
+      "@id": "https://example.com/integrations/AwsLambda",
+      "@type": "https://standardknowledge.com/ontologies/core/Integration",
+      "description": "Aws Lambda is a compute service that lets you run code without provisioning or managing servers. You pay only for the compute time you consume.",
+      "label": "AwsLambda",
+      "skl:invalidTokenErrorMatcher": {
+        "skl:invalidTokenErrorMatcherStatus": 403,
+        "skl:invalidTokenErrorMatcherMessageRegex": "^Missing Authentication Token$"
+      }
+    }
+  ]
+}

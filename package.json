@@ -1,6 +1,6 @@
 {
 	"name": "@comake/skl-js-engine",
-	"version": "0.23.0",
+	"version": "0.24.0",
 	"description": "Standard Knowledge Language Javascript Engine",
 	"keywords": [
 		"skl",
@@ -42,7 +42,7 @@
 		]
 	},
 	"dependencies": {
-		"@comake/openapi-operation-executor": "^0.11.1",
+		"@comake/openapi-operation-executor": "^0.12.1",
 		"@comake/rmlmapper-js": "^0.5.2",
 		"@comunica/query-sparql-rdfjs": "^2.10.0",
 		"@rdfjs/data-model": "^1.3.0",

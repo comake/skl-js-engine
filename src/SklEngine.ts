@@ -2,6 +2,7 @@
 import type {
   OpenApi,
   OpenApiClientConfiguration,
+  OperationWithPathInfo,
 } from '@comake/openapi-operation-executor';
 import { OpenApiOperationExecutor } from '@comake/openapi-operation-executor';
 import { getIdFromNodeObjectIfDefined, type ReferenceNodeObject } from '@comake/rmlmapper-js';
@@ -54,6 +55,7 @@ import {
 } from './util/Util';
 import { SKL, SHACL, RDFS, SKL_ENGINE, XSD, RDF } from './util/Vocabularies';
 import { GroupByOptions, GroupByResponse } from './storage/GroupOptionTypes';
+import { AxiosRequestConfig } from 'axios';
 
 export type VerbHandler = <T extends OrArray<NodeObject> = OrArray<NodeObject>>(
   params: JSONObject,
@@ -826,6 +828,32 @@ export class SKLEngine {
     });
   }
 
+  private async findgetOpenApiRuntimeAuthorizationVerbIfDefined(): Promise<Verb | undefined> {
+    return (await this.findByIfExists({
+      type: SKL.Verb,
+      [RDFS.label]: 'getOpenApiRuntimeAuthorization',
+    })) as Verb;
+  }
+
+  private async getRuntimeCredentialsWithSecurityCredentials(securityCredentials: Entity, integrationId: string, openApiOperationInformation: OperationWithPathInfo, operationArgs: JSONObject): Promise<JSONObject> {
+    const getOpenApiRuntimeAuthorizationVerb = await this.findgetOpenApiRuntimeAuthorizationVerbIfDefined();
+    if (!getOpenApiRuntimeAuthorizationVerb) {
+      return {};
+    }
+    const mapping = await this.findVerbIntegrationMapping(getOpenApiRuntimeAuthorizationVerb['@id'], integrationId);
+    if (!mapping) {
+      return {};
+    }
+    const args = {
+      securityCredentials,
+      openApiExecutorOperationWithPathInfo: openApiOperationInformation,
+      operationArgs,
+    } as JSONObject;
+    const operationInfoJsonLd = await this.performParameterMappingOnArgsIfDefined(args, mapping, undefined, true);
+    const headers = getValueIfDefined<JSONObject>(operationInfoJsonLd[SKL.headers]);
+    return headers ?? {};
+  }
+
   private async createOpenApiOperationExecutorWithSpec(openApiDescription: OpenApi): Promise<OpenApiOperationExecutor> {
     const executor = new OpenApiOperationExecutor();
     await executor.setOpenapiSpec(openApiDescription);
@@ -889,29 +917,82 @@ export class SKLEngine {
     const integrationId = (account[SKL.integration] as ReferenceNodeObject)['@id'];
     const openApiDescription = await this.getOpenApiDescriptionForIntegration(integrationId);
     const openApiExecutor = await this.createOpenApiOperationExecutorWithSpec(openApiDescription);
+    const openApiOperationInformation = await openApiExecutor.getOperationWithPathInfoMatchingOperationId(operationId);
     const securityCredentials = await this.findSecurityCredentialsForAccountIfDefined(account['@id']);
-    Logger.getInstance().log('Security Credentials', securityCredentials);
+    let runtimeAuthorization: JSONObject = {};
+    if (securityCredentials) {
+      const generatedRuntimeCredentials = await this.getRuntimeCredentialsWithSecurityCredentials(
+        securityCredentials,
+        integrationId,
+        openApiOperationInformation,
+        operationArgs
+      );
+      if (generatedRuntimeCredentials && Object.keys(generatedRuntimeCredentials).length > 0) {
+        runtimeAuthorization = generatedRuntimeCredentials;
+      }
+    }
+    const apiKey = [
+      getValueIfDefined<string>(securityCredentials?.[SKL.apiKey]),
+      this.getAuthorizationHeaderFromRuntimeCredentials(runtimeAuthorization),
+    ].find(Boolean);
     const configuration = {
       accessToken: getValueIfDefined<string>(securityCredentials?.[SKL.accessToken]),
       bearerToken: getValueIfDefined<string>(securityCredentials?.[SKL.bearerToken]),
-      apiKey: getValueIfDefined<string>(securityCredentials?.[SKL.apiKey]),
+      apiKey,
       basePath: getValueIfDefined<string>(account[SKL.overrideBasePath]),
       username: getValueIfDefined<string>(securityCredentials?.[SKL.clientId]),
       password: getValueIfDefined<string>(securityCredentials?.[SKL.clientSecret]),
     };
-    const response = await openApiExecutor.executeOperation(operationId, configuration, operationArgs)
-      .catch(async(error: Error | AxiosError): Promise<any> => {
-        if (axios.isAxiosError(error) && await this.isInvalidTokenError(error, integrationId) && securityCredentials) {
-          const refreshedConfiguration = await this.refreshSecurityCredentials(
-            securityCredentials,
-            integrationId,
-            account,
-          );
-          return await openApiExecutor.executeOperation(operationId, refreshedConfiguration, operationArgs);
-        }
+    let response;
+    try {
+      const additionalHeaders = this.getHeadersFromRuntimeCredentials(runtimeAuthorization) as any;
+      let executeOperationOptions: AxiosRequestConfig| undefined;
+      if (
+        additionalHeaders &&
+        typeof additionalHeaders === 'object' &&
+        !Array.isArray(additionalHeaders) &&
+        Object.keys(additionalHeaders).length > 0
+      ) {
+        executeOperationOptions = { headers: additionalHeaders };
+      }
+      response = await openApiExecutor.executeOperation(operationId, configuration, operationArgs, executeOperationOptions);
+    } catch (error) {
+      if (axios.isAxiosError(error) && (await this.isInvalidTokenError(error, integrationId)) && securityCredentials) {
+        const refreshedConfiguration = await this.refreshSecurityCredentials(
+          securityCredentials,
+          integrationId,
+          account,
+        );
+        response = await openApiExecutor.executeOperation(operationId, refreshedConfiguration, operationArgs);
+      } else {
         throw error;
-      });
+      }
+    }
     return response;
+  }
+
+  private getHeadersFromRuntimeCredentials(runtimeCredentials: JSONObject): JSONObject {
+    let returnValue: JSONObject = {};
+    if (
+      runtimeCredentials.headers &&
+      typeof runtimeCredentials.headers === 'object' &&
+      Object.keys(runtimeCredentials.headers).length > 0 &&
+      !Array.isArray(runtimeCredentials.headers)
+    ) {
+      returnValue = runtimeCredentials.headers;
+    }
+    return returnValue;
+  }
+
+  private getAuthorizationHeaderFromRuntimeCredentials(runtimeCredentials: JSONObject): string | undefined {
+    const headers = this.getHeadersFromRuntimeCredentials(runtimeCredentials);
+    if (headers && 'Authorization' in headers) {
+      const authorizationHeader = headers['Authorization'];
+      if (typeof authorizationHeader === 'string') {
+        return authorizationHeader;
+      }
+    }
+    return undefined;
   }
 
   private async isInvalidTokenError(error: AxiosError, integrationId: string): Promise<boolean> {
