@@ -53,7 +53,7 @@ import {
   getValueIfDefined,
   ensureArray,
 } from './util/Util';
-import { SKL, SHACL, RDFS, SKL_ENGINE, XSD, RDF } from './util/Vocabularies';
+import { SKL, SHACL, RDFS, SKL_ENGINE, XSD, RDF, SKLSO_PROPERTY, SKLSO_DATA_NAMESPACE } from './util/Vocabularies';
 import { GroupByOptions, GroupByResponse } from './storage/GroupOptionTypes';
 import { AxiosRequestConfig } from 'axios';
 
@@ -630,15 +630,49 @@ export class SKLEngine {
     return args;
   }
 
+  
+
+  private replaceTypeAndId(entity: Record<string, any>): Record<string, any> {
+    if (typeof entity !== 'object') {
+      throw new Error('Entity is not an object');
+    }
+    const clonedEntity = structuredClone(entity);
+    if (clonedEntity[SKLSO_PROPERTY.type]) {
+        clonedEntity['@type'] = clonedEntity[SKLSO_PROPERTY.type];
+    }
+    if (clonedEntity[SKLSO_PROPERTY.identifier]) {
+        clonedEntity['@id'] = SKLSO_DATA_NAMESPACE + clonedEntity[SKLSO_PROPERTY.identifier];
+    }
+    return clonedEntity;
+  }
+
   private async updateEntityFromVerbArgs(args: Record<string, any>): Promise<void> {
-    await this.update(args.id ?? args.ids, args.attributes);
+    let ids = args.id ?? args.ids;
+    if (!Array.isArray(ids)) {
+      ids = [ids];
+    }
+    ids = ids.map((id: string) => `${SKLSO_DATA_NAMESPACE}${id}`);
+    await this.update(ids, args.attributes);
   }
 
   private async saveEntityOrEntitiesFromVerbArgs(args: Record<string, any>): Promise<OrArray<Entity>> {
+    
+    if (args.entity && typeof args.entity === 'object') {
+        args.entity = this.replaceTypeAndId(args.entity);
+    }
+    if (args.entities && Array.isArray(args.entities)) {
+        args.entities = args.entities.map(this.replaceTypeAndId);
+    }
     return await this.save(args.entity ?? args.entities);
   }
 
   private async destroyEntityOrEntitiesFromVerbArgs(args: Record<string, any>): Promise<OrArray<Entity>> {
+    if (args.entity && typeof args.entity === 'object') {
+      args.entity = this.replaceTypeAndId(args.entity);
+    }
+    if (args.entities && Array.isArray(args.entities)) {
+      args.entities = args.entities.map(this.replaceTypeAndId);
+    }
     return await this.destroy(args.entity ?? args.entities);
   }
 
