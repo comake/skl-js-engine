@@ -9,3 +9,4 @@ rmlmapper-5.0.0-r362-all.jar
 tmp
 comake-skl-js-engine-*.tgz
 test/deploy/package-lock.json
+.env
