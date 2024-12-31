@@ -97,6 +97,14 @@ export const SKL = createNamespace(SKL_NAMESPACE, [
   'headers',
 ]);
 
+export const SKLSO_DATA_NAMESPACE = 'https://skl.so/d/';
+
+export const SKLSO_PROPERTY_NAMESPACE = 'https://skl.so/p/';
+export const SKLSO_PROPERTY = createNamespace(SKLSO_PROPERTY_NAMESPACE, [
+  'type',
+  'identifier',
+]);
+
 export const SKL_ENGINE_NAMESPACE = 'https://standardknowledge.com/ontologies/skl-engine/';
 export const SKL_ENGINE = createNamespace(SKL_ENGINE_NAMESPACE, [
   'update',
