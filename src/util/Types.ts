@@ -138,59 +138,61 @@ export type PathTypes =
 
 export type PathShape = OrArray<PathTypes>;
 
-export type Verb = NodeObject & {
+export type Capability = NodeObject & {
   '@id': string;
-  '@type': typeof SKL.Verb;
+  '@type': typeof SKL.Capability;
   [RDFS.label]?: ValueObject<string>;
-  [SKL.parametersContext]?: ValueObject<JSONObject>;
-  [SKL.parameters]?: NodeShape | ReferenceNodeObject;
-  [SKL.returnValue]?: NodeShape | ReferenceNodeObject;
+  [SKL.inputContext]?: ValueObject<JSONObject>;
+  [SKL.inputs]?: NodeShape | ReferenceNodeObject;
+  [SKL.outputContext]?: ValueObject<JSONObject>;
+  [SKL.outputs]?: NodeShape | ReferenceNodeObject;
 };
 
-export interface SeriesVerbArgs extends JSONObject {
-  originalVerbParameters: JSONObject;
-  previousVerbReturnValue: JSONObject;
+export interface SeriesCapabilityArgs extends JSONObject {
+  originalCapabilityParameters: JSONObject;
+  previousCapabilityReturnValue: JSONObject;
 }
 
 export type Mapping = NodeObject & {
   [SKL.preProcessingMapping]?: OrArray<TriplesMap>;
   [SKL.preProcessingMappingFrame]?: ValueObject<JSONObject>;
-  [SKL.parameterMapping]?: OrArray<TriplesMap>;
-  [SKL.parameterMappingFrame]?: ValueObject<JSONObject>;
-  [SKL.parameterReference]?: string | ValueObject<string>;
+  [SKL.inputsMapping]?: OrArray<TriplesMap>;
+  [SKL.inputsMappingFrame]?: ValueObject<JSONObject>;
+  [SKL.inputsReference]?: string | ValueObject<string>;
   [SKL.operationId]?: ValueObject<string>;
   [SKL.operationMapping]?: TriplesMap;
-  [SKL.verbId]?: ValueObject<string> | string;
-  [SKL.verbMapping]?: TriplesMap;
-  [SKL.returnValueMapping]?: OrArray<TriplesMap>;
-  [SKL.returnValueFrame]?: ValueObject<JSONObject>;
-  [SKL.series]?: { '@list': VerbMapping[] } | (RdfList<VerbMapping> & NodeObject);
-  [SKL.parallel]?: OrArray<VerbMapping>;
+  [SKL.capabilityId]?: ValueObject<string> | string;
+  [SKL.capabilityMapping]?: TriplesMap;
+  [SKL.outputsMapping]?: OrArray<TriplesMap>;
+  [SKL.outputsMappingFrame]?: ValueObject<JSONObject>;
+  [SKL.outputsReference]?: string | ValueObject<string>;
+  [SKL.series]?: { '@list': CapabilityMapping[] } | (RdfList<CapabilityMapping> & NodeObject);
+  [SKL.parallel]?: OrArray<CapabilityMapping>;
 };
 
-export type VerbMapping = Mapping & {
-  [SKL.verb]: ReferenceNodeObject;
-  [SKL.noun]?: ReferenceNodeObject;
-  [SKL.integration]?: ReferenceNodeObject;
+export type CapabilityMapping = Mapping & {
+  [SKL.capability]: ReferenceNodeObject;
+  [SKL.object]?: ReferenceNodeObject;
+  [SKL.integratedProduct]?: ReferenceNodeObject;
 };
 
-export type MappingWithParameterMapping = VerbMapping &
-Required<Pick<VerbMapping, typeof SKL.parameterMapping | typeof SKL.parameterMappingFrame>>;
+export type MappingWithInputs = CapabilityMapping &
+Required<Pick<CapabilityMapping, typeof SKL.inputs | typeof SKL.inputsMapping>>;
 
-export type MappingWithParameterReference = VerbMapping &
-Required<Pick<VerbMapping, typeof SKL.parameterReference>>;
+export type MappingWithInputsReference = CapabilityMapping &
+Required<Pick<CapabilityMapping, typeof SKL.inputsReference>>;
 
-export type MappingWithReturnValueMapping = VerbMapping &
-Required<Pick<VerbMapping, typeof SKL.returnValueMapping | typeof SKL.returnValueFrame>>;
+export type MappingWithOutputsMapping = CapabilityMapping &
+Required<Pick<CapabilityMapping, typeof SKL.outputsMapping | typeof SKL.outputsMappingFrame>>;
 
-export type MappingWithSeries = VerbMapping &
-Required<Pick<VerbMapping, typeof SKL.series>>;
+export type MappingWithSeries = CapabilityMapping &
+Required<Pick<CapabilityMapping, typeof SKL.series>>;
 
-export type MappingWithParallel = VerbMapping &
-Required<Pick<VerbMapping, typeof SKL.parallel>>;
+export type MappingWithParallel = CapabilityMapping &
+Required<Pick<CapabilityMapping, typeof SKL.parallel>>;
 
 export type TriggerMapping = Mapping & {
-  [SKL.integration]: ReferenceNodeObject;
+  [SKL.integratedProduct]: ReferenceNodeObject;
 };
 
 export type PossibleArrayFieldValues =
@@ -235,36 +237,36 @@ export interface OperationResponse extends JSONObject {
   operationParameters: JSONObject;
 }
 
-export interface VerbConfig {
+export interface CapabilityConfig {
   /**
    * Callbacks to execute upon events.
    * If global callbacks are provided, both are executed.
    */
   callbacks?: Callbacks;
   /**
-   * When true, disables validation of verb parameters and
+   * When true, disables validation of capability parameters and
    * return values according to schemas. Overrides the global setting.
    */
   readonly disableValidation?: boolean;
   /**
    * An object containing files keyed on their title that can be used in mappings.
-   * Merged with the global setting. The verb config taking prededence in the case of overlapping names.
+   * Merged with the global setting. The capability config taking prededence in the case of overlapping names.
    */
   readonly inputFiles?: Record<string, string>;
   /**
    * Manually defined functions which can be used in mappings.
-   * Merged with the global setting. The verb config taking prededence in the case of overlapping names.
+   * Merged with the global setting. The capability config taking prededence in the case of overlapping names.
    */
   readonly functions?: Record<string, (args: any | any[]) => any>;
 }
 
 export interface Callbacks {
   /**
-   * Callback run when a Verb starts being executed
+   * Callback run when a Capability starts being executed
    */
-  onVerbStart?: (verb: string, args: Record<string, any>) => void;
+  onCapabilityStart?: (capability: string, args: Record<string, any>) => void;
   /**
-   * Callback run when a Verb is finished being executed
+   * Callback run when a Capability is finished being executed
    */
-  onVerbEnd?: (verb: string, returnValue: Record<string, any>) => void;
+  onCapabilityEnd?: (capability: string, returnValue: Record<string, any>) => void;
 }

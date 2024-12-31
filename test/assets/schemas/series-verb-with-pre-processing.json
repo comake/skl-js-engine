@@ -23,22 +23,25 @@
     "shacl:minCount": { "@type": "xsd:integer" },
     "shacl:targetClass": { "@type": "@id" },
     "shacl:path": { "@type": "@id" },
-    "skl": "https://standardknowledge.com/ontologies/core/",
-    "skl:integration": { "@type": "@id" },
+    "skl": "https://skl.so/",
+    "skl:integratedProduct": { "@type": "@id" },
     "skl:account": { "@type": "@id" },
     "skl:openApiDescription": { "@type": "@json" },
-    "skl:parametersContext": { "@type": "@json" },
-    "skl:returnValueFrame": { "@type": "@json" },
+    "skl:inputsContext": { "@type": "@json" },
+    "skl:outputsContext": { "@type": "@json" },
     "skl:noun": { "@type": "@id" },
+    "skl:inputsMapping": { "@type": "@id" },
+    "skl:inputsMappingFrame": { "@type": "@json" },
+    "skl:outputsMapping": { "@type": "@id" },
+    "skl:outputsMappingFrame": { "@type": "@json" },
+    "skl:operationMapping": { "@type": "@id" },
+    "skl:capabilityMapping": { "@type": "@id" },
+    "skl:capabilityId": { "@type": "@id" },
     "skl:preProcessingMapping": { "@type": "@id" },
     "skl:preProcessingMappingFrame": { "@type": "@json" },
-    "skl:parameterMapping": { "@type": "@id" },
-    "skl:parameterMappingFrame": { "@type": "@json" },
-    "skl:returnValueMapping": { "@type": "@id" },
-    "skl:operationMapping": { "@type": "@id" },
-    "skl:verbMapping": { "@type": "@id" },
-    "integration": { "@id": "skl:integration", "@type": "@id" },
-    "verb": { "@id": "skl:verb", "@type": "@id" },
+    "skl:series": { "@container": "@list" },
+    "integratedProduct": { "@id": "skl:integratedProduct", "@type": "@id" },
+    "capability": { "@id": "skl:capability", "@type": "@id" },
     "rml:referenceFormulation": { "@type": "@id" },
     "rr:parentTriplesMap": { "@type": "@id" },
     "rr:predicate": { "@type": "@id" },
@@ -47,22 +50,22 @@
     "rr:datatype": { "@type": "@id" },
     "rr:subject": { "@type": "@id" },
     "example": "https://example.com/",
-    "skl:series": { "@container": "@list" }
+    "skl:verbId": "skl:capabilityId"
   },
   "@graph": [
     {
       "@id": "https://example.com/parseAndSaveLinksFromEntity",
-      "@type": "https://standardknowledge.com/ontologies/core/Verb",
+      "@type": "https://skl.so/Capability",
       "label": "parseAndSaveLinksFromEntity",
-      "skl:parametersContext": {
+      "skl:inputsContext": {
         "entity": {
           "@id": "https://example.com/entity",
           "@type": "@id"
         }
       },
-      "skl:parameters": {
+      "skl:inputs": {
         "@type": "shacl:NodeShape",
-        "shacl:targetClass": "skl:Parameters",
+        "shacl:targetClass": "skl:Inputs",
         "shacl:property": [
           {
             "shacl:maxCount": 1,
@@ -76,8 +79,8 @@
     },
     {
       "@id": "https://example.com/parseAndSaveLinksFromEntityMapping",
-      "@type": "https://standardknowledge.com/ontologies/core/CompositeMapping",
-      "verb": "https://example.com/parseAndSaveLinksFromEntity",
+      "@type": "https://skl.so/CompositeMapping",
+      "capability": "https://example.com/parseAndSaveLinksFromEntity",
       "skl:series": [
         {
           "skl:preProcessingMapping": {
@@ -112,7 +115,7 @@
               }
             }
           },
-          "skl:parameterMapping": {
+          "skl:inputsMapping": {
             "@type": "rr:TriplesMap",
             "rml:logicalSource": {
               "@type": "rml:LogicalSource",
@@ -141,7 +144,7 @@
               }
             ]
           },
-          "skl:parameterMappingFrame": {
+          "skl:inputsMappingFrame": {
             "@context": {
               "noun": {
                 "@id": "https://example.com/noun",
@@ -154,7 +157,7 @@
             },
             "@id": "https://example.com/mappingSubject"
           },
-          "skl:verbMapping": {
+          "skl:capabilityMapping": {
             "@type": "rr:TriplesMap",
             "rml:logicalSource": {
               "@type": "rml:LogicalSource",
@@ -166,7 +169,7 @@
               {
                 "@type": "rr:PredicateObjectMap",
                 "rr:object": "https://example.com/getLinkParsableText",
-                "rr:predicate": "skl:verbId"
+                "rr:predicate": "skl:capabilityId"
               }
             ],
             "rr:subjectMap": {
@@ -174,7 +177,7 @@
               "rr:termType": "rr:BlankNode"
             }
           },
-          "skl:returnValueMapping": {
+          "skl:outputsMapping": {
             "@type": "rr:TriplesMap",
             "rml:logicalSource": {
               "@type": "rml:LogicalSource",
@@ -215,7 +218,7 @@
               "rr:termType": "rr:BlankNode"
             }
           },
-          "skl:returnValueFrame": {
+          "skl:outputsMappingFrame": {
             "@context": {
               "links": {
                 "@id": "https://example.com/links",
@@ -226,7 +229,7 @@
           }
         },
         {
-          "skl:parameterMapping": {
+          "skl:inputsMapping": {
             "@type": "rr:TriplesMap",
             "rml:logicalSource": {
               "@type": "rml:LogicalSource",
@@ -278,7 +281,7 @@
             ],
             "rr:subject": "https://example.com/mappingSubject"
           },
-          "skl:parameterMappingFrame": {
+          "skl:inputsMappingFrame": {
             "@context": {
               "id": {
                 "@id": "https://example.com/id",
@@ -291,7 +294,7 @@
             },
             "@id": "https://example.com/mappingSubject"
           },
-          "skl:verbMapping": {
+          "skl:capabilityMapping": {
             "@type": "rr:TriplesMap",
             "rml:logicalSource": {
               "@type": "rml:LogicalSource",
@@ -302,7 +305,7 @@
             "rr:predicateObjectMap": [
               {
                 "@type": "rr:PredicateObjectMap",
-                "rr:predicate": "skl:verbId",
+                "rr:predicate": "skl:capabilityId",
                 "rr:objectMap": {
                   "@type": "rr:ObjectMap",
                   "rr:constant": "https://standardknowledge.com/ontologies/skl-engine/update"
@@ -319,9 +322,9 @@
     },
     {
       "@id": "https://example.com/getLinkParsableText",
-      "@type": "https://standardknowledge.com/ontologies/core/Verb",
+      "@type": "https://skl.so/Capability",
       "label": "getLinkParsableText",
-      "skl:parametersContext": {
+      "skl:inputsContext": {
         "entity": {
           "@id": "https://example.com/entity",
           "@type": "@id"
@@ -331,9 +334,9 @@
           "@type": "http://www.w3.org/2001/XMLSchema#string"
         }
       },
-      "skl:parameters": {
+      "skl:inputs": {
         "@type": "shacl:NodeShape",
-        "shacl:targetClass": "skl:Parameters",
+        "shacl:targetClass": "skl:Inputs",
         "shacl:property": [
           {
             "shacl:maxCount": 1,
@@ -350,7 +353,7 @@
           }
         ]
       },
-      "skl:returnValue": {
+      "skl:outputs": {
         "@type": "shacl:NodeShape",
         "shacl:closed": false,
         "shacl:property": [
@@ -365,11 +368,11 @@
     },
     {
       "@id": "https://example.com/data/34",
-      "@type": "https://standardknowledge.com/ontologies/core/VerbNounMapping",
-      "verb": "https://example.com/getLinkParsableText",
+      "@type": "https://skl.so/CapabilityNounMapping",
+      "capability": "https://example.com/getLinkParsableText",
       "skl:noun": "https://schema.org/BlogPosting",
       "label": "getLinkParsableTextToBlogPosting",
-      "skl:returnValueMapping": {
+      "skl:outputsMapping": {
         "@type": "rr:TriplesMap",
         "rml:logicalSource": {
           "@type": "rml:LogicalSource",
@@ -393,12 +396,68 @@
           "rr:termType": "rr:BlankNode"
         }
       },
-      "skl:returnValueFrame": {
+      "skl:outputsMappingFrame": {
         "@context": {
           "text": {
             "@id": "https://example.com/text",
             "@type": "http://www.w3.org/2001/XMLSchema#string"
           }
+        }
+      }
+    },
+    {
+      "@id": "https://example.com/data/1234",
+      "@type": "https://skl.so/SeriesVerbWithPreProcessing",
+      "label": "Series Verb with Pre-Processing",
+      "skl:integratedProduct": "https://example.com/integrations/Dropbox",
+      "skl:inputsMapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
+        },
+        "rr:subject": "https://example.com/mappingSubject",
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:object": "https://example.com/getRootCursor",
+            "rr:predicate": "skl:capabilityId"
+          }
+        ]
+      },
+      "skl:inputsMappingFrame": {
+        "@context": {
+          "id": {
+            "@id": "https://example.com/id",
+            "@type": "http://www.w3.org/2001/XMLSchema#string"
+          },
+          "attributes": {
+            "@type": "@id",
+            "@id": "https://example.com/attributes"
+          }
+        },
+        "@id": "https://example.com/mappingSubject"
+      },
+      "skl:capabilityMapping": {
+        "@type": "rr:TriplesMap",
+        "rml:logicalSource": {
+          "@type": "rml:LogicalSource",
+          "rml:iterator": "$",
+          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
+          "rml:source": "input.json"
+        },
+        "rr:predicateObjectMap": [
+          {
+            "@type": "rr:PredicateObjectMap",
+            "rr:object": "https://example.com/getRootCursor",
+            "rr:predicate": "skl:capabilityId"
+          }
+        ],
+        "rr:subjectMap": {
+          "@type": "rr:SubjectMap",
+          "rr:termType": "rr:BlankNode"
         }
       }
     }

@@ -28,7 +28,7 @@ describeIf('docker', 'An SKL engine backed by a memory query adapter', (): void 
     const schemas = await frameAndCombineSchemas(schemaFiles, env);
     const engine = new SKLEngine({ type: 'memory' });
     await engine.save(schemas);
-    const eventsCollection = await engine.verb.getEvents<NodeObject>({
+    const eventsCollection = await engine.capability.getEvents<NodeObject>({
       account: 'https://example.com/data/TicketmasterAccount1',
       city: 'Atlanta',
       pageSize: 20,

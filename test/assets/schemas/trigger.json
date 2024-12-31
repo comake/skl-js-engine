@@ -23,19 +23,25 @@
     "shacl:minCount": { "@type": "xsd:integer" },
     "shacl:targetClass": { "@type": "@id" },
     "shacl:path": { "@type": "@id" },
-    "skl": "https://standardknowledge.com/ontologies/core/",
-    "skl:integration": { "@type": "@id" },
+    "skl": "https://skl.so/",
+    "skl:integratedProduct": { "@type": "@id" },
     "skl:account": { "@type": "@id" },
     "skl:openApiDescription": { "@type": "@json" },
-    "skl:parametersContext": { "@type": "@json" },
+    "skl:inputsContext": { "@type": "@json" },
+    "skl:outputsContext": { "@type": "@json" },
     "skl:noun": { "@type": "@id" },
-    "skl:parameterMapping": { "@type": "@id" },
-    "skl:parameterMappingFrame": { "@type": "@json" },
-    "skl:returnValueMapping": { "@type": "@id" },
+    "skl:inputsMapping": { "@type": "@id" },
+    "skl:inputsMappingFrame": { "@type": "@json" },
+    "skl:outputsMapping": { "@type": "@id" },
+    "skl:outputsMappingFrame": { "@type": "@json" },
     "skl:operationMapping": { "@type": "@id" },
-    "skl:verbMapping": { "@type": "@id" },
-    "integration": { "@id": "skl:integration", "@type": "@id" },
-    "verb": { "@id": "skl:verb", "@type": "@id" },
+    "skl:capabilityMapping": { "@type": "@id" },
+    "skl:capabilityId": { "@type": "@id" },
+    "skl:preProcessingMapping": { "@type": "@id" },
+    "skl:preProcessingMappingFrame": { "@type": "@json" },
+    "skl:series": { "@container": "@list" },
+    "integratedProduct": { "@id": "skl:integratedProduct", "@type": "@id" },
+    "capability": { "@id": "skl:capability", "@type": "@id" },
     "rml:referenceFormulation": { "@type": "@id" },
     "rr:parentTriplesMap": { "@type": "@id" },
     "rr:predicate": { "@type": "@id" },
@@ -43,159 +49,43 @@
     "rr:termType": { "@type": "@id" },
     "rr:datatype": { "@type": "@id" },
     "rr:subject": { "@type": "@id" },
-    "example": "https://example.com/"
+    "example": "https://example.com/",
+    "skl:verbId": "skl:capabilityId"
   },
   "@graph": [
     {
-      "@id": "https://example.com/data/1234",
-      "@type": "https://standardknowledge.com/ontologies/core/TriggerVerbMapping",
-      "skl:integration": "https://example.com/integrations/Dropbox",
-      "skl:parameterMapping": {
-        "@type": "rr:TriplesMap",
-        "rml:logicalSource": {
-          "@type": "rml:LogicalSource",
-          "rml:iterator": "$",
-          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-          "rml:source": "input.json"
-        },
-        "rr:predicateObjectMap": [
-          {
-            "@type": "rr:PredicateObjectMap",
-            "rr:object": "https://example.com/data/DropboxAccount1",
-            "rr:predicate": "example:account"
-          },
-          {
-            "@type": "rr:PredicateObjectMap",
-            "rr:objectMap": {
-              "@type": "rr:ObjectMap",
-              "rr:constant": ""
-            },
-            "rr:predicate": "example:path"
-          }
-        ],
-        "rr:subjectMap": {
-          "@type": "rr:SubjectMap",
-          "rr:termType": "rr:BlankNode"
-        }
-      },
-      "skl:parameterMappingFrame": {
-        "@context": {
-          "account": "https://example.com/account",
-          "path": "https://example.com/path"
-        }
-      },
-      "skl:verbMapping": {
-        "@type": "rr:TriplesMap",
-        "rml:logicalSource": {
-          "@type": "rml:LogicalSource",
-          "rml:iterator": "$",
-          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-          "rml:source": "input.json"
-        },
-        "rr:predicateObjectMap": [
-          {
-            "@type": "rr:PredicateObjectMap",
-            "rr:object": "https://example.com/getRootCursor",
-            "rr:predicate": "skl:verbId"
-          }
-        ],
-        "rr:subjectMap": {
-          "@type": "rr:SubjectMap",
-          "rr:termType": "rr:BlankNode"
-        }
-      }
-    },
-    {
-      "@id": "https://example.com/getRootCursor",
-      "@type": "https://standardknowledge.com/ontologies/core/Verb",
-      "label": "getFolderCursor",
-      "skl:parametersContext": {
-        "path": {
-          "@id": "https://example.com/path",
-          "@type": "http://www.w3.org/2001/XMLSchema#string"
-        },
-        "account": {
-          "@id": "https://example.com/account",
+      "@id": "https://example.com/trigger",
+      "@type": "https://skl.so/Capability",
+      "label": "trigger",
+      "skl:inputsContext": {
+        "integration": {
+          "@id": "https://example.com/integration",
           "@type": "@id"
+        },
+        "payload": {
+          "@id": "https://example.com/payload",
+          "@type": "@json"
         }
       },
-      "skl:parameters": {
+      "skl:inputs": {
         "@type": "shacl:NodeShape",
-        "shacl:targetClass": "https://standardknowledge.com/ontologies/core/Parameters",
+        "shacl:targetClass": "skl:Inputs",
         "shacl:property": [
           {
-            "shacl:datatype": "xsd:string",
             "shacl:maxCount": 1,
-            "shacl:path": "https://example.com/path"
+            "shacl:minCount": 1,
+            "shacl:path": "https://example.com/integration",
+            "shacl:name": "integration",
+            "shacl:nodeKind": { "@id": "shacl:IRI" }
           },
           {
             "shacl:maxCount": 1,
             "shacl:minCount": 1,
-            "shacl:path": "https://example.com/account",
-            "shacl:nodeKind": { "@id": "shacl:IRI" }
+            "shacl:path": "https://example.com/payload",
+            "shacl:name": "payload",
+            "shacl:datatype": "rdf:JSON"
           }
         ]
-      }
-    },
-    {
-      "@id": "https://example.com/data/224",
-      "@type": "https://standardknowledge.com/ontologies/core/VerbIntegrationMapping",
-      "verb": "https://example.com/getRootCursor",
-      "integration": "https://example.com/integrations/Dropbox",
-      "skl:operationMapping": {
-        "@type": "rr:TriplesMap",
-        "rml:logicalSource": {
-          "@type": "rml:LogicalSource",
-          "rml:iterator": "$",
-          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-          "rml:source": "input.json"
-        },
-        "rr:predicateObjectMap": [
-          {
-            "@type": "rr:PredicateObjectMap",
-            "rr:objectMap": {
-              "@type": "rr:ObjectMap",
-              "rr:constant": "FilesListFolderGetLatestCursor"
-            },
-            "rr:predicate": "skl:operationId"
-          }
-        ],
-        "rr:subjectMap": {
-          "@type": "rr:SubjectMap",
-          "rr:termType": "rr:BlankNode"
-        }
-      },
-      "skl:parameterMapping": {
-        "@type": "rr:TriplesMap",
-        "rml:logicalSource": {
-          "@type": "rml:LogicalSource",
-          "rml:iterator": "$",
-          "rml:referenceFormulation": "http://semweb.mmlab.be/ns/ql#JSONPath",
-          "rml:source": "input.json"
-        },
-        "rr:predicateObjectMap": [
-          {
-            "@type": "rr:PredicateObjectMap",
-            "rr:objectMap": {
-              "@type": "rr:ObjectMap",
-              "rr:datatype": "xsd:string",
-              "rml:reference": "path"
-            },
-            "rr:predicate": "example:path"
-          }
-        ],
-        "rr:subjectMap": {
-          "@type": "rr:SubjectMap",
-          "rr:termType": "rr:BlankNode"
-        }
-      },
-      "skl:parameterMappingFrame": {
-        "@context": {
-          "path": {
-            "@id": "https://example.com/path",
-            "@type": "http://www.w3.org/2001/XMLSchema#string"
-          }
-        }
       }
     }
   ]

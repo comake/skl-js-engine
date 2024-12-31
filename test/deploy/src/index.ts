@@ -15,7 +15,7 @@ async function run(): Promise<void> {
   const schemas = await frameAndCombineSchemas(schemaFiles, env);
   const engine = new SKLEngine({ type: 'memory' });
   await engine.save(schemas);
-  const eventsCollection = await engine.verb.getEvents({
+  const eventsCollection = await engine.capability.getEvents({
     account: 'https://example.com/data/TicketmasterAccount1',
     city: 'Atlanta',
     pageSize: 20,

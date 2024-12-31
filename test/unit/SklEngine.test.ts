@@ -46,25 +46,25 @@ import { generateAwsSignatureV4 } from "../util/generateAwsSignaturev4";
 
 const expectedGetFileResponse = {
   '@id': 'https://example.com/data/abc123',
-  '@type': 'https://standardknowledge.com/ontologies/core/File',
-  'https://standardknowledge.com/ontologies/core/deleted': {
+  '@type': 'https://skl.so/File',
+  'https://skl.so/deleted': {
     '@type': 'http://www.w3.org/2001/XMLSchema#boolean',
     '@value': false,
   },
-  'https://standardknowledge.com/ontologies/core/integration': {
+  'https://skl.so/integration': {
     '@id': 'https://example.com/integrations/Dropbox',
   },
-  'https://standardknowledge.com/ontologies/core/isWeblink': {
+  'https://skl.so/isWeblink': {
     '@type': 'http://www.w3.org/2001/XMLSchema#boolean',
     '@value': false,
   },
-  'https://standardknowledge.com/ontologies/core/mimeType': 'text/plain',
+  'https://skl.so/mimeType': 'text/plain',
   'http://www.w3.org/2000/01/rdf-schema#label': 'Prime_Numbers.txt',
-  'https://standardknowledge.com/ontologies/core/size': {
+  'https://skl.so/size': {
     '@type': 'http://www.w3.org/2001/XMLSchema#integer',
     '@value': 7212,
   },
-  'https://standardknowledge.com/ontologies/core/sourceId': 'id:12345',
+  'https://skl.so/sourceId': 'id:12345',
 };
 
 const incorrectReturnValueMapping = {
@@ -79,13 +79,13 @@ const incorrectReturnValueMapping = {
     {
       '@type': 'http://www.w3.org/ns/r2rml#PredicateObjectMap',
       'http://www.w3.org/ns/r2rml#object': { '@id': 'https://example.com/integrations/Dropbox' },
-      'http://www.w3.org/ns/r2rml#predicate': { '@id': 'https://standardknowledge.com/ontologies/core/Integration' },
+      'http://www.w3.org/ns/r2rml#predicate': { '@id': 'https://skl.so/Integration' },
     },
   ],
   'http://www.w3.org/ns/r2rml#subjectMap': {
     '@type': 'http://www.w3.org/ns/r2rml#SubjectMap',
     'http://www.w3.org/ns/r2rml#template': 'https://example.com/data/abc123',
-    'http://www.w3.org/ns/r2rml#class': { '@id': 'https://standardknowledge.com/ontologies/core/File' },
+    'http://www.w3.org/ns/r2rml#class': { '@id': 'https://skl.so/File' },
   },
 };
 
@@ -114,7 +114,7 @@ describe("SKLEngine", (): void => {
         // @ts-ignore
         "https://example.com/calculateAws4Header": async (args: any) => {
           const generateSklStringWithSuffix = (suffix: string): string =>
-            `https://standardknowledge.com/ontologies/core/${suffix}`;
+            `https://skl.so/${suffix}`;
           const getSklPropertyBySuffix = (suffix: string): any => {
             return args[generateSklStringWithSuffix(suffix)];
           };
@@ -164,7 +164,7 @@ describe("SKLEngine", (): void => {
       };
       const sklEngine = new SKLEngine({ type: "memory", functions });
       await sklEngine.save(schemas);
-      const response = await sklEngine.verb.getFunctions({
+      const response = await sklEngine.capability.getFunctions({
         account: "https://example.com/data/AwsLambdaAccount1",
       });
       expect(response).toEqual({});
@@ -200,8 +200,8 @@ describe("SKLEngine", (): void => {
 
     beforeEach(async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://standardknowledge.com/ontologies/core/Share',
-        '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+        '@id': 'https://skl.so/Share',
+        '@type': 'https://skl.so/Verb',
       }];
       sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
@@ -246,72 +246,72 @@ describe("SKLEngine", (): void => {
     describe('find', (): void => {
       it('delegates calls to find to the query adapter.', async(): Promise<void> => {
         const findSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'find');
-        await expect(sklEngine.find({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }})).resolves.toEqual(schemas[0]);
+        await expect(sklEngine.find({ where: { id: 'https://skl.so/Share' }})).resolves.toEqual(schemas[0]);
         expect(findSpy).toHaveBeenCalledTimes(1);
-        expect(findSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }});
+        expect(findSpy).toHaveBeenCalledWith({ where: { id: 'https://skl.so/Share' }});
       });
 
       it('throws an error if there is no schema matching the query during find.', async(): Promise<void> => {
         const findSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'find');
-        await expect(sklEngine.find({ where: { id: 'https://standardknowledge.com/ontologies/core/Send' }})).rejects.toThrow(
-          'No schema found with fields matching {"where":{"id":"https://standardknowledge.com/ontologies/core/Send"}}',
+        await expect(sklEngine.find({ where: { id: 'https://skl.so/Send' }})).rejects.toThrow(
+          'No schema found with fields matching {"where":{"id":"https://skl.so/Send"}}',
         );
         expect(findSpy).toHaveBeenCalledTimes(1);
-        expect(findSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Send' }});
+        expect(findSpy).toHaveBeenCalledWith({ where: { id: 'https://skl.so/Send' }});
       });
     });
 
     describe('findBy', (): void => {
       it('delegates calls to findBy to the query adapter.', async(): Promise<void> => {
         const findBySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'findBy');
-        await expect(sklEngine.findBy({ id: 'https://standardknowledge.com/ontologies/core/Share' })).resolves.toEqual(schemas[0]);
+        await expect(sklEngine.findBy({ id: 'https://skl.so/Share' })).resolves.toEqual(schemas[0]);
         expect(findBySpy).toHaveBeenCalledTimes(1);
-        expect(findBySpy).toHaveBeenCalledWith({ id: 'https://standardknowledge.com/ontologies/core/Share' });
+        expect(findBySpy).toHaveBeenCalledWith({ id: 'https://skl.so/Share' });
       });
 
       it('throws an error if there is no schema matching the query during findBy.', async(): Promise<void> => {
         const findBySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'findBy');
-        await expect(sklEngine.findBy({ id: 'https://standardknowledge.com/ontologies/core/Send' })).rejects.toThrow(
-          'No schema found with fields matching {"id":"https://standardknowledge.com/ontologies/core/Send"}',
+        await expect(sklEngine.findBy({ id: 'https://skl.so/Send' })).rejects.toThrow(
+          'No schema found with fields matching {"id":"https://skl.so/Send"}',
         );
         expect(findBySpy).toHaveBeenCalledTimes(1);
-        expect(findBySpy).toHaveBeenCalledWith({ id: 'https://standardknowledge.com/ontologies/core/Send' });
+        expect(findBySpy).toHaveBeenCalledWith({ id: 'https://skl.so/Send' });
       });
     });
 
     describe('findAll', (): void => {
       it('delegates calls to findAll to the query adapter.', async(): Promise<void> => {
         const findAllSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'findAll');
-        await expect(sklEngine.findAll({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }})).resolves.toEqual([ schemas[0] ]);
+        await expect(sklEngine.findAll({ where: { id: 'https://skl.so/Share' }})).resolves.toEqual([ schemas[0] ]);
         expect(findAllSpy).toHaveBeenCalledTimes(1);
-        expect(findAllSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }});
+        expect(findAllSpy).toHaveBeenCalledWith({ where: { id: 'https://skl.so/Share' }});
       });
     });
 
     describe('findAllBy', (): void => {
       it('delegates calls to findAllBy to the query adapter.', async(): Promise<void> => {
         const findAllBySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'findAllBy');
-        await expect(sklEngine.findAllBy({ id: 'https://standardknowledge.com/ontologies/core/Share' })).resolves.toEqual([ schemas[0] ]);
+        await expect(sklEngine.findAllBy({ id: 'https://skl.so/Share' })).resolves.toEqual([ schemas[0] ]);
         expect(findAllBySpy).toHaveBeenCalledTimes(1);
-        expect(findAllBySpy).toHaveBeenCalledWith({ id: 'https://standardknowledge.com/ontologies/core/Share' });
+        expect(findAllBySpy).toHaveBeenCalledWith({ id: 'https://skl.so/Share' });
       });
     });
 
     describe('exists', (): void => {
       it('delegates calls to exists to the query adapter.', async(): Promise<void> => {
         const existsSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'exists');
-        await expect(sklEngine.exists({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }})).resolves.toBe(true);
+        await expect(sklEngine.exists({ where: { id: 'https://skl.so/Share' }})).resolves.toBe(true);
         expect(existsSpy).toHaveBeenCalledTimes(1);
-        expect(existsSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }});
+        expect(existsSpy).toHaveBeenCalledWith({ where: { id: 'https://skl.so/Share' }});
       });
     });
 
     describe('count', (): void => {
       it('delegates calls to count to the query adapter.', async(): Promise<void> => {
         const countSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'count');
-        await expect(sklEngine.count({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }})).resolves.toBe(1);
+        await expect(sklEngine.count({ where: { id: 'https://skl.so/Share' }})).resolves.toBe(1);
         expect(countSpy).toHaveBeenCalledTimes(1);
-        expect(countSpy).toHaveBeenCalledWith({ where: { id: 'https://standardknowledge.com/ontologies/core/Share' }});
+        expect(countSpy).toHaveBeenCalledWith({ where: { id: 'https://skl.so/Share' }});
       });
     });
 
@@ -324,19 +324,19 @@ describe("SKLEngine", (): void => {
       it('delegates calls to save a single entity to the query adapter.', async(): Promise<void> => {
         const saveSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'save');
         const res = await sklEngine.save({
-          '@id': 'https://standardknowledge.com/ontologies/core/Share',
-          '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+          '@id': 'https://skl.so/Share',
+          '@type': 'https://skl.so/Verb',
           [RDFS.label]: 'Share',
         });
         expect(res).toEqual({
-          '@id': 'https://standardknowledge.com/ontologies/core/Share',
-          '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+          '@id': 'https://skl.so/Share',
+          '@type': 'https://skl.so/Verb',
           [RDFS.label]: 'Share',
         });
         expect(saveSpy).toHaveBeenCalledTimes(1);
         expect(saveSpy).toHaveBeenCalledWith({
-          '@id': 'https://standardknowledge.com/ontologies/core/Share',
-          '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+          '@id': 'https://skl.so/Share',
+          '@type': 'https://skl.so/Verb',
           [RDFS.label]: 'Share',
         });
       });
@@ -345,13 +345,13 @@ describe("SKLEngine", (): void => {
         const saveSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'save');
         const entities = [
           {
-            '@id': 'https://standardknowledge.com/ontologies/core/Share',
-            '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+            '@id': 'https://skl.so/Share',
+            '@type': 'https://skl.so/Verb',
             [RDFS.label]: 'Share',
           },
           {
-            '@id': 'https://standardknowledge.com/ontologies/core/Send',
-            '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+            '@id': 'https://skl.so/Send',
+            '@type': 'https://skl.so/Verb',
             [RDFS.label]: 'Send',
           },
         ];
@@ -365,10 +365,10 @@ describe("SKLEngine", (): void => {
         const saveSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'save');
         const entity = {
           '@id': 'https://example.com/data/1',
-          '@type': 'https://standardknowledge.com/ontologies/core/File',
+          '@type': 'https://skl.so/File',
         };
         await expect(sklEngine.save(entity)).rejects.toThrow(
-          'Entity https://example.com/data/1 does not conform to the https://standardknowledge.com/ontologies/core/File schema',
+          'Entity https://example.com/data/1 does not conform to the https://skl.so/File schema',
         );
         expect(saveSpy).toHaveBeenCalledTimes(0);
       });
@@ -377,10 +377,10 @@ describe("SKLEngine", (): void => {
         const saveSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'save');
         const entity = {
           '@id': 'https://example.com/data/1',
-          '@type': 'https://standardknowledge.com/ontologies/core/Folder',
+          '@type': 'https://skl.so/Folder',
         };
         await expect(sklEngine.save(entity)).rejects.toThrow(
-          'Entity https://example.com/data/1 does not conform to the https://standardknowledge.com/ontologies/core/File schema',
+          'Entity https://example.com/data/1 does not conform to the https://skl.so/File schema',
         );
         expect(saveSpy).toHaveBeenCalledTimes(0);
       });
@@ -390,15 +390,15 @@ describe("SKLEngine", (): void => {
         const entities = [
           {
             '@id': 'https://example.com/data/1',
-            '@type': 'https://standardknowledge.com/ontologies/core/File',
+            '@type': 'https://skl.so/File',
           },
           {
             '@id': 'https://example.com/data/2',
-            '@type': 'https://standardknowledge.com/ontologies/core/File',
+            '@type': 'https://skl.so/File',
           },
         ];
         await expect(sklEngine.save(entities)).rejects.toThrow(
-          'An entity does not conform to the https://standardknowledge.com/ontologies/core/File schema',
+          'An entity does not conform to the https://skl.so/File schema',
         );
         expect(saveSpy).toHaveBeenCalledTimes(0);
       });
@@ -408,15 +408,15 @@ describe("SKLEngine", (): void => {
         const entities = [
           {
             '@id': 'https://example.com/data/1',
-            '@type': 'https://standardknowledge.com/ontologies/core/Folder',
+            '@type': 'https://skl.so/Folder',
           },
           {
             '@id': 'https://example.com/data/2',
-            '@type': 'https://standardknowledge.com/ontologies/core/Folder',
+            '@type': 'https://skl.so/Folder',
           },
         ];
         await expect(sklEngine.save(entities)).rejects.toThrow(
-          'An entity does not conform to the https://standardknowledge.com/ontologies/core/File schema',
+          'An entity does not conform to the https://skl.so/File schema',
         );
         expect(saveSpy).toHaveBeenCalledTimes(0);
       });
@@ -426,7 +426,7 @@ describe("SKLEngine", (): void => {
       let entities = [
         {
           '@id': 'https://example.com/data/1',
-          '@type': 'https://standardknowledge.com/ontologies/core/File',
+          '@type': 'https://skl.so/File',
           [RDFS.label]: {
             '@type': XSD.string,
             '@value': 'fileA',
@@ -435,13 +435,13 @@ describe("SKLEngine", (): void => {
             '@type': XSD.string,
             '@value': '12345',
           },
-          [SKL.integration]: {
+          [SKL.integratedProduct]: {
             '@id': 'https://example.com/integrations/Dropbox',
           },
         },
         {
           '@id': 'https://example.com/data/2',
-          '@type': 'https://standardknowledge.com/ontologies/core/File',
+          '@type': 'https://skl.so/File',
           [RDFS.label]: {
             '@type': XSD.string,
             '@value': 'fileB',
@@ -450,7 +450,7 @@ describe("SKLEngine", (): void => {
             '@type': XSD.string,
             '@value': '12346',
           },
-          [SKL.integration]: {
+          [SKL.integratedProduct]: {
             '@id': 'https://example.com/integrations/Dropbox',
           },
         },
@@ -500,7 +500,7 @@ describe("SKLEngine", (): void => {
       it('throws an error if the entity does not conform to the schema.', async(): Promise<void> => {
         const updateSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'update');
         await expect(sklEngine.update(entities[0]['@id'], badAttributes)).rejects.toThrow(
-          'Entity https://example.com/data/1 does not conform to the https://standardknowledge.com/ontologies/core/File schema',
+          'Entity https://example.com/data/1 does not conform to the https://skl.so/File schema',
         );
         expect(updateSpy).toHaveBeenCalledTimes(0);
       });
@@ -509,11 +509,11 @@ describe("SKLEngine", (): void => {
         const updateSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'update');
         const entity = {
           ...entities[0],
-          '@type': 'https://standardknowledge.com/ontologies/core/Folder',
+          '@type': 'https://skl.so/Folder',
         };
         await sklEngine.save(entity);
         await expect(sklEngine.update(entity['@id'], badAttributes)).rejects.toThrow(
-          'Entity https://example.com/data/1 does not conform to the https://standardknowledge.com/ontologies/core/File schema',
+          'Entity https://example.com/data/1 does not conform to the https://skl.so/File schema',
         );
         expect(updateSpy).toHaveBeenCalledTimes(0);
       });
@@ -521,7 +521,7 @@ describe("SKLEngine", (): void => {
       it('throws an error if one of the entities does not conform to the schema.', async(): Promise<void> => {
         const updateSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'update');
         await expect(sklEngine.update(entityIds, badAttributes)).rejects.toThrow(
-          'Entity https://example.com/data/1 does not conform to the https://standardknowledge.com/ontologies/core/File schema',
+          'Entity https://example.com/data/1 does not conform to the https://skl.so/File schema',
         );
         expect(updateSpy).toHaveBeenCalledTimes(0);
       });
@@ -531,16 +531,16 @@ describe("SKLEngine", (): void => {
         entities = [
           {
             ...entities[0],
-            '@type': 'https://standardknowledge.com/ontologies/core/Folder',
+            '@type': 'https://skl.so/Folder',
           },
           {
             ...entities[0],
-            '@type': 'https://standardknowledge.com/ontologies/core/Folder',
+            '@type': 'https://skl.so/Folder',
           },
         ];
         await sklEngine.save(entities);
         await expect(sklEngine.update(entityIds, badAttributes)).rejects.toThrow(
-          'Entity https://example.com/data/1 does not conform to the https://standardknowledge.com/ontologies/core/File schema',
+          'Entity https://example.com/data/1 does not conform to the https://skl.so/File schema',
         );
         expect(updateSpy).toHaveBeenCalledTimes(0);
       });
@@ -550,8 +550,8 @@ describe("SKLEngine", (): void => {
       it('delegates calls to delete a single entity to the query adapter.', async(): Promise<void> => {
         const deleteSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'delete');
         const entity = {
-          '@id': 'https://standardknowledge.com/ontologies/core/Share',
-          '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+          '@id': 'https://skl.so/Share',
+          '@type': 'https://skl.so/Verb',
         };
         await sklEngine.save(entity);
         const res = await sklEngine.delete(entity['@id']);
@@ -564,13 +564,13 @@ describe("SKLEngine", (): void => {
         const deleteSpy = jest.spyOn(SparqlQueryAdapter.prototype, 'delete');
         const entities = [
           {
-            '@id': 'https://standardknowledge.com/ontologies/core/Share',
-            '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+            '@id': 'https://skl.so/Share',
+            '@type': 'https://skl.so/Verb',
             [RDFS.label]: 'Share',
           },
           {
-            '@id': 'https://standardknowledge.com/ontologies/core/Send',
-            '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+            '@id': 'https://skl.so/Send',
+            '@type': 'https://skl.so/Verb',
             [RDFS.label]: 'Send',
           },
         ];
@@ -587,8 +587,8 @@ describe("SKLEngine", (): void => {
       it('delegates calls to destroy a single entity to the query adapter.', async(): Promise<void> => {
         const destroySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'destroy');
         const entity = {
-          '@id': 'https://standardknowledge.com/ontologies/core/Share',
-          '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+          '@id': 'https://skl.so/Share',
+          '@type': 'https://skl.so/Verb',
         };
         await sklEngine.save(entity);
         const res = await sklEngine.destroy(entity);
@@ -601,13 +601,13 @@ describe("SKLEngine", (): void => {
         const destroySpy = jest.spyOn(SparqlQueryAdapter.prototype, 'destroy');
         const entities = [
           {
-            '@id': 'https://standardknowledge.com/ontologies/core/Share',
-            '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+            '@id': 'https://skl.so/Share',
+            '@type': 'https://skl.so/Verb',
             [RDFS.label]: 'Share',
           },
           {
-            '@id': 'https://standardknowledge.com/ontologies/core/Send',
-            '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+            '@id': 'https://skl.so/Send',
+            '@type': 'https://skl.so/Verb',
             [RDFS.label]: 'Send',
           },
         ];
@@ -634,8 +634,8 @@ describe("SKLEngine", (): void => {
 
     beforeEach(async(): Promise<void> => {
       schemas = [{
-        '@id': 'https://standardknowledge.com/ontologies/core/Share',
-        '@type': 'https://standardknowledge.com/ontologies/core/Verb',
+        '@id': 'https://skl.so/Share',
+        '@type': 'https://skl.so/Verb',
       }];
       sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
@@ -685,7 +685,7 @@ describe("SKLEngine", (): void => {
     it('can execute an OpenApi operation defined via an operationMapping.', async(): Promise<void> => {
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      const response = await sklEngine.verb.getFile({ account, id: '12345' });
+      const response = await sklEngine.capability.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
@@ -709,7 +709,7 @@ describe("SKLEngine", (): void => {
       });
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      const response = await sklEngine.verb.getFile({ account, id: '12345' });
+      const response = await sklEngine.capability.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
@@ -724,13 +724,13 @@ describe("SKLEngine", (): void => {
         schemas = schemas.map((schemaItem: any): any => {
           if (schemaItem['@id'] === 'https://example.com/data/4') {
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-            delete schemaItem[SKL.returnValueMapping];
+            delete schemaItem[SKL.outputsMapping];
           }
           return schemaItem;
         });
         const sklEngine = new SKLEngine({ type: 'memory' });
         await sklEngine.save(schemas);
-        const response = await sklEngine.verb.getFile({ account, id: '12345' });
+        const response = await sklEngine.capability.getFile({ account, id: '12345' });
         expect(response).toEqual(
           expect.objectContaining({
             data: mockDropboxFile,
@@ -751,7 +751,7 @@ describe("SKLEngine", (): void => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://example.com/getFile');
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      await expect(sklEngine.verb.getFile({ account, id: '12345' })).rejects.toThrow(
+      await expect(sklEngine.capability.getFile({ account, id: '12345' })).rejects.toThrow(
         'Failed to find the verb getFile in the schema',
       );
       expect(executeOperation).toHaveBeenCalledTimes(0);
@@ -760,7 +760,7 @@ describe("SKLEngine", (): void => {
     it('errors if the parameters do not conform to the verb parameter schema.', async(): Promise<void> => {
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      await expect(sklEngine.verb.getFile({ account, ids: [ '12345' ]})).rejects.toThrow(
+      await expect(sklEngine.capability.getFile({ account, ids: [ '12345' ]})).rejects.toThrow(
         'getFile parameters do not conform to the schema',
       );
       expect(executeOperation).toHaveBeenCalledTimes(0);
@@ -770,11 +770,11 @@ describe("SKLEngine", (): void => {
       schemas.forEach((schemaItem: any): void => {
         if (schemaItem['@id'] === 'https://example.com/data/4') {
           // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-          delete schemaItem[SKL.returnValueMapping][RR.subject];
-          schemaItem[SKL.returnValueMapping][RR.subjectMap] = {
+          delete schemaItem[SKL.outputsMapping][RR.subject];
+          schemaItem[SKL.outputsMapping][RR.subjectMap] = {
             '@type': 'rr:SubjectMap',
             [RR.termType]: { '@id': RR.BlankNode },
-            [RR.class]: { '@id': 'https://standardknowledge.com/ontologies/core/File' },
+            [RR.class]: { '@id': 'https://skl.so/File' },
           };
         }
       });
@@ -782,7 +782,7 @@ describe("SKLEngine", (): void => {
       await sklEngine.save(schemas);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { '@id': id, ...getFileResponseWithoutId } = expectedGetFileResponse;
-      await expect(sklEngine.verb.getFile({ account, id: '12345' })).resolves.toEqual(getFileResponseWithoutId);
+      await expect(sklEngine.capability.getFile({ account, id: '12345' })).resolves.toEqual(getFileResponseWithoutId);
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
         'FilesGetMetadata',
@@ -794,12 +794,12 @@ describe("SKLEngine", (): void => {
     it('errors if the return value does not conform to the verb return value schema.', async(): Promise<void> => {
       schemas.forEach((schemaItem: any): void => {
         if (schemaItem['@id'] === 'https://example.com/data/4') {
-          schemaItem[SKL.returnValueMapping] = incorrectReturnValueMapping;
+          schemaItem[SKL.outputsMapping] = incorrectReturnValueMapping;
         }
       });
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      await expect(sklEngine.verb.getFile({ account, id: '12345' })).rejects.toThrow(
+      await expect(sklEngine.capability.getFile({ account, id: '12345' })).rejects.toThrow(
         'Return value https://example.com/data/abc123 does not conform to the schema',
       );
       expect(executeOperation).toHaveBeenCalledTimes(1);
@@ -814,7 +814,7 @@ describe("SKLEngine", (): void => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://example.com/data/4');
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      await expect(sklEngine.verb.getFile({ account, id: '12345' })).rejects.toThrow(
+      await expect(sklEngine.capability.getFile({ account, id: '12345' })).rejects.toThrow(
         'Mapping between account https://example.com/data/DropboxAccount1 and verb https://example.com/getFile not found.',
       );
       expect(executeOperation).toHaveBeenCalledTimes(0);
@@ -824,9 +824,9 @@ describe("SKLEngine", (): void => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://example.com/data/DropboxOpenApiDescription');
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      await expect(sklEngine.verb.getFile({ account, id: '12345' })).rejects.toThrow([
+      await expect(sklEngine.capability.getFile({ account, id: '12345' })).rejects.toThrow([
         'No schema found with fields matching',
-        '{"type":"https://standardknowledge.com/ontologies/core/OpenApiDescription","https://standardknowledge.com/ontologies/core/integration":"https://example.com/integrations/Dropbox"}',
+        '{"type":"https://skl.so/OpenApiDescription","https://skl.so/integration":"https://example.com/integrations/Dropbox"}',
       ].join(' '));
       expect(executeOperation).toHaveBeenCalledTimes(0);
     });
@@ -837,7 +837,7 @@ describe("SKLEngine", (): void => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://example.com/data/DropboxAccount1SecurityCredentials');
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      const response = await sklEngine.verb.getFile({ account, id: '12345' });
+      const response = await sklEngine.capability.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
@@ -850,7 +850,7 @@ describe("SKLEngine", (): void => {
     it('validates the verbs return value against a nested returnType schema.', async(): Promise<void> => {
       schemas = schemas.map((schemaItem: any): any => {
         if (schemaItem['@id'] === 'https://example.com/getFile') {
-          schemaItem[SKL.returnValue] = {
+          schemaItem[SKL.outputs] = {
             '@type': 'shacl:NodeShape',
             'http://www.w3.org/ns/shacl#closed': false,
             'http://www.w3.org/ns/shacl#property': [
@@ -873,7 +873,7 @@ describe("SKLEngine", (): void => {
 
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      const response = await sklEngine.verb.getFile({ account, id: '12345' });
+      const response = await sklEngine.capability.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
@@ -895,7 +895,7 @@ describe("SKLEngine", (): void => {
       });
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      const response = await sklEngine.verb.getFile({ account, id: '12345' });
+      const response = await sklEngine.capability.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(2);
       expect(executeOperation).toHaveBeenNthCalledWith(
@@ -941,7 +941,7 @@ describe("SKLEngine", (): void => {
       });
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      const response = await sklEngine.verb.getFile({ account, id: '12345' });
+      const response = await sklEngine.capability.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(2);
       expect(executeOperation).toHaveBeenNthCalledWith(
@@ -972,7 +972,7 @@ describe("SKLEngine", (): void => {
       );
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      await expect(sklEngine.verb.getFile({ account, id: '12345' })).rejects.toThrow('Internal Server Error');
+      await expect(sklEngine.capability.getFile({ account, id: '12345' })).rejects.toThrow('Internal Server Error');
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenNthCalledWith(
         1,
@@ -1008,7 +1008,7 @@ describe("SKLEngine", (): void => {
     it('can execute an OpenApiSecuritySchemeVerb that maps to the authorizationUrl stage.', async(): Promise<void> => {
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      await expect(sklEngine.verb.authorizeWithPkceOauth({ account })).resolves.toEqual({
+      await expect(sklEngine.capability.authorizeWithPkceOauth({ account })).resolves.toEqual({
         data: response,
         operationParameters: {
           account,
@@ -1029,8 +1029,8 @@ describe("SKLEngine", (): void => {
       schemas = schemas.filter((schemaItem: any): boolean => schemaItem['@id'] !== 'https://example.com/getFile');
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      await expect(sklEngine.verb.getFile({ account, id: '12345' })).rejects.toThrow(Error);
-      await expect(sklEngine.verb.getFile({ account, id: '12345' })).rejects.toThrow(
+      await expect(sklEngine.capability.getFile({ account, id: '12345' })).rejects.toThrow(Error);
+      await expect(sklEngine.capability.getFile({ account, id: '12345' })).rejects.toThrow(
         'Failed to find the verb getFile in the schema',
       );
     });
@@ -1045,7 +1045,7 @@ describe("SKLEngine", (): void => {
       });
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      const res = await sklEngine.verb.getOauthTokens<NodeObject>({
+      const res = await sklEngine.capability.getOauthTokens<NodeObject>({
         account,
         codeVerifier: 'something',
         code: 'dummy_code',
@@ -1079,7 +1079,7 @@ describe("SKLEngine", (): void => {
       });
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      const res = await sklEngine.verb.authorizeWithPkceOauth<NodeObject>({ account });
+      const res = await sklEngine.capability.authorizeWithPkceOauth<NodeObject>({ account });
       expect(res[SKL.accessToken]).toBeUndefined();
       expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
       expect(executeSecuritySchemeStage).toHaveBeenCalledWith(
@@ -1106,7 +1106,7 @@ describe("SKLEngine", (): void => {
         });
         const sklEngine = new SKLEngine({ type: 'memory' });
         await sklEngine.save(schemas);
-        const res = await sklEngine.verb.getOauthTokens<NodeObject>({ account: 'https://example.com/data/StubhubAccount1' });
+        const res = await sklEngine.capability.getOauthTokens<NodeObject>({ account: 'https://example.com/data/StubhubAccount1' });
         expect(res[SKL.accessToken]).toBe('abc123');
         expect(executeSecuritySchemeStage).toHaveBeenCalledTimes(1);
         expect(executeSecuritySchemeStage).toHaveBeenCalledWith(
@@ -1142,7 +1142,7 @@ describe("SKLEngine", (): void => {
           '@type': XSD.string,
         },
       };
-      const response = await sklEngine.verb.parseAndSaveLinksFromEntity({
+      const response = await sklEngine.capability.parseAndSaveLinksFromEntity({
         entity,
         mapping: 'https://example.com/parseAndSaveLinksFromEntityMapping',
       });
@@ -1173,8 +1173,8 @@ describe("SKLEngine", (): void => {
     it('can execute a Noun mapped Verb defined via a verbMapping.', async(): Promise<void> => {
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      const response = await sklEngine.verb.sync({
-        noun: 'https://standardknowledge.com/ontologies/core/File',
+      const response = await sklEngine.capability.sync({
+        noun: 'https://skl.so/File',
         account,
         id: '12345',
       });
@@ -1184,8 +1184,8 @@ describe("SKLEngine", (): void => {
     it('can execute a Noun mapped Verb with only a mapping.', async(): Promise<void> => {
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      const response = await sklEngine.verb.getName({
-        noun: 'https://standardknowledge.com/ontologies/core/File',
+      const response = await sklEngine.capability.getName({
+        noun: 'https://skl.so/File',
         entity: { [RDFS.label]: 'final.jpg', [SKL.sourceId]: 12345 },
       });
       expect(response).toEqual({
@@ -1202,14 +1202,14 @@ describe("SKLEngine", (): void => {
               '@value': 'https://example.com/getFile',
             };
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-            delete schemaItem[SKL.verbMapping];
+            delete schemaItem[SKL.capabilityMapping];
           }
           return schemaItem;
         });
         const sklEngine = new SKLEngine({ type: 'memory' });
         await sklEngine.save(schemas);
-        const response = await sklEngine.verb.sync({
-          noun: 'https://standardknowledge.com/ontologies/core/File',
+        const response = await sklEngine.capability.sync({
+          noun: 'https://skl.so/File',
           account,
           id: '12345',
         });
@@ -1226,13 +1226,13 @@ describe("SKLEngine", (): void => {
       ]);
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      const response = await sklEngine.verb.getFile({
+      const response = await sklEngine.capability.getFile({
         account: 'https://example.com/data/JsonSourceAccount1',
         id: '12345',
       });
       expect(response).toEqual({
         ...expectedGetFileResponse,
-        [SKL.integration]: { '@id': 'https://example.com/integrations/JsonSource' },
+        [SKL.integratedProduct]: { '@id': 'https://example.com/integrations/JsonSource' },
       });
     });
 
@@ -1261,13 +1261,13 @@ describe("SKLEngine", (): void => {
         },
       });
       await sklEngine.save(schemas);
-      const response = await sklEngine.verb.getFile({
+      const response = await sklEngine.capability.getFile({
         account: 'https://example.com/data/JsonSourceAccount1',
         id: '12345',
       });
       expect(response).toEqual({
         ...expectedGetFileResponse,
-        [SKL.integration]: { '@id': 'https://example.com/integrations/JsonSource' },
+        [SKL.integratedProduct]: { '@id': 'https://example.com/integrations/JsonSource' },
       });
     });
 
@@ -1279,7 +1279,7 @@ describe("SKLEngine", (): void => {
       ]);
       const sklEngine = new SKLEngine({ type: 'memory', inputFiles: {}});
       await sklEngine.save(schemas);
-      await expect(sklEngine.verb.getFile({
+      await expect(sklEngine.capability.getFile({
         account: 'https://example.com/data/JsonSourceAccount1',
         id: '12345',
       }))
@@ -1294,17 +1294,17 @@ describe("SKLEngine", (): void => {
       ]);
       schemas = schemas.map((schemaItem: any): any => {
         if (schemaItem['@id'] === 'https://example.com/data/JsonFileDataSource') {
-          schemaItem['@type'] = 'https://standardknowledge.com/ontologies/core/CsvDataSource';
+          schemaItem['@type'] = 'https://skl.so/CsvDataSource';
         }
         return schemaItem;
       });
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      await expect(sklEngine.verb.getFile({
+      await expect(sklEngine.capability.getFile({
         account: 'https://example.com/data/JsonSourceAccount1',
         id: '12345',
       }))
-        .rejects.toThrow('DataSource type https://standardknowledge.com/ontologies/core/CsvDataSource is not supported.');
+        .rejects.toThrow('DataSource type https://skl.so/CsvDataSource is not supported.');
     });
   });
 
@@ -1331,7 +1331,7 @@ describe("SKLEngine", (): void => {
           '@type': XSD.string,
         },
       };
-      const response = await sklEngine.verb.parseAndSaveLinksFromEntity({ entity });
+      const response = await sklEngine.capability.parseAndSaveLinksFromEntity({ entity });
       expect(response).toEqual({});
     });
 
@@ -1358,7 +1358,7 @@ describe("SKLEngine", (): void => {
             '@type': XSD.string,
           },
         };
-        const response = await sklEngine.verb.parseAndSaveLinksFromEntity({ entity });
+        const response = await sklEngine.capability.parseAndSaveLinksFromEntity({ entity });
         expect(response).toEqual({});
       });
 
@@ -1370,7 +1370,7 @@ describe("SKLEngine", (): void => {
         ]);
         const sklEngine = new SKLEngine({ type: 'memory' });
         await sklEngine.save(schemas);
-        const response = await sklEngine.verb.transformText({ text: 'Hello' });
+        const response = await sklEngine.capability.transformText({ text: 'Hello' });
         expect(response).toEqual(
           expect.objectContaining({
             text: 'Hello',
@@ -1405,7 +1405,7 @@ describe("SKLEngine", (): void => {
           '@type': XSD.string,
         },
       };
-      const response = await sklEngine.verb.parseLinksAndCountCharactersFromEntity({ entity });
+      const response = await sklEngine.capability.parseLinksAndCountCharactersFromEntity({ entity });
       expect(response).toEqual([
         {
           '@context': {
@@ -1444,11 +1444,11 @@ describe("SKLEngine", (): void => {
       schemas = schemas.map((schemaItem: any): any => {
         if (schemaItem['@id'] === 'https://example.com/parseLinksAndCountCharactersFromEntityMapping') {
           // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-          delete schemaItem[SKL.parallel][0][SKL.returnValueMapping][RR.subjectMap][RR.class];
-          schemaItem[SKL.parallel][0][SKL.returnValueMapping][RR.subjectMap][RR.constant] = 'https://example.com/res/1';
+          delete schemaItem[SKL.parallel][0][SKL.outputsMapping][RR.subjectMap][RR.class];
+          schemaItem[SKL.parallel][0][SKL.outputsMapping][RR.subjectMap][RR.constant] = 'https://example.com/res/1';
           // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-          delete schemaItem[SKL.parallel][1][SKL.returnValueMapping][RR.subjectMap][RR.class];
-          schemaItem[SKL.parallel][1][SKL.returnValueMapping][RR.subjectMap][RR.constant] = 'https://example.com/res/2';
+          delete schemaItem[SKL.parallel][1][SKL.outputsMapping][RR.subjectMap][RR.class];
+          schemaItem[SKL.parallel][1][SKL.outputsMapping][RR.subjectMap][RR.constant] = 'https://example.com/res/2';
         }
         return schemaItem;
       });
@@ -1462,7 +1462,7 @@ describe("SKLEngine", (): void => {
           '@type': XSD.string,
         },
       };
-      const response = await sklEngine.verb.parseLinksAndCountCharactersFromEntity({ entity });
+      const response = await sklEngine.capability.parseLinksAndCountCharactersFromEntity({ entity });
       expect(response).toEqual([
         {
           '@context': {
@@ -1499,7 +1499,7 @@ describe("SKLEngine", (): void => {
       ]);
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      const response = await sklEngine.verb.countEntities({ where: { type: SKL.Verb }});
+      const response = await sklEngine.capability.countEntities({ where: { type: SKL.Capability }});
       expect(response).toEqual(
         expect.objectContaining({
           [SKL_ENGINE.countResult]: {
@@ -1517,7 +1517,7 @@ describe("SKLEngine", (): void => {
       ]);
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      const response = await sklEngine.verb.entitiesExist({ where: { type: SKL.Verb }});
+      const response = await sklEngine.capability.entitiesExist({ where: { type: SKL.Capability }});
       expect(response).toEqual(
         expect.objectContaining({
           [SKL_ENGINE.existsResult]: {
@@ -1543,7 +1543,7 @@ describe("SKLEngine", (): void => {
       ]);
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      const response = await sklEngine.verb.saveEntities({ entities });
+      const response = await sklEngine.capability.saveEntities({ entities });
       expect(response).toEqual(entities[0]);
     });
 
@@ -1563,7 +1563,7 @@ describe("SKLEngine", (): void => {
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
       await sklEngine.save(entities);
-      const response = await sklEngine.verb.destroyEntities({ entities });
+      const response = await sklEngine.capability.destroyEntities({ entities });
       expect(response).toEqual(entities[0]);
     });
 
@@ -1583,7 +1583,7 @@ describe("SKLEngine", (): void => {
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
       await sklEngine.save(entity);
-      const response = await sklEngine.verb.findEntity({ where: { id: entity['@id'] }});
+      const response = await sklEngine.capability.findEntity({ where: { id: entity['@id'] }});
       expect(response).toEqual(entity);
     });
 
@@ -1605,7 +1605,7 @@ describe("SKLEngine", (): void => {
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
       await sklEngine.save(entities);
-      const response = await sklEngine.verb.findAllEntities({ where: { type: 'https://schema.org/BlogPosting' }});
+      const response = await sklEngine.capability.findAllEntities({ where: { type: 'https://schema.org/BlogPosting' }});
       expect(response).toEqual(entities);
     });
   });
@@ -1618,7 +1618,7 @@ describe("SKLEngine", (): void => {
       ]);
       const sklEngine = new SKLEngine({ type: 'memory' });
       await sklEngine.save(schemas);
-      const response = await sklEngine.verb.entitiesExist({ where: { type: SKL.Verb }});
+      const response = await sklEngine.capability.entitiesExist({ where: { type: SKL.Capability }});
       expect(response).toEqual(
         expect.objectContaining({
           [SKL_ENGINE.existsResult]: {
@@ -1692,8 +1692,8 @@ describe("SKLEngine", (): void => {
     let executeSecuritySchemeStage: any;
     let getOperationWithPathInfoMatchingOperationId: any;
     let callbacks: Callbacks;
-    let onVerbEnd: any;
-    let onVerbStart: any;
+    let onCapabilityEnd: any;
+    let onCapabilityStart: any;
 
     beforeEach(async(): Promise<void> => {
       schemas = await frameAndCombineSchemas([
@@ -1710,18 +1710,18 @@ describe("SKLEngine", (): void => {
         executeSecuritySchemeStage,
         getOperationWithPathInfoMatchingOperationId,
       });
-      onVerbEnd = jest.fn();
-      onVerbStart = jest.fn();
+      onCapabilityEnd = jest.fn();
+      onCapabilityStart = jest.fn();
       callbacks = {
-        onVerbEnd,
-        onVerbStart,
+        onCapabilityEnd,
+        onCapabilityStart,
       };
     });
 
     it('calls the onVerbStart and onVerbEnd callbacks if they are defined.', async(): Promise<void> => {
       const sklEngine = new SKLEngine({ type: 'memory', callbacks });
       await sklEngine.save(schemas);
-      const response = await sklEngine.verb.getFile({ account, id: '12345' });
+      const response = await sklEngine.capability.getFile({ account, id: '12345' });
       expect(response).toEqual(expectedGetFileResponse);
       expect(executeOperation).toHaveBeenCalledTimes(1);
       expect(executeOperation).toHaveBeenCalledWith(
@@ -1737,17 +1737,17 @@ describe("SKLEngine", (): void => {
         { path: 'id:12345' },
         undefined
       );
-      expect(onVerbStart).toHaveBeenCalledTimes(1);
-      expect(onVerbStart).toHaveBeenCalledWith('https://example.com/getFile', { account, id: '12345' });
-      expect(onVerbEnd).toHaveBeenCalledTimes(1);
-      expect(onVerbEnd).toHaveBeenCalledWith('https://example.com/getFile', expectedGetFileResponse);
+      expect(onCapabilityStart).toHaveBeenCalledTimes(1);
+      expect(onCapabilityStart).toHaveBeenCalledWith('https://example.com/getFile', { account, id: '12345' });
+      expect(onCapabilityEnd).toHaveBeenCalledTimes(1);
+      expect(onCapabilityEnd).toHaveBeenCalledWith('https://example.com/getFile', expectedGetFileResponse);
     });
 
     it('calls the onVerbStart and onVerbEnd callbacks if they are defined in the verb\'s configuration.',
       async(): Promise<void> => {
         const sklEngine = new SKLEngine({ type: 'memory' });
         await sklEngine.save(schemas);
-        const response = await sklEngine.verb.getFile({ account, id: '12345' }, { callbacks });
+        const response = await sklEngine.capability.getFile({ account, id: '12345' }, { callbacks });
         expect(response).toEqual(expectedGetFileResponse);
         expect(executeOperation).toHaveBeenCalledTimes(1);
         expect(executeOperation).toHaveBeenCalledWith(
@@ -1755,10 +1755,10 @@ describe("SKLEngine", (): void => {
           { accessToken: 'SPOOFED_TOKEN', bearerToken: undefined, apiKey: undefined, basePath: undefined },
           { path: 'id:12345' },
         );
-        expect(onVerbStart).toHaveBeenCalledTimes(1);
-        expect(onVerbStart).toHaveBeenCalledWith('https://example.com/getFile', { account, id: '12345' });
-        expect(onVerbEnd).toHaveBeenCalledTimes(1);
-        expect(onVerbEnd).toHaveBeenCalledWith('https://example.com/getFile', expectedGetFileResponse);
+        expect(onCapabilityStart).toHaveBeenCalledTimes(1);
+        expect(onCapabilityStart).toHaveBeenCalledWith('https://example.com/getFile', { account, id: '12345' });
+        expect(onCapabilityEnd).toHaveBeenCalledTimes(1);
+        expect(onCapabilityEnd).toHaveBeenCalledWith('https://example.com/getFile', expectedGetFileResponse);
       });
   });
 
@@ -1769,9 +1769,10 @@ describe("SKLEngine", (): void => {
     ]);
     const sklEngine = new SKLEngine({ type: 'memory' });
     await sklEngine.save(schemas);
-    await expect(sklEngine.verb.getName({ entity: { [RDFS.label]: 'final.jpg' }}))
+    await expect(sklEngine.capability.getName({ entity: { [RDFS.label]: 'final.jpg' }}))
       .rejects.toThrow('No mapping found.');
   });
+
 
   it('throws an error if the operation is not supported.', async(): Promise<void> => {
     schemas = await frameAndCombineSchemas([
@@ -1780,7 +1781,7 @@ describe("SKLEngine", (): void => {
     ]);
     schemas = schemas.map((schemaItem: any): any => {
       if (schemaItem['@id'] === 'https://example.com/data/4') {
-        schemaItem['https://standardknowledge.com/ontologies/core/operationMapping']['http://www.w3.org/ns/r2rml#predicateObjectMap'] = [
+        schemaItem['https://skl.so/operationMapping']['http://www.w3.org/ns/r2rml#predicateObjectMap'] = [
           {
             '@type': 'http://www.w3.org/ns/r2rml#PredicateObjectMap',
             'http://www.w3.org/ns/r2rml#objectMap': {
@@ -1795,7 +1796,7 @@ describe("SKLEngine", (): void => {
     });
     const sklEngine = new SKLEngine({ type: 'memory' });
     await sklEngine.save(schemas);
-    await expect(sklEngine.verb.getFile({ account, id: '12345' }))
+    await expect(sklEngine.capability.getFile({ account, id: '12345' }))
       .rejects.toThrow('Operation not supported.');
   });
 });

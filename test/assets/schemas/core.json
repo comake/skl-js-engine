@@ -24,26 +24,26 @@
     "shacl:closed": { "@type": "xsd:boolean" },
     "shacl:property": { "@type": "@id" },
     "shacl:nodeKind": { "@type": "@id" },
-    "skl": "https://standardknowledge.com/ontologies/core/"
+    "skl": "https://skl.so/"
   },
   "@graph": [
     {
-      "@id": "https://standardknowledge.com/ontologies/core/Account",
-      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
+      "@id": "https://skl.so/Account",
+      "@type": ["owl:Class", "shacl:NodeShape"],
       "rdfs:label": "Account",
       "shacl:closed": false,
       "shacl:property": [
         {
           "shacl:maxCount": 1,
           "shacl:nodeKind": "shacl:IRI",
-          "shacl:path": "https://standardknowledge.com/ontologies/core/integration"
+          "shacl:path": "https://skl.so/integration"
         },
         { "shacl:maxCount": 1, "shacl:path": "https://schema.org/email" }
       ]
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/File",
-      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
+      "@id": "https://skl.so/File",
+      "@type": ["owl:Class", "shacl:NodeShape"],
       "rdfs:label": "File",
       "skos:definition": "An electronic document.",
       "shacl:closed": false,
@@ -56,52 +56,52 @@
         {
           "shacl:maxCount": 1,
           "shacl:minCount": 1,
-          "shacl:path": "https://standardknowledge.com/ontologies/core/sourceId"
+          "shacl:path": "https://skl.so/sourceId"
         },
         {
           "shacl:maxCount": 1,
           "shacl:minCount": 1,
           "shacl:nodeKind": "shacl:IRI",
-          "shacl:path": "https://standardknowledge.com/ontologies/core/integration"
+          "shacl:path": "https://skl.so/integration"
         },
         {
           "shacl:maxCount": 1,
-          "shacl:path": "https://standardknowledge.com/ontologies/core/size"
+          "shacl:path": "https://skl.so/size"
         },
         {
           "shacl:maxCount": 1,
-          "shacl:path": "https://standardknowledge.com/ontologies/core/url"
+          "shacl:path": "https://skl.so/url"
         },
         {
           "shacl:maxCount": 1,
-          "shacl:path": "https://standardknowledge.com/ontologies/core/md5Checksum"
+          "shacl:path": "https://skl.so/md5Checksum"
         },
         {
           "shacl:maxCount": 1,
-          "shacl:path": "https://standardknowledge.com/ontologies/core/mimeType"
+          "shacl:path": "https://skl.so/mimeType"
         },
         {
           "shacl:maxCount": 1,
-          "shacl:path": "https://standardknowledge.com/ontologies/core/isWeblink"
+          "shacl:path": "https://skl.so/isWeblink"
         },
         {
           "shacl:maxCount": 1,
-          "shacl:path": "https://standardknowledge.com/ontologies/core/deleted"
+          "shacl:path": "https://skl.so/deleted"
         }
       ]
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/Folder",
-      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
+      "@id": "https://skl.so/Folder",
+      "@type": ["owl:Class", "shacl:NodeShape"],
       "rdfs:label": "Folder",
-      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/File",
+      "rdfs:subClassOf": "https://skl.so/File",
       "skos:definition": "An electronic folder that stores electronic documents.",
       "shacl:closed": false
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/Integration",
-      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
-      "rdfs:label": "Integration",
+      "@id": "https://skl.so/IntegratedProduct",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "rdfs:label": "Integrated Product",
       "shacl:closed": false,
       "shacl:property": [
         {
@@ -114,12 +114,12 @@
         },
         {
           "shacl:nodeKind": "shacl:IRI",
-          "shacl:path": "https://standardknowledge.com/ontologies/core/icons"
+          "shacl:path": "https://skl.so/icons"
         }
       ]
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/Mapping",
+      "@id": "https://skl.so/Mapping",
       "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
       "rdfs:label": "Mapping",
       "shacl:closed": false,
@@ -129,130 +129,179 @@
       }
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/Noun",
-      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
-      "rdfs:label": "Noun",
+      "@id": "https://skl.so/CapabilityMapping",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "rdfs:label": "Capability Mapping",
+      "rdfs:subClassOf": "https://skl.so/Mapping",
+      "shacl:closed": false,
+      "shacl:property": [
+        {
+          "shacl:class": "rr:TriplesMap",
+          "shacl:nodeKind": "shacl:IRI",
+          "shacl:path": "https://skl.so/inputsMapping"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:nodeKind": "shacl:IRI",
+          "shacl:path": "https://skl.so/capability"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:datatype": "xsd:string",
+          "shacl:name": "operationId",
+          "shacl:path": "https://skl.so/operationId"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:class": "rr:TriplesMap",
+          "shacl:nodeKind": "shacl:IRI",
+          "shacl:path": "https://skl.so/operationMapping"
+        },
+        {
+          "shacl:class": "rr:TriplesMap",
+          "shacl:nodeKind": "shacl:IRI",
+          "shacl:path": "https://skl.so/outputsMapping"
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "skl:outputsMappingFrame",
+          "shacl:name": "outputsMappingFrame",
+          "shacl:datatype": "rdf:JSON",
+          "shacl:description": "A JSON-LD Frame used to transform the JSON-LD returned by a Mapping to this Verb."
+        },
+        {
+          "shacl:maxCount": 1,
+          "shacl:minCount": 1,
+          "shacl:nodeKind": "shacl:IRI",
+          "shacl:path": "https://skl.so/integration"
+        }
+      ]
+    },
+    {
+      "@id": "https://skl.so/Shape",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "rdfs:label": "Shape",
       "shacl:closed": false,
       "shacl:property": {
         "shacl:maxCount": 1,
-        "shacl:path": "https://standardknowledge.com/ontologies/core/id"
+        "shacl:path": "https://skl.so/id"
       }
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/SecurityCredentials",
-      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
+      "@id": "https://skl.so/SecurityCredentials",
+      "@type": ["owl:Class", "shacl:NodeShape"],
       "rdfs:label": "Security Credentials",
       "shacl:closed": false,
       "shacl:property": [
         {
           "shacl:maxCount": 1,
-          "shacl:path": "https://standardknowledge.com/ontologies/core/refreshToken"
+          "shacl:path": "https://skl.so/refreshToken"
         },
         {
           "shacl:maxCount": 1,
           "shacl:nodeKind": "shacl:IRI",
-          "shacl:path": "https://standardknowledge.com/ontologies/core/account"
+          "shacl:path": "https://skl.so/account"
         },
         {
           "shacl:maxCount": 1,
-          "shacl:path": "https://standardknowledge.com/ontologies/core/accessToken"
+          "shacl:path": "https://skl.so/accessToken"
         },
         {
           "shacl:maxCount": 1,
-          "shacl:path": "https://standardknowledge.com/ontologies/core/bearerToken"
+          "shacl:path": "https://skl.so/bearerToken"
         },
         {
           "shacl:maxCount": 1,
-          "shacl:path": "https://standardknowledge.com/ontologies/core/apiKey"
+          "shacl:path": "https://skl.so/apiKey"
         },
         {
           "shacl:maxCount": 1,
-          "shacl:path": "https://standardknowledge.com/ontologies/core/clientId"
+          "shacl:path": "https://skl.so/clientId"
         },
         {
           "shacl:maxCount": 1,
-          "shacl:path": "https://standardknowledge.com/ontologies/core/clientSecret"
+          "shacl:path": "https://skl.so/clientSecret"
         }
       ]
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/OpenApiDescription",
-      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
+      "@id": "https://skl.so/OpenApiDescription",
+      "@type": ["owl:Class", "shacl:NodeShape"],
       "rdfs:label": "OpenApiDescription",
       "shacl:closed": false,
       "shacl:property": [
         {
           "shacl:maxCount": 1,
           "shacl:nodeKind": "shacl:IRI",
-          "shacl:path": "https://standardknowledge.com/ontologies/core/integration"
+          "shacl:path": "https://skl.so/integration"
         },
         {
           "shacl:maxCount": 1,
-          "shacl:path": "https://standardknowledge.com/ontologies/core/openApiDescription"
+          "shacl:path": "https://skl.so/openApiDescription"
         }
       ]
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/TokenPaginatedCollection",
-      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
+      "@id": "https://skl.so/TokenPaginatedCollection",
+      "@type": ["owl:Class", "shacl:NodeShape"],
       "rdfs:label": "Token Paginated Collection",
       "shacl:closed": false,
       "shacl:property": [
         {
           "shacl:maxCount": 1,
-          "shacl:path": "https://standardknowledge.com/ontologies/core/nextPageToken"
+          "shacl:path": "https://skl.so/nextPageToken"
         },
         {
           "shacl:nodeKind": "shacl:IRI",
-          "shacl:path": "https://standardknowledge.com/ontologies/core/records"
+          "shacl:path": "https://skl.so/records"
         }
       ]
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/Verb",
-      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
-      "rdfs:label": "Verb",
+      "@id": "https://skl.so/Capability",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "rdfs:label": "Capability",
       "shacl:closed": false,
       "property": [
         {
           "shacl:class": "shacl:NodeShape",
           "shacl:maxCount": 1,
           "shacl:nodeKind": "shacl:BlankNode",
-          "shacl:path": "skl:parameters",
-          "shacl:name": "parameters",
+          "shacl:path": "skl:inputs",
+          "shacl:name": "inputs",
           "shacl:description": "A SHACL NodeShape specifying the format and constraints that the parameters of a Verb must conform to."
         },
         {
           "shacl:maxCount": 1,
-          "shacl:path": "skl:parametersContext",
-          "shacl:name": "parametersContext",
+          "shacl:path": "skl:inputsContext",
+          "shacl:name": "inputsContext",
           "shacl:datatype": "rdf:JSON",
           "shacl:description": "A JSON-LD Context Definition used to expand the parameters supplied a Verb so that they can be validated against the Verb's `parameters` NodeShape."
         },
         {
           "shacl:class": "shacl:NodeShape",
           "shacl:maxCount": 1,
-          "shacl:path": "skl:returnValue",
-          "shacl:name": "returnValue",
+          "shacl:path": "skl:outputs",
+          "shacl:name": "outputs",
           "shacl:description": "A SHACL NodeShape specifying the format and constraints that the return value of a Verb must conform to."
         }
       ]
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/NounMappedVerb",
-      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
-      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Verb"
+      "@id": "https://skl.so/NounMappedVerb",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "rdfs:subClassOf": "https://skl.so/Capability"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/OpenApiSecuritySchemeVerb",
-      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
-      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Verb"
+      "@id": "https://skl.so/OpenApiSecuritySchemeVerb",
+      "@type": ["owl:Class", "shacl:NodeShape"],
+      "rdfs:subClassOf": "https://skl.so/Capability"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/CompositeMapping",
-      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
+      "@id": "https://skl.so/CompositeMapping",
+      "@type": ["owl:Class", "shacl:NodeShape"],
       "rdfs:label": "Composite Mapping",
-      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Mapping",
+      "rdfs:subClassOf": "https://skl.so/Mapping",
       "shacl:closed": false,
       "shacl:property": [
         {
@@ -271,13 +320,13 @@
                 "shacl:zeroOrMorePath": "rdf:rest"
               },
               "rdf:rest": {
-                "rdf:first": "skl:parameterMapping"
+                "rdf:first": "skl:inputsMapping"
               }
             }
           },
           "shacl:class": "rr:TriplesMap",
           "shacl:nodeKind": "shacl:IRI",
-          "shacl:name": "parameterMapping",
+          "shacl:name": "inputsMapping",
           "shacl:shacl:description": "An RML TriplesMap specifying how the standard parameters of the original Verb should be translated into the parameters of the target Verb."
         },
         {
@@ -288,13 +337,13 @@
                 "shacl:zeroOrMorePath": "rdf:rest"
               },
               "rdf:rest": {
-                "rdf:first": "skl:parameterMappingFrame"
+                "rdf:first": "skl:inputsMappingFrame"
               }
             }
           },
-          "shacl:name": "parameterMappingFrame",
+          "shacl:name": "inputsMappingFrame",
           "shacl:datatype": "rdf:JSON",
-          "shacl:shacl:description": "A JSON-LD Frame used to transform the JSON-LD returned by the parameterMapping into the format required by target Verb's parameters."
+          "shacl:shacl:description": "A JSON-LD Frame used to transform the JSON-LD returned by the inputsMapping into the format required by target Verb's parameters."
         },
         {
           "shacl:path": {
@@ -304,14 +353,14 @@
                 "shacl:zeroOrMorePath": "rdf:rest"
               },
               "rdf:rest": {
-                "rdf:first": "skl:verbMapping"
+                "rdf:first": "skl:capabilityMapping"
               }
             }
           },
           "shacl:maxCount": 1,
           "shacl:class": "rr:TriplesMap",
           "shacl:nodeKind": "shacl:IRI",
-          "shacl:name": "verbMapping",
+          "shacl:name": "capabilityMapping",
           "shacl:description": "An RML TriplesMap specifying what target Verb should be executed depending on the parameters supplied to the original Verb."
         },
         {
@@ -339,12 +388,12 @@
                 "shacl:zeroOrMorePath": "rdf:rest"
               },
               "rdf:rest": {
-                "rdf:first": "skl:returnValueFrame"
+                "rdf:first": "skl:outputsMappingFrame"
               }
             }
           },
           "shacl:maxCount": 1,
-          "shacl:name": "returnValueFrame",
+          "shacl:name": "outputsMappingFrame",
           "shacl:datatype": "rdf:JSON",
           "shacl:description": "A JSON-LD Frame used to transform the JSON-LD returned by the returnValueMapping into a prefered format."
         },
@@ -357,390 +406,320 @@
           "shacl:path": {
             "rdf:first": "skl:parallel",
             "rdf:rest": {
-              "rdf:first": "skl:parameterMapping"
+              "rdf:first": "skl:inputsMapping"
             }
           },
           "shacl:class": "rr:TriplesMap",
           "shacl:nodeKind": "shacl:IRI",
-          "shacl:name": "parameterMapping",
+          "shacl:name": "inputsMapping",
           "shacl:description": "An RML TriplesMap specifying how the standard parameters of the original Verb should be translated into the parameters of the target Verb."
         },
         {
           "shacl:path": {
             "rdf:first": "skl:parallel",
             "rdf:rest": {
-              "rdf:first": "skl:parameterMappingFrame"
+              "rdf:first": "skl:inputsMappingFrame"
             }
           },
-          "shacl:name": "parameterMappingFrame",
+          "shacl:name": "inputsMappingFrame",
           "shacl:datatype": "rdf:JSON",
-          "shacl:description": "A JSON-LD Frame used to transform the JSON-LD returned by the parameterMapping into the format required by target Verb's parameters."
+          "shacl:description": "A JSON-LD Frame used to transform the JSON-LD returned by the inputsMapping into the format required by target Verb's parameters."
         },
         {
           "shacl:path": {
             "rdf:first": "skl:parallel",
             "rdf:rest": {
-              "rdf:first": "skl:verbMapping"
+              "rdf:first": "skl:capabilityMapping"
             }
           },
           "shacl:maxCount": 1,
           "shacl:class": "rr:TriplesMap",
           "shacl:nodeKind": "shacl:IRI",
-          "shacl:name": "verbMapping",
+          "shacl:name": "outputsMapping",
           "shacl:description": "An RML TriplesMap specifying what target Verb should be executed depending on the parameters supplied to the original Verb."
         }
       ]
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/VerbIntegrationMapping",
-      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
-      "rdfs:label": "Verb to Integration Mapping",
-      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Mapping",
-      "shacl:closed": false,
-      "shacl:property": [
-        {
-          "shacl:class": "rr:TriplesMap",
-          "shacl:nodeKind": "shacl:IRI",
-          "shacl:path": "https://standardknowledge.com/ontologies/core/parameterMapping"
-        },
-        {
-          "shacl:maxCount": 1,
-          "shacl:nodeKind": "shacl:IRI",
-          "shacl:path": "https://standardknowledge.com/ontologies/core/verb"
-        },
-        {
-          "shacl:maxCount": 1,
-          "shacl:datatype": "xsd:string",
-          "shacl:name": "operationId",
-          "shacl:path": "https://standardknowledge.com/ontologies/core/operationId"
-        },
-        {
-          "shacl:maxCount": 1,
-          "shacl:class": "rr:TriplesMap",
-          "shacl:nodeKind": "shacl:IRI",
-          "shacl:path": "https://standardknowledge.com/ontologies/core/operationMapping"
-        },
-        {
-          "shacl:class": "rr:TriplesMap",
-          "shacl:nodeKind": "shacl:IRI",
-          "shacl:path": "https://standardknowledge.com/ontologies/core/returnValueMapping"
-        },
-        {
-          "shacl:maxCount": 1,
-          "shacl:path": "skl:returnValueFrame",
-          "shacl:name": "returnValueFrame",
-          "shacl:datatype": "rdf:JSON",
-          "shacl:description": "A JSON-LD Frame used to transform the JSON-LD returned by a Mapping to this Verb."
-        },
-        {
-          "shacl:maxCount": 1,
-          "shacl:minCount": 1,
-          "shacl:nodeKind": "shacl:IRI",
-          "shacl:path": "https://standardknowledge.com/ontologies/core/integration"
-        }
-      ]
-    },
-    {
-      "@id": "https://standardknowledge.com/ontologies/core/VerbNounMapping",
-      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
-      "rdfs:label": "Verb to Noun Mapping",
-      "rdfs:subClassOf": "https://standardknowledge.com/ontologies/core/Mapping",
-      "shacl:closed": false,
-      "shacl:property": [
-        {
-          "shacl:maxCount": 1,
-          "shacl:minCount": 1,
-          "shacl:nodeKind": "shacl:IRI",
-          "shacl:path": "https://standardknowledge.com/ontologies/core/verb"
-        },
-        {
-          "shacl:maxCount": 1,
-          "shacl:minCount": 1,
-          "shacl:nodeKind": "shacl:IRI",
-          "shacl:path": "https://standardknowledge.com/ontologies/core/noun"
-        }
-      ]
-    },
-    {
-      "@id": "https://standardknowledge.com/ontologies/core/accessToken",
+      "@id": "https://skl.so/accessToken",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "accessToken",
       "rdfs:range": "xsd:string"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/account",
+      "@id": "https://skl.so/account",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "account",
-      "rdfs:range": "https://standardknowledge.com/ontologies/core/Account"
+      "rdfs:range": "https://skl.so/Account"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/accounts",
+      "@id": "https://skl.so/accounts",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "accounts",
-      "rdfs:range": "https://standardknowledge.com/ontologies/core/Account"
+      "rdfs:range": "https://skl.so/Account"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/command",
+      "@id": "https://skl.so/command",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "command",
-      "rdfs:range": "https://standardknowledge.com/ontologies/core/types/Command"
+      "rdfs:range": "https://skl.so/types/Command"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/cronSchedule",
+      "@id": "https://skl.so/cronSchedule",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "cronSchedule",
       "rdfs:range": "xsd:string"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/defaultUrl",
+      "@id": "https://skl.so/defaultUrl",
       "@type": "owl:ObjectProperty",
-      "rdfs:domain": "https://standardknowledge.com/ontologies/core/WebApplication",
+      "rdfs:domain": "https://skl.so/WebApplication",
       "rdfs:label": "defaultUrl",
-      "rdfs:range": "https://standardknowledge.com/ontologies/core/types/UrlTemplate",
+      "rdfs:range": "https://skl.so/types/UrlTemplate",
       "skos:definition": "The URL a user should be taken to by default when launching a Web Application. Can include terms surrounded by curly brackets which will be replaced by user specific values. Eg. {email} will be replaced with the user's email address."
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/defaultUrlMatcher",
+      "@id": "https://skl.so/defaultUrlMatcher",
       "@type": "owl:ObjectProperty",
-      "rdfs:domain": "https://standardknowledge.com/ontologies/core/WebApplication",
+      "rdfs:domain": "https://skl.so/WebApplication",
       "rdfs:label": "defaultUrlMatcher",
       "rdfs:range": "xsd:string",
       "skos:definition": "A regex which the defaultUrl of a Web Application should match. This will be used to automatically update users' Web Applications with a more specific URL once they login."
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/deleted",
+      "@id": "https://skl.so/deleted",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "deleted",
       "rdfs:range": "xsd:boolean"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/env",
+      "@id": "https://skl.so/env",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "env",
       "rdfs:range": "xsd:string"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/icons",
+      "@id": "https://skl.so/icons",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "icons",
-      "rdfs:range": "https://standardknowledge.com/ontologies/core/File"
+      "rdfs:range": "https://skl.so/File"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/integrations",
+      "@id": "https://skl.so/integrations",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "integrations",
-      "rdfs:range": "https://standardknowledge.com/ontologies/core/Integration"
+      "rdfs:range": "https://skl.so/Integration"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/isWeblink",
+      "@id": "https://skl.so/isWeblink",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "isWeblink",
       "rdfs:range": "xsd:boolean"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/logicalSources",
+      "@id": "https://skl.so/logicalSources",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "logicalSources",
-      "rdfs:range": "https://standardknowledge.com/ontologies/core/LogicalSource"
+      "rdfs:range": "https://skl.so/LogicalSource"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/md5Checksum",
+      "@id": "https://skl.so/md5Checksum",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "md5Checksum",
       "rdfs:range": "xsd:string"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/mimeType",
+      "@id": "https://skl.so/mimeType",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "mimeType",
       "rdfs:range": "xsd:string",
       "skos:exactMatch": { "@id": "https://schema.org/fileFormat" }
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/nextPageToken",
+      "@id": "https://skl.so/nextPageToken",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "nextPageToken",
       "rdfs:range": "xsd:string"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/nullable",
+      "@id": "https://skl.so/nullable",
       "@type": "owl:ObjectProperty",
-      "rdfs:domain": "https://standardknowledge.com/ontologies/core/VerbParameter",
+      "rdfs:domain": "https://skl.so/VerbParameter",
       "rdfs:label": "nullable",
       "rdfs:range": "xsd:boolean"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/oauthTokens",
+      "@id": "https://skl.so/oauthTokens",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "oauthTokens",
-      "rdfs:range": "https://standardknowledge.com/ontologies/core/OauthToken"
+      "rdfs:range": "https://skl.so/OauthToken"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/onEvent",
+      "@id": "https://skl.so/onEvent",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "onEvent",
       "rdfs:range": "xsd:string"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/openApiDescription",
+      "@id": "https://skl.so/openApiDescription",
       "@type": "owl:ObjectProperty",
-      "rdfs:domain": "https://standardknowledge.com/ontologies/core/OpenApiDescription",
+      "rdfs:domain": "https://skl.so/OpenApiDescription",
       "rdfs:label": "openApiDescription",
       "rdfs:range": "rdf:JSON"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/openApiDescriptions",
+      "@id": "https://skl.so/openApiDescriptions",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "openApiDescriptions",
-      "rdfs:range": "https://standardknowledge.com/ontologies/core/OpenApiDescription"
+      "rdfs:range": "https://skl.so/OpenApiDescription"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/operationMapping",
+      "@id": "https://skl.so/operationMapping",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "operationMapping",
       "rdfs:range": "rr:TriplesMap"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/parameterMapping",
+      "@id": "https://skl.so/parameterMapping",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "parameterMapping",
       "rdfs:range": "rr:TriplesMap"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/parameters",
+      "@id": "https://skl.so/parameters",
       "@type": "owl:ObjectProperty",
-      "rdfs:domain": "https://standardknowledge.com/ontologies/core/Verb",
+      "rdfs:domain": "https://skl.so/Verb",
       "rdfs:label": "parameters",
       "rdfs:range": "shacl:NodeShape"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/parametersContext",
+      "@id": "https://skl.so/parametersContext",
       "@type": "owl:ObjectProperty",
-      "rdfs:domain": "https://standardknowledge.com/ontologies/core/Verb",
+      "rdfs:domain": "https://skl.so/Verb",
       "rdfs:label": "parametersContext",
       "rdfs:range": "rdf:JSON"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/parentSourceId",
+      "@id": "https://skl.so/parentSourceId",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "parentSourceId",
       "rdfs:range": "xsd:string"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/records",
+      "@id": "https://skl.so/records",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "records",
-      "rdfs:range": "https://standardknowledge.com/ontologies/core/Noun"
+      "rdfs:range": "https://skl.so/Noun"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/refreshToken",
+      "@id": "https://skl.so/refreshToken",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "refreshToken",
       "rdfs:range": "xsd:string"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/required",
+      "@id": "https://skl.so/required",
       "@type": "owl:ObjectProperty",
-      "rdfs:domain": "https://standardknowledge.com/ontologies/core/VerbParameter",
+      "rdfs:domain": "https://skl.so/VerbParameter",
       "rdfs:label": "required",
       "rdfs:range": "xsd:boolean"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/returnType",
+      "@id": "https://skl.so/returnType",
       "@type": "owl:ObjectProperty",
-      "rdfs:domain": "https://standardknowledge.com/ontologies/core/Verb",
+      "rdfs:domain": "https://skl.so/Verb",
       "rdfs:label": "returnType",
       "rdfs:range": "xsd:anyUri"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/returnValue",
+      "@id": "https://skl.so/returnValue",
       "@type": "owl:ObjectProperty",
-      "rdfs:domain": "https://standardknowledge.com/ontologies/core/Verb",
+      "rdfs:domain": "https://skl.so/Verb",
       "rdfs:label": "returnValue",
       "rdfs:range": "shacl:NodeShape"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/returnValueMapping",
+      "@id": "https://skl.so/returnValueMapping",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "returnValueMapping",
       "rdfs:range": "rr:TriplesMap"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/searchUrl",
+      "@id": "https://skl.so/searchUrl",
       "@type": "owl:ObjectProperty",
-      "rdfs:domain": "https://standardknowledge.com/ontologies/core/WebApplication",
+      "rdfs:domain": "https://skl.so/WebApplication",
       "rdfs:label": "searchUrl",
-      "rdfs:range": "https://standardknowledge.com/ontologies/core/types/UrlTemplate",
+      "rdfs:range": "https://skl.so/types/UrlTemplate",
       "skos:definition": "The URL a user should be taken to when searching a Web Application. Can include terms surrounded by curly brackets which will be replaced by user specific values. Eg. {query} will be replaced with the user's query input."
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/size",
+      "@id": "https://skl.so/size",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "size",
       "rdfs:range": "xsd:integer"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/sourceId",
+      "@id": "https://skl.so/sourceId",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "sourceId",
       "rdfs:range": "xsd:string"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/status",
+      "@id": "https://skl.so/status",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "status",
       "rdfs:range": "xsd:string"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/title",
+      "@id": "https://skl.so/title",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "title",
       "rdfs:range": "xsd:string"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/url",
+      "@id": "https://skl.so/url",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "url",
       "rdfs:range": "xsd:string",
       "skos:exactMatch": { "@id": "https://schema.org/url" }
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/urlDomainMatchers",
+      "@id": "https://skl.so/urlDomainMatchers",
       "@type": "owl:ObjectProperty",
-      "rdfs:domain": "https://standardknowledge.com/ontologies/core/WebApplication",
+      "rdfs:domain": "https://skl.so/WebApplication",
       "rdfs:label": "urlDomainMatchers",
       "rdfs:range": "xsd:string",
       "skos:definition": "Regexes to match URL domains that are associated with a Web Application. Can include a path. All URLs that match an entry must be associated with the Web Application."
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/urlDomains",
+      "@id": "https://skl.so/urlDomains",
       "@type": "owl:ObjectProperty",
-      "rdfs:domain": "https://standardknowledge.com/ontologies/core/WebApplication",
+      "rdfs:domain": "https://skl.so/WebApplication",
       "rdfs:label": "urlDomains",
       "rdfs:range": "xsd:string",
       "skos:definition": "URL domains that are associated with a Web Application. Can include a path. All URLs that match an entry must be associated with the Web Application."
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/verb",
+      "@id": "https://skl.so/verb",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "verb",
-      "rdfs:range": "https://standardknowledge.com/ontologies/core/Verb"
+      "rdfs:range": "https://skl.so/Verb"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/verbIntegrationMappings",
+      "@id": "https://skl.so/verbIntegrationMappings",
       "@type": "owl:ObjectProperty",
       "rdfs:label": "verbIntegrationMappings",
-      "rdfs:range": "https://standardknowledge.com/ontologies/core/VerbIntegrationMapping"
+      "rdfs:range": "https://skl.so/VerbIntegrationMapping"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/types/Command",
+      "@id": "https://skl.so/types/Command",
       "@type": "owl:Class",
       "rdfs:commment": "A string used as a quick shortcut to filter options in Comake Navigator. Eg. 'gm' for Gmail. Adheres to the /^[a-zA-Z0-9-]{2,}$/ format.",
       "rdfs:label": "Command",
       "rdfs:subClassOf": "xsd:string"
     },
     {
-      "@id": "https://standardknowledge.com/ontologies/core/types/UrlTemplate",
+      "@id": "https://skl.so/types/UrlTemplate",
       "@type": "owl:Class",
       "rdfs:label": "UrlTemplate",
       "rdfs:subClassOf": "xsd:string",
