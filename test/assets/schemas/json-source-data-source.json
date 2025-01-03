@@ -4,11 +4,16 @@
     "fnml": "http://semweb.mmlab.be/ns/fnml#",
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-    "schema": "https://schema.org/",
     "label": "rdfs:label",
-    "rdfs:subClassOf": { "@type": "@id" },
-    "rdfs:range": { "@type": "@id" },
-    "rdfs:domain": { "@type": "@id" },
+    "rdfs:subClassOf": {
+      "@type": "@id"
+    },
+    "rdfs:range": {
+      "@type": "@id"
+    },
+    "rdfs:domain": {
+      "@type": "@id"
+    },
     "boolean": "http://www.w3.org/2001/XMLSchema#boolean",
     "integer": "http://www.w3.org/2001/XMLSchema#integer",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
@@ -18,55 +23,135 @@
     "skos": "http://www.w3.org/2004/02/skos/core#",
     "dcterms": "http://purl.org/dc/elements/1.1/",
     "description": "dcterms:description",
-    "skl": "https://standardknowledge.com/ontologies/core/",
-    "returnValueMapping": {
-      "@id": "skl:returnValueMapping",
+    "shacl:class": {
       "@type": "@id"
     },
-    "operationMapping": {
-      "@id": "skl:operationMapping",
+    "shacl:datatype": {
       "@type": "@id"
     },
-    "returnValueFrame": {
-      "@id": "skl:returnValueFrame",
+    "shacl:maxCount": {
+      "@type": "xsd:integer"
+    },
+    "shacl:minCount": {
+      "@type": "xsd:integer"
+    },
+    "shacl:targetClass": {
+      "@type": "@id"
+    },
+    "shacl:path": {
+      "@type": "@id"
+    },
+    "skl": "https://skl.so/",
+    "skl:integratedProduct": {
+      "@type": "@id"
+    },
+    "skl:account": {
+      "@type": "@id"
+    },
+    "skl:openApiDescription": {
       "@type": "@json"
     },
-    "integration": { "@id": "skl:integration", "@type": "@id" },
-    "verb": { "@id": "skl:verb", "@type": "@id" },
-    "rml:referenceFormulation": { "@type": "@id" },
-    "rr:parentTriplesMap": { "@type": "@id" },
-    "rr:predicate": { "@type": "@id" },
-    "rr:object": { "@type": "@id" },
-    "rr:subject": { "@type": "@id" },
-    "rr:termType": { "@type": "@id" },
-    "rr:datatype": { "@type": "@id" },
-    "example": "https://example.com/"
+    "skl:parametersContext": {
+      "@type": "@json"
+    },
+    "skl:inputsContext": {
+      "@type": "@json"
+    },
+    "skl:returnValueFrame": {
+      "@type": "@json"
+    },
+    "skl:inputsMapping": {
+      "@type": "@id"
+    },
+    "skl:inputsMappingFrame": {
+      "@type": "@json"
+    },
+    "skl:outputsMapping": {
+      "@type": "@id"
+    },
+    "skl:outputsMappingFrame": {
+      "@type": "@json"
+    },
+    "skl:noun": {
+      "@type": "@id"
+    },
+    "skl:object": {
+      "@type": "@id"
+    },
+    "skl:parameterMapping": {
+      "@type": "@id"
+    },
+    "skl:parameterMappingFrame": {
+      "@type": "@json"
+    },
+    "skl:returnValueMapping": {
+      "@type": "@id"
+    },
+    "skl:operationMapping": {
+      "@type": "@id"
+    },
+    "skl:verbMapping": {
+      "@type": "@id"
+    },
+    "integratedProduct": {
+      "@id": "skl:integratedProduct",
+      "@type": "@id"
+    },
+    "capability": {
+      "@id": "skl:capability",
+      "@type": "@id"
+    },
+    "rml:referenceFormulation": {
+      "@type": "@id"
+    },
+    "rr:parentTriplesMap": {
+      "@type": "@id"
+    },
+    "rr:predicate": {
+      "@type": "@id"
+    },
+    "rr:object": {
+      "@type": "@id"
+    },
+    "rr:termType": {
+      "@type": "@id"
+    },
+    "rr:datatype": {
+      "@type": "@id"
+    },
+    "rr:subject": {
+      "@type": "@id"
+    },
+    "example": "https://example.com/",
+    "https://skl.so/data": {
+      "@type": "@json"
+    }
   },
   "@graph": [
     {
       "@id": "https://example.com/data/JsonSourceAccount1",
-      "@type": "https://standardknowledge.com/ontologies/core/Account",
-      "integration": "https://example.com/integrations/JsonSource"
+      "@type": "https://skl.so/Account",
+      "integratedProduct": "https://example.com/integrations/JsonSource"
     },
     {
       "@id": "https://example.com/integrations/JsonSource",
-      "@type": "https://standardknowledge.com/ontologies/core/Integration",
+      "@type": "https://skl.so/IntegratedProduct",
       "description": "ExampleJsonSource.",
       "label": "JsonSource"
     },
     {
       "@id": "https://example.com/data/JsonSourceDataSource",
-      "@type": "https://standardknowledge.com/ontologies/core/JsonDataSource",
-      "integration": "https://example.com/integrations/JsonSource",
-       "https://standardknowledge.com/ontologies/core/source": "data.json"
+      "@type": "https://skl.so/JsonDataSource",
+      "integratedProduct": "https://example.com/integrations/JsonSource",
+      "https://skl.so/source": "data.json"
     },
     {
       "@id": "https://example.com/data/2",
-      "@type": "https://standardknowledge.com/ontologies/core/VerbIntegrationMapping",
-      "integration": "https://example.com/integrations/JsonSource",
-      "verb": "https://example.com/getFile",
+      "@type": "https://skl.so/CapabilityMapping",
+      "integratedProduct": "https://example.com/integrations/JsonSource",
+      "capability": "https://example.com/getFile",
       "label": "getFileToJsonSource",
-      "operationMapping": {
+      "skl:operationMapping": {
         "@type": "rr:TriplesMap",
         "rml:logicalSource": {
           "@type": "rml:LogicalSource",
@@ -89,7 +174,7 @@
           "rr:termType": "rr:BlankNode"
         }
       },
-      "returnValueMapping": {
+      "skl:outputsMapping": {
         "@type": "rr:TriplesMap",
         "rml:logicalSource": {
           "@type": "rml:LogicalSource",
@@ -198,7 +283,7 @@
               "rr:termType": "rr:IRI",
               "rr:constant": "https://example.com/integrations/JsonSource"
             },
-            "rr:predicate": "skl:integration"
+            "rr:predicate": "skl:integratedProduct"
           },
           {
             "@type": "rr:PredicateObjectMap",
@@ -286,7 +371,10 @@
           },
           {
             "@type": "rr:PredicateObjectMap",
-            "rr:objectMap": { "@type": "rr:ObjectMap", "rml:reference": "name" },
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rml:reference": "name"
+            },
             "rr:predicate": "rdfs:label"
           },
           {
@@ -300,7 +388,7 @@
                     "@type": "rr:PredicateObjectMap",
                     "rr:objectMap": {
                       "@type": "rr:ObjectMap",
-                      "rr:constant": "https://standardknowledge.com/ontologies/core/File"
+                      "rr:constant": "https://skl.so/File"
                     },
                     "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_false"
                   },
@@ -346,7 +434,7 @@
                     "@type": "rr:PredicateObjectMap",
                     "rr:objectMap": {
                       "@type": "rr:ObjectMap",
-                      "rr:constant": "https://standardknowledge.com/ontologies/core/Folder"
+                      "rr:constant": "https://skl.so/Folder"
                     },
                     "rr:predicate": "http://users.ugent.be/~bjdmeest/function/grel.ttl#any_true"
                   }
@@ -432,16 +520,19 @@
           },
           {
             "@type": "rr:PredicateObjectMap",
-            "rr:objectMap": { "@type": "rr:ObjectMap", "rml:reference": "id" },
+            "rr:objectMap": {
+              "@type": "rr:ObjectMap",
+              "rml:reference": "id"
+            },
             "rr:predicate": "skl:sourceId"
           }
         ],
         "rr:subject": "https://example.com/data/abc123"
       },
-      "returnValueFrame": {
+      "skl:outputsMappingFrame": {
         "@type": [
-          "https://standardknowledge.com/ontologies/core/File",
-          "https://standardknowledge.com/ontologies/core/Folder"
+          "https://skl.so/File",
+          "https://skl.so/Folder"
         ]
       }
     }

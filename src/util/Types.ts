@@ -22,7 +22,7 @@ export type JSONPrimitive =
 export interface JSONObject {
   [key: string]: JSONValue | undefined;
 }
-export interface JSONArray extends Array<JSONValue> {}
+export interface JSONArray extends Array<JSONValue> { }
 
 export type JSONValue =
   | JSONPrimitive
@@ -47,12 +47,12 @@ export type ShaclIRI = string | IRIObject;
 export type ShaclIRIOrLiteral = ShaclIRI | ValueObject<any>;
 
 export type NodeKindValues =
-| typeof SHACL.Literal
-| typeof SHACL.IRI
-| typeof SHACL.BlankNode
-| typeof SHACL.BlankNodeOrIRI
-| typeof SHACL.BlankNodeOrLiteral
-| typeof SHACL.IRIOrLiteral;
+  | typeof SHACL.Literal
+  | typeof SHACL.IRI
+  | typeof SHACL.BlankNode
+  | typeof SHACL.BlankNodeOrIRI
+  | typeof SHACL.BlankNodeOrLiteral
+  | typeof SHACL.IRIOrLiteral;
 
 export type BaseShape = NodeObject & {
   [SHACL.targetNode]?: ShaclIRIOrLiteral;
@@ -129,12 +129,12 @@ export interface AlternativeShaclPath extends NodeObject {
 }
 
 export type PathTypes =
-| ShaclIRI
-| AlternativeShaclPath
-| ZeroOrMoreShaclPath
-| OneOrMoreShaclPath
-| ZeroOrOneShaclPath
-| InverseShaclPath;
+  | ShaclIRI
+  | AlternativeShaclPath
+  | ZeroOrMoreShaclPath
+  | OneOrMoreShaclPath
+  | ZeroOrOneShaclPath
+  | InverseShaclPath;
 
 export type PathShape = OrArray<PathTypes>;
 
@@ -142,9 +142,9 @@ export type Capability = NodeObject & {
   '@id': string;
   '@type': typeof SKL.Capability;
   [RDFS.label]?: ValueObject<string>;
-  [SKL.inputContext]?: ValueObject<JSONObject>;
+  [SKL.inputsContext]?: ValueObject<JSONObject>;
   [SKL.inputs]?: NodeShape | ReferenceNodeObject;
-  [SKL.outputContext]?: ValueObject<JSONObject>;
+  [SKL.outputsContext]?: ValueObject<JSONObject>;
   [SKL.outputs]?: NodeShape | ReferenceNodeObject;
 };
 
@@ -177,19 +177,19 @@ export type CapabilityMapping = Mapping & {
 };
 
 export type MappingWithInputs = CapabilityMapping &
-Required<Pick<CapabilityMapping, typeof SKL.inputs | typeof SKL.inputsMapping>>;
+  Required<Pick<CapabilityMapping, typeof SKL.inputs | typeof SKL.inputsMapping>>;
 
 export type MappingWithInputsReference = CapabilityMapping &
-Required<Pick<CapabilityMapping, typeof SKL.inputsReference>>;
+  Required<Pick<CapabilityMapping, typeof SKL.inputsReference>>;
 
 export type MappingWithOutputsMapping = CapabilityMapping &
-Required<Pick<CapabilityMapping, typeof SKL.outputsMapping | typeof SKL.outputsMappingFrame>>;
+  Required<Pick<CapabilityMapping, typeof SKL.outputsMapping | typeof SKL.outputsMappingFrame>>;
 
 export type MappingWithSeries = CapabilityMapping &
-Required<Pick<CapabilityMapping, typeof SKL.series>>;
+  Required<Pick<CapabilityMapping, typeof SKL.series>>;
 
 export type MappingWithParallel = CapabilityMapping &
-Required<Pick<CapabilityMapping, typeof SKL.parallel>>;
+  Required<Pick<CapabilityMapping, typeof SKL.parallel>>;
 
 export type TriggerMapping = Mapping & {
   [SKL.integratedProduct]: ReferenceNodeObject;

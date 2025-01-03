@@ -4,9 +4,15 @@
     "fnml": "http://semweb.mmlab.be/ns/fnml#",
     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-    "rdfs:subClassOf": { "@type": "@id" },
-    "rdfs:range": { "@type": "@id" },
-    "rdfs:domain": { "@type": "@id" },
+    "rdfs:subClassOf": {
+      "@type": "@id"
+    },
+    "rdfs:range": {
+      "@type": "@id"
+    },
+    "rdfs:domain": {
+      "@type": "@id"
+    },
     "boolean": "http://www.w3.org/2001/XMLSchema#boolean",
     "integer": "http://www.w3.org/2001/XMLSchema#integer",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
@@ -14,22 +20,45 @@
     "rml": "http://semweb.mmlab.be/ns/rml#",
     "owl": "http://www.w3.org/2002/07/owl#",
     "skos": "http://www.w3.org/2004/02/skos/core#",
-    "shacl:path": { "@type": "@id" },
-    "shacl:class": { "@type": "@id" },
-    "shacl:datatype": { "@type": "@id" },
-    "shacl:maxCount": { "@type": "xsd:integer" },
-    "shacl:minCount": { "@type": "xsd:integer" },
-    "shacl:name": { "@type": "xsd:string" },
-    "shacl:description": { "@type": "xsd:string" },
-    "shacl:closed": { "@type": "xsd:boolean" },
-    "shacl:property": { "@type": "@id" },
-    "shacl:nodeKind": { "@type": "@id" },
+    "shacl:path": {
+      "@type": "@id"
+    },
+    "shacl:class": {
+      "@type": "@id"
+    },
+    "shacl:datatype": {
+      "@type": "@id"
+    },
+    "shacl:maxCount": {
+      "@type": "xsd:integer"
+    },
+    "shacl:minCount": {
+      "@type": "xsd:integer"
+    },
+    "shacl:name": {
+      "@type": "xsd:string"
+    },
+    "shacl:description": {
+      "@type": "xsd:string"
+    },
+    "shacl:closed": {
+      "@type": "xsd:boolean"
+    },
+    "shacl:property": {
+      "@type": "@id"
+    },
+    "shacl:nodeKind": {
+      "@type": "@id"
+    },
     "skl": "https://skl.so/"
   },
   "@graph": [
     {
       "@id": "https://skl.so/Account",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": [
+        "owl:Class",
+        "shacl:NodeShape"
+      ],
       "rdfs:label": "Account",
       "shacl:closed": false,
       "shacl:property": [
@@ -38,12 +67,18 @@
           "shacl:nodeKind": "shacl:IRI",
           "shacl:path": "https://skl.so/integration"
         },
-        { "shacl:maxCount": 1, "shacl:path": "https://schema.org/email" }
+        {
+          "shacl:maxCount": 1,
+          "shacl:path": "https://schema.org/email"
+        }
       ]
     },
     {
       "@id": "https://skl.so/File",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": [
+        "owl:Class",
+        "shacl:NodeShape"
+      ],
       "rdfs:label": "File",
       "skos:definition": "An electronic document.",
       "shacl:closed": false,
@@ -62,7 +97,7 @@
           "shacl:maxCount": 1,
           "shacl:minCount": 1,
           "shacl:nodeKind": "shacl:IRI",
-          "shacl:path": "https://skl.so/integration"
+          "shacl:path": "https://skl.so/integratedProduct"
         },
         {
           "shacl:maxCount": 1,
@@ -92,7 +127,10 @@
     },
     {
       "@id": "https://skl.so/Folder",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": [
+        "owl:Class",
+        "shacl:NodeShape"
+      ],
       "rdfs:label": "Folder",
       "rdfs:subClassOf": "https://skl.so/File",
       "skos:definition": "An electronic folder that stores electronic documents.",
@@ -100,7 +138,10 @@
     },
     {
       "@id": "https://skl.so/IntegratedProduct",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": [
+        "owl:Class",
+        "shacl:NodeShape"
+      ],
       "rdfs:label": "Integrated Product",
       "shacl:closed": false,
       "shacl:property": [
@@ -120,7 +161,11 @@
     },
     {
       "@id": "https://skl.so/Mapping",
-      "@type": ["owl:Class", "shacl:NodeShape", "skl:Noun"],
+      "@type": [
+        "owl:Class",
+        "shacl:NodeShape",
+        "skl:Noun"
+      ],
       "rdfs:label": "Mapping",
       "shacl:closed": false,
       "shacl:property": {
@@ -130,7 +175,10 @@
     },
     {
       "@id": "https://skl.so/CapabilityMapping",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": [
+        "owl:Class",
+        "shacl:NodeShape"
+      ],
       "rdfs:label": "Capability Mapping",
       "rdfs:subClassOf": "https://skl.so/Mapping",
       "shacl:closed": false,
@@ -179,7 +227,10 @@
     },
     {
       "@id": "https://skl.so/Shape",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": [
+        "owl:Class",
+        "shacl:NodeShape"
+      ],
       "rdfs:label": "Shape",
       "shacl:closed": false,
       "shacl:property": {
@@ -189,7 +240,10 @@
     },
     {
       "@id": "https://skl.so/SecurityCredentials",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": [
+        "owl:Class",
+        "shacl:NodeShape"
+      ],
       "rdfs:label": "Security Credentials",
       "shacl:closed": false,
       "shacl:property": [
@@ -226,7 +280,10 @@
     },
     {
       "@id": "https://skl.so/OpenApiDescription",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": [
+        "owl:Class",
+        "shacl:NodeShape"
+      ],
       "rdfs:label": "OpenApiDescription",
       "shacl:closed": false,
       "shacl:property": [
@@ -243,7 +300,10 @@
     },
     {
       "@id": "https://skl.so/TokenPaginatedCollection",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": [
+        "owl:Class",
+        "shacl:NodeShape"
+      ],
       "rdfs:label": "Token Paginated Collection",
       "shacl:closed": false,
       "shacl:property": [
@@ -259,7 +319,10 @@
     },
     {
       "@id": "https://skl.so/Capability",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": [
+        "owl:Class",
+        "shacl:NodeShape"
+      ],
       "rdfs:label": "Capability",
       "shacl:closed": false,
       "property": [
@@ -289,17 +352,26 @@
     },
     {
       "@id": "https://skl.so/NounMappedVerb",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": [
+        "owl:Class",
+        "shacl:NodeShape"
+      ],
       "rdfs:subClassOf": "https://skl.so/Capability"
     },
     {
       "@id": "https://skl.so/OpenApiSecuritySchemeVerb",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": [
+        "owl:Class",
+        "shacl:NodeShape"
+      ],
       "rdfs:subClassOf": "https://skl.so/Capability"
     },
     {
       "@id": "https://skl.so/CompositeMapping",
-      "@type": ["owl:Class", "shacl:NodeShape"],
+      "@type": [
+        "owl:Class",
+        "shacl:NodeShape"
+      ],
       "rdfs:label": "Composite Mapping",
       "rdfs:subClassOf": "https://skl.so/Mapping",
       "shacl:closed": false,
@@ -310,7 +382,7 @@
           "shacl:name": "series",
           "shacl:nodeKind": "shacl:BlankNode",
           "shacl:class": "rdf:List",
-          "shacl:description": "An rdf List of one or more Verb Mappings that determine Verbs that should be executed in series. The return value of each Verb in series gets passes the original Verb parameters and the previous Verb return value." 
+          "shacl:description": "An rdf List of one or more Verb Mappings that determine Verbs that should be executed in series. The return value of each Verb in series gets passes the original Verb parameters and the previous Verb return value."
         },
         {
           "shacl:path": {
@@ -533,7 +605,9 @@
       "@type": "owl:ObjectProperty",
       "rdfs:label": "mimeType",
       "rdfs:range": "xsd:string",
-      "skos:exactMatch": { "@id": "https://schema.org/fileFormat" }
+      "skos:exactMatch": {
+        "@id": "https://schema.org/fileFormat"
+      }
     },
     {
       "@id": "https://skl.so/nextPageToken",
@@ -681,7 +755,9 @@
       "@type": "owl:ObjectProperty",
       "rdfs:label": "url",
       "rdfs:range": "xsd:string",
-      "skos:exactMatch": { "@id": "https://schema.org/url" }
+      "skos:exactMatch": {
+        "@id": "https://schema.org/url"
+      }
     },
     {
       "@id": "https://skl.so/urlDomainMatchers",

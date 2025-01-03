@@ -8,11 +8,11 @@ function createNamespace<T extends string, TBase extends string>(
 ): Namespace<T, TBase> {
   return localNames.reduce((obj: Namespace<T, TBase>, localName): Namespace<T, TBase> => (
     { ...obj, [localName]: `${baseUri}${localName}` }
-  // eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter
+    // eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter
   ), {} as Namespace<T, TBase>);
 }
 
-// export const SKL_NAMESPACE = 'https://standardknowledge.com/ontologies/core/';
+// Export const SKL_NAMESPACE = 'https://standardknowledge.com/ontologies/core/';
 // export const SKL = createNamespace(SKL_NAMESPACE, [
 //   'Verb',
 //   'Noun',
@@ -109,8 +109,8 @@ export const SKL = createNamespace(SKL_NAMESPACE_V2, [
   'integratedProduct',
   'inputs',
   'outputs',
-  'inputContext',
-  'outputContext',
+  'inputsContext',
+  'outputsContext',
   'invalidTokenErrorMatcher',
   'InvalidTokenErrorMatcher',
   'invalidTokenErrorMatcherStatus',
@@ -174,6 +174,20 @@ export const SKLSO_PROPERTY = createNamespace(SKLSO_PROPERTY_NAMESPACE, [
 
 export const SKL_ENGINE_NAMESPACE = 'https://standardknowledge.com/ontologies/skl-engine/';
 export const SKL_ENGINE = createNamespace(SKL_ENGINE_NAMESPACE, [
+  'update',
+  'findAll',
+  'findAllBy',
+  'find',
+  'findBy',
+  'exists',
+  'existsResult',
+  'count',
+  'countResult',
+  'save',
+  'destroy',
+]);
+export const SKL_ENGINE_V2_NAMESPACE = 'https://skl.so/skl-engine/';
+export const SKL_ENGINE_V2 = createNamespace(SKL_ENGINE_V2_NAMESPACE, [
   'update',
   'findAll',
   'findAllBy',
