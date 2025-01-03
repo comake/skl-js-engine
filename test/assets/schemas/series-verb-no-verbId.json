@@ -269,7 +269,7 @@
                 "rr:objectMap": {
                   "@type": "rr:ObjectMap",
                   "rr:datatype": "http://www.w3.org/2001/XMLSchema#string",
-                  "rml:reference": "originalCapabilityParameters.entity"
+                  "rml:reference": "originalCapabilityParameters.text"
                 }
               }
             ],
