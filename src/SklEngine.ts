@@ -850,10 +850,11 @@ export class SKLEngine {
 
   private async getOpenApiDescriptionForIntegratedProduct(integratedProductId: string): Promise<OpenApi> {
     const openApiDescriptionSchema = await this.findBy({
-      type: SKL.OpenApiDescription,
+      type: SKL.RestInterface,
+      [SKL.type]: SKL.OpenAPI,
       [SKL.integratedProduct]: integratedProductId,
     });
-    return getValueIfDefined<OpenApi>(openApiDescriptionSchema[SKL.openApiDescription])!;
+    return getValueIfDefined<OpenApi>(openApiDescriptionSchema[SKL.specification])!;
   }
 
   private async findSecurityCredentialsForAccountIfDefined(accountId: string): Promise<Entity | undefined> {

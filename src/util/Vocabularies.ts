@@ -160,6 +160,10 @@ export const SKL = createNamespace(SKL_NAMESPACE_V2, [
   'sourceId',
   'Event',
   'records',
+  'RestInterface',
+  'OpenAPI',
+  'type',
+  'specification',
 ]);
 
 export const SKL_V2 = SKL;
