@@ -792,7 +792,7 @@ describe('SKLEngine', (): void => {
       await expect(sklEngine.capability.getFile({ account, id: '12345' })).rejects.toThrow(
         [
           'No schema found with fields matching',
-          '{"type":"https://skl.so/OpenApiDescription","https://skl.so/integratedProduct":"https://example.com/integrations/Dropbox"}',
+          '{"type":"https://skl.so/RestInterface","https://skl.so/type":"https://skl.so/OpenAPI","https://skl.so/integratedProduct":"https://example.com/integrations/Dropbox"}',
         ].join(' '),
       );
       expect(executeOperation).toHaveBeenCalledTimes(0);
