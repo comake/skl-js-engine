@@ -14,7 +14,8 @@ export type FindOperatorType =
 | 'zeroOrMorePath'
 | 'inversePath'
 | 'oneOrMorePath'
-| 'contains';
+| 'contains'
+| 'sequence';
 
 export interface FindOperatorArgs<T, TType> {
   operator: TType;

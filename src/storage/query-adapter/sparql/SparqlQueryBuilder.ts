@@ -332,6 +332,10 @@ export class SparqlQueryBuilder {
           triples: inverseWhereQueryData.triples,
         };
       }
+      if ((value as FindOperator<any, any>).operator === 'sequence') {  
+        const sequencePredicate = createSparqlSequencePredicate([ allTypesAndSuperTypesPath ]);
+        return this.createWhereQueryDataFromKeyValue(subject, sequencePredicate, (value as FindOperator<any, any>).value);
+      }
 
       const variable = this.createVariable();
       const triple = { subject, predicate: allTypesAndSuperTypesPath, object: variable };
@@ -401,6 +405,10 @@ export class SparqlQueryBuilder {
     if (operator.operator === 'inverse') {
       const inversePredicate = createSparqlInversePredicate([ predicate ]);
       return this.createWhereQueryDataFromKeyValue(subject, inversePredicate, operator.value);
+    }
+    if (operator.operator === 'sequence') {
+      const sequencePredicate = createSparqlSequencePredicate([ predicate ]);
+      return this.createWhereQueryDataFromKeyValue(subject, sequencePredicate, operator.value);
     }
     if (FindOperator.isPathOperator(operator)) {
       const pathPredicate = this.pathOperatorToPropertyPath(operator);
