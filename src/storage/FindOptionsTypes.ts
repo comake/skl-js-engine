@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Variable } from 'sparqljs';
+import type { Expression, Variable } from 'sparqljs';
 import type { OrArray, JSONArray, JSONObject } from '../util/Types';
 import type { FindOperator } from './FindOperator';
 import type { InverseRelationOperatorValue } from './operator/InverseRelation';
@@ -59,7 +59,8 @@ export type FindOptionsWhereField =
 | OrArray<FieldPrimitiveValue>
 | ValueWhereFieldObject
 | FindOptionsWhere
-| OrArray<FindOperator<any, any>>;
+| OrArray<FindOperator<any, any>>
+| BindPattern[];
 
 export type IdFindOptionsWhereField =
 | string
@@ -69,10 +70,16 @@ export type TypeFindOptionsWhereField =
 | string
 | FindOperator<string | string[] | FindOptionsWhere, 'in' | 'not' | 'equal' | 'inverse' | 'contains'>;
 
+export interface BindPattern {
+  expression: Expression;
+  variable: Variable;
+}
+
 export interface FindOptionsWhere {
   type?: TypeFindOptionsWhereField;
   id?: IdFindOptionsWhereField;
-  [k: string]: FindOptionsWhereField | undefined;
+  binds?: BindPattern[];
+  [k: string]: FindOptionsWhereField | BindPattern[] | undefined;
 }
 
 // Add these new types

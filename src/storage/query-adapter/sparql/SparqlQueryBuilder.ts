@@ -65,6 +65,7 @@ import type {
   SubQuery,
   TypeFindOptionsWhereField,
   ValueWhereFieldObject,
+  BindPattern,
 } from '../../FindOptionsTypes';
 import type { InverseRelationOperatorValue } from '../../operator/InverseRelation';
 import type { InverseRelationOrderValue } from '../../operator/InverseRelationOrder';
@@ -75,6 +76,8 @@ export interface NonGraphWhereQueryData {
   values: ValuesPattern[];
   triples: Triple[];
   filters: OperationExpression[];
+  patterns?: Pattern[];
+  binds?: Pattern[];
 }
 
 export interface WhereQueryData extends NonGraphWhereQueryData {
@@ -94,6 +97,7 @@ export interface OrderQueryData {
   filters: OperationExpression[];
   orders: Ordering[];
   groupByParent?: boolean;
+  patterns?: Pattern[];
 }
 
 export interface EntitySelectQueryData {
@@ -130,23 +134,22 @@ export class SparqlQueryBuilder {
     // Handle subqueries
     if (options?.subQueries && options.subQueries.length > 0) {
       const subQueryPatterns = this.createSubQueryPatterns(options.subQueries);
-      whereQueryData.values.unshift(...subQueryPatterns as ValuesPattern[]);
+      whereQueryData.values.unshift(...(subQueryPatterns as ValuesPattern[]));
     }
     const patterns: Pattern[] = whereQueryData.values;
-    if (whereQueryData.triples.length === 0 && (
-      whereQueryData.filters.length > 0 ||
-      orderQueryData.triples.length > 0 ||
-      (
-        whereQueryData.values.length === 0 &&
-        whereQueryData.graphValues.length === 0 &&
-        whereQueryData.graphTriples.length === 0
-      )
-    )) {
+    if (
+      whereQueryData.triples.length === 0 &&
+      (whereQueryData.filters.length > 0 ||
+        orderQueryData.triples.length > 0 ||
+        (whereQueryData.values.length === 0 &&
+          whereQueryData.graphValues.length === 0 &&
+          whereQueryData.graphTriples.length === 0))
+    ) {
       const entityGraphFilterPattern = this.createEntityGraphFilterPattern(subject);
       patterns.push(entityGraphFilterPattern);
     } else if (!options?.where?.id) {
       const entityGraphFilterPattern = this.createEntityGraphFilterPattern(subject);
-      const entityIsGraphFilter = createSparqlExistsOperation([ entityGraphFilterPattern ]);
+      const entityIsGraphFilter = createSparqlExistsOperation([entityGraphFilterPattern]);
       whereQueryData.filters.push(entityIsGraphFilter);
     }
 
@@ -156,6 +159,9 @@ export class SparqlQueryBuilder {
       whereQueryData.filters,
       orderQueryData.triples,
       orderQueryData.filters,
+      whereQueryData.patterns ?? [],
+      undefined,
+      whereQueryData.binds,
     );
     const graphWherePatterns = this.createWherePatternsFromQueryData(
       whereQueryData.graphValues,
@@ -193,21 +199,21 @@ export class SparqlQueryBuilder {
           subQueryWhere.values,
           subQueryWhere.triples,
           subQueryWhere.filters,
+          undefined,
+          undefined,
+          subQueryWhere.patterns ?? [],
         ),
         group: queryGroup.length > 0 ? queryGroup : undefined,
         having: subQuery.having ? this.createWhereQueryData(entityVariable, subQuery.having).filters : undefined,
         prefixes: {},
       };
-      return createSparqlSelectGroup([ selectQuery ]);
+      return createSparqlSelectGroup([selectQuery]);
     });
   }
 
   private createEntityGraphFilterPattern(subject: Variable): GraphPattern {
     const entityFilterTriple = { subject, predicate: this.createVariable(), object: this.createVariable() };
-    return createSparqlGraphPattern(
-      subject,
-      [ createSparqlBasicGraphPattern([ entityFilterTriple ]) ],
-    );
+    return createSparqlGraphPattern(subject, [createSparqlBasicGraphPattern([entityFilterTriple])]);
   }
 
   public buildConstructFromEntitySelectQuery(
@@ -219,30 +225,18 @@ export class SparqlQueryBuilder {
     let where: Pattern[] = [];
     if (select) {
       triples = this.createSelectPattern(select, entityVariable);
-      where = [
-        createSparqlOptional([
-          createSparqlBasicGraphPattern(triples),
-        ]),
-        ...graphWhere,
-      ];
+      where = [createSparqlOptional([createSparqlBasicGraphPattern(triples)]), ...graphWhere];
     } else {
-      triples = [ entityGraphTriple, ...graphSelectionTriples ];
+      triples = [entityGraphTriple, ...graphSelectionTriples];
       where = [
         ...graphWhere,
-        createSparqlGraphPattern(
-          entityVariable,
-          [ createSparqlBasicGraphPattern([ entityGraphTriple ]) ],
-        ),
+        createSparqlGraphPattern(entityVariable, [createSparqlBasicGraphPattern([entityGraphTriple])]),
       ];
     }
     return createSparqlConstructQuery(triples, where);
   }
 
-  private createWhereQueryData(
-    subject: Variable,
-    where?: FindOptionsWhere,
-    isTopLevel = false,
-  ): WhereQueryData {
+  private createWhereQueryData(subject: Variable, where?: FindOptionsWhere, isTopLevel = false): WhereQueryData {
     if (isTopLevel && Object.keys(where ?? {}).length === 1 && 'id' in where!) {
       const { values, filters, triples } = this.createWhereQueryDataForIdValue(subject, where.id!);
       return {
@@ -252,22 +246,44 @@ export class SparqlQueryBuilder {
         graphValues: values,
         graphFilters: filters,
         graphTriples: triples,
+        binds: [],
       };
     }
-    const whereQueryData = Object.entries(where ?? {})
-      .reduce((obj: NonGraphWhereQueryData, [ key, value ]): NonGraphWhereQueryData => {
+
+    // Handle binds if specified in where options
+    const binds: Pattern[] = [];
+    if (where?.binds) {
+      binds.push(...where.binds.map(bind => ({
+        type: 'bind' as const,
+        expression: bind.expression,
+        variable: bind.variable
+      })));
+      // Delete binds from where as it's a special key
+      const { binds: _, ...restWhere } = where;
+      where = restWhere;
+    }
+
+    const whereQueryData = Object.entries(where ?? {}).reduce(
+      (obj: NonGraphWhereQueryData, [key, value]): NonGraphWhereQueryData => {
         const whereQueryDataForField = this.createWhereQueryDataForField(subject, key, value!);
         return {
-          values: [ ...obj.values, ...whereQueryDataForField.values ],
-          triples: [ ...obj.triples, ...whereQueryDataForField.triples ],
-          filters: [ ...obj.filters, ...whereQueryDataForField.filters ],
+          values: [...obj.values, ...whereQueryDataForField.values],
+          triples: [...obj.triples, ...whereQueryDataForField.triples],
+          filters: [...obj.filters, ...whereQueryDataForField.filters],
+          patterns: [...(obj.patterns ?? []), ...(whereQueryDataForField.patterns ?? [])],
+          binds: [...(obj.binds ?? []), ...(whereQueryDataForField.binds ?? [])],
         };
-      }, { values: [], triples: [], filters: []});
+      },
+      { values: [], triples: [], filters: [], patterns: [], binds }
+    );
+
     return {
       ...whereQueryData,
       graphValues: [],
       graphFilters: [],
       graphTriples: [],
+      patterns: whereQueryData.patterns ?? [],
+      binds: whereQueryData.binds ?? [],
     };
   }
 
@@ -277,10 +293,7 @@ export class SparqlQueryBuilder {
     value: IdFindOptionsWhereField | TypeFindOptionsWhereField | FindOptionsWhereField,
   ): NonGraphWhereQueryData {
     if (field === 'id') {
-      return this.createWhereQueryDataForIdValue(
-        subject,
-        value as FindOperator<any, any>,
-      );
+      return this.createWhereQueryDataForIdValue(subject, value as FindOperator<any, any>);
     }
     if (field === 'type') {
       return this.createWhereQueryDataForType(subject, value as FindOperator<any, any>);
@@ -289,23 +302,26 @@ export class SparqlQueryBuilder {
     return this.createWhereQueryDataFromKeyValue(subject, predicate, value);
   }
 
-  private createWhereQueryDataForIdValue(
-    term: Variable,
-    value: IdFindOptionsWhereField,
-  ): NonGraphWhereQueryData {
+  private createWhereQueryDataForIdValue(term: Variable, value: IdFindOptionsWhereField): NonGraphWhereQueryData {
     let filters: OperationExpression[] = [];
     let values: ValuesPattern[] = [];
     let triples: Triple[] = [];
     if (FindOperator.isFindOperator(value)) {
-      ({ filters, values, triples } =
-        this.resolveFindOperatorAsExpressionForId(term, value as FindOperator<string, any>));
+      ({ filters, values, triples } = this.resolveFindOperatorAsExpressionForId(
+        term,
+        value as FindOperator<string, any>,
+      ));
     } else {
-      values = [{
-        type: 'values',
-        values: [{
-          [`?${term.value}`]: DataFactory.namedNode(value as string),
-        }],
-      }];
+      values = [
+        {
+          type: 'values',
+          values: [
+            {
+              [`?${term.value}`]: DataFactory.namedNode(value as string),
+            },
+          ],
+        },
+      ];
     }
     return {
       values,
@@ -314,13 +330,10 @@ export class SparqlQueryBuilder {
     };
   }
 
-  private createWhereQueryDataForType(
-    subject: Variable,
-    value: TypeFindOptionsWhereField,
-  ): NonGraphWhereQueryData {
+  private createWhereQueryDataForType(subject: Variable, value: TypeFindOptionsWhereField): NonGraphWhereQueryData {
     if (FindOperator.isFindOperator(value)) {
       if ((value as FindOperator<any, any>).operator === 'inverse') {
-        const inversePredicate = createSparqlInversePredicate([ allTypesAndSuperTypesPath ]);
+        const inversePredicate = createSparqlInversePredicate([allTypesAndSuperTypesPath]);
         const inverseWhereQueryData = this.createWhereQueryDataFromKeyValue(
           subject,
           inversePredicate,
@@ -332,9 +345,13 @@ export class SparqlQueryBuilder {
           triples: inverseWhereQueryData.triples,
         };
       }
-      if ((value as FindOperator<any, any>).operator === 'sequence') {  
-        const sequencePredicate = createSparqlSequencePredicate([ allTypesAndSuperTypesPath ]);
-        return this.createWhereQueryDataFromKeyValue(subject, sequencePredicate, (value as FindOperator<any, any>).value);
+      if ((value as FindOperator<any, any>).operator === 'sequence') {
+        const sequencePredicate = createSparqlSequencePredicate([allTypesAndSuperTypesPath]);
+        return this.createWhereQueryDataFromKeyValue(
+          subject,
+          sequencePredicate,
+          (value as FindOperator<any, any>).value,
+        );
       }
 
       const variable = this.createVariable();
@@ -345,19 +362,21 @@ export class SparqlQueryBuilder {
         triple,
       );
       return {
-        values: valuePattern ? [ valuePattern ] : [],
-        filters: filter ? [ filter ] : [],
-        triples: tripleInFilter ? [] : [ triple ],
+        values: valuePattern ? [valuePattern] : [],
+        filters: filter ? [filter] : [],
+        triples: tripleInFilter ? [] : [triple],
       };
     }
     return {
       values: [],
       filters: [],
-      triples: [{
-        subject,
-        predicate: allTypesAndSuperTypesPath,
-        object: DataFactory.namedNode(value as string),
-      }],
+      triples: [
+        {
+          subject,
+          predicate: allTypesAndSuperTypesPath,
+          object: DataFactory.namedNode(value as string),
+        },
+      ],
     };
   }
 
@@ -373,19 +392,26 @@ export class SparqlQueryBuilder {
       return this.createWhereQueryDataForFindOperator(subject, predicate, value as FindOperator<any, any>);
     }
     if (Array.isArray(value)) {
-      return (value as FieldPrimitiveValue[])
-        .reduce((obj: NonGraphWhereQueryData, valueItem): NonGraphWhereQueryData => {
+      return (value as FieldPrimitiveValue[]).reduce(
+        (obj: NonGraphWhereQueryData, valueItem): NonGraphWhereQueryData => {
           const valueWhereQueryData = this.createWhereQueryDataFromKeyValue(subject, predicate, valueItem);
           return {
-            values: [ ...obj.values, ...valueWhereQueryData.values ],
-            filters: [ ...obj.filters, ...valueWhereQueryData.filters ],
-            triples: [ ...obj.triples, ...valueWhereQueryData.triples ],
+            values: [...obj.values, ...valueWhereQueryData.values],
+            filters: [...obj.filters, ...valueWhereQueryData.filters],
+            triples: [...obj.triples, ...valueWhereQueryData.triples],
+            patterns: [...(obj.patterns ?? []), ...(valueWhereQueryData.patterns ?? [])],
           };
-        }, { values: [], filters: [], triples: []});
+        },
+        { values: [], filters: [], triples: [], patterns: [] },
+      );
     }
     if (typeof value === 'object') {
       if ('@value' in value) {
-        return this.createWhereQueryDataForValueObject(subject, predicate, value as ValueWhereFieldObject);
+        return this.createWhereQueryDataForValueObject(
+          'subject' in value ? (value.subject as unknown as Variable) : subject,
+          predicate,
+          value as ValueWhereFieldObject,
+        );
       }
       return this.createWhereQueryDataForNestedWhere(subject, predicate, value as FindOptionsWhere);
     }
@@ -403,19 +429,20 @@ export class SparqlQueryBuilder {
     operator: FindOperator<any, any>,
   ): NonGraphWhereQueryData {
     if (operator.operator === 'inverse') {
-      const inversePredicate = createSparqlInversePredicate([ predicate ]);
+      const inversePredicate = createSparqlInversePredicate([predicate]);
       return this.createWhereQueryDataFromKeyValue(subject, inversePredicate, operator.value);
     }
     if (operator.operator === 'sequence') {
-      const sequencePredicate = createSparqlSequencePredicate([ predicate ]);
-      return this.createWhereQueryDataFromKeyValue(subject, sequencePredicate, operator.value);
+      const sequencePredicate = createSparqlSequencePredicate([predicate]);
+      return this.createWhereQueryDataFromKeyValue(
+        operator.subject ? operator.subject : subject,
+        sequencePredicate,
+        operator.value,
+      );
     }
     if (FindOperator.isPathOperator(operator)) {
       const pathPredicate = this.pathOperatorToPropertyPath(operator);
-      const combinedPredicate = createSparqlSequencePredicate([
-        predicate,
-        pathPredicate,
-      ]);
+      const combinedPredicate = createSparqlSequencePredicate([predicate, pathPredicate]);
       return this.createWhereQueryDataFromKeyValue(subject, combinedPredicate, operator.value.value);
     }
     const variable = this.createVariable();
@@ -426,9 +453,9 @@ export class SparqlQueryBuilder {
       triple,
     );
     return {
-      values: valuePattern ? [ valuePattern ] : [],
-      filters: filter ? [ filter ] : [],
-      triples: tripleInFilter ? [] : [ triple ],
+      values: valuePattern ? [valuePattern] : [],
+      filters: filter ? [filter] : [],
+      triples: tripleInFilter ? [] : [triple],
     };
   }
 
@@ -443,17 +470,16 @@ export class SparqlQueryBuilder {
       } else {
         subPredicate = this.pathOperatorToPropertyPath(subPath);
       }
-      return createSparqlInversePredicate([ subPredicate ]);
+      return createSparqlInversePredicate([subPredicate]);
     }
     if (operator.operator === 'sequencePath') {
       const { subPath } = operator.value;
-      const subPredicates = subPath
-        .map((sequencePart: string | FindOperator<any, any>): IriTerm | PropertyPath => {
-          if (typeof sequencePart === 'string') {
-            return DataFactory.namedNode(sequencePart);
-          }
-          return this.pathOperatorToPropertyPath(sequencePart);
-        });
+      const subPredicates = subPath.map((sequencePart: string | FindOperator<any, any>): IriTerm | PropertyPath => {
+        if (typeof sequencePart === 'string') {
+          return DataFactory.namedNode(sequencePart);
+        }
+        return this.pathOperatorToPropertyPath(sequencePart);
+      });
       return createSparqlSequencePredicate(subPredicates);
     }
     if (operator.operator === 'zeroOrMorePath') {
@@ -464,7 +490,7 @@ export class SparqlQueryBuilder {
       } else {
         subPredicate = this.pathOperatorToPropertyPath(subPath);
       }
-      return createSparqlZeroOrMorePredicate([ subPredicate ]);
+      return createSparqlZeroOrMorePredicate([subPredicate]);
     }
     if (operator.operator === 'oneOrMorePath') {
       const { subPath } = operator.value;
@@ -474,7 +500,7 @@ export class SparqlQueryBuilder {
       } else {
         subPredicate = this.pathOperatorToPropertyPath(subPath);
       }
-      return createSparqlOneOrMorePredicate([ subPredicate ]);
+      return createSparqlOneOrMorePredicate([subPredicate]);
     }
     throw new Error(`Operator ${operator.operator} not supported`);
   }
@@ -489,7 +515,7 @@ export class SparqlQueryBuilder {
     const whereQueryData = {
       values: [],
       filters: [],
-      triples: [ triple ],
+      triples: [triple],
     };
     return operators.reduce((obj: NonGraphWhereQueryData, operator): NonGraphWhereQueryData => {
       const { filter, valuePattern } = this.resolveFindOperatorAsExpressionWithMultipleValues(
@@ -515,12 +541,10 @@ export class SparqlQueryBuilder {
     const subNodeVariable = this.createVariable();
     const subWhereQueryData = this.createWhereQueryData(subNodeVariable, where);
     return {
-      values: [ ...subWhereQueryData.values, ...subWhereQueryData.graphValues ],
+      values: [...subWhereQueryData.values, ...subWhereQueryData.graphValues],
       filters: subWhereQueryData.filters,
-      triples: [
-        { subject, predicate, object: subNodeVariable },
-        ...subWhereQueryData.triples,
-      ],
+      triples: [{ subject, predicate, object: subNodeVariable }, ...subWhereQueryData.triples],
+      patterns: [...(subWhereQueryData.patterns ?? [])],
     };
   }
 
@@ -530,6 +554,14 @@ export class SparqlQueryBuilder {
     valueObject: ValueWhereFieldObject,
   ): NonGraphWhereQueryData {
     const term = this.valueObjectToTerm(valueObject);
+    if ((valueObject as any).isOptional) {
+      return {
+        values: [],
+        filters: [],
+        triples: [],
+        patterns: [createSparqlOptional([createSparqlBasicGraphPattern([{ subject, predicate, object: term }])])],
+      };
+    }
     return {
       values: [],
       filters: [],
@@ -537,7 +569,7 @@ export class SparqlQueryBuilder {
     };
   }
 
-  private valueObjectToTerm(valueObject: ValueWhereFieldObject): Literal {
+  private valueObjectToTerm(valueObject: ValueWhereFieldObject): Literal | Variable {
     let typeOrLanguage: string;
     let value: string;
     if ('@type' in valueObject && valueObject['@type'] === '@json') {
@@ -547,7 +579,7 @@ export class SparqlQueryBuilder {
       typeOrLanguage = ('@type' in valueObject ? valueObject['@type'] : valueObject['@language'])!;
       value = (valueObject['@value'] as FieldPrimitiveValue).toString();
     }
-    return DataFactory.literal(value, typeOrLanguage);
+    return valueToLiteral(value, typeOrLanguage);
   }
 
   private resolveFindOperatorAsExpressionWithMultipleValues(
@@ -579,9 +611,7 @@ export class SparqlQueryBuilder {
     }
     if (operator.operator === 'exists') {
       return {
-        filter: createSparqlExistsOperation([
-          createSparqlBasicGraphPattern([ triple ]),
-        ]),
+        filter: createSparqlExistsOperation([createSparqlBasicGraphPattern([triple])]),
         tripleInFilter: true,
       };
     }
@@ -628,12 +658,15 @@ export class SparqlQueryBuilder {
         return {
           triples: [],
           filters: [],
-          values: [{
-            type: 'values',
-            values: resolvedValue.map((value): ValuePatternRow => ({ [`?${leftSide.value}`]: value })),
-          }],
+          values: [
+            {
+              type: 'values',
+              values: resolvedValue.map((value): ValuePatternRow => ({ [`?${leftSide.value}`]: value })),
+            },
+          ],
         };
-      } case 'not':
+      }
+      case 'not':
         return {
           triples: [],
           values: [],
@@ -648,12 +681,7 @@ export class SparqlQueryBuilder {
         return {
           triples: [],
           values: [],
-          filters: [
-            createSparqlEqualOperation(
-              leftSide,
-              this.resolveValueToExpression(operator.value) as Expression,
-            ),
-          ],
+          filters: [createSparqlEqualOperation(leftSide, this.resolveValueToExpression(operator.value) as Expression)],
         };
       default:
         throw new Error(`Unsupported operator "${operator.operator}"`);
@@ -680,9 +708,7 @@ export class SparqlQueryBuilder {
     let filterExpression: FilterPattern;
     const isFindOperator = FindOperator.isFindOperator(rightSide);
     if (isFindOperator && (rightSide as FindOperator<any, any>).operator === 'exists') {
-      return createSparqlNotExistsOperation([
-        createSparqlBasicGraphPattern([ triple ]),
-      ]);
+      return createSparqlNotExistsOperation([createSparqlBasicGraphPattern([triple])]);
     }
     if (isFindOperator) {
       let expression: OperationExpression | undefined;
@@ -703,10 +729,7 @@ export class SparqlQueryBuilder {
       );
     }
     return createSparqlNotExistsOperation([
-      createSparqlSelectGroup([
-        createSparqlBasicGraphPattern([ triple ]),
-        filterExpression,
-      ]),
+      createSparqlSelectGroup([createSparqlBasicGraphPattern([triple]), filterExpression]),
     ]);
   }
 
@@ -730,10 +753,7 @@ export class SparqlQueryBuilder {
 
   private resolveValueToTerm(value: FieldPrimitiveValue | ValueWhereFieldObject): NamedNode | Literal | Variable {
     if (typeof value === 'object' && '@value' in value) {
-      return valueToLiteral(
-        (value as ValueWhereFieldObject)['@value'],
-        '@type' in value ? value['@type'] : undefined,
-      );
+      return valueToLiteral((value as ValueWhereFieldObject)['@value'], '@type' in value ? value['@type'] : undefined);
     }
     if (isUrl(value)) {
       return DataFactory.namedNode(value as string);
@@ -747,16 +767,19 @@ export class SparqlQueryBuilder {
     isNested = false,
   ): OrderQueryData {
     if (!order) {
-      return { triples: [], orders: [], filters: []};
+      return { triples: [], orders: [], filters: [] };
     }
-    return Object.entries(order).reduce((obj: OrderQueryData, [ property, orderValue ]): OrderQueryData => {
-      const orderQueryData = this.createOrderQueryDataForProperty(subject, property, orderValue, isNested);
-      obj.orders = [ ...obj.orders, ...orderQueryData.orders ];
-      obj.triples = [ ...obj.triples, ...orderQueryData.triples ];
-      obj.filters = [ ...obj.filters, ...orderQueryData.filters ];
-      obj.groupByParent = obj.groupByParent ?? orderQueryData.groupByParent;
-      return obj;
-    }, { triples: [], orders: [], filters: []});
+    return Object.entries(order).reduce(
+      (obj: OrderQueryData, [property, orderValue]): OrderQueryData => {
+        const orderQueryData = this.createOrderQueryDataForProperty(subject, property, orderValue, isNested);
+        obj.orders = [...obj.orders, ...orderQueryData.orders];
+        obj.triples = [...obj.triples, ...orderQueryData.triples];
+        obj.filters = [...obj.filters, ...orderQueryData.filters];
+        obj.groupByParent = obj.groupByParent ?? orderQueryData.groupByParent;
+        return obj;
+      },
+      { triples: [], orders: [], filters: [] },
+    );
   }
 
   private createOrderQueryDataForProperty(
@@ -770,37 +793,31 @@ export class SparqlQueryBuilder {
       const variable = this.createVariable();
       const inverseRelationTriple = {
         subject,
-        predicate: createSparqlInversePredicate([ predicate ]),
+        predicate: createSparqlInversePredicate([predicate]),
         object: variable,
       };
-      const subRelationOperatorValue = (
-        orderValue as FindOperator<InverseRelationOrderValue, 'inverseRelationOrder'>
-      ).value as InverseRelationOrderValue;
-      const subRelationOrderQueryData = this.createOrderQueryData(
-        variable,
-        subRelationOperatorValue.order,
-        true,
-      );
+      const subRelationOperatorValue = (orderValue as FindOperator<InverseRelationOrderValue, 'inverseRelationOrder'>)
+        .value as InverseRelationOrderValue;
+      const subRelationOrderQueryData = this.createOrderQueryData(variable, subRelationOperatorValue.order, true);
       const subRelationWhereQueryData = this.createWhereQueryData(variable, subRelationOperatorValue.where);
       return {
-        triples: [
-          inverseRelationTriple,
-          ...subRelationOrderQueryData.triples,
-          ...subRelationWhereQueryData.triples,
-        ],
+        triples: [inverseRelationTriple, ...subRelationOrderQueryData.triples, ...subRelationWhereQueryData.triples],
         filters: subRelationWhereQueryData.filters,
         orders: subRelationOrderQueryData.orders,
         groupByParent: true,
+        patterns: [...(subRelationWhereQueryData.patterns ?? []), ...(subRelationOrderQueryData.patterns ?? [])],
       };
     }
     if (property === 'id') {
       return {
         triples: [],
         filters: [],
-        orders: [{
-          expression: subject,
-          descending: orderValue === 'DESC' || orderValue === 'desc',
-        }],
+        orders: [
+          {
+            expression: subject,
+            descending: orderValue === 'DESC' || orderValue === 'desc',
+          },
+        ],
       };
     }
     const variable = this.createVariable();
@@ -808,28 +825,27 @@ export class SparqlQueryBuilder {
     return {
       triples: [{ subject, predicate, object: variable }],
       filters: [],
-      orders: [{
-        expression: isNested
-          ? {
-            type: 'aggregate',
-            expression: variable,
-            aggregation: isDescending ? 'max' : 'min',
-          }
-          : variable,
-        descending: isDescending,
-      }],
+      orders: [
+        {
+          expression: isNested
+            ? {
+                type: 'aggregate',
+                expression: variable,
+                aggregation: isDescending ? 'max' : 'min',
+              }
+            : variable,
+          descending: isDescending,
+        },
+      ],
     };
   }
 
-  private createRelationsQueryData(
-    subject: Variable,
-    relations?: FindOptionsRelations,
-  ): RelationsQueryData {
+  private createRelationsQueryData(subject: Variable, relations?: FindOptionsRelations): RelationsQueryData {
     if (!relations) {
-      return { patterns: [], selectionTriples: []};
+      return { patterns: [], selectionTriples: [] };
     }
-    return Object.entries(relations)
-      .reduce((obj: RelationsQueryData, [ property, relationsValue ]): RelationsQueryData => {
+    return Object.entries(relations).reduce(
+      (obj: RelationsQueryData, [property, relationsValue]): RelationsQueryData => {
         const predicate = DataFactory.namedNode(property);
         if (typeof relationsValue === 'object') {
           if (FindOperator.isFindOperator(relationsValue)) {
@@ -839,8 +855,8 @@ export class SparqlQueryBuilder {
               relationsValue as FindOperator<InverseRelationOperatorValue, 'inverseRelation'>,
             );
             return {
-              patterns: [ ...obj.patterns, ...patterns ],
-              selectionTriples: [ ...obj.selectionTriples, ...selectionTriples ],
+              patterns: [...obj.patterns, ...patterns],
+              selectionTriples: [...obj.selectionTriples, ...selectionTriples],
             };
           }
           const { patterns, selectionTriples } = this.createRelationsQueryDataForNestedRelation(
@@ -849,8 +865,8 @@ export class SparqlQueryBuilder {
             relationsValue as FindOptionsRelations,
           );
           return {
-            patterns: [ ...obj.patterns, ...patterns ],
-            selectionTriples: [ ...obj.selectionTriples, ...selectionTriples ],
+            patterns: [...obj.patterns, ...patterns],
+            selectionTriples: [...obj.selectionTriples, ...selectionTriples],
           };
         }
         const variable = this.createVariable();
@@ -861,16 +877,15 @@ export class SparqlQueryBuilder {
         };
         const relationPattern = createSparqlOptional([
           createSparqlBasicGraphPattern([{ subject, predicate, object: variable }]),
-          createSparqlGraphPattern(
-            variable,
-            [ createSparqlBasicGraphPattern([ graphTriple ]) ],
-          ),
+          createSparqlGraphPattern(variable, [createSparqlBasicGraphPattern([graphTriple])]),
         ]);
         return {
-          patterns: [ ...obj.patterns, relationPattern ],
-          selectionTriples: [ ...obj.selectionTriples, graphTriple ],
+          patterns: [...obj.patterns, relationPattern],
+          selectionTriples: [...obj.selectionTriples, graphTriple],
         };
-      }, { patterns: [], selectionTriples: []});
+      },
+      { patterns: [], selectionTriples: [] },
+    );
   }
 
   private createRelationsQueryDataForInverseRelation(
@@ -886,39 +901,31 @@ export class SparqlQueryBuilder {
     };
     const inverseRelationTriple = {
       subject,
-      predicate: createSparqlInversePredicate([ predicate ]),
+      predicate: createSparqlInversePredicate([predicate]),
       object: variable,
     };
-    if (typeof relationsValue.value === 'object' &&
-      (relationsValue.value as InverseRelationOperatorValue).relations
-    ) {
+    if (typeof relationsValue.value === 'object' && (relationsValue.value as InverseRelationOperatorValue).relations) {
       const subRelationsQueryData = this.createRelationsQueryData(
         variable,
         (relationsValue.value as InverseRelationOperatorValue).relations,
       );
       const relationPattern = createSparqlOptional([
-        createSparqlBasicGraphPattern([ inverseRelationTriple ]),
-        createSparqlGraphPattern(
-          variable,
-          [ createSparqlBasicGraphPattern([ graphTriple ]) ],
-        ),
+        createSparqlBasicGraphPattern([inverseRelationTriple]),
+        createSparqlGraphPattern(variable, [createSparqlBasicGraphPattern([graphTriple])]),
         ...subRelationsQueryData.patterns,
       ]);
       return {
-        patterns: [ relationPattern ],
-        selectionTriples: [ graphTriple, ...subRelationsQueryData.selectionTriples ],
+        patterns: [relationPattern],
+        selectionTriples: [graphTriple, ...subRelationsQueryData.selectionTriples],
       };
     }
     const relationPattern = createSparqlOptional([
-      createSparqlBasicGraphPattern([ inverseRelationTriple ]),
-      createSparqlGraphPattern(
-        variable,
-        [ createSparqlBasicGraphPattern([ graphTriple ]) ],
-      ),
+      createSparqlBasicGraphPattern([inverseRelationTriple]),
+      createSparqlGraphPattern(variable, [createSparqlBasicGraphPattern([graphTriple])]),
     ]);
     return {
-      patterns: [ relationPattern ],
-      selectionTriples: [ graphTriple ],
+      patterns: [relationPattern],
+      selectionTriples: [graphTriple],
     };
   }
 
@@ -934,21 +941,15 @@ export class SparqlQueryBuilder {
       object: this.createVariable(),
     };
     const relationTriple = { subject, predicate, object: variable };
-    const subRelationsQueryData = this.createRelationsQueryData(
-      variable,
-      relationsValue,
-    );
+    const subRelationsQueryData = this.createRelationsQueryData(variable, relationsValue);
     const relationPattern = createSparqlOptional([
-      createSparqlBasicGraphPattern([ relationTriple ]),
-      createSparqlGraphPattern(
-        variable,
-        [ createSparqlBasicGraphPattern([ graphTriple ]) ],
-      ),
+      createSparqlBasicGraphPattern([relationTriple]),
+      createSparqlGraphPattern(variable, [createSparqlBasicGraphPattern([graphTriple])]),
       ...subRelationsQueryData.patterns,
     ]);
     return {
-      patterns: [ relationPattern ],
-      selectionTriples: [ graphTriple, ...subRelationsQueryData.selectionTriples ],
+      patterns: [relationPattern],
+      selectionTriples: [graphTriple, ...subRelationsQueryData.selectionTriples],
     };
   }
 
@@ -958,17 +959,19 @@ export class SparqlQueryBuilder {
 
   private createSelectPattern(select: FindOptionsSelect, subject: Variable): Triple[] {
     if (Array.isArray(select)) {
-      return select.map((selectPredicate): Triple => ({
-        subject,
-        predicate: DataFactory.namedNode(selectPredicate),
-        object: this.createVariable(),
-      }));
+      return select.map(
+        (selectPredicate): Triple => ({
+          subject,
+          predicate: DataFactory.namedNode(selectPredicate),
+          object: this.createVariable(),
+        }),
+      );
     }
-    return Object.entries(select).reduce((arr: Triple[], [ key, value ]): Triple[] => {
+    return Object.entries(select).reduce((arr: Triple[], [key, value]): Triple[] => {
       const variable = this.createVariable();
       arr.push({ subject, predicate: DataFactory.namedNode(key), object: variable });
       if (typeof value === 'object') {
-        arr = [ ...arr, ...this.createSelectPattern(value, variable) ];
+        arr = [...arr, ...this.createSelectPattern(value, variable)];
       }
       return arr;
     }, []);
@@ -982,13 +985,20 @@ export class SparqlQueryBuilder {
     orderFilters?: OperationExpression[],
     additionalPatterns?: Pattern[],
     serviceTriples?: Record<string, Triple[]>,
+    binds?: Pattern[],
   ): Pattern[] {
     let patterns = initialPatterns;
+
+    // Add binds at the beginning if they exist
+    if (binds && binds.length > 0) {
+      patterns = [...patterns, ...binds];
+    }
+
     if (triples.length > 0) {
       patterns.push(createSparqlBasicGraphPattern(triples));
     }
     if (orderTriples && orderTriples.length > 0) {
-      const optionalPatterns: Pattern[] = [ createSparqlBasicGraphPattern(orderTriples) ];
+      const optionalPatterns: Pattern[] = [createSparqlBasicGraphPattern(orderTriples)];
       if (orderFilters && orderFilters.length > 0) {
         optionalPatterns.push(createFilterPatternFromFilters(orderFilters));
       }
@@ -998,34 +1008,39 @@ export class SparqlQueryBuilder {
       patterns.push(createFilterPatternFromFilters(filters));
     }
     if (serviceTriples) {
-      for (const [ service, sTriples ] of Object.entries(serviceTriples)) {
+      for (const [service, sTriples] of Object.entries(serviceTriples)) {
         patterns.unshift(createSparqlServicePattern(service, sTriples));
       }
     }
     if (additionalPatterns) {
-      patterns = [ ...patterns, ...additionalPatterns ];
+      patterns = [...patterns, ...additionalPatterns];
     }
     return patterns;
   }
 
-  private createGroupPatternForPath(entityVariable: Variable, path: string): { 
-    variable: Variable; 
+  private createGroupPatternForPath(
+    entityVariable: Variable,
+    path: string,
+  ): {
+    variable: Variable;
     patterns: Pattern[];
   } {
     const segments = path.split('~');
     let currentSubject = entityVariable;
     const patterns: Pattern[] = [];
-    
+
     // Create a chain of patterns for each segment
     segments.forEach((predicate, index) => {
       const object = this.createVariable();
       patterns.push({
         type: 'bgp',
-        triples: [{
-          subject: currentSubject,
-          predicate: DataFactory.namedNode(predicate),
-          object: object
-        }]
+        triples: [
+          {
+            subject: currentSubject,
+            predicate: DataFactory.namedNode(predicate),
+            object: object,
+          },
+        ],
       });
       currentSubject = object;
     });
@@ -1033,24 +1048,23 @@ export class SparqlQueryBuilder {
     // Return the final variable (last object) and all patterns
     return {
       variable: currentSubject,
-      patterns
+      patterns,
     };
   }
 
-  public async buildGroupByQuery(options: GroupByOptions): Promise<{ query: SelectQuery; variableMapping: Record<string, string> }> {
+  public async buildGroupByQuery(
+    options: GroupByOptions,
+  ): Promise<{ query: SelectQuery; variableMapping: Record<string, string> }> {
     const entityVariable = DataFactory.variable('entity');
-    const queryData = this.buildEntitySelectPatternsFromOptions(
-      entityVariable,
-      {
-        where: options.where || {},
-      }
-    );
-  
+    const queryData = this.buildEntitySelectPatternsFromOptions(entityVariable, {
+      where: options.where || {},
+    });
+
     // Add group variables and patterns with mapping
     const groupVariables: Variable[] = [];
     const groupPatterns: Pattern[] = [];
     const variableMapping: Record<string, string> = {};
-    
+
     if (options.groupBy) {
       options.groupBy.forEach((path) => {
         const { variable: groupVar, patterns } = this.createGroupPatternForPath(entityVariable, path);
@@ -1059,21 +1073,23 @@ export class SparqlQueryBuilder {
         groupPatterns.push(...patterns);
       });
     }
-  
+
     // Add date handling if specified
     if (options.dateRange) {
       const dateVar = this.createVariable();
       variableMapping[dateVar.value] = 'date';
-      
-      const datePattern:Pattern = {
+
+      const datePattern: Pattern = {
         type: 'bgp',
-        triples: [{
-          subject: entityVariable,
-          predicate: DataFactory.namedNode('http://purl.org/dc/terms/created'),
-          object: dateVar
-        }]
+        triples: [
+          {
+            subject: entityVariable,
+            predicate: DataFactory.namedNode('http://purl.org/dc/terms/created'),
+            object: dateVar,
+          },
+        ],
       };
-  
+
       const dateFilter: FilterPattern = {
         type: 'filter',
         expression: {
@@ -1083,41 +1099,41 @@ export class SparqlQueryBuilder {
             {
               type: 'operation',
               operator: '>=',
-              args: [dateVar, DataFactory.literal(options.dateRange.start, 'http://www.w3.org/2001/XMLSchema#dateTime')]
+              args: [
+                dateVar,
+                DataFactory.literal(options.dateRange.start, 'http://www.w3.org/2001/XMLSchema#dateTime'),
+              ],
             },
             {
               type: 'operation',
               operator: '<=',
-              args: [dateVar, DataFactory.literal(options.dateRange.end, 'http://www.w3.org/2001/XMLSchema#dateTime')]
-            }
-          ]
-        }
+              args: [dateVar, DataFactory.literal(options.dateRange.end, 'http://www.w3.org/2001/XMLSchema#dateTime')],
+            },
+          ],
+        },
       };
-  
+
       groupPatterns.push(datePattern, dateFilter);
-  
+
       if (options.dateGrouping) {
         const dateGroupVar = this.createVariable();
         groupVariables.push(dateGroupVar);
         variableMapping[dateGroupVar.value] = 'dateGroup';
-        
+
         const dateGroupBind = this.createDateGroupingBind(dateVar, dateGroupVar, options.dateGrouping);
         groupPatterns.push(dateGroupBind);
       }
     }
-  
+
     // Create count and entityIds variables
     const countVar = this.createVariable();
     const entityIdsVar = this.createVariable();
     variableMapping[countVar.value] = 'count';
     variableMapping[entityIdsVar.value] = 'entityIds';
-    
+
     // Combine all patterns
-    const combinedWhere = [
-      ...queryData.where,
-      ...groupPatterns
-    ];
-  
+    const combinedWhere = [...queryData.where, ...groupPatterns];
+
     // Create select query with aggregations
     const selectQuery = createSparqlSelectQuery(
       [
@@ -1127,9 +1143,9 @@ export class SparqlQueryBuilder {
             type: 'aggregate',
             aggregation: 'count',
             distinct: true,
-            expression: entityVariable
+            expression: entityVariable,
           },
-          variable: countVar
+          variable: countVar,
         },
         {
           expression: {
@@ -1137,27 +1153,23 @@ export class SparqlQueryBuilder {
             aggregation: 'group_concat',
             distinct: true,
             separator: ' ',
-            expression: entityVariable
+            expression: entityVariable,
           },
-          variable: entityIdsVar
-        }
+          variable: entityIdsVar,
+        },
       ],
       combinedWhere,
       [], // orders
       groupVariables.length > 0 ? groupVariables : undefined, // group by
       options.limit,
-      options.offset
+      options.offset,
     );
 
     return { query: selectQuery, variableMapping };
   }
 
   // Helper function for date grouping
-  private createDateGroupingBind(
-    dateVar: Variable,
-    dateGroupVar: Variable,
-    grouping: 'month' | 'day'
-  ): Pattern {
+  private createDateGroupingBind(dateVar: Variable, dateGroupVar: Variable, grouping: 'month' | 'day'): Pattern {
     return {
       type: 'bind',
       expression: {
@@ -1167,10 +1179,10 @@ export class SparqlQueryBuilder {
           this.createYearExpression(dateVar),
           DataFactory.literal('-'),
           this.createMonthExpression(dateVar),
-          ...this.createDayExpressionParts(dateVar, grouping)
-        ]
+          ...this.createDayExpressionParts(dateVar, grouping),
+        ],
       },
-      variable: dateGroupVar
+      variable: dateGroupVar,
     };
   }
 
@@ -1178,11 +1190,13 @@ export class SparqlQueryBuilder {
     return {
       type: 'operation',
       operator: 'STR',
-      args: [{
-        type: 'operation',
-        operator: 'YEAR',
-        args: [dateVar]
-      }]
+      args: [
+        {
+          type: 'operation',
+          operator: 'YEAR',
+          args: [dateVar],
+        },
+      ],
     };
   }
 
@@ -1195,16 +1209,19 @@ export class SparqlQueryBuilder {
   }
 
   private createPaddedDatePartExpression(dateVar: Variable, datePart: 'MONTH' | 'DAY'): Expression {
-    const comparisonValue = DataFactory.literal('10', DataFactory.namedNode('http://www.w3.org/2001/XMLSchema#integer'));
-    
+    const comparisonValue = DataFactory.literal(
+      '10',
+      DataFactory.namedNode('http://www.w3.org/2001/XMLSchema#integer'),
+    );
+
     return {
       type: 'operation',
       operator: 'IF',
       args: [
         this.createLessThanComparison(dateVar, datePart, comparisonValue),
         this.createPaddedStringExpression(dateVar, datePart),
-        this.createUnpaddedStringExpression(dateVar, datePart)
-      ]
+        this.createUnpaddedStringExpression(dateVar, datePart),
+      ],
     };
   }
 
@@ -1216,10 +1233,10 @@ export class SparqlQueryBuilder {
         {
           type: 'operation',
           operator: datePart,
-          args: [dateVar]
+          args: [dateVar],
         } as Expression,
-        comparisonValue as Expression
-      ]
+        comparisonValue as Expression,
+      ],
     };
   }
 
@@ -1227,10 +1244,7 @@ export class SparqlQueryBuilder {
     return {
       type: 'operation',
       operator: 'CONCAT',
-      args: [
-        DataFactory.literal('0'),
-        this.createUnpaddedStringExpression(dateVar, datePart)
-      ]
+      args: [DataFactory.literal('0'), this.createUnpaddedStringExpression(dateVar, datePart)],
     };
   }
 
@@ -1238,20 +1252,19 @@ export class SparqlQueryBuilder {
     return {
       type: 'operation',
       operator: 'STR',
-      args: [{
-        type: 'operation',
-        operator: datePart,
-        args: [dateVar]
-      }]
+      args: [
+        {
+          type: 'operation',
+          operator: datePart,
+          args: [dateVar],
+        },
+      ],
     };
   }
 
   private createDayExpressionParts(dateVar: Variable, grouping: 'month' | 'day'): Expression[] {
     if (grouping === 'day') {
-      return [
-        DataFactory.literal('-'),
-        this.createDayExpression(dateVar)
-      ];
+      return [DataFactory.literal('-'), this.createDayExpression(dateVar)];
     }
     return [DataFactory.literal('')];
   }
