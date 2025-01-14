@@ -106,6 +106,7 @@ export interface EntitySelectQueryData {
   graphWhere: Pattern[];
   graphSelectionTriples: Triple[];
   group?: Variable;
+  selectVariables: { variable: Variable; expression: Expression }[];
 }
 
 export interface SparqlQueryBuilderOptions {
@@ -171,13 +172,38 @@ export class SparqlQueryBuilder {
       undefined,
       relationsQueryData.patterns,
     );
-    return {
+
+    // Create variables for each order expression and update the orders to use them
+    const selectVariables = orderQueryData.orders.map(order => {
+      const variable = this.createVariable();
+      return {
+        variable,
+        expression: order.expression,
+      };
+    });
+
+    const orders = selectVariables.map((selectVar, index) => ({
+      expression: selectVar.variable,
+      descending: orderQueryData.orders[index].descending,
+    }));
+
+    if (orders.length) {
+      orders.push({
+        expression: entityVariable,
+      } as any);
+    }
+
+    const returnData: any = {
       where: wherePatterns,
-      orders: orderQueryData.orders,
+      orders: orders,
       group: orderQueryData.groupByParent ? subject : undefined,
       graphWhere: graphWherePatterns,
       graphSelectionTriples: relationsQueryData.selectionTriples,
     };
+    if (selectVariables.length > 0) {
+      returnData.selectVariables = selectVariables;
+    }
+    return returnData;
   }
 
   private createSubQueryPatterns(subQueries: SubQuery[]): Pattern[] {
@@ -220,6 +246,7 @@ export class SparqlQueryBuilder {
     graphWhere: Pattern[],
     graphSelectionTriples: Triple[],
     select?: FindOptionsSelect,
+    selectVariables?: { variable: Variable; expression: Expression }[],
   ): ConstructQuery {
     let triples: Triple[];
     let where: Pattern[] = [];
@@ -233,6 +260,19 @@ export class SparqlQueryBuilder {
         createSparqlGraphPattern(entityVariable, [createSparqlBasicGraphPattern([entityGraphTriple])]),
       ];
     }
+
+    // // Add select variables to the query
+    // if (selectVariables?.length) {
+    //   where = [
+    //     ...where,
+    //     ...selectVariables.map(({ variable, expression }) => ({
+    //       type: 'bind' as const,
+    //       expression,
+    //       variable,
+    //     })),
+    //   ];
+    // }
+
     return createSparqlConstructQuery(triples, where);
   }
 
@@ -430,7 +470,7 @@ export class SparqlQueryBuilder {
   ): NonGraphWhereQueryData {
     if (operator.operator === 'inverse') {
       const inversePredicate = createSparqlInversePredicate([predicate]);
-      return this.createWhereQueryDataFromKeyValue(subject, inversePredicate, operator.value);
+      return this.createWhereQueryDataFromKeyValue(operator.subject ? operator.subject: subject, inversePredicate, operator.value);
     }
     if (operator.operator === 'sequence') {
       const sequencePredicate = createSparqlSequencePredicate([predicate]);
@@ -800,12 +840,35 @@ export class SparqlQueryBuilder {
         .value as InverseRelationOrderValue;
       const subRelationOrderQueryData = this.createOrderQueryData(variable, subRelationOperatorValue.order, true);
       const subRelationWhereQueryData = this.createWhereQueryData(variable, subRelationOperatorValue.where);
+
+      // Create aggregate expressions for each order, but don't nest aggregates
+      const aggregateOrders = subRelationOrderQueryData.orders.map(order => {
+        const baseExpression = 'type' in order.expression && (order.expression as any).type === 'aggregate'
+          ? (order.expression as any).expression 
+          : order.expression;
+        
+        // Create the aggregate expression first
+        const aggregateExpression = {
+          type: 'aggregate',
+          expression: baseExpression,
+          aggregation: order.descending ? 'max' : 'min',
+        } as Expression;
+
+        return {
+          expression: aggregateExpression,
+          descending: order.descending,
+        };
+      });
+
       return {
         triples: [inverseRelationTriple, ...subRelationOrderQueryData.triples, ...subRelationWhereQueryData.triples],
         filters: subRelationWhereQueryData.filters,
-        orders: subRelationOrderQueryData.orders,
+        orders: aggregateOrders,
         groupByParent: true,
-        patterns: [...(subRelationWhereQueryData.patterns ?? []), ...(subRelationOrderQueryData.patterns ?? [])],
+        patterns: [
+          ...subRelationWhereQueryData.patterns ?? [],
+          ...subRelationOrderQueryData.patterns ?? [],
+        ],
       };
     }
     if (property === 'id') {

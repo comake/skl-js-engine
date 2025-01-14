@@ -351,6 +351,7 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       )).toEqual({
         graphSelectionTriples: [],
+        group: undefined,
         where: [
           {
             type: 'bgp',
@@ -1829,6 +1830,15 @@ describe('A SparqlQueryBuilder', (): void => {
         },
       )).toEqual({
         graphSelectionTriples: [],
+        group: undefined,
+        selectVariables: [
+          {
+            variable: c4,
+            expression: {
+              value: 'c1'
+            },
+          },
+        ],
         where: [
           {
             type: 'graph',
@@ -1859,7 +1869,7 @@ describe('A SparqlQueryBuilder', (): void => {
           },
         ],
         orders: [{
-          expression: c1,
+          expression: c4,
           descending: true,
         }],
         graphWhere: [],
@@ -1891,9 +1901,16 @@ describe('A SparqlQueryBuilder', (): void => {
           },
         ],
         orders: [{
-          expression: entityVariable,
+          expression: c3,
           descending: true,
         }],
+        group: undefined,
+        selectVariables: [
+          {
+            variable: c3,
+            expression: entityVariable,
+          },
+        ],
         graphWhere: [],
       });
     });
@@ -1991,14 +2008,18 @@ describe('A SparqlQueryBuilder', (): void => {
         ],
         group: entityVariable,
         orders: [{
+          descending: true,
+          expression: c6,
+        }],
+        graphWhere: [],
+        selectVariables: [{
           expression: {
             type: 'aggregate',
             expression: c2,
             aggregation: 'max',
           },
-          descending: true,
+          variable: c6,
         }],
-        graphWhere: [],
       });
     });
 

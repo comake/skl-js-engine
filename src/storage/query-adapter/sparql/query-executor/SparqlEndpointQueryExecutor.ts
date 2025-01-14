@@ -8,6 +8,7 @@ import type {
   ConstructQuery,
 } from 'sparqljs';
 import { Generator } from 'sparqljs';
+import { Logger } from '../../../../logger';
 import type { QueryExecutor, SelectVariableQueryResult } from './SparqlQueryExecutor';
 
 export interface SparqlEndpointQueryExecutorOptions {
@@ -41,6 +42,7 @@ export class SparqlEndpointQueryExecutor implements QueryExecutor {
     query: TQuery,
   ): Promise<TReturn[]> {
     const generatedQuery = this.sparqlGenerator.stringify(query);
+    console.log(generatedQuery);
     return this.executeSparqlSelectAndGetDataRaw(generatedQuery);
   }
 
