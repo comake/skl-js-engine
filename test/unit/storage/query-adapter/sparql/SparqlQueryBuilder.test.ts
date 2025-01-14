@@ -1871,6 +1871,9 @@ describe('A SparqlQueryBuilder', (): void => {
         orders: [{
           expression: c4,
           descending: true,
+        },
+        {
+          expression: entityVariable,
         }],
         graphWhere: [],
       });
@@ -1903,6 +1906,9 @@ describe('A SparqlQueryBuilder', (): void => {
         orders: [{
           expression: c3,
           descending: true,
+        },
+        {
+          expression: entityVariable,
         }],
         group: undefined,
         selectVariables: [
@@ -2010,6 +2016,9 @@ describe('A SparqlQueryBuilder', (): void => {
         orders: [{
           descending: true,
           expression: c6,
+        },
+        {
+          expression: entityVariable,
         }],
         graphWhere: [],
         selectVariables: [{
