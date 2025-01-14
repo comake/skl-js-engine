@@ -42,7 +42,6 @@ export class SparqlEndpointQueryExecutor implements QueryExecutor {
     query: TQuery,
   ): Promise<TReturn[]> {
     const generatedQuery = this.sparqlGenerator.stringify(query);
-    console.log(generatedQuery);
     return this.executeSparqlSelectAndGetDataRaw(generatedQuery);
   }
 
