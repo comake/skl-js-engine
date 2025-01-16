@@ -114,10 +114,12 @@ export class SparqlQueryAdapter implements QueryAdapter {
     if (entityOrder && entityOrder.length === 0) {
       return [];
     }
+    const queryData = queryBuilder.buildEntitySelectPatternsFromOptions(entityVariable, options);
     const query = queryBuilder.buildConstructFromEntitySelectQuery(
       where,
       selectionTriples,
       options?.select,
+      queryData.selectVariables,
     );
     return await this.executeEntitySelectQuery(query, options, entityOrder);
   }
@@ -129,10 +131,15 @@ export class SparqlQueryAdapter implements QueryAdapter {
     const queryData = queryBuilder.buildEntitySelectPatternsFromOptions(entityVariable, options);
     const entitySelectQuery = queryData.where.length > 0
       ? createSparqlSelectQuery(
-        options?.entitySelectVariable ?? entityVariable,
+        [
+          options?.entitySelectVariable ?? entityVariable,
+          ...(queryData.selectVariables?.map(({ variable, expression }) => ({
+            variable,
+            expression,
+          })) ?? []),
+        ],
         queryData.where,
         queryData.orders,
-        // FIXME: This will not work if queryData.group is defined, figure out what can make it defined.
         queryData.group ?? options?.group,
         options?.limit,
         options?.offset,

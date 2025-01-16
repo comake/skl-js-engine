@@ -8,6 +8,7 @@ import type {
   ConstructQuery,
 } from 'sparqljs';
 import { Generator } from 'sparqljs';
+import { Logger } from '../../../../logger';
 import type { QueryExecutor, SelectVariableQueryResult } from './SparqlQueryExecutor';
 
 export interface SparqlEndpointQueryExecutorOptions {

@@ -16,6 +16,7 @@ export * from './storage/operator/LessThan';
 export * from './storage/operator/LessThanOrEqual';
 export * from './storage/operator/Not';
 export * from './storage/operator/OneOrMorePath';
+export * from './storage/operator/Sequence';
 export * from './storage/operator/SequencePath';
 export * from './storage/operator/ZeroOrMorePath';
 

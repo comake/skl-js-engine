@@ -1,6 +1,6 @@
 {
 	"name": "@comake/skl-js-engine",
-	"version": "0.26.0",
+	"version": "0.32.0",
 	"description": "Standard Knowledge Language Javascript Engine",
 	"keywords": [
 		"skl",
@@ -29,7 +29,8 @@
 		"test:integration": "jest --coverageReporters text-summary -- test/integration",
 		"test:unit": "jest --config=./jest.coverage.config.js test/unit",
 		"test:package": "chmod +x test/deploy/validate-package.sh && test/deploy/validate-package.sh",
-		"prepare": "husky && npm run build"
+		"prepare": "husky && npm run build",
+		"postinstall": "patch-package"
 	},
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -52,6 +53,7 @@
 		"memory-level": "^1.0.0",
 		"mime-types": "^2.1.35",
 		"n3": "^1.17.2",
+		"patch-package": "^8.0.0",
 		"quadstore": "13.1.1",
 		"quadstore-comunica": "^4.3.0",
 		"rdf-data-factory": "^1.1.2",

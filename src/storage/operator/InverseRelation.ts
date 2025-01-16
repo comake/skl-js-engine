@@ -4,6 +4,7 @@ import type { FindOptionsRelations } from '../FindOptionsTypes';
 export interface InverseRelationOperatorValue {
   resolvedName: string;
   relations?: FindOptionsRelations;
+  [key: string]: any;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
