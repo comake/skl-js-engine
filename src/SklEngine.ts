@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import './util/safeJsonStringify';
 import type {
   OpenApi,
   OpenApiClientConfiguration,
@@ -772,6 +773,7 @@ export class SKLEngine {
         getValueIfDefined(operationInfo[SKL.operationId])!,
         operationArgs,
         account,
+        verbConfig
       );
       return this.axiosResponseAndParamsToOperationResponse(response, operationArgs, originalArgs);
     }
@@ -947,6 +949,7 @@ export class SKLEngine {
     operationId: string,
     operationArgs: JSONObject,
     account: Entity,
+    verbConfig?: VerbConfig,
   ): Promise<AxiosResponse> {
     const integrationId = (account[SKL.integration] as ReferenceNodeObject)['@id'];
     const openApiDescription = await this.getOpenApiDescriptionForIntegration(integrationId);
@@ -978,9 +981,9 @@ export class SKLEngine {
       password: getValueIfDefined<string>(securityCredentials?.[SKL.clientSecret]),
     };
     let response;
+    let executeOperationOptions: AxiosRequestConfig| undefined;
     try {
       const additionalHeaders = this.getHeadersFromRuntimeCredentials(runtimeAuthorization) as any;
-      let executeOperationOptions: AxiosRequestConfig| undefined;
       if (
         additionalHeaders &&
         typeof additionalHeaders === 'object' &&
@@ -988,6 +991,12 @@ export class SKLEngine {
         Object.keys(additionalHeaders).length > 0
       ) {
         executeOperationOptions = { headers: additionalHeaders };
+      }
+      if (this.ifVerbStreaming(verbConfig)) {
+        executeOperationOptions = {
+          ...executeOperationOptions,
+          responseType: 'stream',
+        };
       }
       response = await openApiExecutor.executeOperation(operationId, configuration, operationArgs, executeOperationOptions);
     } catch (error) {
@@ -997,7 +1006,7 @@ export class SKLEngine {
           integrationId,
           account,
         );
-        response = await openApiExecutor.executeOperation(operationId, refreshedConfiguration, operationArgs);
+        response = await openApiExecutor.executeOperation(operationId, refreshedConfiguration, operationArgs, executeOperationOptions);
       } else {
         throw error;
       }
@@ -1263,5 +1272,9 @@ export class SKLEngine {
       }
     }
     return reportMessages;
+  }
+
+  private ifVerbStreaming(verbConfig?: VerbConfig) {
+    return Boolean(verbConfig && 'stream' in verbConfig && verbConfig.stream);
   }
 }

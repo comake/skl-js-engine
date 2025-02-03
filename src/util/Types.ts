@@ -256,6 +256,11 @@ export interface VerbConfig {
    * Merged with the global setting. The verb config taking prededence in the case of overlapping names.
    */
   readonly functions?: Record<string, (args: any | any[]) => any>;
+
+  /**
+   * When true, the operation will be streamed.
+   */
+  readonly stream?: boolean;
 }
 
 export interface Callbacks {
