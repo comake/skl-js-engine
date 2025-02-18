@@ -15,6 +15,7 @@ import type {
   GraphPattern,
   Grouping,
   SelectQuery,
+  BindPattern,
 } from 'sparqljs';
 import {
   allTypesAndSuperTypesPath,
@@ -46,9 +47,7 @@ import {
   createSparqlLcaseOperation,
   createSparqlSelectQuery,
 } from '../../../util/SparqlUtil';
-import {
-  valueToLiteral,
-} from '../../../util/TripleUtil';
+import { valueToLiteral } from '../../../util/TripleUtil';
 import type { OrArray } from '../../../util/Types';
 import { isUrl } from '../../../util/Util';
 import { RDF } from '../../../util/Vocabularies';
@@ -65,12 +64,11 @@ import type {
   SubQuery,
   TypeFindOptionsWhereField,
   ValueWhereFieldObject,
-  BindPattern,
 } from '../../FindOptionsTypes';
+import type { GroupByOptions } from '../../GroupOptionTypes';
 import type { InverseRelationOperatorValue } from '../../operator/InverseRelation';
 import type { InverseRelationOrderValue } from '../../operator/InverseRelationOrder';
 import { VariableGenerator } from './VariableGenerator';
-import { GroupByOptions, GroupByResponse } from '../../GroupOptionTypes';
 
 export interface NonGraphWhereQueryData {
   values: ValuesPattern[];
@@ -174,7 +172,7 @@ export class SparqlQueryBuilder {
     );
 
     // Create variables for each order expression and update the orders to use them
-    const selectVariables = orderQueryData.orders.map(order => {
+    const selectVariables = orderQueryData.orders.map((order) => {
       const variable = this.createVariable();
       return {
         variable,
@@ -187,7 +185,7 @@ export class SparqlQueryBuilder {
       descending: orderQueryData.orders[index].descending,
     }));
 
-    if (orders.length) {
+    if (orders.length > 0) {
       orders.push({
         expression: entityVariable,
       } as any);
@@ -195,7 +193,7 @@ export class SparqlQueryBuilder {
 
     const returnData: any = {
       where: wherePatterns,
-      orders: orders,
+      orders,
       group: orderQueryData.groupByParent ? subject : undefined,
       graphWhere: graphWherePatterns,
       graphSelectionTriples: relationsQueryData.selectionTriples,
@@ -293,11 +291,15 @@ export class SparqlQueryBuilder {
     // Handle binds if specified in where options
     const binds: Pattern[] = [];
     if (where?.binds) {
-      binds.push(...where.binds.map(bind => ({
-        type: 'bind' as const,
-        expression: bind.expression,
-        variable: bind.variable
-      })));
+      binds.push(
+        ...where.binds.map(
+          (bind): BindPattern => ({
+            type: 'bind' as const,
+            expression: bind.expression,
+            variable: bind.variable as Variable,
+          }),
+        ),
+      );
       // Delete binds from where as it's a special key
       const { binds: _, ...restWhere } = where;
       where = restWhere;
@@ -314,7 +316,7 @@ export class SparqlQueryBuilder {
           binds: [...(obj.binds ?? []), ...(whereQueryDataForField.binds ?? [])],
         };
       },
-      { values: [], triples: [], filters: [], patterns: [], binds }
+      { values: [], triples: [], filters: [], patterns: [], binds },
     );
 
     return {
@@ -470,7 +472,11 @@ export class SparqlQueryBuilder {
   ): NonGraphWhereQueryData {
     if (operator.operator === 'inverse') {
       const inversePredicate = createSparqlInversePredicate([predicate]);
-      return this.createWhereQueryDataFromKeyValue(operator.subject ? operator.subject: subject, inversePredicate, operator.value);
+      return this.createWhereQueryDataFromKeyValue(
+        operator.subject ? operator.subject : subject,
+        inversePredicate,
+        operator.value,
+      );
     }
     if (operator.operator === 'sequence') {
       const sequencePredicate = createSparqlSequencePredicate([predicate]);
@@ -842,11 +848,12 @@ export class SparqlQueryBuilder {
       const subRelationWhereQueryData = this.createWhereQueryData(variable, subRelationOperatorValue.where);
 
       // Create aggregate expressions for each order, but don't nest aggregates
-      const aggregateOrders = subRelationOrderQueryData.orders.map(order => {
-        const baseExpression = 'type' in order.expression && (order.expression as any).type === 'aggregate'
-          ? (order.expression as any).expression 
-          : order.expression;
-        
+      const aggregateOrders = subRelationOrderQueryData.orders.map((order) => {
+        const baseExpression =
+          'type' in order.expression && (order.expression as any).type === 'aggregate'
+            ? (order.expression as any).expression
+            : order.expression;
+
         // Create the aggregate expression first
         const aggregateExpression = {
           type: 'aggregate',
@@ -865,10 +872,7 @@ export class SparqlQueryBuilder {
         filters: subRelationWhereQueryData.filters,
         orders: aggregateOrders,
         groupByParent: true,
-        patterns: [
-          ...subRelationWhereQueryData.patterns ?? [],
-          ...subRelationOrderQueryData.patterns ?? [],
-        ],
+        patterns: [...(subRelationWhereQueryData.patterns ?? []), ...(subRelationOrderQueryData.patterns ?? [])],
       };
     }
     if (property === 'id') {
@@ -1101,7 +1105,7 @@ export class SparqlQueryBuilder {
           {
             subject: currentSubject,
             predicate: DataFactory.namedNode(predicate),
-            object: object,
+            object,
           },
         ],
       });
@@ -1222,8 +1226,8 @@ export class SparqlQueryBuilder {
         },
       ],
       combinedWhere,
-      [], // orders
-      groupVariables.length > 0 ? groupVariables : undefined, // group by
+      [], // Orders
+      groupVariables.length > 0 ? groupVariables : undefined, // Group by
       options.limit,
       options.offset,
     );

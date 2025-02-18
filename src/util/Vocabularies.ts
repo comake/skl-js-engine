@@ -1,15 +1,13 @@
 type Namespace<T extends string, TBase extends string> = {
-  [key in T]: `${TBase}${key}`
+  [key in T]: `${TBase}${key}`;
 };
 
-function createNamespace<T extends string, TBase extends string>(
-  baseUri: TBase,
-  localNames: T[],
-): Namespace<T, TBase> {
-  return localNames.reduce((obj: Namespace<T, TBase>, localName): Namespace<T, TBase> => (
-    { ...obj, [localName]: `${baseUri}${localName}` }
+function createNamespace<T extends string, TBase extends string>(baseUri: TBase, localNames: T[]): Namespace<T, TBase> {
+  return localNames.reduce(
+    (obj: Namespace<T, TBase>, localName): Namespace<T, TBase> => ({ ...obj, [localName]: `${baseUri}${localName}` }),
     // eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter
-  ), {} as Namespace<T, TBase>);
+    {} as Namespace<T, TBase>,
+  );
 }
 
 // Export const SKL_NAMESPACE = 'https://standardknowledge.com/ontologies/core/';
@@ -97,7 +95,7 @@ function createNamespace<T extends string, TBase extends string>(
 //   'headers',
 // ]);
 
-export const SKL_NAMESPACE_V2 = 'https://skl.so/';
+export const SKL_NAMESPACE_V2 = 'https://skl.so/core/';
 export const SKL = createNamespace(SKL_NAMESPACE_V2, [
   'Capability',
   'CapabilityMapping',
@@ -171,10 +169,7 @@ export const SKL_V2 = SKL;
 export const SKLSO_DATA_NAMESPACE = 'https://skl.so/d/';
 
 export const SKLSO_PROPERTY_NAMESPACE = 'https://skl.so/';
-export const SKLSO_PROPERTY = createNamespace(SKLSO_PROPERTY_NAMESPACE, [
-  'type',
-  'identifier',
-]);
+export const SKLSO_PROPERTY = createNamespace(SKLSO_PROPERTY_NAMESPACE, ['type', 'identifier']);
 
 export const SKL_ENGINE_NAMESPACE = 'https://standardknowledge.com/ontologies/skl-engine/';
 export const SKL_ENGINE = createNamespace(SKL_ENGINE_NAMESPACE, [
@@ -222,22 +217,10 @@ export const XSD = createNamespace(XSD_NAMESPACE, [
 ]);
 
 export const RDF_NAMESPACE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
-export const RDF = createNamespace(RDF_NAMESPACE, [
-  'Property',
-  'type',
-  'datatype',
-  'JSON',
-  'first',
-  'rest',
-  'nil',
-]);
+export const RDF = createNamespace(RDF_NAMESPACE, ['Property', 'type', 'datatype', 'JSON', 'first', 'rest', 'nil']);
 
 export const RDFS_NAMESPACE = 'http://www.w3.org/2000/01/rdf-schema#';
-export const RDFS = createNamespace(RDFS_NAMESPACE, [
-  'subClassOf',
-  'label',
-  'range',
-]);
+export const RDFS = createNamespace(RDFS_NAMESPACE, ['subClassOf', 'label', 'range']);
 
 export const OWL_NAMESPACE = 'http://www.w3.org/2002/07/owl#';
 export const OWL = createNamespace(OWL_NAMESPACE, [
@@ -312,17 +295,10 @@ export const SHACL = createNamespace(SHACL_NAMESPACE, [
 ]);
 
 export const SDO_NAMESPACE = 'https://schema.org/';
-export const SDO = createNamespace(SDO_NAMESPACE, [
-  'Event',
-]);
+export const SDO = createNamespace(SDO_NAMESPACE, ['Event']);
 
 export const DCELEMENTS_NAMESPACE = 'http://purl.org/dc/elements/1.1/';
-export const DCELEMENTS = createNamespace(DCELEMENTS_NAMESPACE, [
-  'description',
-]);
+export const DCELEMENTS = createNamespace(DCELEMENTS_NAMESPACE, ['description']);
 
 export const DCTERMS_NAMESPACE = 'http://purl.org/dc/terms/';
-export const DCTERMS = createNamespace(DCTERMS_NAMESPACE, [
-  'created',
-  'modified',
-]);
+export const DCTERMS = createNamespace(DCTERMS_NAMESPACE, ['created', 'modified']);
