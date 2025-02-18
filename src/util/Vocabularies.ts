@@ -95,7 +95,7 @@ function createNamespace<T extends string, TBase extends string>(baseUri: TBase,
 //   'headers',
 // ]);
 
-export const SKL_NAMESPACE_V2 = 'https://skl.so/core/';
+export const SKL_NAMESPACE_V2 = 'https://skl.so/';
 export const SKL = createNamespace(SKL_NAMESPACE_V2, [
   'Capability',
   'CapabilityMapping',
@@ -162,6 +162,8 @@ export const SKL = createNamespace(SKL_NAMESPACE_V2, [
   'OpenAPI',
   'type',
   'specification',
+  'dateCreated',
+  'dateModified',
 ]);
 
 export const SKL_V2 = SKL;

@@ -32,7 +32,7 @@ import type {
 import type { RawQueryResult } from '../storage/query-adapter/QueryAdapter';
 import type { SelectVariableQueryResult } from '../storage/query-adapter/sparql/query-executor/SparqlQueryExecutor';
 import { toJSValueFromDataType } from './TripleUtil';
-import { DCTERMS, RDF, RDFS } from './Vocabularies';
+import { RDF, RDFS, SKL_V2 } from './Vocabularies';
 
 export const rdfTypeNamedNode = DataFactory.namedNode(RDF.type);
 export const rdfsSubClassOfNamedNode = DataFactory.namedNode(RDFS.subClassOf);
@@ -42,15 +42,15 @@ export const objectNode = DataFactory.variable('object');
 export const entityVariable = DataFactory.variable('entity');
 export const countVariable = DataFactory.variable('count');
 export const now = DataFactory.variable('now');
-export const created = DataFactory.namedNode(DCTERMS.created);
-export const modified = DataFactory.namedNode(DCTERMS.modified);
+export const created = DataFactory.namedNode(SKL_V2.dateCreated);
+export const modified = DataFactory.namedNode(SKL_V2.dateModified);
 export const firstPredicate = DataFactory.namedNode(RDF.first);
 export const restPredicate = DataFactory.namedNode(RDF.rest);
 export const nilPredicate = DataFactory.namedNode(RDF.nil);
 export const anyPredicatePropertyPath = {
   type: 'path',
   pathType: '!',
-  items: [DataFactory.namedNode('')],
+  items: [ DataFactory.namedNode('') ],
 } as PropertyPath;
 
 export const allTypesAndSuperTypesPath: PropertyPath = {
@@ -61,7 +61,7 @@ export const allTypesAndSuperTypesPath: PropertyPath = {
     {
       type: 'path',
       pathType: '*',
-      items: [rdfsSubClassOfNamedNode],
+      items: [ rdfsSubClassOfNamedNode ],
     },
   ],
 };
@@ -201,14 +201,14 @@ export function createSparqlOptionalGraphSelection(name: Variable | NamedNode, t
   return {
     type: 'graph',
     name: name as IriTerm,
-    patterns: [createSparqlOptional([createSparqlBasicGraphPattern(triples)])],
+    patterns: [ createSparqlOptional([ createSparqlBasicGraphPattern(triples) ]) ],
   };
 }
 
 export function createSparqlServicePattern(serviceName: string, triples: Triple[]): ServicePattern {
   return {
     type: 'service',
-    patterns: [createSparqlBasicGraphPattern(triples)],
+    patterns: [ createSparqlBasicGraphPattern(triples) ],
     name: DataFactory.namedNode(serviceName),
     silent: false,
   };
@@ -238,15 +238,15 @@ export function createSparqlSelectQuery(
   let groupings: Grouping[] | undefined;
   if (group) {
     if (Array.isArray(group)) {
-      groupings = group.map((g) => ensureGrouping(g));
+      groupings = group.map(g => ensureGrouping(g));
     } else {
-      groupings = [ensureGrouping(group)];
+      groupings = [ ensureGrouping(group) ];
     }
   }
   return {
     type: 'query',
     queryType: 'SELECT',
-    variables: Array.isArray(variable) ? variable.map(ensureVariable) : [ensureVariable(variable)],
+    variables: Array.isArray(variable) ? variable.map(ensureVariable) : [ ensureVariable(variable) ],
     distinct: true,
     where,
     group: groupings,
@@ -294,7 +294,7 @@ export function createSparqlEqualOperation(leftSide: Expression, rightSide: Expr
   return {
     type: 'operation',
     operator: '=',
-    args: [leftSide, rightSide],
+    args: [ leftSide, rightSide ],
   };
 }
 
@@ -302,7 +302,7 @@ export function createSparqlLcaseOperation(expression: Expression): OperationExp
   return {
     type: 'operation',
     operator: 'lcase',
-    args: [expression],
+    args: [ expression ],
   };
 }
 
@@ -310,7 +310,7 @@ export function createSparqlContainsOperation(leftSide: Expression, rightSide: E
   return {
     type: 'operation',
     operator: 'contains',
-    args: [leftSide, rightSide],
+    args: [ leftSide, rightSide ],
   };
 }
 
@@ -318,7 +318,7 @@ export function createSparqlGtOperation(leftSide: Expression, rightSide: Express
   return {
     type: 'operation',
     operator: '>',
-    args: [leftSide, rightSide],
+    args: [ leftSide, rightSide ],
   };
 }
 
@@ -326,7 +326,7 @@ export function createSparqlGteOperation(leftSide: Expression, rightSide: Expres
   return {
     type: 'operation',
     operator: '>=',
-    args: [leftSide, rightSide],
+    args: [ leftSide, rightSide ],
   };
 }
 
@@ -334,7 +334,7 @@ export function createSparqlLtOperation(leftSide: Expression, rightSide: Express
   return {
     type: 'operation',
     operator: '<',
-    args: [leftSide, rightSide],
+    args: [ leftSide, rightSide ],
   };
 }
 
@@ -342,7 +342,7 @@ export function createSparqlLteOperation(leftSide: Expression, rightSide: Expres
   return {
     type: 'operation',
     operator: '<=',
-    args: [leftSide, rightSide],
+    args: [ leftSide, rightSide ],
   };
 }
 
@@ -350,7 +350,7 @@ export function createSparqlNotEqualOperation(leftSide: Expression, rightSide: E
   return {
     type: 'operation',
     operator: '!=',
-    args: [leftSide, rightSide],
+    args: [ leftSide, rightSide ],
   };
 }
 
@@ -358,7 +358,7 @@ export function createSparqlInOperation(leftSide: Expression, rightSide: Express
   return {
     type: 'operation',
     operator: 'in',
-    args: [leftSide, rightSide],
+    args: [ leftSide, rightSide ],
   };
 }
 
@@ -366,7 +366,7 @@ export function createSparqlNotInOperation(leftSide: Expression, rightSide: Expr
   return {
     type: 'operation',
     operator: 'notin',
-    args: [leftSide, rightSide],
+    args: [ leftSide, rightSide ],
   };
 }
 
@@ -433,27 +433,27 @@ export function createSparqlInsertDeleteOperation(
 ): InsertDeleteOperation {
   return {
     updateType: 'insertdelete',
-    delete: [createSparqlGraphQuads(graph, deletionTriples)],
-    insert: [createSparqlGraphQuads(graph, insertionTriples)],
-    where: [createSparqlBasicGraphPattern(deletionTriples)],
+    delete: [ createSparqlGraphQuads(graph, deletionTriples) ],
+    insert: [ createSparqlGraphQuads(graph, insertionTriples) ],
+    where: [ createSparqlBasicGraphPattern(deletionTriples) ],
     using: {
-      default: [graph],
+      default: [ graph ],
     },
   } as InsertDeleteOperation;
 }
 
-export function selectQueryResultsAsJSValues<T extends RawQueryResult>(results: SelectVariableQueryResult<T>[]): T[] {
-  return results.map(
-    (result): T =>
-      Object.entries(result).reduce(
-        (obj, [key, value]): T => ({
-          ...obj,
-          [key]: value.termType === 'Literal' ? toJSValueFromDataType(value.value, value.datatype?.value) : value.value,
-          // eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter
-        }),
-        {} as T,
-      ),
-  );
+export function selectQueryResultsAsJSValues<T extends RawQueryResult>(
+  results: SelectVariableQueryResult<T>[],
+): T[] {
+  return results
+    .map((result): T =>
+      Object.entries(result).reduce((obj, [ key, value ]): T => ({
+        ...obj,
+        [key]: value.termType === 'Literal'
+          ? toJSValueFromDataType(value.value, value.datatype?.value)
+          : value.value,
+      // eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter
+      }), {} as T));
 }
 
 export function groupSelectQueryResultsByKey(
@@ -461,9 +461,9 @@ export function groupSelectQueryResultsByKey(
 ): Record<string, (NamedNode | Literal)[]> {
   return results.reduce(
     (obj: Record<string, (NamedNode | Literal)[]>, result): Record<string, (NamedNode | Literal)[]> => {
-      for (const [key, value] of Object.entries(result)) {
+      for (const [ key, value ] of Object.entries(result)) {
         if (!(key in obj)) {
-          obj[key] = [value];
+          obj[key] = [ value ];
         } else {
           obj[key].push(value);
         }
@@ -485,7 +485,7 @@ export function createValuesPatternsForVariables(
   valuesByVariable: Record<string, (NamedNode | Literal)[]>,
 ): ValuesPattern[] {
   return Object.entries(valuesByVariable).map(
-    ([variableName, values]): ValuesPattern => ({
+    ([ variableName, values ]): ValuesPattern => ({
       type: 'values',
       values: values.map(
         (value): ValuePatternRow => ({

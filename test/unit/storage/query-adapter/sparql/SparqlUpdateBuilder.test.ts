@@ -11,7 +11,7 @@ import {
   rdfTypeNamedNode,
   restPredicate,
 } from '../../../../../src/util/SparqlUtil';
-import { DCTERMS, SKL, XSD } from '../../../../../src/util/Vocabularies';
+import { SKL, SKL_V2, XSD } from '../../../../../src/util/Vocabularies';
 
 const c1 = DataFactory.variable('c1');
 const c2 = DataFactory.variable('c2');
@@ -23,7 +23,7 @@ const blank = DataFactory.blankNode('c1');
 describe('A SparqlUpdateBuilder', (): void => {
   let builder: SparqlUpdateBuilder;
 
-  beforeEach(async(): Promise<void> => {
+  beforeEach(async (): Promise<void> => {
     builder = new SparqlUpdateBuilder();
   });
 
@@ -56,24 +56,27 @@ describe('A SparqlUpdateBuilder', (): void => {
             },
           ],
           using: {
-            default: [ data1 ],
+            default: [data1],
           },
-          where: [{
-            type: 'optional',
-            patterns: [{
-              type: 'bgp',
-              triples: [{ subject: data1, predicate, object: c1 }],
-            }],
-          }],
+          where: [
+            {
+              type: 'optional',
+              patterns: [
+                {
+                  type: 'bgp',
+                  triples: [{ subject: data1, predicate, object: c1 }],
+                },
+              ],
+            },
+          ],
         },
       ],
     };
-    expect(builder.buildPartialUpdate(
-      'https://example.com/data/1',
-      {
+    expect(
+      builder.buildPartialUpdate('https://example.com/data/1', {
         'https://example.com/predicate': 'marshmellow',
-      },
-    )).toEqual(query);
+      }),
+    ).toEqual(query);
   });
 
   it('build a partial entity update query when setTimestamps is on.', (): void => {
@@ -89,9 +92,7 @@ describe('A SparqlUpdateBuilder', (): void => {
             {
               type: 'graph',
               name: data1,
-              triples: [
-                { subject: data1, predicate, object: c1 },
-              ],
+              triples: [{ subject: data1, predicate, object: c1 }],
             },
           ],
           insert: [
@@ -108,15 +109,17 @@ describe('A SparqlUpdateBuilder', (): void => {
             },
           ],
           using: {
-            default: [ data1 ],
+            default: [data1],
           },
           where: [
             {
               type: 'optional',
-              patterns: [{
-                type: 'bgp',
-                triples: [{ subject: data1, predicate, object: c1 }],
-              }],
+              patterns: [
+                {
+                  type: 'bgp',
+                  triples: [{ subject: data1, predicate, object: c1 }],
+                },
+              ],
             },
           ],
         },
@@ -126,30 +129,28 @@ describe('A SparqlUpdateBuilder', (): void => {
             {
               type: 'graph',
               name: data1,
-              triples: [
-                { subject: data1, predicate: modified, object: c2 },
-              ],
+              triples: [{ subject: data1, predicate: modified, object: c2 }],
             },
           ],
           insert: [
             {
               type: 'graph',
               name: data1,
-              triples: [
-                { subject: data1, predicate: modified, object: now },
-              ],
+              triples: [{ subject: data1, predicate: modified, object: now }],
             },
           ],
           using: {
-            default: [ data1 ],
+            default: [data1],
           },
           where: [
             {
               type: 'optional',
-              patterns: [{
-                type: 'bgp',
-                triples: [{ subject: data1, predicate: modified, object: c2 }],
-              }],
+              patterns: [
+                {
+                  type: 'bgp',
+                  triples: [{ subject: data1, predicate: modified, object: c2 }],
+                },
+              ],
             },
             {
               type: 'bind',
@@ -164,12 +165,11 @@ describe('A SparqlUpdateBuilder', (): void => {
         },
       ],
     };
-    expect(builder.buildPartialUpdate(
-      'https://example.com/data/1',
-      {
+    expect(
+      builder.buildPartialUpdate('https://example.com/data/1', {
         'https://example.com/predicate': 'marshmellow',
-      },
-    )).toEqual(query);
+      }),
+    ).toEqual(query);
   });
 
   it('builds an update query for an entity.', (): void => {
@@ -200,10 +200,7 @@ describe('A SparqlUpdateBuilder', (): void => {
         '@id': 'https://example.com/data/3',
       },
       'https://example.com/list': {
-        '@list': [
-          { '@id': 'https://example.com/data/3' },
-          { '@id': 'https://example.com/data/4' },
-        ],
+        '@list': [{ '@id': 'https://example.com/data/3' }, { '@id': 'https://example.com/data/4' }],
       },
     };
     const query = {
@@ -380,9 +377,7 @@ describe('A SparqlUpdateBuilder', (): void => {
             {
               type: 'graph',
               name: data1,
-              triples: [
-                { subject: data1, predicate: rdfTypeNamedNode, object: file },
-              ],
+              triples: [{ subject: data1, predicate: rdfTypeNamedNode, object: file }],
             },
           ],
         },
@@ -399,15 +394,17 @@ describe('A SparqlUpdateBuilder', (): void => {
               ],
             },
           ],
-          where: [{
-            type: 'bind',
-            variable: now,
-            expression: {
-              type: 'operation',
-              operator: 'now',
-              args: [],
+          where: [
+            {
+              type: 'bind',
+              variable: now,
+              expression: {
+                type: 'operation',
+                operator: 'now',
+                args: [],
+              },
             },
-          }],
+          ],
         },
       ],
     };
@@ -415,17 +412,16 @@ describe('A SparqlUpdateBuilder', (): void => {
   });
 
   it(`resets the modified timestamp in an update query if the entity was 
-  already created and setTimestamps is turned on.`,
-  (): void => {
+  already created and setTimestamps is turned on.`, (): void => {
     builder = new SparqlUpdateBuilder({ setTimestamps: true });
     const entity = {
       '@id': 'https://example.com/data/1',
       '@type': SKL.File,
-      [DCTERMS.created]: {
+      [SKL_V2.dateCreated]: {
         '@type': XSD.dateTime,
         '@value': '2022-10-12T00:00:00.000Z',
       },
-      [DCTERMS.modified]: {
+      [SKL_V2.dateModified]: {
         '@type': XSD.dateTime,
         '@value': '2022-10-12T00:00:00.000Z',
       },
@@ -466,20 +462,20 @@ describe('A SparqlUpdateBuilder', (): void => {
             {
               type: 'graph',
               name: data1,
-              triples: [
-                { subject: data1, predicate: modified, object: now },
-              ],
+              triples: [{ subject: data1, predicate: modified, object: now }],
             },
           ],
-          where: [{
-            type: 'bind',
-            variable: now,
-            expression: {
-              type: 'operation',
-              operator: 'now',
-              args: [],
+          where: [
+            {
+              type: 'bind',
+              variable: now,
+              expression: {
+                type: 'operation',
+                operator: 'now',
+                args: [],
+              },
             },
-          }],
+          ],
         },
       ],
     };
@@ -491,23 +487,22 @@ describe('A SparqlUpdateBuilder', (): void => {
     const query = {
       type: 'update',
       prefixes: {},
-      updates: [{
-        type: 'drop',
-        silent: true,
-        graph: {
-          type: 'graph',
-          name: data1,
+      updates: [
+        {
+          type: 'drop',
+          silent: true,
+          graph: {
+            type: 'graph',
+            name: data1,
+          },
         },
-      }],
+      ],
     };
     expect(builder.buildDeleteById(entityId)).toEqual(query);
   });
 
   it('builds a delete query for multiple entities by id.', (): void => {
-    const entityIds = [
-      'https://example.com/data/1',
-      'https://example.com/data/2',
-    ];
+    const entityIds = ['https://example.com/data/1', 'https://example.com/data/2'];
     const query = {
       type: 'update',
       prefixes: {},
@@ -541,14 +536,16 @@ describe('A SparqlUpdateBuilder', (): void => {
     const query = {
       type: 'update',
       prefixes: {},
-      updates: [{
-        type: 'drop',
-        silent: true,
-        graph: {
-          type: 'graph',
-          name: data1,
+      updates: [
+        {
+          type: 'drop',
+          silent: true,
+          graph: {
+            type: 'graph',
+            name: data1,
+          },
         },
-      }],
+      ],
     };
     expect(builder.buildDelete(entity)).toEqual(query);
   });
