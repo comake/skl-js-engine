@@ -288,6 +288,14 @@ export function createFilterPatternFromFilters(filters: Expression[]): FilterPat
   return createSparqlFilterWithExpression(filters[0]);
 }
 
+export function createSparqlBindPattern(expression: Expression, variable: Variable): BindPattern {
+  return {
+    type: 'bind',
+    expression,
+    variable,
+  };
+}
+
 export function createSparqlEqualOperation(leftSide: Expression, rightSide: Expression): OperationExpression {
   return {
     type: 'operation',

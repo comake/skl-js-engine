@@ -607,11 +607,11 @@ describe('a SparqlQueryAdapter', (): void => {
         ]);
         expect(select).toHaveBeenCalledTimes(2);
         expect(select.mock.calls[0][0].split('\n')).toEqual([
-          'SELECT DISTINCT ?entity WHERE {',
+          'SELECT DISTINCT ?entity (?c1 AS ?c4) WHERE {',
           '  GRAPH ?entity { ?entity ?c2 ?c3. }',
           '  OPTIONAL { ?entity <https://example.com/pred> ?c1. }',
           '}',
-          'ORDER BY (?c1)',
+          'ORDER BY (?c4) (?entity)',
         ]);
         expect(select.mock.calls[1][0].split('\n')).toEqual([
           'CONSTRUCT { ?subject ?predicate ?object. }',
@@ -624,6 +624,53 @@ describe('a SparqlQueryAdapter', (): void => {
           '}',
         ]);
       });
+
+      // it('xxx',
+      //   async(): Promise<void> => {
+      //     select.mockImplementationOnce(
+      //       async(): Promise<Readable> => streamFrom([{ entity: data1 }, { entity: data2 }]),
+      //     );
+      //     await expect(
+      //       adapter.findAll({
+      //         "where": {
+      //             "type": "https://schema.org/Article"
+      //         },
+      //         "order": {
+      //             "https://skl.so/item2": {
+      //                 "type": "operator",
+      //                 "operator": "inverseRelationOrder",
+      //                 "value": {
+      //                     "order": {
+      //                         "https://skl.so/score": "desc"
+      //                     },
+      //                     "where": {
+      //                         "https://skl.so/item1": "https://acvb.standard.storage/data/db59e892-9fb0-4f7d-9535-cd3f047cf018"
+      //                     }
+      //                 }
+      //             }
+      //         },
+      //         "limit": 10
+      //     }),
+      //     )
+      //     expect(select).toHaveBeenCalledTimes(2);
+      //     expect(select.mock.calls[0][0].split('\n')).toEqual([
+      //       'SELECT DISTINCT ?entity (?c1 AS ?c4) WHERE {',
+      //       '  GRAPH ?entity { ?entity ?c2 ?c3. }',
+      //       '  OPTIONAL { ?entity <https://example.com/pred> ?c1. }',
+      //       '}',
+      //       'ORDER BY (?c4) (?entity)',
+      //     ]);
+      //     expect(select.mock.calls[1][0].split('\n')).toEqual([
+      //       'CONSTRUCT { ?subject ?predicate ?object. }',
+      //       'WHERE {',
+      //       '  VALUES ?entity {',
+      //       '    <https://example.com/data/1>',
+      //       '    <https://example.com/data/2>',
+      //       '  }',
+      //       '  GRAPH ?entity { ?subject ?predicate ?object. }',
+      //       '}',
+      //     ]);
+      //   });
 
     it('executes an entity selection query then returns en empty array if there are no selected entity results.',
       async(): Promise<void> => {
@@ -639,11 +686,11 @@ describe('a SparqlQueryAdapter', (): void => {
         ).resolves.toEqual([]);
         expect(select).toHaveBeenCalledTimes(1);
         expect(select.mock.calls[0][0].split('\n')).toEqual([
-          'SELECT DISTINCT ?entity WHERE {',
+          'SELECT DISTINCT ?entity (?c1 AS ?c4) WHERE {',
           '  GRAPH ?entity { ?entity ?c2 ?c3. }',
           '  OPTIONAL { ?entity <https://example.com/pred> ?c1. }',
           '}',
-          'ORDER BY (?c1)',
+          'ORDER BY (?c4) (?entity)',
         ]);
       });
 
