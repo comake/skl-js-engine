@@ -54,7 +54,7 @@ import {
   getValueIfDefined,
   ensureArray,
 } from './util/Util';
-import { SHACL, RDFS, XSD, RDF, SKLSO_PROPERTY, SKLSO_DATA_NAMESPACE, SKL, SKL_ENGINE_V2 } from './util/Vocabularies';
+import { SHACL, RDFS, XSD, RDF, SKLSO_PROPERTY, SKLSO_DATA_NAMESPACE, SKL, SKL_ENGINE_V2, SKL_V2, SKLSO_INTEGRATION, SKLSO_INTEGRATION_INTERFACE } from './util/Vocabularies';
 
 export type CapabilityHandler = <T extends OrArray<NodeObject> = OrArray<NodeObject>>(
   params: JSONObject,
@@ -179,7 +179,7 @@ export class SKLEngine {
       const noun = await this.findByIfExists({ id: type });
       if (noun) {
         const parentNouns = await this.getSuperClassesOfNoun(type);
-        for (const currentNoun of [noun, ...parentNouns]) {
+        for (const currentNoun of [ noun, ...parentNouns ]) {
           const entitiesOfType = entitiesByType[type];
           const nounSchemaWithTarget = {
             ...currentNoun,
@@ -199,7 +199,7 @@ export class SKLEngine {
 
   private groupEntitiesByType(entities: Entity[]): Record<string, Entity[]> {
     return entities.reduce((groupedEntities: Record<string, Entity[]>, entity): Record<string, Entity[]> => {
-      const entityTypes = Array.isArray(entity['@type']) ? entity['@type'] : [entity['@type']];
+      const entityTypes = Array.isArray(entity['@type']) ? entity['@type'] : [ entity['@type'] ];
       for (const type of entityTypes) {
         if (!groupedEntities[type]) {
           groupedEntities[type] = [];
@@ -232,12 +232,12 @@ export class SKLEngine {
   private async validateEntityConformsToNounSchema(
     entity: Entity,
   ): Promise<void> {
-    const nounIds = Array.isArray(entity['@type']) ? entity['@type'] : [entity['@type']];
+    const nounIds = Array.isArray(entity['@type']) ? entity['@type'] : [ entity['@type'] ];
     const directNouns = await this.findAllBy({ id: In(nounIds) });
     if (directNouns.length > 0) {
       const existingNounIds = directNouns.map((noun): string => noun['@id']);
       const parentNouns = await this.getSuperClassesOfNouns(existingNounIds);
-      for (const currentNoun of [...directNouns, ...parentNouns]) {
+      for (const currentNoun of [ ...directNouns, ...parentNouns ]) {
         const nounSchemaWithTarget = {
           ...currentNoun,
           [SHACL.targetNode]: { '@id': entity['@id'] },
@@ -388,7 +388,7 @@ export class SKLEngine {
 
   private async findCapabilityWithName(capabilityName: string): Promise<Capability> {
     return (await this.findBy(
-      { type: SKL.Capability, [RDFS.label]: capabilityName },
+      { type: SKL.Capability, [SKL_V2.label]: capabilityName },
       `Failed to find the capability ${capabilityName} in the schema.`,
     )) as Capability;
   }
@@ -435,7 +435,7 @@ export class SKLEngine {
     }
     if (args.account) {
       const account = await this.findBy({ id: args.account as string });
-      const integratedProductId = (account[SKL.integratedProduct] as ReferenceNodeObject)['@id'];
+      const integratedProductId = (account[SKLSO_INTEGRATION.integration] as ReferenceNodeObject)['@id'];
       const mapping = await this.findCapabilityIntegrationMapping(capabilityId, integratedProductId);
       if (mapping) {
         return { mapping, account };
@@ -445,7 +445,7 @@ export class SKLEngine {
     const mappings = await this.findAllBy({
       type: SKL.Mapping,
       [SKL.capability]: capabilityId,
-      [SKL.integratedProduct]: Not(Exists()),
+      [SKLSO_INTEGRATION.integration]: Not(Exists()),
       [SKL.object]: Not(Exists()),
     });
     if (mappings.length === 1) {
@@ -549,7 +549,7 @@ export class SKLEngine {
     capabilityConfig?: CapabilityConfig,
   ): Promise<OrArray<NodeObject>> {
     const seriesCapabilityMappingsList = this.rdfListToArray(mapping[SKL.series]!);
-    const seriesCapabilityArgs = { originalCapabilityParameters: args, previousCapabilityReturnValue: {} };
+    const seriesCapabilityArgs = { originalCapabilityParameters: args, previousCapabilityReturnValue: {}};
     return await this.executeSeriesFromList(seriesCapabilityMappingsList, seriesCapabilityArgs, capabilityConfig);
   }
 
@@ -651,7 +651,7 @@ export class SKLEngine {
   private async updateEntityFromcapabilityArgs(args: Record<string, any>): Promise<void> {
     let ids = args.id ?? args.ids;
     if (!Array.isArray(ids)) {
-      ids = [ids];
+      ids = [ ids ];
     }
     ids = ids.map((id: string) => `${SKLSO_DATA_NAMESPACE}${id}`);
     await this.update(ids, args.attributes);
@@ -723,7 +723,7 @@ export class SKLEngine {
     return (await this.findByIfExists({
       type: SKL.CapabilityMapping,
       [SKL.capability]: capabilityId,
-      [SKL.integratedProduct]: integratedProductId,
+      [SKLSO_INTEGRATION.integration]: integratedProductId,
     })) as CapabilityMapping;
   }
 
@@ -850,24 +850,24 @@ export class SKLEngine {
 
   private async getOpenApiDescriptionForIntegratedProduct(integratedProductId: string): Promise<OpenApi> {
     const openApiDescriptionSchema = await this.findBy({
-      type: SKL.RestInterface,
+      type: SKLSO_INTEGRATION_INTERFACE.RESTfulApi,
       [SKL.type]: SKL.OpenAPI,
-      [SKL.integratedProduct]: integratedProductId,
+      [SKLSO_INTEGRATION.integration]: integratedProductId,
     });
-    return getValueIfDefined<OpenApi>(openApiDescriptionSchema[SKL.specification])!;
+    return getValueIfDefined<OpenApi>(openApiDescriptionSchema[SKL_V2.declarativeApiDescription])!;
   }
 
   private async findSecurityCredentialsForAccountIfDefined(accountId: string): Promise<Entity | undefined> {
     return await this.findByIfExists({
-      type: SKL.SecurityCredentials,
-      [SKL.account]: accountId,
+      type: SKLSO_INTEGRATION.AuthenticationCredential,
+      [SKLSO_INTEGRATION.account]: accountId,
     });
   }
 
   private async findgetOpenApiRuntimeAuthorizationCapabilityIfDefined(): Promise<Capability | undefined> {
     return (await this.findByIfExists({
       type: SKL.Capability,
-      [RDFS.label]: 'getOpenApiRuntimeAuthorization',
+      [SKL_V2.label]: 'getOpenApiRuntimeAuthorization',
     })) as Capability;
   }
 
@@ -939,7 +939,7 @@ export class SKLEngine {
       if (!report.conforms) {
         this.throwValidationReportError(
           report,
-          `${getValueIfDefined(capability[RDFS.label])} parameters do not conform to the schema`,
+          `${getValueIfDefined(capability[SKL_V2.label])} parameters do not conform to the schema`,
         );
       }
     }
@@ -950,7 +950,7 @@ export class SKLEngine {
     operationArgs: JSONObject,
     account: Entity,
   ): Promise<AxiosResponse> {
-    const integratedProductId = (account[SKL.integratedProduct] as ReferenceNodeObject)['@id'];
+    const integratedProductId = (account[SKLSO_INTEGRATION.integration] as ReferenceNodeObject)['@id'];
     const openApiDescription = await this.getOpenApiDescriptionForIntegratedProduct(integratedProductId);
     const openApiExecutor = await this.createOpenApiOperationExecutorWithSpec(openApiDescription);
     const openApiOperationInformation = await openApiExecutor.getOperationWithPathInfoMatchingOperationId(operationId);
@@ -1059,7 +1059,7 @@ export class SKLEngine {
     account: Entity,
     capabilityConfig?: CapabilityConfig,
   ): Promise<OpenApiClientConfiguration> {
-    const getOauthTokenCapability = (await this.findBy({ type: SKL.Capability, [RDFS.label]: 'getOauthTokens' })) as Capability;
+    const getOauthTokenCapability = (await this.findBy({ type: SKL.Capability, [SKL_V2.label]: 'getOauthTokens' })) as Capability;
     const mapping = await this.findCapabilityIntegrationMapping(getOauthTokenCapability['@id'], integrationId);
     if (!mapping) {
       throw new Error(`No mapping found for capability ${getOauthTokenCapability['@id']} and integration ${integrationId}`);
@@ -1169,7 +1169,7 @@ export class SKLEngine {
     value: OrArray<NodeObject>,
     shape: NodeObject,
   ): Promise<ValidationReport> {
-    const valueAsQuads = await convertJsonLdToQuads(Array.isArray(value) ? value : [value]);
+    const valueAsQuads = await convertJsonLdToQuads(Array.isArray(value) ? value : [ value ]);
     const shapeQuads = await convertJsonLdToQuads(shape);
     const validator = new SHACLValidator(shapeQuads);
     return validator.validate(valueAsQuads);
@@ -1212,7 +1212,7 @@ export class SKLEngine {
     const dataSource = await this.findBy({ id: dataSourceId });
     if (dataSource['@type'] === SKL.JsonDataSource) {
       const data = this.getDataFromJsonDataSource(dataSource, capabilityConfig);
-      return { data, operationParameters: {} };
+      return { data, operationParameters: {}};
     }
     throw new Error(`DataSource type ${dataSource['@type']} is not supported.`);
   }

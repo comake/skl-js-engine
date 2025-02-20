@@ -164,6 +164,8 @@ export const SKL = createNamespace(SKL_NAMESPACE_V2, [
   'specification',
   'dateCreated',
   'dateModified',
+  'label',
+  'declarativeApiDescription',
 ]);
 
 export const SKL_V2 = SKL;
@@ -171,7 +173,22 @@ export const SKL_V2 = SKL;
 export const SKLSO_DATA_NAMESPACE = 'https://skl.so/d/';
 
 export const SKLSO_PROPERTY_NAMESPACE = 'https://skl.so/';
-export const SKLSO_PROPERTY = createNamespace(SKLSO_PROPERTY_NAMESPACE, ['type', 'identifier']);
+export const SKLSO_PROPERTY = createNamespace(SKLSO_PROPERTY_NAMESPACE, [ 'type', 'identifier' ]);
+
+export const SKLSO_INTEGRATION_NAMESPACE = 'https://skl.so/integration/';
+export const SKLSO_INTEGRATION = createNamespace(SKLSO_INTEGRATION_NAMESPACE, [
+  'integration',
+  'account',
+  'credential',
+  'interface',
+  'username',
+  'AuthenticationCredential',
+]);
+
+export const SKLSO_INTEGRATION_INTERFACE_NAMESPACE = 'https://skl.so/integration/interface/';
+export const SKLSO_INTEGRATION_INTERFACE = createNamespace(SKLSO_INTEGRATION_INTERFACE_NAMESPACE, [
+  'RESTfulApi',
+]);
 
 export const SKL_ENGINE_NAMESPACE = 'https://standardknowledge.com/ontologies/skl-engine/';
 export const SKL_ENGINE = createNamespace(SKL_ENGINE_NAMESPACE, [
@@ -216,13 +233,14 @@ export const XSD = createNamespace(XSD_NAMESPACE, [
   'date',
   'time',
   'dateTime',
+  'label',
 ]);
 
 export const RDF_NAMESPACE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
-export const RDF = createNamespace(RDF_NAMESPACE, ['Property', 'type', 'datatype', 'JSON', 'first', 'rest', 'nil']);
+export const RDF = createNamespace(RDF_NAMESPACE, [ 'Property', 'type', 'datatype', 'JSON', 'first', 'rest', 'nil' ]);
 
 export const RDFS_NAMESPACE = 'http://www.w3.org/2000/01/rdf-schema#';
-export const RDFS = createNamespace(RDFS_NAMESPACE, ['subClassOf', 'label', 'range']);
+export const RDFS = createNamespace(RDFS_NAMESPACE, [ 'subClassOf', 'label', 'range' ]);
 
 export const OWL_NAMESPACE = 'http://www.w3.org/2002/07/owl#';
 export const OWL = createNamespace(OWL_NAMESPACE, [
@@ -297,10 +315,10 @@ export const SHACL = createNamespace(SHACL_NAMESPACE, [
 ]);
 
 export const SDO_NAMESPACE = 'https://schema.org/';
-export const SDO = createNamespace(SDO_NAMESPACE, ['Event']);
+export const SDO = createNamespace(SDO_NAMESPACE, [ 'Event' ]);
 
 export const DCELEMENTS_NAMESPACE = 'http://purl.org/dc/elements/1.1/';
-export const DCELEMENTS = createNamespace(DCELEMENTS_NAMESPACE, ['description']);
+export const DCELEMENTS = createNamespace(DCELEMENTS_NAMESPACE, [ 'description' ]);
 
 export const DCTERMS_NAMESPACE = 'http://purl.org/dc/terms/';
-export const DCTERMS = createNamespace(DCTERMS_NAMESPACE, ['created', 'modified']);
+export const DCTERMS = createNamespace(DCTERMS_NAMESPACE, [ 'created', 'modified' ]);

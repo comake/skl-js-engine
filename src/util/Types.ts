@@ -11,7 +11,7 @@ import type {
   SetObject,
   TypeMap,
 } from 'jsonld';
-import type { RDF, RDFS, SHACL, SKL } from './Vocabularies';
+import type { RDF, SHACL, SKL, SKL_V2 } from './Vocabularies';
 
 export type JSONPrimitive =
   | string
@@ -104,7 +104,7 @@ export interface PropertyShape extends BaseShape {
 
 export interface NodeShape extends BaseShape {
   '@type': typeof SHACL.NodeShape;
-  [RDFS.label]?: ValueObject<string>;
+  [SKL_V2.label]?: ValueObject<string>;
   [SHACL.property]: OrArray<PropertyShape>;
 }
 
@@ -141,7 +141,7 @@ export type PathShape = OrArray<PathTypes>;
 export type Capability = NodeObject & {
   '@id': string;
   '@type': typeof SKL.Capability;
-  [RDFS.label]?: ValueObject<string>;
+  [SKL_V2.label]?: ValueObject<string>;
   [SKL.inputsContext]?: ValueObject<JSONObject>;
   [SKL.inputs]?: NodeShape | ReferenceNodeObject;
   [SKL.outputsContext]?: ValueObject<JSONObject>;
@@ -177,19 +177,19 @@ export type CapabilityMapping = Mapping & {
 };
 
 export type MappingWithInputs = CapabilityMapping &
-  Required<Pick<CapabilityMapping, typeof SKL.inputs | typeof SKL.inputsMapping>>;
+Required<Pick<CapabilityMapping, typeof SKL.inputs | typeof SKL.inputsMapping>>;
 
 export type MappingWithInputsReference = CapabilityMapping &
-  Required<Pick<CapabilityMapping, typeof SKL.inputsReference>>;
+Required<Pick<CapabilityMapping, typeof SKL.inputsReference>>;
 
 export type MappingWithOutputsMapping = CapabilityMapping &
-  Required<Pick<CapabilityMapping, typeof SKL.outputsMapping | typeof SKL.outputsMappingFrame>>;
+Required<Pick<CapabilityMapping, typeof SKL.outputsMapping | typeof SKL.outputsMappingFrame>>;
 
 export type MappingWithSeries = CapabilityMapping &
-  Required<Pick<CapabilityMapping, typeof SKL.series>>;
+Required<Pick<CapabilityMapping, typeof SKL.series>>;
 
 export type MappingWithParallel = CapabilityMapping &
-  Required<Pick<CapabilityMapping, typeof SKL.parallel>>;
+Required<Pick<CapabilityMapping, typeof SKL.parallel>>;
 
 export type TriggerMapping = Mapping & {
   [SKL.integratedProduct]: ReferenceNodeObject;

@@ -5,7 +5,7 @@ import { SKLEngine } from '../../src/SklEngine';
 import { In } from '../../src/storage/operator/In';
 import type { Entity } from '../../src/util/Types';
 import { getValueIfDefined } from '../../src/util/Util';
-import { SDO, SKL, OWL, RDFS, DCTERMS } from '../../src/util/Vocabularies';
+import { SDO, SKL, OWL, DCTERMS } from '../../src/util/Vocabularies';
 import { describeIf, frameAndCombineSchemas } from '../util/Util';
 
 const endpointUrl = 'http://localhost:9999/blazegraph/namespace/kb/sparql';
@@ -51,11 +51,11 @@ describeIf('docker', 'An SKL engine backed by a sparql query adapter', (): void 
         type: OWL.ObjectProperty,
       },
       order: {
-        [RDFS.label]: 'asc',
+        [SKL_V2.label]: 'asc',
       },
     });
     expect(accessTokenProperty).toBeDefined();
-    expect((accessTokenProperty[RDFS.label] as ValueObject)['@value']).toBe('accessToken');
+    expect((accessTokenProperty[SKL_V2.label] as ValueObject)['@value']).toBe('accessToken');
   });
 
   it('can find many entities.', async(): Promise<void> => {
@@ -67,43 +67,43 @@ describeIf('docker', 'An SKL engine backed by a sparql query adapter', (): void 
         ]),
       },
       order: {
-        [RDFS.label]: 'asc',
+        [SKL_V2.label]: 'asc',
       },
     });
     expect(nouns).toHaveLength(2);
-    expect((nouns[0][RDFS.label] as ValueObject)['@value']).toBe('Ticketmaster');
-    expect((nouns[1][RDFS.label] as ValueObject)['@value']).toBe('Ticketmaster Account');
+    expect((nouns[0][SKL_V2.label] as ValueObject)['@value']).toBe('Ticketmaster');
+    expect((nouns[1][SKL_V2.label] as ValueObject)['@value']).toBe('Ticketmaster Account');
   });
 
   it('can update an entity.', async(): Promise<void> => {
     const eventSchema = await engine.findBy({
       id: 'https://schema.org/Event',
     });
-    expect(eventSchema[RDFS.label]).not.toBe('Event');
-    eventSchema[RDFS.label] = 'Event';
+    expect(eventSchema[SKL_V2.label]).not.toBe('Event');
+    eventSchema[SKL_V2.label] = 'Event';
     await engine.save(eventSchema);
     const updatedEventSchema = await engine.findBy({
       id: 'https://schema.org/Event',
     });
-    expect(updatedEventSchema[RDFS.label]).toBeDefined();
-    expect((updatedEventSchema[RDFS.label] as ValueObject)['@value']).toBe('Event');
+    expect(updatedEventSchema[SKL_V2.label]).toBeDefined();
+    expect((updatedEventSchema[SKL_V2.label] as ValueObject)['@value']).toBe('Event');
   });
 
   it('can update a partial entity.', async(): Promise<void> => {
     const eventSchema = await engine.findBy({
       id: 'https://schema.org/Event',
     });
-    expect(eventSchema[RDFS.label]).not.toBe('Events');
+    expect(eventSchema[SKL_V2.label]).not.toBe('Events');
     const prevUpdateTime = getValueIfDefined(eventSchema[DCTERMS.modified]);
     await engine.update(
       'https://schema.org/Event',
-      { [RDFS.label]: 'Events' },
+      { [SKL_V2.label]: 'Events' },
     );
     const updatedEventSchema = await engine.findBy({
       id: 'https://schema.org/Event',
     });
-    expect(updatedEventSchema[RDFS.label]).toBeDefined();
-    expect((updatedEventSchema[RDFS.label] as ValueObject)['@value']).toBe('Events');
+    expect(updatedEventSchema[SKL_V2.label]).toBeDefined();
+    expect((updatedEventSchema[SKL_V2.label] as ValueObject)['@value']).toBe('Events');
     expect(updatedEventSchema[DCTERMS.modified]).toBeDefined();
     expect((updatedEventSchema[DCTERMS.modified] as ValueObject)['@value']).not.toEqual(prevUpdateTime);
   });
