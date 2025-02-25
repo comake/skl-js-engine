@@ -826,6 +826,31 @@ export class SKLEngine {
       const reference = getValueIfDefined<string>(mapping[SKL.inputsReference])!;
       return this.getDataAtReference(reference, args);
     }
+
+    if (SKL.inputsMappingRef in mapping) {
+      const reference = getValueIfDefined<string>(mapping[SKL.inputsMappingRef])!;
+      const referencedMapping = this.getDataAtReference(reference, args);
+
+      // Handle inputsMappingFrameRef if present
+      let frame;
+      if (SKL.inputsMappingFrameRef in mapping) {
+        const frameReference = getValueIfDefined<string>(mapping[SKL.inputsMappingFrameRef])!;
+        frame = this.getDataAtReference(frameReference, args);
+      } else {
+        // Use direct frame if provided
+        frame = getValueIfDefined(mapping[SKL.inputsMappingFrame]);
+      }
+
+      // Perform mapping with the referenced mapping and frame
+      const mappedData = await this.performMapping(
+        args,
+        referencedMapping,
+        frame,
+        capabilityConfig,
+      );
+      return toJSON(mappedData, convertToJsonDeep);
+    }
+
     if (SKL.inputsMapping in mapping) {
       const mappedData = await this.performMapping(
         args,
@@ -845,7 +870,11 @@ export class SKLEngine {
       resultType: 'value',
     });
     const isArrayOfLengthOne = Array.isArray(results) && results.length === 1;
-    return isArrayOfLengthOne ? results[0] : results;
+    let result = isArrayOfLengthOne ? results[0] : results;
+    if (result && typeof result === 'object' && '@value' in result) {
+      result = result['@value'];
+    }
+    return result;
   }
 
   private async getOpenApiDescriptionForIntegratedProduct(integratedProductId: string): Promise<OpenApi> {

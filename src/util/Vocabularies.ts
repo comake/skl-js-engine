@@ -144,6 +144,8 @@ export const SKL = createNamespace(SKL_NAMESPACE_V2, [
   'inputsReference',
   'inputsMapping',
   'inputsMappingFrame',
+  'inputsMappingRef',
+  'inputsMappingFrameRef',
   'outputsReference',
   'outputsMapping',
   'outputsMappingFrame',
