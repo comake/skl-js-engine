@@ -151,6 +151,7 @@ export type Capability = NodeObject & {
 export interface SeriesCapabilityArgs extends JSONObject {
   originalCapabilityParameters: JSONObject;
   previousCapabilityReturnValue: JSONObject;
+  allStepsResults: JSONObject[];
 }
 
 export type Mapping = NodeObject & {

@@ -549,7 +549,12 @@ export class SKLEngine {
     capabilityConfig?: CapabilityConfig,
   ): Promise<OrArray<NodeObject>> {
     const seriesCapabilityMappingsList = this.rdfListToArray(mapping[SKL.series]!);
-    const seriesCapabilityArgs = { originalCapabilityParameters: args, previousCapabilityReturnValue: {}};
+    const seriesCapabilityArgs = {
+      originalCapabilityParameters: args,
+      previousCapabilityReturnValue: {},
+      allStepsResults: [],
+    };
+
     return await this.executeSeriesFromList(seriesCapabilityMappingsList, seriesCapabilityArgs, capabilityConfig);
   }
 
@@ -575,7 +580,9 @@ export class SKLEngine {
     if (list.length > 1) {
       return await this.executeSeriesFromList(
         list.slice(1),
-        { ...args, previousCapabilityReturnValue: returnValue as JSONObject },
+        { ...args,
+          previousCapabilityReturnValue: returnValue as JSONObject,
+          allStepsResults: [ ...args.allStepsResults ?? [], returnValue as JSONObject ]},
         capabilityConfig,
       );
     }
